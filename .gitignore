@@ -1,0 +1,40 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+
+# Submodules (we'll track them but ignore their content in parent)
+# /frontend/
+# /backend/ 
+/admin/
+/supertokens/
+/auth/
+
+
+# Other
+*.ORIG
+to_ignore/
+databases/dumps/
+/redis/

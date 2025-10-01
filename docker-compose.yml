@@ -1,4 +1,37 @@
 services:
+  # supertokens:
+  #   image: supertokens/supertokens-postgresql:7.0
+  #   container_name: supertokens
+  #   environment:
+  #     - POSTGRESQL_CONNECTION_URI=postgresql://supertokens:password@supertokens-db:5432/supertokens
+  #     - API_KEYS=your-super-long-api-key-1234567890
+  #     - LOG_LEVEL=INFO
+  #   volumes:
+  #     - ./supertokens/config.yaml:/usr/app/config.yaml
+  #   depends_on:
+  #     - supertokens-db
+  #   networks:
+  #     - portfolios-net
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3567/hello"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # supertokens-db:
+  #   image: postgres:13
+  #   container_name: supertokens-db
+  #   environment:
+  #     POSTGRES_DB: supertokens
+  #     POSTGRES_USER: supertokens
+  #     POSTGRES_PASSWORD: password
+  #   volumes:
+  #     - supertokens_db_data:/var/lib/postgresql/data
+  #   networks:
+  #     - portfolios-net
+  #   restart: unless-stopped
+
   admin-db:
     image: mariadb
     container_name: admin-db
@@ -14,7 +47,38 @@ services:
       - portfolios-net
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "3306:3306"  # Для отладки
+
+  # backend-db:
+  #   image: postgres:13
+  #   container_name: backend-db
+  #   environment:
+  #     POSTGRES_DB: ${BACKEND_DB_NAME}
+  #     POSTGRES_USER: ${BACKEND_DB_USER}
+  #     POSTGRES_PASSWORD: ${BACKEND_DB_PASSWORD}
+  #   volumes:
+  #     - backend_db_data:/var/lib/postgresql/data
+  #     - ./databases/init-scripts/backend-init.sql:/docker-entrypoint-initdb.d/init.sql
+  #   networks:
+  #     - portfolios-net
+
+  # admin:
+  #   build:
+  #     context: ./admin
+  #     dockerfile: Dockerfile
+  #   container_name: admin
+  #   environment:
+  #     - DATABASE_URL=mariadb+pymysql://${ADMIN_DB_USER}:${ADMIN_DB_PASSWORD}@mysql:3306/${ADMIN_DB_NAME}
+  #     # - REDIS_URL=redis://redis:6379
+  #   depends_on:
+  #     - admin-db
+  #     - auth
+  #     # - redis
+  #   networks:
+  #     - portfolios-net
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./shared-configs/common.env:/app/.env
 
   backend:
     build:
@@ -78,7 +142,6 @@ services:
 networks:
   portfolios-net:
     driver: bridge
-
 
 volumes:
   admin_db_data:
