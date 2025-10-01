@@ -4,9 +4,11 @@ Investment portfolio management platform with microservices architecture.
 
 ## 🏗 Architecture
 
+```
 portfolio-platform/ # This repository (orchestration)
 ├── frontend/
 └── backend/
+```
  
 ## 🚀 Quick Start
 
