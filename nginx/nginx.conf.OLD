@@ -1,0 +1,56 @@
+events {}
+
+http {
+    upstream frontend {
+        server frontend:3000;
+    }
+
+    upstream supertokens {
+        server supertokens:3567;
+    }
+
+    # upstream flask_admin {
+    #     server flask-admin:5000;
+    # }
+
+    # upstream react_frontend {
+    #     server react-frontend:3000;
+    # }
+
+    server {
+        listen 80;
+        server_name localhost;
+
+        # React Frontend
+        location / {
+            proxy_pass http://react_frontend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # FastAPI API
+        location /api/ {
+            proxy_pass http://fastapi_backend/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Flask Admin
+        location /admin/ {
+            proxy_pass http://flask_admin/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Статические файлы
+        location /static/ {
+            alias /static/;
+        }
+    }
+}

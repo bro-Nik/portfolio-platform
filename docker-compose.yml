@@ -1,0 +1,186 @@
+# docker-compose.yml
+services:
+  # Supertokens Core
+  # supertokens:
+  #   image: supertokens/supertokens-postgresql:7.0
+  #   container_name: supertokens
+  #   environment:
+  #     - POSTGRESQL_CONNECTION_URI=postgresql://supertokens:password@supertokens-db:5432/supertokens
+  #     - API_KEYS=your-super-long-api-key-1234567890
+  #     - LOG_LEVEL=INFO
+  #   volumes:
+  #     - ./supertokens/config.yaml:/usr/app/config.yaml
+  #   depends_on:
+  #     - supertokens-db
+  #   networks:
+  #     - portfolios-net
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3567/hello"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # База для Supertokens
+  # supertokens-db:
+  #   image: postgres:13
+  #   container_name: supertokens-db
+  #   environment:
+  #     POSTGRES_DB: supertokens
+  #     POSTGRES_USER: supertokens
+  #     POSTGRES_PASSWORD: password
+  #   volumes:
+  #     - supertokens_db_data:/var/lib/postgresql/data
+  #   networks:
+  #     - portfolios-net
+  #   restart: unless-stopped
+
+  # База данных для админ-сервиса
+  admin-db:
+    image: mariadb
+    container_name: admin-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${ADMIN_MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${ADMIN_DB_NAME}
+      - MYSQL_USER=${ADMIN_DB_USER}
+      - MYSQL_PASSWORD=${ADMIN_DB_PASSWORD}
+    volumes:
+      - admin_db_data:/var/lib/mysql
+      - ./databases/dumps/admin/:/docker-entrypoint-initdb.d/
+    networks:
+      - portfolios-net
+    restart: unless-stopped
+    ports:
+      - "3306:3306"  # Для отладки
+
+  # База данных для основного бекенда
+  # backend-db:
+  #   image: postgres:13
+  #   container_name: backend-db
+  #   environment:
+  #     POSTGRES_DB: ${BACKEND_DB_NAME}
+  #     POSTGRES_USER: ${BACKEND_DB_USER}
+  #     POSTGRES_PASSWORD: ${BACKEND_DB_PASSWORD}
+  #   volumes:
+  #     - backend_db_data:/var/lib/postgresql/data
+  #     - ./databases/init-scripts/backend-init.sql:/docker-entrypoint-initdb.d/init.sql
+  #   networks:
+  #     - portfolios-net
+
+  # Сервис администрирования
+  # admin:
+  #   build:
+  #     context: ./admin
+  #     dockerfile: Dockerfile
+  #   container_name: admin
+  #   environment:
+  #     - DATABASE_URL=mariadb+pymysql://${ADMIN_DB_USER}:${ADMIN_DB_PASSWORD}@mysql:3306/${ADMIN_DB_NAME}
+  #     # - REDIS_URL=redis://redis:6379
+  #   depends_on:
+  #     - admin-db
+  #     - auth
+  #     # - redis
+  #   networks:
+  #     - portfolios-net
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./shared-configs/common.env:/app/.env
+
+  # Redis для кеширования/сессий
+  # redis:
+  #   image: redis:alpine
+  #   container_name: portfolios_redis
+  #   volumes:
+  #     - redis_data:/root/redis
+  #     - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+  #   networks:
+  #     - portfolios-net
+
+  # Основной бекенд сервис
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    environment:
+      # - DATABASE_URL=postgresql://${BACKEND_DB_USER}:${BACKEND_DB_PASSWORD}@backend-db:5432/${BACKEND_DB_NAME}
+      - DATABASE_URL=mysql+pymysql://nik:nik@admin-db:3306/portfolios
+      - RELOAD=true
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    depends_on:
+      # - backend-db
+      - admin-db
+      # - auth
+    networks:
+      - portfolios-net
+    restart: unless-stopped
+    volumes:
+      # Монтируем исходный код
+      - ./backend/app:/app/app
+      - ./shared-configs/common.env:/app/.env
+
+
+  # Фронтенд сервис
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+      - FAST_REFRESH=true
+      # - REACT_APP_API_URL=/api
+      # - REACT_APP_ADMIN_URL=/admin
+      # - REACT_APP_API_URL=http://localhost:8000
+      # - REACT_APP_AUTH_API_URL=http://localhost:3567
+    # depends_on:
+      # - backend
+      # - supertokens
+      # - admin
+    volumes:
+      # Монтируем исходный код
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    ports:
+      - "3000:3000"
+    networks:
+      - portfolios-net
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8081:80"
+      # - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      # - ./nginx/templates:/etc/nginx/templates
+    depends_on:
+      # - supertokens
+      - frontend
+    networks:
+      - portfolios-net
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    depends_on:
+      - admin-db
+    networks:
+      - portfolios-net
+
+networks:
+  portfolios-net:
+    driver: bridge
+
+volumes:
+#   supertokens_db_data:
+  # keycloak_db_data:
+    admin_db_data:
+  # auth_db_data:
+  # admin_db_data:
+  # backend_db_data:
