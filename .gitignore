@@ -25,16 +25,11 @@ Thumbs.db
 tmp/
 temp/
 
-# Submodules (we'll track them but ignore their content in parent)
-# /frontend/
-# /backend/ 
-/admin/
-/supertokens/
-/auth/
-
-
 # Other
 *.ORIG
 to_ignore/
 databases/dumps/
 /redis/
+/admin/
+/supertokens/
+/auth/
