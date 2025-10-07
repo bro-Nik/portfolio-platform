@@ -4,3 +4,6 @@
 [submodule "backend"]
 	path = backend
 	url = git@github.com:bro-Nik/portfolio-backend.git
+[submodule "auth"]
+	path = auth
+	url = git@github.com:bro-Nik/portfolio-auth.git
