@@ -6,6 +6,7 @@ Investment portfolio management platform with microservices architecture.
 
 ```
 portfolio-platform/ # This repository (orchestration)
+├── auth/
 ├── frontend/
 └── backend/
 ```
@@ -26,11 +27,13 @@ open http://localhost
 
 ## 📚 Services
 
+- Auth: FastAPI for auth management [(repository)](https://github.com/bro-Nik/portfolio-auth).
 - Frontend: React application [(repository)](https://github.com/bro-Nik/portfolio-frontend).
 - Backend: FastAPI for user operations [(repository)](https://github.com/bro-Nik/portfolio-backend).
 
 ## 🛠 Tech Stack
 
+- Auth: FastAPI, PostgreSQL
 - Frontend: React
 - Backend: FastAPI, PostgreSQL, Redis
 - Infra: Docker, Nginx, GitHub Actions

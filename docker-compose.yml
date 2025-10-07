@@ -1,36 +1,17 @@
 services:
-  # supertokens:
-  #   image: supertokens/supertokens-postgresql:7.0
-  #   container_name: supertokens
-  #   environment:
-  #     - POSTGRESQL_CONNECTION_URI=postgresql://supertokens:password@supertokens-db:5432/supertokens
-  #     - API_KEYS=your-super-long-api-key-1234567890
-  #     - LOG_LEVEL=INFO
-  #   volumes:
-  #     - ./supertokens/config.yaml:/usr/app/config.yaml
-  #   depends_on:
-  #     - supertokens-db
-  #   networks:
-  #     - portfolios-net
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:3567/hello"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-
-  # supertokens-db:
-  #   image: postgres:13
-  #   container_name: supertokens-db
-  #   environment:
-  #     POSTGRES_DB: supertokens
-  #     POSTGRES_USER: supertokens
-  #     POSTGRES_PASSWORD: password
-  #   volumes:
-  #     - supertokens_db_data:/var/lib/postgresql/data
-  #   networks:
-  #     - portfolios-net
-  #   restart: unless-stopped
+  auth-db:
+    image: postgres:18
+    container_name: auth-db
+    environment:
+      POSTGRES_DB: ${AUTH_DB_NAME}
+      POSTGRES_USER: ${AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    networks:
+      - portfolios-net
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
 
   admin-db:
     image: mariadb
@@ -42,43 +23,30 @@ services:
       - MYSQL_PASSWORD=${ADMIN_DB_PASSWORD}
     volumes:
       - admin_db_data:/var/lib/mysql
-      - ./databases/dumps/admin/:/docker-entrypoint-initdb.d/
+      # - ./databases/dumps/admin/:/docker-entrypoint-initdb.d/
     networks:
       - portfolios-net
     restart: unless-stopped
     ports:
       - "3306:3306"  # Для отладки
 
-  # backend-db:
-  #   image: postgres:13
-  #   container_name: backend-db
-  #   environment:
-  #     POSTGRES_DB: ${BACKEND_DB_NAME}
-  #     POSTGRES_USER: ${BACKEND_DB_USER}
-  #     POSTGRES_PASSWORD: ${BACKEND_DB_PASSWORD}
-  #   volumes:
-  #     - backend_db_data:/var/lib/postgresql/data
-  #     - ./databases/init-scripts/backend-init.sql:/docker-entrypoint-initdb.d/init.sql
-  #   networks:
-  #     - portfolios-net
-
-  # admin:
-  #   build:
-  #     context: ./admin
-  #     dockerfile: Dockerfile
-  #   container_name: admin
-  #   environment:
-  #     - DATABASE_URL=mariadb+pymysql://${ADMIN_DB_USER}:${ADMIN_DB_PASSWORD}@mysql:3306/${ADMIN_DB_NAME}
-  #     # - REDIS_URL=redis://redis:6379
-  #   depends_on:
-  #     - admin-db
-  #     - auth
-  #     # - redis
-  #   networks:
-  #     - portfolios-net
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./shared-configs/common.env:/app/.env
+  auth:
+    build: ./auth
+    container_name: auth
+    environment:
+      DB_NAME: ${AUTH_DB_NAME}
+      DB_USER: ${AUTH_DB_USER}
+      DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      DB_HOST: ${AUTH_DB_HOST}
+      DB_PORT: ${AUTH_DB_PORT}
+      JWT_SECRET: ${AUTH_SECRET_KEY}
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+    depends_on:
+      - auth-db
+    volumes:
+      - ./auth/app:/app/app
+    networks:
+      - portfolios-net
 
   backend:
     build:
@@ -96,7 +64,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./backend/app:/app/app
-      - ./shared-configs/common.env:/app/.env
 
   frontend:
     build:
@@ -107,8 +74,10 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WDS_SOCKET_PORT=0
       - FAST_REFRESH=true
+      - REACT_APP_AUTH_SERVICE_URL=/auth
     depends_on:
       - backend
+      - auth
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
@@ -120,6 +89,7 @@ services:
 
   nginx:
     image: nginx:alpine
+    container_name: nginx
     ports:
       - "8081:80"
     volumes:
@@ -145,3 +115,4 @@ networks:
 
 volumes:
   admin_db_data:
+  auth_db_data:
