@@ -7,3 +7,6 @@
 [submodule "auth"]
 	path = auth
 	url = git@github.com:bro-Nik/portfolio-auth.git
+[submodule "market"]
+	path = market
+	url = https://github.com/bro-Nik/portfolio-market.git
