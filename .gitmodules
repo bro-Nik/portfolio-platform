@@ -10,3 +10,6 @@
 [submodule "market"]
 	path = market
 	url = https://github.com/bro-Nik/portfolio-market.git
+[submodule "admin-frontend"]
+	path = admin-frontend
+	url = https://github.com/bro-Nik/portfolio-admin-frontend.git

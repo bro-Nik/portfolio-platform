@@ -1,30 +1,31 @@
 services:
   auth-db:
-    image: postgres:18
+    extends:
+      file: ./auth/docker-compose.base.yml
+      service: auth-db
     container_name: auth-db
+    networks:
+      - portfolios-net
     environment:
       POSTGRES_DB: ${AUTH_DB_NAME}
       POSTGRES_USER: ${AUTH_DB_USER}
       POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
-    networks:
-      - portfolios-net
     volumes:
-      - auth_db_data:/var/lib/postgresql/data
+      - auth_db_data:/var/lib/postgresql
 
-  admin-db:
-    image: mariadb
-    container_name: admin-db
+  auth:
+    extends:
+      file: ./auth/docker-compose.base.yml
+      service: auth
+    container_name: auth
     environment:
-      - MYSQL_ROOT_PASSWORD=${ADMIN_MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${ADMIN_DB_NAME}
-      - MYSQL_USER=${ADMIN_DB_USER}
-      - MYSQL_PASSWORD=${ADMIN_DB_PASSWORD}
-    volumes:
-      - admin_db_data:/var/lib/mysql
-      - ./databases/dumps/admin/:/docker-entrypoint-initdb.d/
+      DATABASE_URL: postgresql+asyncpg://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@auth-db/${AUTH_DB_NAME}
+      JWT_SECRET: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
     networks:
       - portfolios-net
-    restart: unless-stopped
+    depends_on:
+      - auth-db
 
   backend-db:
     image: postgres:13
@@ -35,65 +36,7 @@ services:
       POSTGRES_PASSWORD: ${BACKEND_DB_PASSWORD}
     volumes:
       - backend_db_data:/var/lib/postgresql/data
-      - ./databases/init-scripts/backend-init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - portfolios-net
-
-  admin:
-    build:
-      context: ./admin
-      dockerfile: Dockerfile
-    container_name: admin
-    environment:
-      - FLASK_APP=start
-      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://${ADMIN_DB_USER}:${ADMIN_DB_PASSWORD}@admin-db:3306/${ADMIN_DB_NAME}
-      - FLASK_ENV=development
-      - PYTHONUNBUFFERED=True
-      - SECRET_KEY='N3RETYHGFGFHFHVB'
-      - FLASK_DEBUG=True
-      # - FLASK_RUN_PORT = 5000
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - API_KEY_POLYGON='6Nf56v58Y9PTjFUpeoj8RUnKauluTDUN'
-      - API_KEY_CURRENCYLAYER='7b0f0ed9e56430d831616e0c04fcce78'
-      - UPLOAD_FOLDER='/home/nik/code/portfolios/portfolio_tracker/static'
-      # расширения файлов, которые разрешено загружать
-      - ALLOWED_EXTENSIONS={'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-      - MAX_CONTENT_LENGTH=5242880
-
-      # Префиксы тикеров
-      - CRYPTO_PREFIX='cr-'
-      - STOCKS_PREFIX='st-'
-      - CURRENCY_PREFIX='cu-'
-
-      # API
-      - PROXIES_API_KEY='7b8e1d3479-7b53b1a4a0-171c942c27'
-
-    command: python start.py
-    depends_on:
-      - admin-db
-      - auth
-      # - redis
-    networks:
-      - portfolios-net
-    restart: unless-stopped
-
-  auth:
-    build: ./auth
-    container_name: auth
-    environment:
-      DB_NAME: ${AUTH_DB_NAME}
-      DB_USER: ${AUTH_DB_USER}
-      DB_PASSWORD: ${AUTH_DB_PASSWORD}
-      DB_HOST: ${AUTH_DB_HOST}
-      DB_PORT: ${AUTH_DB_PORT}
-      JWT_SECRET: ${JWT_SECRET_KEY}
-      JWT_ALGORITHM: ${JWT_ALGORITHM}
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
-    depends_on:
-      - auth-db
-    volumes:
-      - ./auth/app:/app/app
+      - ./databases/init-scripts/backend-init/backend_dump.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - portfolios-net
 
@@ -105,8 +48,12 @@ services:
     environment:
       JWT_SECRET: ${JWT_SECRET_KEY}
       JWT_ALGORITHM: ${JWT_ALGORITHM}
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: ${ASYNC_DATABASE_URL}
       RELOAD: true
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CELERY_BROKER_URL: redis://:@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:@redis:6379/0
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     depends_on:
       - backend-db
@@ -116,15 +63,56 @@ services:
     volumes:
       - ./backend/app:/app/app
 
+  market-celery-worker:
+    build:
+      context: ./market
+      dockerfile: Dockerfile
+    container_name: market-celery-worker
+    environment:
+      SYNC_DATABASE_URL: ${SYNC_DATABASE_URL}
+      ASYNC_DATABASE_URL: ${ASYNC_DATABASE_URL}
+      CELERY_BROKER_URL: redis://:@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:@redis:6379/0
+    command: celery -A app.core.celery worker --loglevel=info
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - portfolios-net
+    restart: unless-stopped
+
+  market-celery-beat:
+    build:
+      context: ./market
+      dockerfile: Dockerfile
+    container_name: market-celery-beat
+    environment:
+      SYNC_DATABASE_URL: ${SYNC_DATABASE_URL}
+      ASYNC_DATABASE_URL: ${ASYNC_DATABASE_URL}
+      CELERY_BROKER_URL: redis://:@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:@redis:6379/0
+    command: celery -A app.core.celery beat --loglevel=info --scheduler redbeat.RedBeatScheduler
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - portfolios-net
+    restart: unless-stopped
+
   market:
     build:
       context: ./market
       dockerfile: Dockerfile
     container_name: market
     environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET_KEY}
       JWT_ALGORITHM: ${JWT_ALGORITHM}
-      DATABASE_URL: ${DATABASE_URL}
+      SYNC_DATABASE_URL: ${SYNC_DATABASE_URL}
+      ASYNC_DATABASE_URL: ${ASYNC_DATABASE_URL}
+      CELERY_BROKER_URL: redis://:@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:@redis:6379/0
       RELOAD: true
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8003", "--reload"]
     depends_on:
@@ -146,15 +134,35 @@ services:
       - FAST_REFRESH=true
       - REACT_APP_AUTH_SERVICE_URL=/auth
       - REACT_APP_MARKET_SERVICE_URL=/market
-      - REACT_APP_IMAGE_BASE_URL=/admin/static/images/tickers/
+      - REACT_APP_IMAGE_BASE_URL=/market/static/images/tickers/
     depends_on:
       - backend
       - auth
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
-    ports:
-      - "3000:3000"
+    networks:
+      - portfolios-net
+    restart: unless-stopped
+
+  admin-frontend:
+    build:
+      context: ./admin-frontend
+      dockerfile: Dockerfile
+    container_name: admin-frontend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+      - FAST_REFRESH=true
+      - REACT_APP_AUTH_SERVICE_URL=/auth
+      - REACT_APP_MARKET_SERVICE_URL=/market
+      - REACT_APP_IMAGE_BASE_URL=/market/static/images/tickers/
+    depends_on:
+      - backend
+      - auth
+    volumes:
+      - ./admin-frontend/src:/app/src
+      - ./admin-frontend/public:/app/public
     networks:
       - portfolios-net
     restart: unless-stopped
@@ -177,7 +185,7 @@ services:
     ports:
       - "8082:8080"
     depends_on:
-      # - admin-db
+      - auth-db
       - backend-db
     networks:
       - portfolios-net
@@ -190,13 +198,17 @@ services:
       - redis_db_data:/root/redis
     networks:
       - portfolios-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   portfolios-net:
     driver: bridge
 
 volumes:
-  admin_db_data:
   auth_db_data:
   backend_db_data:
   redis_db_data:
