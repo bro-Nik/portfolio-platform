@@ -1,3 +1,6 @@
+include:
+  - path: ./backend/services/portfolios/compose.base.yml
+
 services:
   auth-db:
     extends:
@@ -26,42 +29,6 @@ services:
       - portfolios-net
     depends_on:
       - auth-db
-
-  backend-db:
-    image: postgres:13
-    container_name: backend-db
-    environment:
-      POSTGRES_DB: ${BACKEND_DB_NAME}
-      POSTGRES_USER: ${BACKEND_DB_USER}
-      POSTGRES_PASSWORD: ${BACKEND_DB_PASSWORD}
-    volumes:
-      - backend_db_data:/var/lib/postgresql/data
-      - ./databases/init-scripts/backend-init/backend_dump.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - portfolios-net
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend
-    environment:
-      JWT_SECRET: ${JWT_SECRET_KEY}
-      JWT_ALGORITHM: ${JWT_ALGORITHM}
-      DATABASE_URL: ${ASYNC_DATABASE_URL}
-      RELOAD: true
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      CELERY_BROKER_URL: redis://:@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://:@redis:6379/0
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-    depends_on:
-      - backend-db
-    networks:
-      - portfolios-net
-    restart: unless-stopped
-    volumes:
-      - ./backend/app:/app/app
 
   market-celery-worker:
     build:
@@ -115,8 +82,8 @@ services:
       CELERY_RESULT_BACKEND: redis://:@redis:6379/0
       RELOAD: true
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8003", "--reload"]
-    depends_on:
-      - backend-db
+    # depends_on:
+    #   - backend-db
     networks:
       - portfolios-net
     restart: unless-stopped
@@ -136,7 +103,7 @@ services:
       - REACT_APP_MARKET_SERVICE_URL=/market
       - REACT_APP_IMAGE_BASE_URL=/market/static/images/tickers/
     depends_on:
-      - backend
+      - portfolios
       - auth
     volumes:
       - ./frontend/src:/app/src
@@ -158,7 +125,7 @@ services:
       - REACT_APP_MARKET_SERVICE_URL=/market
       - REACT_APP_IMAGE_BASE_URL=/market/static/images/tickers/
     depends_on:
-      - backend
+      - portfolios
       - auth
     volumes:
       - ./admin-frontend/src:/app/src
@@ -186,7 +153,6 @@ services:
       - "8082:8080"
     depends_on:
       - auth-db
-      - backend-db
     networks:
       - portfolios-net
 
