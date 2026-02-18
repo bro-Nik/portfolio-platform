@@ -1,0 +1,11 @@
+name: auth-service
+
+services:
+  auth-db:
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  auth:
+    build:
+      target: development
+    ports: ["8000:8000"]
