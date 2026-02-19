@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+sqlalchemy
+pymysql
+python-multipart
+asyncpg
+pyjwt
+pydantic[email]
+psycopg2-binary
+celery
+redis
+python-dotenv
+celery-redbeat
+requests
+croniter
+pydantic-settings
