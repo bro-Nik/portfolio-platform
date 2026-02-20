@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+pyjwt
+passlib
+bcrypt==4.3.0
+python-multipart
+python-dotenv
+asyncpg
+pydantic[email]
+sqlalchemy
+pyyaml
+ua-parser
+user-agents
+slowapi
+alembic
+pydantic-settings

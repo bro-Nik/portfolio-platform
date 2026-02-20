@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+pymysql
+python-multipart
+asyncpg
+pyjwt
+pydantic[email]
+slowapi
+pydantic-settings
+redis
+alembic

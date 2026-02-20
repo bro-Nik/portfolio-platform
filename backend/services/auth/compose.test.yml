@@ -1,0 +1,22 @@
+name: auth-service-tests
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    tmpfs: /var/lib/postgresql
+
+  app:
+    build:
+      context: .
+      target: test
+    environment:
+      DB_URL: postgresql+asyncpg://postgres:@db/postgres
+    volumes:
+      - ./app:/app/app
+      - ./tests:/app/tests
+      - ./reports:/app/reports
+    tmpfs: /tmp
+    depends_on: [db]
+    command: ["pytest"]

@@ -1,0 +1,11 @@
+name: portfolios-service-local
+
+services:
+  portfolios-db:
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  portfolios:
+    build:
+      target: development
+    ports: ["8000:8000"]

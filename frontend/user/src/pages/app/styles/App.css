@@ -1,0 +1,86 @@
+
+/* ToDo */
+#wrapper:has(.close-minimize-btns) {
+    box-shadow: rgba(0, 0, 0, 0.3) -5px 0px 22px -5px;
+}
+.option-subtext {
+  margin-left: 0.5rem;
+  font-weight: 300;
+  font-size: 12px;
+}
+
+.close-minimize-btns {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  left: 250px;
+  top: 17px;
+  transform: translateX(-100%);
+  transition: all 300ms ease;
+  background: #fff;
+  border-top-left-radius: 19px;
+  border-bottom-left-radius: 19px;
+  justify-content: center;
+  align-items: center;
+  /* box-shadow: -5px 1px 10px -5px rgba(0, 0, 0, 0.3), inset 3px 0 5px -3px rgba(0, 0, 0, 0.2); */
+  box-shadow: inset -6px 0 8px -10px rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.3) -5px 0px 22px -5px;
+  padding: 0 .5rem;
+}
+
+.close-minimize-btns div {
+  padding: .4rem;
+}
+
+.close-minimize-btns svg {
+  opacity: .5;
+  &:hover {
+    opacity: 1;
+  }
+}
+
+svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 300px;
+  }
+}
+
+hr {
+  margin: 1rem 0;
+  color: inherit;
+  border: 0;
+  border-top: 1px solid;
+  opacity: .25;
+}
+
+.home-link {
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+  text-decoration: none;
+}
+
+.link-body-emphasis {
+  color: RGBA(0, 0, 0, 1) !important;
+}
+
+.link-body-emphasis:focus, .link-body-emphasis:hover {
+  color: RGBA(0, 0, 0, .75) !important;
+}
+
+.me-2 {
+  margin-right: .5rem !important;
+}

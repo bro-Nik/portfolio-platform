@@ -1,150 +1,10 @@
+include:
+  - path: ./backend/services/portfolios/compose.base.yml
+  - path: ./backend/services/auth/compose.base.yml
+  - path: ./backend/services/market/compose.base.yml
+  - path: ./frontend/user/compose.base.yml
+
 services:
-  auth-db:
-    extends:
-      file: ./auth/docker-compose.base.yml
-      service: auth-db
-    container_name: auth-db
-    networks:
-      - portfolios-net
-    environment:
-      POSTGRES_DB: ${AUTH_DB_NAME}
-      POSTGRES_USER: ${AUTH_DB_USER}
-      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
-    volumes:
-      - auth_db_data:/var/lib/postgresql
-
-  auth:
-    extends:
-      file: ./auth/docker-compose.base.yml
-      service: auth
-    container_name: auth
-    environment:
-      DATABASE_URL: postgresql+asyncpg://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@auth-db/${AUTH_DB_NAME}
-      JWT_SECRET: ${JWT_SECRET_KEY}
-      JWT_ALGORITHM: ${JWT_ALGORITHM}
-    networks:
-      - portfolios-net
-    depends_on:
-      - auth-db
-
-  backend-db:
-    image: postgres:13
-    container_name: backend-db
-    environment:
-      POSTGRES_DB: ${BACKEND_DB_NAME}
-      POSTGRES_USER: ${BACKEND_DB_USER}
-      POSTGRES_PASSWORD: ${BACKEND_DB_PASSWORD}
-    volumes:
-      - backend_db_data:/var/lib/postgresql/data
-      - ./databases/init-scripts/backend-init/backend_dump.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - portfolios-net
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend
-    environment:
-      JWT_SECRET: ${JWT_SECRET_KEY}
-      JWT_ALGORITHM: ${JWT_ALGORITHM}
-      DATABASE_URL: ${ASYNC_DATABASE_URL}
-      RELOAD: true
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      CELERY_BROKER_URL: redis://:@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://:@redis:6379/0
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-    depends_on:
-      - backend-db
-    networks:
-      - portfolios-net
-    restart: unless-stopped
-    volumes:
-      - ./backend/app:/app/app
-
-  market-celery-worker:
-    build:
-      context: ./market
-      dockerfile: Dockerfile
-    container_name: market-celery-worker
-    environment:
-      SYNC_DATABASE_URL: ${SYNC_DATABASE_URL}
-      ASYNC_DATABASE_URL: ${ASYNC_DATABASE_URL}
-      CELERY_BROKER_URL: redis://:@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://:@redis:6379/0
-    command: celery -A app.core.celery worker --loglevel=info
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - portfolios-net
-    restart: unless-stopped
-
-  market-celery-beat:
-    build:
-      context: ./market
-      dockerfile: Dockerfile
-    container_name: market-celery-beat
-    environment:
-      SYNC_DATABASE_URL: ${SYNC_DATABASE_URL}
-      ASYNC_DATABASE_URL: ${ASYNC_DATABASE_URL}
-      CELERY_BROKER_URL: redis://:@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://:@redis:6379/0
-    command: celery -A app.core.celery beat --loglevel=info --scheduler redbeat.RedBeatScheduler
-    depends_on:
-      redis:
-        condition: service_healthy
-    networks:
-      - portfolios-net
-    restart: unless-stopped
-
-  market:
-    build:
-      context: ./market
-      dockerfile: Dockerfile
-    container_name: market
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: ${JWT_SECRET_KEY}
-      JWT_ALGORITHM: ${JWT_ALGORITHM}
-      SYNC_DATABASE_URL: ${SYNC_DATABASE_URL}
-      ASYNC_DATABASE_URL: ${ASYNC_DATABASE_URL}
-      CELERY_BROKER_URL: redis://:@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://:@redis:6379/0
-      RELOAD: true
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8003", "--reload"]
-    depends_on:
-      - backend-db
-    networks:
-      - portfolios-net
-    restart: unless-stopped
-    volumes:
-      - ./market/app:/app/app
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-      - WDS_SOCKET_PORT=0
-      - FAST_REFRESH=true
-      - REACT_APP_AUTH_SERVICE_URL=/auth
-      - REACT_APP_MARKET_SERVICE_URL=/market
-      - REACT_APP_IMAGE_BASE_URL=/market/static/images/tickers/
-    depends_on:
-      - backend
-      - auth
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
-    networks:
-      - portfolios-net
-    restart: unless-stopped
-
   admin-frontend:
     build:
       context: ./admin-frontend
@@ -158,7 +18,7 @@ services:
       - REACT_APP_MARKET_SERVICE_URL=/market
       - REACT_APP_IMAGE_BASE_URL=/market/static/images/tickers/
     depends_on:
-      - backend
+      - portfolios
       - auth
     volumes:
       - ./admin-frontend/src:/app/src
@@ -175,7 +35,9 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      - frontend
+      - ui-user
+      - portfolios
+      - auth
     networks:
       - portfolios-net
 
@@ -186,7 +48,6 @@ services:
       - "8082:8080"
     depends_on:
       - auth-db
-      - backend-db
     networks:
       - portfolios-net
 
@@ -211,4 +72,5 @@ networks:
 volumes:
   auth_db_data:
   backend_db_data:
+  market_db_data:
   redis_db_data:

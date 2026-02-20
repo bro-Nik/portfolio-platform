@@ -1,0 +1,18 @@
+services:
+  auth-db:
+    image: postgres:18-alpine
+    volumes:
+      - auth_db_data:/var/lib/postgresql
+
+  auth:
+    build: .
+    env_file:
+      - ./.env
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on: [auth-db]
+    volumes:
+      - ./app:/app/app
+      - ../../../.env:/app/.env.root:ro
+
+volumes:
+  auth_db_data:
