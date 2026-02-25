@@ -2,38 +2,34 @@
 
 Investment portfolio management platform with microservices architecture.
 
-## 🏗 Architecture
 
-```
-portfolio-platform/ # This repository (orchestration)
-├── auth/
-├── frontend/
-└── backend/
-```
- 
 ## 🚀 Quick Start
 
 ```bash
-# Clone with submodules
-git clone --recurse-submodules git@github.com:bro-Nik/portfolio-platform.git
-cd portfolio-platform
-
-# Start all services
-docker-compose up -d
+# Clone and start
+git clone git@github.com:bro-Nik/portfolio-platform.git
+just up
 
 # Access the application
 open http://localhost
 ```
 
+
 ## 📚 Services
+- [`Auth`](backend/services/auth/) - Authentication (FastAPI, PostgreSQL)
+- [`Market`](backend/services/market/) - Market data (FastAPI, PostgreSQL, Celery, Redis)
+- [`Portfolios`](backend/services/portfolios/) - Portfolio management (FastAPI, PostgreSQL, Redis)
+- [`User Frontend`](frontend/user/) - React UI
 
-- Auth: FastAPI for auth management [(repository)](https://github.com/bro-Nik/portfolio-auth).
-- Frontend: React application [(repository)](https://github.com/bro-Nik/portfolio-frontend).
-- Backend: FastAPI for user operations [(repository)](https://github.com/bro-Nik/portfolio-backend).
+## 🛠 Commands
+```bash
+just          # Show all available commands with descriptions
+```
+## 📜 Development History
 
-## 🛠 Tech Stack
+This project is now a monorepo. The development history of individual services can be found in their archived repositories:
 
-- Auth: FastAPI, PostgreSQL
-- Frontend: React
-- Backend: FastAPI, PostgreSQL, Redis
-- Infra: Docker, Nginx, GitHub Actions
+- Auth service history [`repo`](https://github.com/bro-Nik/portfolio-auth)
+- Market service history [`repo`](https://github.com/bro-Nik/portfolio-market)
+- Portfolios service history [`repo`](https://github.com/bro-Nik/portfolio-backend) (formerly `portfolio-backend`)
+- User frontend history [`repo`](https://github.com/bro-Nik/portfolio-frontend)

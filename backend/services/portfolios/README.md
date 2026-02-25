@@ -15,25 +15,13 @@ FastAPI • PostgreSQL • Alembic • JWT • Docker • pytest
 
 ### Development
 ```bash
-just up        # Start service in Docker (http://localhost:8000)
-just logs      # View logs
-just down      # Stop service
-just shell     # Open shell in container
-just clean     # Remove containers and volumes
-```
-
-### Testing
-```bash
-just test      # Run all tests
-just test b    # Rebuild and run tests
-```
-
-### Migrations
-```bash
-just migrate           # Apply pending migrations
-just migrate-new "msg" # Create new migration
-just migrate-down      # Rollback last migration
-just migrate-current   # Check migration status
+just              # Show all available commands
+just up *args     # Start service in Docker (http://localhost:8000)
+just down         # Stop service
+just logs         # View logs
+just shell        # Open shell in container
+just clean        # Remove containers and volumes
+just tests *args  # Run all tests
 ```
 
 ## API Docs (when running)
