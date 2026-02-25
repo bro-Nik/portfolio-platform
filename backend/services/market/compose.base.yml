@@ -1,26 +1,34 @@
+name: portfolios
+
 services:
   market-db:
     image: postgres:13-alpine
+    env_file:
+      - path: ./.env
+        required: false
     volumes:
       - market_db_data:/var/lib/postgresql/data
 
   market:
-    build: .
+    build:
+      context: .
+      dockerfile: ../../base.Dockerfile
     env_file:
-      - ./.env
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+      - path: ../../../.env
+        required: false
+      - path: ./.env
+        required: false
     depends_on: [market-db]
-    volumes:
-      - ./app:/app/app
-      - ../../../.env:/app/.env.root:ro
 
   market-celery-worker:
-    build: .
-    command: celery -A app.core.celery worker --loglevel=info
+    build:
+      context: .
+      dockerfile: ../../base.Dockerfile
 
   market-celery-beat:
-    build: .
-    command: celery -A app.core.celery beat --loglevel=info --scheduler redbeat.RedBeatScheduler
+    build:
+      context: .
+      dockerfile: ../../base.Dockerfile
 
 volumes:
   market_db_data:

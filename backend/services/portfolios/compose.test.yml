@@ -1,22 +1,23 @@
-name: portfolios-service-tests
+name: portfolios-test
 
 services:
-  db:
+  portfolios-db:
     image: postgres:13-alpine
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
     tmpfs: /var/lib/postgresql/data
 
-  app:
+  portfolios:
     build:
       context: .
+      dockerfile: ../../base.Dockerfile
       target: test
     environment:
-      DB_URL: postgresql+asyncpg://postgres:@db/postgres
+      DB_URL: postgresql+asyncpg://postgres:@portfolios-db/postgres
     volumes:
       - ./app:/app/app
       - ./tests:/app/tests
       - ./reports:/app/reports
     tmpfs: /tmp
-    depends_on: [db]
-    command: ["pytest"]
+    depends_on: [portfolios-db]
+    command: pytest

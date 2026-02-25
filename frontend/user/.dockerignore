@@ -1,0 +1,7 @@
+.env
+.git/
+.vscode/
+.idea/
+*.swp
+*~
+node_modules

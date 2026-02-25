@@ -1,63 +1,8 @@
-# -------------------- Переменные --------------------
-compose := "-f compose.base.yml -f compose.dev.yml"
-compose_test := "-f compose.test.yml"
-service := "portfolios"
-test_service := "app"
+import '../../justfile'
 
-# -------------------- Основные команды --------------------
+service := "portfolios"
+db := "portfolios-db"
+
 # Список всех команд
 default:
     @just --list
-
-# Запустить проект (пример: just up db) (d - detach, b - rebuild)
-up *args:
-    docker compose {{compose}} up \
-        {{ if args =~ "d" { "--detach" } else { "" } }} \
-        {{ if args =~ "b" { "--build" } else { "" } }}
-
-# Остановить проект
-down:
-    docker compose {{compose}} down
-
-# Посмотреть логи
-logs:
-    docker compose {{compose}} logs -f {{service}}
-
-# -------------------- Тесты --------------------
-# Запустить все тесты (пример: just test b) (b - rebuild)
-test *args:
-    docker compose {{compose_test}} up --abort-on-container-exit --exit-code-from {{test_service}} \
-        {{ if args =~ "b" { "--build" } else { "" } }}
-    docker compose {{compose_test}} down -v
-
-# -------------------- Разработка --------------------
-# Войти в контейнер
-shell:
-    docker compose {{compose}} exec {{service}} sh
-
-# Запустить одну команду в контейнере (пример: just run "python -m app.migrate")
-run cmd:
-    docker compose {{compose}} exec {{service}} {{cmd}}
-
-# Очистить все (контейнеры, volumes)
-clean:
-    docker compose {{compose}} down -v
-    docker compose {{compose_test}} down -v
-    docker system prune -f
-
-# -------------------- Миграции --------------------
-# Применить миграции
-migrate:
-    docker compose {{compose}} exec {{service}} alembic upgrade head
-
-# Создать новую миграцию
-migrate-new msg:
-    docker compose {{compose}} exec {{service}} alembic revision --autogenerate -m "{{msg}}"
-
-# Откатить последнюю миграцию
-migrate-down:
-    docker compose {{compose}} exec {{service}} alembic downgrade -1
-
-# Показать текущую миграцию
-migrate-current:
-    docker compose {{compose}} exec {{service}} alembic current

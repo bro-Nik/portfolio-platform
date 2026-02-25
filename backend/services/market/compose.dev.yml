@@ -1,11 +1,23 @@
-name: portfolios-service
-
 services:
-  portfolios-db:
+  market-db:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
-  portfolios:
+  market:
     build:
       target: development
     ports: ["8000:8000"]
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./app:/app/app
+      - /app/__pycache__
+
+  market-celery-worker:
+    build:
+      target: development
+    command: celery -A app.core.celery worker --loglevel=info
+
+  market-celery-beat:
+    build:
+      target: development
+    command: celery -A app.core.celery beat --loglevel=info --scheduler redbeat.RedBeatScheduler

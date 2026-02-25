@@ -1,0 +1,30 @@
+name: portfolios
+
+include:
+  - path: ./backend/services/portfolios/compose.base.yml
+  - path: ./backend/services/auth/compose.base.yml
+  - path: ./backend/services/market/compose.base.yml
+  - path: ./frontend/user/compose.base.yml
+  - path: ./frontend/admin/compose.base.yml
+
+services:
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - ui-user
+      - ui-admin
+      - portfolios
+      - auth
+      - market
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis_db_data:/root/redis
+
+networks:
+  portfolios-net:
+    driver: bridge
+
+volumes:
+  redis_db_data:

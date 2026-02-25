@@ -1,11 +1,22 @@
-# Environment variables
+# Python
+__pycache__/
+venv/
+.pytest_cache/
+.coverage*
+
+# Environment
 .env
 .env.local
 .env.*.local
+**/!.env.example
 
-# Docker
-.dockerignore
-docker-compose.override.yml
+# Frontend (React)
+frontend/**/node_modules
+frontend/**/build
+frontend/**/dist
+frontend/**/.env.local
+frontend/**/coverage
+frontend/**/.cache
 
 # Logs
 *.log
@@ -21,14 +32,10 @@ logs/
 .DS_Store
 Thumbs.db
 
-# Temporary files
-tmp/
-temp/
-
-# Other
-*.ORIG
+# Project specific
 to_ignore/
 databases/dumps/
-/redis/
-/admin/
-/supertokens/
+db_backups/
+reports/
+**/market/static/*
+
