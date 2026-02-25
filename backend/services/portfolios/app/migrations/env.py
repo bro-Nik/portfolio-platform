@@ -1,9 +1,8 @@
-import asyncio
 from pathlib import Path
 import sys
 
 from alembic import context
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import create_engine
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -15,15 +14,15 @@ config = context.config
 target_metadata = Base.metadata
 
 
-async def run_migrations() -> None:
+def run_migrations() -> None:
     """Запуск миграций."""
-    engine = create_async_engine(
-        settings.db_url,
+    engine = create_engine(
+        settings.sync_db_url,
         pool_pre_ping=True,
         echo=False,
     )
-    async with engine.connect() as connection:
-        await connection.run_sync(do_run_migrations)
+    with engine.connect() as connection:
+        do_run_migrations(connection)
 
 
 def do_run_migrations(connection) -> None:
@@ -40,4 +39,4 @@ def do_run_migrations(connection) -> None:
 if context.is_offline_mode():
     raise RuntimeError('Offline mode не настроен')
 
-asyncio.run(run_migrations())
+run_migrations()

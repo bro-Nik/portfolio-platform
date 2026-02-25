@@ -14,3 +14,4 @@ user-agents
 slowapi
 alembic
 pydantic-settings
+psycopg2-binary

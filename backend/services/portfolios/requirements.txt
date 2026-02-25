@@ -10,3 +10,4 @@ slowapi
 pydantic-settings
 redis
 alembic
+psycopg2-binary

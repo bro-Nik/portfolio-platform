@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import RedisDsn, model_validator
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     db_echo: bool = False
     db_pool_size: int = 5
     db_max_overflow: int = 10
-    db_url: str = 'postgresql+asyncpg://postgres:@db/postgres'
+    db_url: str = 'postgresql+asyncpg://postgres:@market-db/postgres'
 
     jwt_secret: str = 'super-secret-jwt-token-with-at-least-32-characters-long'
     jwt_algorithm: str = 'HS256'

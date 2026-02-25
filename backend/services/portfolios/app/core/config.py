@@ -1,4 +1,4 @@
-from pydantic import RedisDsn, model_validator
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -6,13 +6,13 @@ class Settings(BaseSettings):
     db_echo: bool = False
     db_pool_size: int = 5
     db_max_overflow: int = 10
-    db_url: str = 'postgresql+asyncpg://postgres:@db/postgres'
+    db_url: str = 'postgresql+asyncpg://postgres:@portfolios-db/postgres'
 
     jwt_secret: str = 'super-secret-jwt-token-with-at-least-32-characters-long'
     jwt_algorithm: str = 'HS256'
     env: str = 'development'
 
-    redis_url: RedisDsn = 'redis://localhost:6379/0'
+    redis_url: str = 'redis://redis:6379/0'
     redis_max_connections: int = 20
     redis_timeout: int = 5
 
@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode='after')
-    def validate_production_vars(self):
+    def validate_production_settings(self):
         if self.env != 'production':
             return self
 
@@ -38,6 +38,10 @@ class Settings(BaseSettings):
             raise ValueError('Нужно определить DB_URL для production!')
 
         return self
+
+    @property
+    def sync_db_url(self) -> str:
+        return self.db_url.replace('+asyncpg', '')
 
 
 settings = Settings()
