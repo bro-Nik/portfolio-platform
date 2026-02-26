@@ -13,6 +13,8 @@ services:
     build:
       context: .
       dockerfile: ../../base.Dockerfile
+      additional_contexts:
+        - shared-context=../../shared
     env_file:
       - path: ../../../.env
         required: false

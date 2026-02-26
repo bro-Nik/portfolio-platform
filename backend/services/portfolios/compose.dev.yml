@@ -12,3 +12,4 @@ services:
       - ./app:/app/app
       - /app/__pycache__
       - ./alembic.ini:/app/alembic.ini
+      - ../../shared:/shared

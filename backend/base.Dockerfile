@@ -2,6 +2,10 @@ FROM python:3.13-alpine AS base
 
 WORKDIR /app
 
+# Копируем shared из отдельного контекста
+COPY --from=shared-context . /shared
+RUN pip install --no-cache-dir -e /shared
+
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt && \
     addgroup -S appgroup && adduser -S appuser -G appgroup
