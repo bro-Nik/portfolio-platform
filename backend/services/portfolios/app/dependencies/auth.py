@@ -4,9 +4,9 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 from pydantic import BaseModel
+from shared.exceptions import UnauthorizedException
 
 from app.core.config import settings
-from app.core.exceptions import UnauthorizedException
 
 security = HTTPBearer()
 

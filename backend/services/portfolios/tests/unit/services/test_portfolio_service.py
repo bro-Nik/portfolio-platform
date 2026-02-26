@@ -1,8 +1,8 @@
 from unittest.mock import patch
 
 import pytest
+from shared.exceptions import ConflictError, NotFoundError
 
-from app.core.exceptions import ConflictError, NotFoundError
 from app.schemas import PortfolioResponse
 from app.services import PortfolioService
 

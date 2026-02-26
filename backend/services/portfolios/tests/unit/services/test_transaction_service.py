@@ -3,8 +3,8 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from shared.exceptions import NotFoundError
 
-from app.core.exceptions import NotFoundError
 from app.services import TransactionService
 
 

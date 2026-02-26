@@ -6,9 +6,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
+from shared.exceptions import handle_errors
 
 from app.core.config import settings
-from app.core.exceptions import service_exception_handler
 from app.core.rate_limit import limiter
 from app.core.responses import responses
 from app.dependencies import (
@@ -33,7 +33,7 @@ router = APIRouter(prefix='/portfolios', tags=['Portfolios'], responses=response
 
 @router.get('/')
 @limiter.limit(settings.rate_limit_auth)
-@service_exception_handler('Ошибка при получении портфелей')
+@handle_errors('Ошибка при получении портфелей')
 async def get_user_portfolios(
     request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -45,7 +45,7 @@ async def get_user_portfolios(
 
 @router.get('/{portfolio_id}', responses=responses(404))
 @limiter.limit(settings.rate_limit_auth)
-@service_exception_handler('Ошибка при получении портфеля')
+@handle_errors('Ошибка при получении портфеля')
 async def get_user_portfolio(
     request: Request,
     portfolio_id: int,
@@ -58,7 +58,7 @@ async def get_user_portfolio(
 
 @router.post('/', status_code=201, responses=responses(400, 409))
 @limiter.limit(settings.rate_limit_auth)
-@service_exception_handler('Ошибка при создании портфеля')
+@handle_errors('Ошибка при создании портфеля')
 async def create_portfolio(
     request: Request,
     data: PortfolioCreateRequest,
@@ -71,7 +71,7 @@ async def create_portfolio(
 
 @router.put('/{portfolio_id}', responses=responses(400, 404, 409))
 @limiter.limit(settings.rate_limit_auth)
-@service_exception_handler('Ошибка при изменении портфеля')
+@handle_errors('Ошибка при изменении портфеля')
 async def update_portfolio(
     request: Request,
     portfolio_id: int,
@@ -85,7 +85,7 @@ async def update_portfolio(
 
 @router.delete('/{portfolio_id}', responses=responses(400, 404))
 @limiter.limit(settings.rate_limit_auth)
-@service_exception_handler('Ошибка при удалении портфеля')
+@handle_errors('Ошибка при удалении портфеля')
 async def delete_portfolio(
     request: Request,
     portfolio_id: int,
@@ -98,7 +98,7 @@ async def delete_portfolio(
 
 @router.post('/{portfolio_id}/assets', status_code=201, responses=responses(400, 404, 409))
 @limiter.limit(settings.rate_limit_auth)
-@service_exception_handler('Ошибка при добавлении актива портфеля')
+@handle_errors('Ошибка при добавлении актива портфеля')
 async def add_asset_to_portfolio(
     request: Request,
     portfolio_id: int,
@@ -112,7 +112,7 @@ async def add_asset_to_portfolio(
 
 @router.delete('/{portfolio_id}/assets/{asset_id}', responses=responses(400, 404))
 @limiter.limit(settings.rate_limit_auth)
-@service_exception_handler('Ошибка при удалении актива портфеля')
+@handle_errors('Ошибка при удалении актива портфеля')
 async def delete_asset_from_portfolio(
     request: Request,
     portfolio_id: int,
@@ -126,7 +126,7 @@ async def delete_asset_from_portfolio(
 
 @router.get('/assets/{asset_id}/transactions', responses=responses(404))
 @limiter.limit(settings.rate_limit_auth)
-@service_exception_handler('Ошибка при получении транзакций актива')
+@handle_errors('Ошибка при получении транзакций актива')
 async def get_asset_transactions(
     request: Request,
     asset_id: int,
@@ -139,7 +139,7 @@ async def get_asset_transactions(
 
 @router.get('/assets/{asset_id}/distribution', responses=responses(404))
 @limiter.limit(settings.rate_limit_auth)
-@service_exception_handler('Ошибка при получении информации о распределении актива')
+@handle_errors('Ошибка при получении информации о распределении актива')
 async def get_asset_distribution(
     request: Request,
     asset_id: int,
