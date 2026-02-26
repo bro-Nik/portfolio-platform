@@ -11,6 +11,8 @@ services:
     build:
       context: .
       dockerfile: ../../base.Dockerfile
+      additional_contexts:
+        - shared-context=../../shared
       target: test
     environment:
       DB_URL: postgresql+asyncpg://postgres:@portfolios-db/postgres
