@@ -6,8 +6,8 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query, Request
+from shared.exceptions import handle_errors
 
-from app.core.exceptions import service_exception_handler
 from app.core.rate_limit import limiter
 from app.core.responses import DELETE_RESPONSES, GET_RESPONSES, POST_RESPONSES, PUT_RESPONSES
 from app.dependencies import get_auth_service, get_user_service
@@ -27,7 +27,7 @@ router = APIRouter(prefix='/users', tags=['Admin | Users'])
 
 @router.get('/', responses=GET_RESPONSES)
 @limiter.limit('5/minute')
-@service_exception_handler('Ошибка при получении пользователей')
+@handle_errors('Ошибка при получении пользователей')
 async def get_users(
     request: Request,
     service: Annotated[UserService, Depends(get_user_service)],
@@ -42,7 +42,7 @@ async def get_users(
 
 @router.get('/{user_id}', responses=GET_RESPONSES)
 @limiter.limit('5/minute')
-@service_exception_handler('Ошибка при получении пользователя')
+@handle_errors('Ошибка при получении пользователя')
 async def get_user(
     request: Request,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
@@ -54,7 +54,7 @@ async def get_user(
 
 @router.post('/', status_code=201, responses=POST_RESPONSES)
 @limiter.limit('5/minute')
-@service_exception_handler('Ошибка при создании пользователя')
+@handle_errors('Ошибка при создании пользователя')
 async def create_user(
     request: Request,
     current_user: Annotated[UserSchema, Depends(get_current_user)],
@@ -68,7 +68,7 @@ async def create_user(
 
 @router.put('/{user_id}', responses=PUT_RESPONSES)
 @limiter.limit('5/minute')
-@service_exception_handler('Ошибка при изменении пользователя')
+@handle_errors('Ошибка при изменении пользователя')
 async def update_user(
     request: Request,
     current_user: Annotated[UserSchema, Depends(get_current_user)],
@@ -83,7 +83,7 @@ async def update_user(
 
 @router.delete('/{user_id}', status_code=204, responses=DELETE_RESPONSES)
 @limiter.limit('5/minute')
-@service_exception_handler('Ошибка при удалении пользователя')
+@handle_errors('Ошибка при удалении пользователя')
 async def delete_user(
     request: Request,
     current_user: Annotated[UserSchema, Depends(get_current_user)],
@@ -96,7 +96,7 @@ async def delete_user(
 
 @router.delete('/{user_id}/logout-all', status_code=204, responses=DELETE_RESPONSES)
 @limiter.limit('5/minute')
-@service_exception_handler('Ошибка при выходе из всех устройств')
+@handle_errors('Ошибка при выходе из всех устройств')
 async def logout_all(
     request: Request,
     user_id: Annotated[int, Path(..., description='ID пользователя')],

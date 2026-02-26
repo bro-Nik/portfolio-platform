@@ -10,8 +10,8 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
+from shared.exceptions import handle_errors
 
-from app.core.exceptions import service_exception_handler
 from app.core.rate_limit import limiter
 from app.core.responses import DELETE_RESPONSES
 from app.dependencies import get_auth_service, get_current_user
@@ -23,7 +23,7 @@ router = APIRouter(tags=['User | Profile'])
 
 @router.delete('/logout', status_code=204, responses=DELETE_RESPONSES)
 @limiter.limit('5/hour')
-@service_exception_handler('Ошибка выхода пользователя')
+@handle_errors('Ошибка выхода пользователя')
 async def logout(
     request: Request,
     request_data: RefreshTokenRequest,
@@ -35,7 +35,7 @@ async def logout(
 
 @router.delete('/logout-all', status_code=204, responses=DELETE_RESPONSES)
 @limiter.limit('5/hour')
-@service_exception_handler('Ошибка при выходе из всех устройств пользователя')
+@handle_errors('Ошибка при выходе из всех устройств пользователя')
 async def logout_all(
     request: Request,
     current_user: Annotated[UserSchema, Depends(get_current_user)],

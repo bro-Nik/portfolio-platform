@@ -5,9 +5,9 @@ from typing import Any
 
 import jwt
 from passlib.context import CryptContext
+from shared.exceptions import AuthenticationError
 
 from app.core.config import settings as s
-from app.core.exceptions import AuthenticationError
 from app.schemas import UserSchema
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')

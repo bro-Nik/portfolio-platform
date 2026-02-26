@@ -1,8 +1,8 @@
 import asyncio
 
+from shared.exceptions import BusinessRuleError, NotFoundError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import BusinessRuleError, NotFoundError
 from app.models import PortfolioAsset, Transaction, WalletAsset
 from app.repositories import TransactionRepository
 from app.schemas import (

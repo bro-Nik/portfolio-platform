@@ -1,19 +1,14 @@
+from shared.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import (
-    ConflictError,
-    NotFoundError,
-    PermissionDeniedError,
-    ValidationError,
-)
 from app.core.security import SecurityService
 from app.models import User
 from app.repositories import UserRepository
 from app.schemas import (
-    UserSchema,
     UserCreate,
     UserCreateRequest,
     UserRole,
+    UserSchema,
     UserUpdate,
     UserUpdateRequest,
 )
@@ -107,10 +102,10 @@ class UserService:
         """Валидация данных для создания пользователя."""
         # Проверка правильности роли
         if current_user and user_data.role.priority >= current_user.role.priority:
-            raise ValidationError('Нельзя назначать права, равные или превышающие ваши')
+            raise BusinessRuleError('Нельзя назначать права, равные или превышающие ваши')
 
         if not current_user and user_data.role != UserRole.USER:
-            raise ValidationError('Неверные права для пользователя: превышает USER')
+            raise BusinessRuleError('Неверные права для пользователя: превышает USER')
 
         # Проверка уникальности email
         if await self.repo.exists_by(User.email == user_data.email):
@@ -128,7 +123,7 @@ class UserService:
             return
 
         if user_data.role.priority >= current_user.role.priority:
-            raise ValidationError('Нельзя назначать права, равные или превышающие ваши')
+            raise BusinessRuleError('Нельзя назначать права, равные или превышающие ваши')
 
     async def update_user_activity(self, user_id:int) -> None:
         """Обновить метрики активности пользователя."""

@@ -7,8 +7,8 @@
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
+from shared.exceptions import handle_errors
 
-from app.core.exceptions import service_exception_handler
 from app.core.rate_limit import limiter
 from app.core.responses import POST_RESPONSES
 from app.dependencies import get_auth_service, get_session_service, get_user_service
@@ -22,7 +22,7 @@ router = APIRouter(tags=['Authentication'])
 
 @router.post('/register', status_code=201, responses=POST_RESPONSES)
 @limiter.limit('5/hour')
-@service_exception_handler('Ошибка при регистрации пользователя')
+@handle_errors('Ошибка при регистрации пользователя')
 async def register(
     user_data: UserCreateRequest,
     request: Request,
@@ -42,7 +42,7 @@ async def register(
 
 @router.post('/login', responses=POST_RESPONSES)
 @limiter.limit('5/minute')
-@service_exception_handler('Ошибка при входе пользователя')
+@handle_errors('Ошибка при входе пользователя')
 async def login(
     user_data: UserLogin,
     request: Request,
@@ -62,7 +62,7 @@ async def login(
 
 @router.post('/refresh', responses=POST_RESPONSES)
 @limiter.limit('5/minute')
-@service_exception_handler('Ошибка обновления токенов пользователя')
+@handle_errors('Ошибка обновления токенов пользователя')
 async def refresh_tokens(
     request_data: RefreshTokenRequest,
     request: Request,

@@ -1,8 +1,8 @@
 import asyncio
 
+from shared.exceptions import ConflictError, NotFoundError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ConflictError, NotFoundError
 from app.models import Transaction, Wallet
 from app.repositories import WalletRepository
 from app.schemas import (

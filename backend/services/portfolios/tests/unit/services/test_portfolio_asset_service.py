@@ -2,8 +2,8 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from shared.exceptions import ConflictError
 
-from app.core.exceptions import ConflictError
 from app.schemas import PortfolioAssetResponse, TransactionResponse
 from app.services import PortfolioAssetService
 

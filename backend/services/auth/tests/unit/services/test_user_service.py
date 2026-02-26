@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from shared.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 
-from app.core.exceptions import ConflictError, NotFoundError, PermissionDeniedError, ValidationError
 from app.schemas import UserCreateRequest, UserRole, UserUpdateRequest
 from app.services.user import UserService
 
@@ -170,7 +170,7 @@ class TestUserService:
             patch.object(service.repo, 'exists_by', return_value=False),
         ):
             if should_raise:
-                with pytest.raises(ValidationError, match='права'):
+                with pytest.raises(BusinessRuleError, match='права'):
                     await service.create_user(user_create_request, current_user)
             else:
                 result = await service.create_user(user_create_request, current_user)
@@ -269,7 +269,7 @@ class TestUserService:
             patch.object(service.repo, 'update', return_value=MagicMock()),
         ):
             if should_raise:
-                with pytest.raises(ValidationError):
+                with pytest.raises(BusinessRuleError):
                     await service.update_user(target_user_id, user_update_request, current_user)
             else:
                 result = await service.update_user(target_user_id, user_update_request, current_user)

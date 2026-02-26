@@ -1,9 +1,9 @@
 import asyncio
 from collections import defaultdict
 
+from shared.exceptions import NotFoundError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError
 from app.models import Transaction, WalletAsset
 from app.repositories import TransactionRepository, WalletAssetRepository
 from app.schemas import TransactionResponse, WalletAssetResponse

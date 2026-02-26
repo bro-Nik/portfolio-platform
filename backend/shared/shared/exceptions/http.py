@@ -3,19 +3,32 @@ import functools
 from typing import Any, ParamSpec, TypeVar, cast
 
 from fastapi import HTTPException, status
-from pydantic import ValidationError as PydanticValidationError
+
+from .business import (
+    AuthenticationError,
+    BusinessRuleError,
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+)
 
 P = ParamSpec('P')
 F = TypeVar('F', bound=Callable[..., Any])
 
 
-def service_exception_handler(
+def handle_errors(
     default_message: str = 'Ошибка при выполнении операции',
 ) -> Callable[[F], F]:
     """Фабрика декораторов для обработки исключений сервисов.
 
     Преобразует исключения уровня бизнес-логики (сервиса) в
     стандартизированные HTTP-ориентированные исключения.
+
+    Пример:
+        @router.post('/')
+        @handle_errors("Ошибка при создании пользователя")
+        async def create_user(self, data: UserCreate) -> UserResponse:
+            ...
     """
     def decorator(func: F) -> F:
         @functools.wraps(func)
@@ -30,12 +43,10 @@ def service_exception_handler(
                 raise NotFoundException(str(e)) from e
             except ConflictError as e:
                 raise ConflictException(str(e)) from e
-            except PydanticValidationError as e:
-                # Сбор всех ошибок валидации в одну строку
-                errors = [err['msg'] for err in e.errors()]
-                raise ValidationException('; '.join(errors)) from e
+            except BusinessRuleError as e:
+                raise BadRequestException(str(e)) from e
             except Exception as e:
-                raise BadRequestException(f'{default_message}: {e!s}') from e
+                raise InternalServerException(f'{default_message}: {e!s}') from e
         return cast('F', wrapper)
     return decorator
 
@@ -91,54 +102,11 @@ class ConflictException(HTTPException):
         )
 
 
-class ValidationException(HTTPException):
-    """422 - Ошибка валидации."""
+class InternalServerException(HTTPException):
+    """500 - Внутренняя ошибка сервера."""
 
-    def __init__(self, detail: str = 'Ошибка валидации') -> None:
+    def __init__(self, detail: str = 'Внутренняя ошибка сервера') -> None:
         super().__init__(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=detail,
         )
-
-
-class BusinessError(Exception):
-    """Базовое бизнес-исключение."""
-
-    def __init__(self, message: str) -> None:
-        self.message = message
-        super().__init__(message)
-
-
-class AuthenticationError(BusinessError):
-    """Ошибка аутентификации."""
-
-    def __init__(self, message: str = 'Ошибка аутентификации') -> None:
-        super().__init__(message)
-
-
-class PermissionDeniedError(BusinessError):
-    """Недостаточно прав."""
-
-    def __init__(self, message: str = 'Недостаточно прав') -> None:
-        super().__init__(message)
-
-
-class NotFoundError(BusinessError):
-    """Ресурс не найден."""
-
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
-
-
-class ConflictError(BusinessError):
-    """Конфликт (уже существует)."""
-
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
-
-
-class ValidationError(BusinessError):
-    """Ошибка валидации."""
-
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
