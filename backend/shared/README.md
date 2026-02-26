@@ -4,8 +4,9 @@ Shared modules for backend microservices.
 
 ## 📦 Modules
 
-- [**Repositories**](./shared/repositories/README.md) - Base CRUD repositories (async/sync)
-- [**Exceptions**](./shared/exceptions/README.md) - Common business and HTTP exceptions
+- [**Repositories**](./shared/repositories/) - Base CRUD repositories (async/sync)
+- [**Exceptions**](./shared/exceptions/) - Common business and HTTP exceptions
+- [**Rate Limit**](./shared/rate_limit/) - IP-based rate limiting
 
 ## 🚀 Quick Start
 
