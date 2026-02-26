@@ -1,11 +1,11 @@
 from typing import List
+from shared.repositories import BaseAsyncRepository as BaseRepository
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select 
 from sqlalchemy.orm import joinedload
 
 from app import models, schemas
-from .base import BaseRepository
 
 
 class ApiTaskRepository(
@@ -22,5 +22,5 @@ class ApiTaskRepository(
             .limit(limit)
         )
 
-        result = await self.db.execute(query)
+        result = await self.session.execute(query)
         return result.scalars().all()
