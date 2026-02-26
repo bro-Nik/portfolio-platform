@@ -8,8 +8,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from shared.exceptions import handle_errors
+from shared.rate_limit import limiter
 
-from app.core.rate_limit import limiter
 from app.core.responses import POST_RESPONSES
 from app.dependencies import get_auth_service, get_session_service, get_user_service
 from app.schemas import RefreshTokenRequest, TokensResponse, UserCreateRequest, UserLogin
