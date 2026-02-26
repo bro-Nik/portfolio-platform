@@ -1,13 +1,10 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-from slowapi.middleware import SlowAPIMiddleware
+from shared.rate_limit import setup_rate_limiter
 
 from app.api import api_router
-from app.core.rate_limit import connect_redis_to_limiter, limiter
-from app.core.redis import redis_client
+from app.core.config import settings
 
 app = FastAPI(
     title='Portfolios API',
@@ -21,16 +18,8 @@ app = FastAPI(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await redis_client.initialize()
-    await connect_redis_to_limiter()
-
-    app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-    app.add_middleware(SlowAPIMiddleware)
-
+    setup_rate_limiter(app, settings.redis_url)
     yield
-
-    await redis_client.close()
 
 
 @app.get('/', tags=['root'])

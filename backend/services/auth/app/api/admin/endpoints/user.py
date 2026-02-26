@@ -7,8 +7,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query, Request
 from shared.exceptions import handle_errors
+from shared.rate_limit import limiter
 
-from app.core.rate_limit import limiter
 from app.core.responses import DELETE_RESPONSES, GET_RESPONSES, POST_RESPONSES, PUT_RESPONSES
 from app.dependencies import get_auth_service, get_user_service
 from app.dependencies.auth import get_current_user
