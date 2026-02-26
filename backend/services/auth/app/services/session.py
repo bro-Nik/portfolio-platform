@@ -1,10 +1,10 @@
 from datetime import UTC, datetime
 
 from fastapi import Request
+from shared.utils import get_client_ip
 from sqlalchemy.ext.asyncio import AsyncSession
 from user_agents import parse
 
-from app.core.utils import get_real_ip
 from app.repositories import SessionRepository, TokenRepository
 from app.schemas import LoginSessionCreate, LoginSessionUpdate
 
@@ -29,7 +29,7 @@ class SessionService:
         request: Request,
     ) -> None:
         """Создает запись о новой сессии входа."""
-        ip_address = get_real_ip(request)
+        ip_address = get_client_ip(request)
         user_agent = request.headers.get('user-agent')
 
         session_info = self._parse_user_agent(user_agent)
@@ -53,7 +53,7 @@ class SessionService:
         if not db_login_session:
             return
 
-        ip_address = get_real_ip(request)
+        ip_address = get_client_ip(request)
         user_agent = request.headers.get('user-agent')
 
         session_info = self._parse_user_agent(user_agent)

@@ -4,27 +4,12 @@
 Требует request: Request в роутах
 """
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from limits.storage import RedisStorage
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
-from slowapi.util import get_remote_address
-
-
-def get_ip(request: Request) -> str:
-    """Получить IP клиента с учетом прокси."""
-    # Заголовки в порядке приоритета
-    ip_headers = ['X-Real-IP', 'CF-Connecting-IP', 'True-Client-IP', 'X-Forwarded-For']
-
-    for header in ip_headers:
-        ip = request.headers.get(header)
-        if ip:
-            # X-Forwarded-For может содержать цепочку: "client, proxy1, proxy2"
-            # Берем первый IP (оригинальный клиент)
-            return ip.split(',')[0].strip()
-
-    return get_remote_address(request) or 'unknown'
+from shared.utils import get_client_ip
 
 
 def setup_rate_limiter(app: FastAPI, redis_url: str | None = None) -> None:
@@ -38,6 +23,4 @@ def setup_rate_limiter(app: FastAPI, redis_url: str | None = None) -> None:
     app.add_middleware(SlowAPIMiddleware)
 
 
-limiter = Limiter(key_func=get_ip)
-
-
+limiter = Limiter(key_func=get_client_ip)

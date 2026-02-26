@@ -28,7 +28,7 @@ class TestSessionService:
         ip = '192.168.1.100'
 
         with (
-            patch('app.services.session.get_real_ip', return_value=ip),
+            patch('app.services.session.get_client_ip', return_value=ip),
         ):
             await service.create_session(user_id, refresh_token_id, mock_request)
 
@@ -58,7 +58,7 @@ class TestSessionService:
         mock_request.headers = {}
 
         with (
-            patch('app.services.session.get_real_ip', return_value=None),
+            patch('app.services.session.get_client_ip', return_value=None),
         ):
             await service.create_session(user_id, refresh_token_id, mock_request)
 
@@ -80,7 +80,7 @@ class TestSessionService:
 
         with (
             patch.object(service.repo, 'get_by_token_id', return_value=MagicMock(id=50)),
-            patch('app.services.session.get_real_ip', return_value=ip),
+            patch('app.services.session.get_client_ip', return_value=ip),
         ):
             await service.update_session(refresh_token_id, mock_request)
 
