@@ -1,16 +1,16 @@
+from shared.exceptions import AuthenticationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import AuthenticationError
 from app.core.security import SecurityService
 from app.repositories import TokenRepository
 from app.schemas import (
     RefreshTokenCreate,
     RefreshTokenUpdate,
+    TokensResponse,
     UserCreateRequest,
     UserLogin,
     UserRole,
     UserSchema,
-    TokensResponse
 )
 from app.services.user import UserService
 

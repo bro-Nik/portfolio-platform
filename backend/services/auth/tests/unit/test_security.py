@@ -2,8 +2,8 @@ from datetime import UTC, datetime, timedelta
 
 from freezegun import freeze_time
 import pytest
+from shared.exceptions import AuthenticationError
 
-from app.core.exceptions import AuthenticationError
 from app.core.security import SecurityService
 
 

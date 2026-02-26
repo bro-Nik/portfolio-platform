@@ -3,8 +3,8 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from shared.exceptions import ForbiddenException, UnauthorizedException
 
-from app.core.exceptions import ForbiddenException, UnauthorizedException
 from app.core.security import SecurityService
 from app.schemas import UserRole, UserSchema
 

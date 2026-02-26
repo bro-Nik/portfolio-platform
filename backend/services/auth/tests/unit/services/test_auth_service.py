@@ -3,8 +3,8 @@ from unittest.mock import patch
 
 from freezegun import freeze_time
 import pytest
+from shared.exceptions import AuthenticationError
 
-from app.core.exceptions import AuthenticationError
 from app.schemas import TokensResponse, UserRole
 from app.services.auth import AuthService
 
