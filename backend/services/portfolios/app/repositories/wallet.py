@@ -1,7 +1,7 @@
+from shared.repositories import BaseAsyncRepository as BaseRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Wallet
-from app.repositories.base import BaseRepository
 from app.schemas import WalletCreate, WalletUpdate
 
 
