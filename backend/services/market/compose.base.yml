@@ -13,6 +13,8 @@ services:
     build:
       context: .
       dockerfile: ../../base.Dockerfile
+      additional_contexts:
+        - shared-context=../../shared
     env_file:
       - path: ../../../.env
         required: false
@@ -24,11 +26,15 @@ services:
     build:
       context: .
       dockerfile: ../../base.Dockerfile
+      additional_contexts:
+        - shared-context=../../shared
 
   market-celery-beat:
     build:
       context: .
       dockerfile: ../../base.Dockerfile
+      additional_contexts:
+        - shared-context=../../shared
 
 volumes:
   market_db_data:

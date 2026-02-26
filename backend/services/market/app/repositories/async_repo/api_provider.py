@@ -1,11 +1,11 @@
 from typing import List, Optional
 from datetime import datetime
+from shared.repositories import BaseAsyncRepository as BaseRepository
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func, Integer, desc
 
 from app import models, schemas
-from .base import BaseRepository
 
 
 class ApiProviderRepository(
@@ -20,23 +20,13 @@ class ApiProviderRepository(
         limit: Optional[int] = None,
         active_only: bool = False
     ) -> List[models.ApiProvider]:
-        query = select(self.model)
         if active_only:
-            query = query.where(self.model.is_active == True)
+            return await self.get_many_by(self.model.is_active == True, skip=skip, limit=limit)
 
-        query = query.offset(skip)
-
-        if limit:
-            query = query.limit(limit)
-
-        result = await self.db.execute(query)
-        return result.scalars().all()
+        return await self.get_many_by(skip=skip, limit=limit)
 
     async def get_by_name(self, name: str) -> Optional[models.ApiProvider]:
-        result = await self.db.execute(
-            select(self.model).where(self.model.name == name)
-        )
-        return result.scalar_one_or_none()
+        return await self.get_by(self.model.name == name)
 
     async def get_logs_to_stats(self, provider_id: int, last_time: datetime):
         """Получить статистику по провайдеру"""
@@ -49,7 +39,7 @@ class ApiProviderRepository(
             models.ApiRequestLog.created_at >= last_time
         )
 
-        result = await self.db.execute(query)
+        result = await self.session.execute(query)
         return result.first()
 
     async def get_logs(self, provider_id: int, last_time: datetime, limit: int = 100):
@@ -62,5 +52,5 @@ class ApiProviderRepository(
         if limit:
             query = query.limit(limit)
 
-        result = await self.db.execute(query)
+        result = await self.session.execute(query)
         return result.scalars().all()

@@ -1,9 +1,6 @@
 # ruff: noqa: A002
 # pyright: reportAttributeAccessIssue=false
 
-# TODO: Логирование
-# TODO: Кэширование
-
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, TypeVar
 
@@ -19,7 +16,7 @@ if TYPE_CHECKING:
 Id = TypeVar('Id', int, str)
 
 
-class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
+class BaseAsyncRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
     """Базовый асинхронный CRUD репозиторий для SQLAlchemy.
 
     Примечание:

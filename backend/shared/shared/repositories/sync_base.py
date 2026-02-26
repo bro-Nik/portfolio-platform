@@ -1,8 +1,6 @@
 # ruff: noqa: A002
 # pyright: reportAttributeAccessIssue=false
 
-# TODO: Логирование
-
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, TypeVar
 
@@ -12,39 +10,44 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import expression, func
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
+    from sqlalchemy.orm import Session
 
 
 Id = TypeVar('Id', int, str)
 
 
-class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
-    """Базовый асинхронный CRUD репозиторий для SQLAlchemy.
+class BaseSyncRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
+    """Базовый синхронный CRUD репозиторий для SQLAlchemy.
 
     Примечание:
         - Требуется commit для сохранения изменений
         - Возвращает None если объект не найден
+        - Поддерживает блокировки с with_for_update
     """
 
-    def __init__(self, model: type[Model], session: 'AsyncSession') -> None:
+    def __init__(self, model: type[Model], session: 'Session') -> None:
         self.model = model
         self.session = session
 
-    async def get(self, id: Id, relations: tuple[str, ...] = ()) -> Model | None:
+    def get(self, id: Id, relations: tuple[str, ...] = (), for_update: bool = False) -> Model | None:
         """Получить объект по ID."""
         stmt = select(self.model).where(self.model.id == id)
+
+        if for_update:
+            stmt = stmt.with_for_update()
 
         for relation in relations:
             stmt = stmt.options(selectinload(getattr(self.model, relation)))
 
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        result = self.session.execute(stmt)
+        return result.unique().scalar_one_or_none()
 
-    async def get_by(
+    def get_by(
         self,
         *where: expression.ColumnElement[bool],
         order_by: Sequence[expression.ColumnElement] | None = None,
         relations: tuple[str, ...] = (),
+        for_update: bool = False,
     ) -> Model | None:
         """Получить объект по условию."""
         stmt = select(self.model)
@@ -55,17 +58,21 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
         if order_by:
             stmt = stmt.order_by(*order_by)
 
+        if for_update:
+            stmt = stmt.with_for_update()
+
         for relation in relations:
             stmt = stmt.options(selectinload(getattr(self.model, relation)))
 
         stmt = stmt.limit(1)
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.unique().scalar_one_or_none()
 
-    async def get_many(
+    def get_many(
         self,
         ids: Sequence[Id],
         relations: tuple[str, ...] = (),
+        for_update: bool = False,
     ) -> list[Model]:
         """Получить список объектов по списку ID."""
         if not ids:
@@ -73,19 +80,23 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
 
         stmt = select(self.model).where(self.model.id.in_(ids))
 
+        if for_update:
+            stmt = stmt.with_for_update()
+
         for relation in relations:
             stmt = stmt.options(selectinload(getattr(self.model, relation)))
 
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.unique().scalars().all()
 
-    async def get_many_by(
+    def get_many_by(
         self,
         *where: expression.ColumnElement[bool],
         order_by: Sequence[expression.ColumnElement] | None = None,
         skip: int = 0,
         limit: int | None = None,
         relations: tuple[str, ...] = (),
+        for_update: bool = False,
     ) -> list[Model]:
         """Получить список объектов по условию."""
         stmt = select(self.model)
@@ -96,6 +107,9 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
         if order_by:
             stmt = stmt.order_by(*order_by)
 
+        if for_update:
+            stmt = stmt.with_for_update()
+
         for relation in relations:
             stmt = stmt.options(selectinload(getattr(self.model, relation)))
 
@@ -103,22 +117,22 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
         if limit:
             stmt = stmt.limit(limit)
 
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.unique().scalars().all()
 
-    async def create(self, data: CreateSchema) -> Model:
+    def create(self, data: CreateSchema) -> Model:
         """Создать объект."""
         obj = self.model(**data.model_dump())
         self.session.add(obj)
         return obj
 
-    async def create_many(self, objects: list[CreateSchema]) -> list[Model]:
+    def create_many(self, objects: list[CreateSchema]) -> list[Model]:
         """Создать несколько объектов."""
         objs = [self.model(**obj.model_dump()) for obj in objects]
         self.session.add_all(objs)
         return objs
 
-    async def update(
+    def update(
         self,
         id: Id,
         data: UpdateSchema,
@@ -135,10 +149,10 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
             .returning(self.model)
         )
 
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def update_many(
+    def update_many(
         self,
         ids: list[Id],
         data: UpdateSchema,
@@ -158,16 +172,16 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
             .returning(self.model)
         )
 
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.scalars().all()
 
-    async def delete(self, id: Id) -> bool:
+    def delete(self, id: Id) -> bool:
         """Удалить объект по ID."""
         stmt = delete(self.model).where(self.model.id == id).returning(self.model.id)
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.scalar_one_or_none() is not None
 
-    async def delete_by(
+    def delete_by(
         self,
         *where: expression.ColumnElement[bool],
         order_by: Sequence[expression.ColumnElement] | None = None,
@@ -183,19 +197,19 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
 
         stmt = stmt.limit(1).returning(self.model.id)
 
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.scalar_one_or_none() is not None
 
-    async def delete_many(self, ids: Sequence[Id]) -> list[Id]:
+    def delete_many(self, ids: Sequence[Id]) -> list[Id]:
         """Удалить несколько объектов по списку ID, вернуть список ID удалённых."""
         if not ids:
             return []
 
         stmt = delete(self.model).where(self.model.id.in_(ids)).returning(self.model.id)
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return [row[0] for row in result.all()]
 
-    async def delete_many_by(
+    def delete_many_by(
         self,
         *where: expression.ColumnElement[bool],
         order_by: Sequence[expression.ColumnElement] | None = None,
@@ -211,10 +225,10 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
 
         stmt = stmt.returning(self.model.id)
 
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return [row[0] for row in result.all()]
 
-    async def count(
+    def count(
         self,
         *where: expression.ColumnElement[bool],
     ) -> int:
@@ -224,54 +238,33 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
         if where:
             stmt = stmt.where(*where)
 
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.scalar_one()
 
-    async def paginate(
-        self,
-        *where: expression.ColumnElement[bool],
-        page: int = 1,
-        page_size: int = 20,
-        order_by: Sequence[expression.ColumnElement] | None = None,
-        relations: tuple[str, ...] = (),
-    ) -> tuple[list[Model], int]:
-        """Пагинация с подсчетом общего количества."""
-        # Подсчет общего количества
-        total = await self.count(*where)
-
-        # Получение данных
-        skip = (page - 1) * page_size
-        items = await self.get_many_by(
-            *where,
-            order_by=order_by,
-            relations=relations,
-            skip=skip,
-            limit=page_size,
-        )
-
-        return items, total
-
-    async def get_or_create(
+    def get_or_create(
         self,
         defaults: CreateSchema | None = None,
+        for_update: bool = False,
         **kwargs: object,
     ) -> Model:
-        """Получить объект или создать новый."""
-        # Строим условия поиска из kwargs
+        """Получить объект или создать новый.
+
+        Args:
+            defaults: Данные для создания (если объект не найден)
+            for_update: Блокировать запись для обновления
+            **kwargs: Поля для поиска
+        """
         conditions = []
         for key, value in kwargs.items():
             if hasattr(self.model, key):
                 conditions.append(getattr(self.model, key) == value)
 
-        # Пытаемся найти существующий объект
-        obj = await self.get_by(*conditions)
+        obj = self.get_by(*conditions, for_update=for_update)
         if obj:
             return obj
 
-        # Создаем новый объект
         create_data = defaults.model_dump() if defaults else {}
 
-        # Добавляем kwargs в create_data
         for key, value in kwargs.items():
             if key not in create_data and hasattr(self.model, key):
                 create_data[key] = value
@@ -280,14 +273,14 @@ class BaseRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseModel]:
         self.session.add(obj)
         return obj
 
-    async def exists(self, id: Id) -> bool:
+    def exists(self, id: Id) -> bool:
         """Проверить существование объекта по ID."""
         stmt = select(exists().where(self.model.id == id))
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.scalar_one()
 
-    async def exists_by(self, *where: expression.ColumnElement[bool]) -> bool:
+    def exists_by(self, *where: expression.ColumnElement[bool]) -> bool:
         """Проверить существование объекта по условию."""
         stmt = select(exists().where(*where))
-        result = await self.session.execute(stmt)
+        result = self.session.execute(stmt)
         return result.scalar_one()

@@ -1,15 +1,15 @@
+from shared.repositories import BaseSyncRepository as BaseRepository
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app import models, schemas
-from .base import BaseRepository
 
 
 class ApiTaskRepository(
     BaseRepository[models.ApiTask, schemas.ApiTaskCreate, schemas.ApiTaskUpdate]
 ):
-    def __init__(self, db: Session):
-        super().__init__(models.ApiTask, db)
+    def __init__(self, session: Session):
+        super().__init__(models.ApiTask, session)
 
     def get_all_with_providers(self, only_active: bool = False):
         query = (
@@ -20,7 +20,7 @@ class ApiTaskRepository(
         if only_active:
             query = query.where(models.ApiTask.is_active == True)
 
-        result = self.db.execute(query)
+        result = self.session.execute(query)
         return result.scalars().all()
 
     def get_with_provider(self, task_id):
@@ -30,5 +30,5 @@ class ApiTaskRepository(
             .where(models.ApiTask.id == task_id)
         )
 
-        result = self.db.execute(query)
+        result = self.session.execute(query)
         return result.scalar_one_or_none()

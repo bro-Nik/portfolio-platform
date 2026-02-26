@@ -1,4 +1,3 @@
-from .base import BaseRepository
 from .portfolio import PortfolioRepository
 from .portfolio_asset import PortfolioAssetRepository
 from .transaction import TransactionRepository

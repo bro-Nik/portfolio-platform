@@ -11,6 +11,7 @@ services:
     volumes:
       - ./app:/app/app
       - /app/__pycache__
+      - ../../shared:/shared
 
   market-celery-worker:
     build:

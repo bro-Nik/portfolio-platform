@@ -1,7 +1,7 @@
+from shared.repositories import BaseAsyncRepository as BaseRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import LoginSession
-from app.repositories import BaseRepository
 from app.schemas import LoginSessionCreate, LoginSessionUpdate
 
 
