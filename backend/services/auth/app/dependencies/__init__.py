@@ -1,13 +1,11 @@
 from typing import Annotated
 
-from fastapi import Depends
-from shared.dependencies import auth
+from shared.dependencies import auth, db
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.database import AsyncSessionLocal
 from app.schemas import AuthUser, UserRole
-
-from .database import get_db_session
-from .services import get_auth_service, get_session_service, get_user_service
 
 get_current_user = auth.create_auth_dependency(
     jwt_secret=settings.jwt_secret,
@@ -19,3 +17,8 @@ require_admin = auth.create_role_requirement(UserRole.ADMIN)
 CurrentUser = Annotated[AuthUser, get_current_user]
 RequireUser = Annotated[None, require_user]
 RequireAdmin = Annotated[None, require_admin]
+
+get_db = db.create_session_dependency(AsyncSessionLocal)
+DBSession = Annotated[AsyncSession, get_db]
+
+from .services import get_auth_service, get_session_service, get_user_service

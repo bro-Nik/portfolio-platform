@@ -1,5 +1,4 @@
 from collections.abc import AsyncGenerator
-import os
 from pathlib import Path
 import sys
 
@@ -9,11 +8,12 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
+from app.dependencies import get_db
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 from app.core.config import settings
-from app.dependencies import get_db_session
 from app.main import app
 from app.models import Base, User
 from app.repositories import UserRepository
@@ -62,7 +62,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession]:
 async def client(db_session: AsyncSession):
     """Асинхронный клиент."""
     # Подменяем зависимость
-    app.dependency_overrides[get_db_session] = lambda: db_session
+    app.dependency_overrides[get_db.dependency] = lambda: db_session
 
     async with LifespanManager(app) as manager, AsyncClient(
         transport=ASGITransport(app=manager.app),
