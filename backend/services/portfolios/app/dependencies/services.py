@@ -1,3 +1,7 @@
+from typing import Annotated
+
+from fastapi import Depends
+
 from app.dependencies import DBSession
 from app.services import (
     PortfolioAssetService,
@@ -33,11 +37,8 @@ def get_transaction_service(session: DBSession) -> TransactionService:
     return TransactionService(session)
 
 
-
-
-
-
-
-
-
-
+PortfolioServiceDep = Annotated[PortfolioService, Depends(get_portfolio_service)]
+PortfolioAssetServiceDep = Annotated[PortfolioAssetService, Depends(get_portfolio_asset_service)]
+WalletServiceDep = Annotated[WalletService, Depends(get_wallet_service)]
+WalletAssetServiceDep = Annotated[WalletAssetService, Depends(get_wallet_asset_service)]
+TransactionServiceDep = Annotated[TransactionService, Depends(get_transaction_service)]

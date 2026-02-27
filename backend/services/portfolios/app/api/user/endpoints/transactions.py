@@ -3,17 +3,14 @@
 Все эндпоинты требуют валидный access token
 """
 
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
-from app.core.config import settings
-from app.dependencies import CurrentUser, get_transaction_service
+from app.core import settings
+from app.dependencies import CurrentUser, TransactionServiceDep
 from app.schemas import TransactionCreateRequest, TransactionResponseWithAssets
-from app.services import TransactionService
 
 router = APIRouter(prefix='/transactions', tags=['Transactions'], responses=responses(401, 429, 500))
 
@@ -25,7 +22,7 @@ async def create_transaction(
     request: Request,
     data: TransactionCreateRequest,
     current_user: CurrentUser,
-    transaction_service: Annotated[TransactionService, Depends(get_transaction_service)],
+    transaction_service: TransactionServiceDep,
 ) -> TransactionResponseWithAssets:
     """Создание новой транзакции."""
     return await transaction_service.create(current_user.id, data)
@@ -39,7 +36,7 @@ async def update_transaction(
     transaction_id: int,
     data: TransactionCreateRequest,
     current_user: CurrentUser,
-    transaction_service: Annotated[TransactionService, Depends(get_transaction_service)],
+    transaction_service: TransactionServiceDep,
 ) -> TransactionResponseWithAssets:
     """Изменение транзакции."""
     return await transaction_service.update(current_user.id, transaction_id, data)
@@ -52,7 +49,7 @@ async def delete_transaction(
     request: Request,
     transaction_id: int,
     current_user: CurrentUser,
-    transaction_service: Annotated[TransactionService, Depends(get_transaction_service)],
+    transaction_service: TransactionServiceDep,
 ) -> TransactionResponseWithAssets:
     """Удаление транзакции."""
     return await transaction_service.delete(current_user.id, transaction_id)

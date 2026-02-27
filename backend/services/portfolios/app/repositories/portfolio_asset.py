@@ -1,8 +1,8 @@
-from shared.repositories import BaseAsyncRepository as BaseRepository
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Portfolio, PortfolioAsset
+from app.repositories import BaseRepository
 from app.schemas import PortfolioAssetCreate, PortfolioAssetUpdate
 
 

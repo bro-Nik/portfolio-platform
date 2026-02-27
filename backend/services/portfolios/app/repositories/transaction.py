@@ -1,8 +1,8 @@
-from shared.repositories import BaseAsyncRepository as BaseRepository
 from sqlalchemy import and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Transaction
+from app.repositories import BaseRepository
 from app.schemas import TransactionCreate, TransactionUpdate
 
 
