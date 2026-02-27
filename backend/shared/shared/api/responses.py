@@ -13,7 +13,14 @@
     - 422 - добавляется FastAPI автоматически
 """
 
-from app.schemas import ErrorResponse
+from pydantic import BaseModel
+
+
+class ErrorResponse(BaseModel):
+    """Ответ с ошибкой API."""
+
+    message: str
+
 
 RESPONSES = {
     400: {'model': ErrorResponse},
@@ -29,9 +36,8 @@ RESPONSES = {
 def responses(*codes: int) -> dict:
     """Формирует responses на основе кодов ответов.
 
-    - 200/201/422 автоматически исключаются
-    - 200/201 - из response_model и status_code
-    - 422 - FastAPI добавляет автоматически
+    - 200/201 автоматически исключаются (из response_model/status_code)
+    - 422 исключается (FastAPI добавляет автоматически)
     """
     skip = {200, 201, 422}
     return {code: RESPONSES[code] for code in codes if code not in skip}

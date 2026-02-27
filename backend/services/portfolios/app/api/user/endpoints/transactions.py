@@ -6,11 +6,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
+from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core.config import settings
-from app.core.responses import responses
 from app.dependencies import User, get_current_user, get_transaction_service
 from app.schemas import TransactionCreateRequest, TransactionResponseWithAssets
 from app.services import TransactionService
