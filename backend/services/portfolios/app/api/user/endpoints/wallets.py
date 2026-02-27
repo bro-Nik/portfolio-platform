@@ -3,15 +3,13 @@
 Все эндпоинты требуют валидный access token
 """
 
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core import settings
-from app.dependencies import CurrentUser, get_wallet_asset_service, get_wallet_service
+from app.dependencies import CurrentUser, WalletAssetServiceDep, WalletServiceDep
 from app.schemas import (
     TransactionResponse,
     WalletCreateRequest,
@@ -20,7 +18,6 @@ from app.schemas import (
     WalletResponse,
     WalletUpdateRequest,
 )
-from app.services import WalletAssetService, WalletService
 
 router = APIRouter(prefix='/wallets', tags=['Wallets'], responses=responses(401, 429, 500))
 
@@ -31,7 +28,7 @@ router = APIRouter(prefix='/wallets', tags=['Wallets'], responses=responses(401,
 async def get_user_wallets(
     request: Request,
     current_user: CurrentUser,
-    wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
+    wallet_service: WalletServiceDep,
 ) -> WalletListResponse:
     """Получение всех кошельков пользователя."""
     return await wallet_service.get_many(current_user.id)
@@ -44,7 +41,7 @@ async def get_user_wallet(
     request: Request,
     wallet_id: int,
     current_user: CurrentUser,
-    wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
+    wallet_service: WalletServiceDep,
 ) -> WalletResponse:
     """Получение кошелька пользователя."""
     return await wallet_service.get(wallet_id, current_user.id)
@@ -57,7 +54,7 @@ async def create_wallet(
     request: Request,
     data: WalletCreateRequest,
     current_user: CurrentUser,
-    wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
+    wallet_service: WalletServiceDep,
 ) -> WalletResponse:
     """Создание нового кошелька."""
     return await wallet_service.create(current_user.id, data)
@@ -71,7 +68,7 @@ async def update_wallet(
     wallet_id: int,
     data: WalletUpdateRequest,
     current_user: CurrentUser,
-    wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
+    wallet_service: WalletServiceDep,
 ) -> WalletResponse:
     """Обновление кошелька."""
     return await wallet_service.update(wallet_id, current_user.id, data)
@@ -84,7 +81,7 @@ async def delete_wallet(
     request: Request,
     wallet_id: int,
     current_user: CurrentUser,
-    wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
+    wallet_service: WalletServiceDep,
 ) -> WalletDeleteResponse:
     """Удаление кошелька."""
     return await wallet_service.delete(wallet_id, current_user.id)
@@ -97,7 +94,7 @@ async def get_asset_transactions(
     request: Request,
     asset_id: int,
     current_user: CurrentUser,
-    asset_service: Annotated[WalletAssetService, Depends(get_wallet_asset_service)],
+    asset_service: WalletAssetServiceDep,
 ) -> list[TransactionResponse]:
     """Получение транзакций актива."""
     return await asset_service.get_transactions(asset_id, current_user.id)
@@ -110,7 +107,7 @@ async def get_asset(
     request: Request,
     asset_id: int,
     current_user: CurrentUser,
-    asset_service: Annotated[WalletAssetService, Depends(get_wallet_asset_service)],
+    asset_service: WalletAssetServiceDep,
 ) -> dict:
     """Получение информации о распределении актива по портфелям."""
     return await asset_service.get_distribution(asset_id, current_user.id)

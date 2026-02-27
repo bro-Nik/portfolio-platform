@@ -20,9 +20,9 @@ get_db = db.create_session_dependency(AsyncSessionLocal)
 DBSession = Annotated[AsyncSession, get_db]
 
 from .services import (
-    get_portfolio_asset_service,
-    get_portfolio_service,
-    get_transaction_service,
-    get_wallet_asset_service,
-    get_wallet_service,
+    PortfolioAssetServiceDep,
+    PortfolioServiceDep,
+    TransactionServiceDep,
+    WalletAssetServiceDep,
+    WalletServiceDep,
 )
