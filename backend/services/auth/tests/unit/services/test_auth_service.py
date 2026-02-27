@@ -6,7 +6,7 @@ import pytest
 from shared.exceptions import AuthenticationError
 
 from app.schemas import TokensResponse, UserRole
-from app.services.auth import AuthService
+from app.services import AuthService
 
 
 class TestAuthService:

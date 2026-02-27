@@ -7,7 +7,7 @@ import pytest
 from app.core import SecurityService
 from app.repositories import SessionRepository, TokenRepository, UserRepository
 from app.schemas import AuthUser, UserLogin, UserRole
-from app.services.user import UserService
+from app.services import UserService
 
 
 @pytest.fixture

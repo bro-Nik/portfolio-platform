@@ -4,7 +4,7 @@ import pytest
 from shared.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 
 from app.schemas import UserCreateRequest, UserRole, UserUpdateRequest
-from app.services.user import UserService
+from app.services import UserService
 
 USER = UserRole.USER
 MODERATOR = UserRole.MODERATOR

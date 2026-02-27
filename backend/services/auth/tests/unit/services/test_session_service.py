@@ -5,7 +5,7 @@ from freezegun import freeze_time
 import pytest
 
 from app.schemas import LoginSessionCreate, LoginSessionUpdate
-from app.services.session import SessionService
+from app.services import SessionService
 
 
 class TestSessionService:

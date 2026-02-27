@@ -3,9 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.dependencies import DBSession
-from app.services.auth import AuthService
-from app.services.session import SessionService
-from app.services.user import UserService
+from app.services import AuthService, SessionService, UserService
 
 
 async def get_auth_service(session: DBSession) -> AuthService:

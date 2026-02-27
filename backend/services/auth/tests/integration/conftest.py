@@ -8,7 +8,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.dependencies import get_db
+from app.dependencies.db import get_db
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
