@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 @asynccontextmanager
-async def session_scope(session_factory: Callable[..., 'AsyncSession']) -> AsyncIterator['AsyncSession']:
+async def async_session(session_factory: Callable[..., 'AsyncSession']) -> AsyncIterator['AsyncSession']:
     """Асинхронный контекстный менеджер сессии БД."""
 
     async with session_factory() as session:
@@ -23,10 +23,10 @@ async def session_scope(session_factory: Callable[..., 'AsyncSession']) -> Async
 
 
 def create_session_dependency(session_factory: Callable) -> Callable:
-    """Фабрика зависимости для получения получения сессии БД."""
+    """Фабрика зависимости для получения сессии БД."""
 
     async def get_session() -> AsyncIterator['AsyncSession']:
-        async with session_scope(session_factory) as session:
+        async with async_session(session_factory) as session:
             yield session
     
     return Depends(get_session)

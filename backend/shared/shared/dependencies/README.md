@@ -31,6 +31,8 @@ async def get_users(current_user: CurrentUser):
 
 ## Database
 
+### Async (FastAPI)
+
 ```python
 from shared.dependencies import db
 from app.core.database import AsyncSessionLocal
@@ -45,8 +47,22 @@ async def get_users(db: DBSession):
     ...
 
 # Or use context manager directly
-from shared.dependencies.db import session_scope
+from shared.dependencies.db import async_session
+from app.core.database import AsyncSessionLocal
 
-async with session_scope(AsyncSessionLocal) as session:
+async with async_session(AsyncSessionLocal) as session:
     user = await repo.get(user_id)
+```
+
+### Sync (Celery)
+
+```python
+from shared.dependencies.db import sync_session
+from app.core.database import SyncSessionLocal
+
+# Use in Celery tasks
+def process_report(report_id: int):
+    with sync_session(SyncSessionLocal) as session:
+        report = session.query(Report).get(report_id)
+        # process report...
 ```
