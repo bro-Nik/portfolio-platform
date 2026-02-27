@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from app.core import settings
-from app.dependencies import get_db
+from app.dependencies.db import get_db
 from app.main import app
 from app.models import Base, Portfolio, PortfolioAsset, Transaction, Wallet, WalletAsset
 
