@@ -2,7 +2,7 @@ from collections.abc import AsyncIterator
 
 from redis.asyncio import Redis
 
-from app.core.redis import redis_client
+from app.core import redis_client
 
 
 async def get_redis() -> AsyncIterator[Redis]:

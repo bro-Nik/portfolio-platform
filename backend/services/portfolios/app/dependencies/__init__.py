@@ -4,8 +4,7 @@ from fastapi import Depends
 from shared.dependencies import auth, db
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
-from app.core.database import AsyncSessionLocal
+from app.core import AsyncSessionLocal, settings
 from app.schemas import AuthUser
 
 from .redis import redis_client

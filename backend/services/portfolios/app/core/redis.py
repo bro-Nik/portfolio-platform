@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 import redis.asyncio as redis
 from redis.asyncio.connection import ConnectionPool
 
-from app.core.config import settings
+from app.core import settings
 
 
 class RedisClient:

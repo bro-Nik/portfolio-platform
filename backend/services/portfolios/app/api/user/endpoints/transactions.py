@@ -10,7 +10,7 @@ from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
-from app.core.config import settings
+from app.core import settings
 from app.dependencies import CurrentUser, get_transaction_service
 from app.schemas import TransactionCreateRequest, TransactionResponseWithAssets
 from app.services import TransactionService
