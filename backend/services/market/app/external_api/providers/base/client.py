@@ -1,14 +1,14 @@
-from typing import Optional, Dict
 from abc import ABC
 import logging
 import time
+from typing import Dict, Optional
 
 import requests
+from shared.dependencies.db import sync_session
 
-from app.models import ApiRequestLog
+from app.core.database import SyncSessionLocal
 from app.external_api.services.rate_limiter import RateLimiter
-from app.dependencies import get_sync_db
-
+from app.models import ApiRequestLog
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +123,7 @@ class ApiClientBase(ABC):
 
     def _save_logs(self):
         if self.logs:
-            with get_sync_db() as db:
+            with sync_session(SyncSessionLocal) as db:
                 db.add_all(self.logs)
                 self.logs = []
 

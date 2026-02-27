@@ -11,12 +11,7 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core.config import settings
-from app.dependencies import (
-    User,
-    get_current_user,
-    get_portfolio_asset_service,
-    get_portfolio_service,
-)
+from app.dependencies import CurrentUser, get_portfolio_asset_service, get_portfolio_service
 from app.schemas import (
     PortfolioAssetCreateRequest,
     PortfolioCreateRequest,
@@ -36,7 +31,7 @@ router = APIRouter(prefix='/portfolios', tags=['Portfolios'], responses=response
 @handle_errors('Ошибка при получении портфелей')
 async def get_user_portfolios(
     request: Request,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     portfolio_service: Annotated[PortfolioService, Depends(get_portfolio_service)],
 ) -> PortfolioListResponse:
     """Получение всех портфелей пользователя."""
@@ -49,7 +44,7 @@ async def get_user_portfolios(
 async def get_user_portfolio(
     request: Request,
     portfolio_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     portfolio_service: Annotated[PortfolioService, Depends(get_portfolio_service)],
 ) -> PortfolioResponse:
     """Получение портфеля пользователя."""
@@ -62,7 +57,7 @@ async def get_user_portfolio(
 async def create_portfolio(
     request: Request,
     data: PortfolioCreateRequest,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     portfolio_service: Annotated[PortfolioService, Depends(get_portfolio_service)],
 ) -> PortfolioResponse:
     """Создание нового портфеля."""
@@ -76,7 +71,7 @@ async def update_portfolio(
     request: Request,
     portfolio_id: int,
     data: PortfolioUpdateRequest,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     portfolio_service: Annotated[PortfolioService, Depends(get_portfolio_service)],
 ) -> PortfolioResponse:
     """Обновление портфеля."""
@@ -89,7 +84,7 @@ async def update_portfolio(
 async def delete_portfolio(
     request: Request,
     portfolio_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     portfolio_service: Annotated[PortfolioService, Depends(get_portfolio_service)],
 ) -> PortfolioDeleteResponse:
     """Удаление портфеля."""
@@ -103,7 +98,7 @@ async def add_asset_to_portfolio(
     request: Request,
     portfolio_id: int,
     data: PortfolioAssetCreateRequest,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     portfolio_service: Annotated[PortfolioService, Depends(get_portfolio_service)],
 ) -> PortfolioResponse:
     """Добавление актива в портфель."""
@@ -117,7 +112,7 @@ async def delete_asset_from_portfolio(
     request: Request,
     portfolio_id: int,
     asset_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     portfolio_service: Annotated[PortfolioService, Depends(get_portfolio_service)],
 ) -> PortfolioResponse:
     """Удаление актива из портфеля."""
@@ -130,7 +125,7 @@ async def delete_asset_from_portfolio(
 async def get_asset_transactions(
     request: Request,
     asset_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     asset_service: Annotated[PortfolioAssetService, Depends(get_portfolio_asset_service)],
 ) -> list[TransactionResponse]:
     """Получение транзакций актива."""
@@ -143,7 +138,7 @@ async def get_asset_transactions(
 async def get_asset_distribution(
     request: Request,
     asset_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     asset_service: Annotated[PortfolioAssetService, Depends(get_portfolio_asset_service)],
 ) -> dict:
     """Получение информации о распределении актива по портфелям."""

@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, func
 from typing import List, Optional
+
+from fastapi import APIRouter, Query
 from pydantic import BaseModel
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, dependencies
-from app.api.dependencies.auth import get_current_user, User
-
+from app import models
+from app.dependencies import DBSession
 
 router = APIRouter(prefix="/tickers", tags=["tickers"])
 BASE_IMAGES_URL = '/market/static/images/tickers'
@@ -49,11 +49,11 @@ class AssetInfoResponse(BaseModel):
 
 @router.get("", response_model=TickerSearchResponse)
 async def search_tickers(
+    db: DBSession,
     search: Optional[str] = Query(None, description="Поиск по названию или символу"),
     market: Optional[str] = Query(None, description="Фильтр по рынку"),
     page: int = Query(1, ge=1, description="Номер страницы"),
     page_size: int = Query(20, ge=1, le=100, description="Размер страницы"),
-    db: AsyncSession = Depends(dependencies.get_db)
 ) -> TickerSearchResponse:
     """
     Поиск тикеров с пагинацией и фильтрацией
@@ -114,7 +114,7 @@ async def search_tickers(
 @router.post("/prices", response_model=AssetPricesResponse)
 async def get_assets_prices(
     asset_ids: List[str],
-    db: AsyncSession = Depends(dependencies.get_db)
+    db: DBSession,
 ) -> AssetPricesResponse:
     """
     Возвращает текущие цены для списка активов
@@ -132,7 +132,7 @@ async def get_assets_prices(
 @router.post('/images', response_model=AssetImagesResponse)
 async def get_assets_images(
     asset_ids: List[str],
-    db: AsyncSession = Depends(dependencies.get_db)
+    db: DBSession,
 ) -> AssetImagesResponse:
     """
     Возвращает URL изображений для списка активов
@@ -148,7 +148,7 @@ async def get_assets_images(
 @router.post('/info', response_model=AssetInfoResponse)
 async def get_assets_info(
     asset_ids: List[str],
-    db: AsyncSession = Depends(dependencies.get_db)
+    db: DBSession,
 ) -> AssetInfoResponse:
     """
     Возвращает информацию о тикерах для списка активов

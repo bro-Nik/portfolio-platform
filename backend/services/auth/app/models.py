@@ -2,10 +2,11 @@ from datetime import UTC, datetime
 from typing import Optional
 
 from sqlalchemy import BigInteger, Boolean, DateTime, Enum, ForeignKey, Integer, String
-# from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Mapped, mapped_column, relationship, declarative_base
 
-from app.schemas.user import UserRole
+# from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
+
+from app.schemas import UserRole
 
 Base = declarative_base()
 

@@ -1,7 +1,6 @@
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-import os
 from unittest.mock import MagicMock
 
 from asgi_lifespan import LifespanManager
@@ -12,9 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
-from app.dependencies import get_db_session
+from app.dependencies import get_db
 from app.main import app
-from app.models import PortfolioAsset, Base, Portfolio, Transaction, Wallet, WalletAsset
+from app.models import Base, Portfolio, PortfolioAsset, Transaction, Wallet, WalletAsset
+from app.schemas import UserRole
 
 
 @pytest.fixture(scope='session')
@@ -64,7 +64,7 @@ def user():
 @pytest.fixture
 async def client(db_session):
     """Клиент с подменой зависимостей FastAPI."""
-    app.dependency_overrides[get_db_session] = lambda: db_session
+    app.dependency_overrides[get_db.dependency] = lambda: db_session
 
     async with LifespanManager(app) as manager, AsyncClient(
         transport=ASGITransport(app=manager.app),
@@ -144,6 +144,7 @@ async def transaction(db_session, portfolio, wallet, save) -> Transaction:
 def auth_headers(user):
     payload = {
         'sub': str(user.id),
+        'role': UserRole.USER,
         'exp': datetime.now(UTC) + timedelta(hours=1),
         'type': 'access',
     }

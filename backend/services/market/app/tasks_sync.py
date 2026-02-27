@@ -1,10 +1,12 @@
 import logging
 
-from app.dependencies import get_sync_db
-from app.core.celery import celery
-from app.repositories.sync_repo.api_task import ApiTaskRepository
-from .services import task_sync as sync
+from shared.dependencies.db import sync_session
 
+from app.core.celery import celery
+from app.core.database import SyncSessionLocal
+from app.repositories.sync_repo.api_task import ApiTaskRepository
+
+from .services import task_sync as sync
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +15,7 @@ logger = logging.getLogger(__name__)
 def sync_db_tasks():
     """Периодическая задача для синхронизации задач из БД"""
     try:
-        with get_sync_db() as db:
+        with sync_session(SyncSessionLocal) as db:
             count = sync.sync_tasks_from_db(db)
             logger.info('Синхронизированно %s задач из БД', count)
             return {'status': 'success', 'tasks_synced': count}
@@ -25,7 +27,7 @@ def sync_db_tasks():
 @celery.task()
 def activate_task(task_id: int):
     """Активирует задачу (добавляет в расписание)"""
-    with get_sync_db() as db:
+    with sync_session(SyncSessionLocal) as db:
         success = sync.schedule_task_from_db(db, task_id)
     success = sync.remove_task_from_schedule(task_id)
     return {'status': 'success' if success else 'error', 'task_id': task_id}
@@ -41,7 +43,7 @@ def deactivate_task(task_id: int):
 @celery.task()
 def update_task_schedule(task_id: int, new_schedule: str):
     """Обновляет расписание задачи"""
-    with get_sync_db() as db:
+    with sync_session(SyncSessionLocal) as db:
         # Удаляем старую задачу из расписания
         sync.remove_task_from_schedule(task_id)
 

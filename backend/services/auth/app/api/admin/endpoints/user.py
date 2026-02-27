@@ -10,15 +10,8 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core.responses import DELETE_RESPONSES, GET_RESPONSES, POST_RESPONSES, PUT_RESPONSES
-from app.dependencies import get_auth_service, get_user_service
-from app.dependencies.auth import get_current_user
-from app.schemas import (
-    UserCreateRequest,
-    UserResponse,
-    UserRole,
-    UserSchema,
-    UserUpdateRequest,
-)
+from app.dependencies import CurrentUser, get_auth_service, get_user_service
+from app.schemas import UserCreateRequest, UserResponse, UserRole, UserUpdateRequest
 from app.services.auth import AuthService
 from app.services.user import UserService
 
@@ -57,7 +50,7 @@ async def get_user(
 @handle_errors('Ошибка при создании пользователя')
 async def create_user(
     request: Request,
-    current_user: Annotated[UserSchema, Depends(get_current_user)],
+    current_user: CurrentUser,
     user_data: UserCreateRequest,
     service: Annotated[UserService, Depends(get_user_service)],
 ) -> UserResponse:
@@ -71,7 +64,7 @@ async def create_user(
 @handle_errors('Ошибка при изменении пользователя')
 async def update_user(
     request: Request,
-    current_user: Annotated[UserSchema, Depends(get_current_user)],
+    current_user: CurrentUser,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
     user_data: UserUpdateRequest,
     service: Annotated[UserService, Depends(get_user_service)],
@@ -86,7 +79,7 @@ async def update_user(
 @handle_errors('Ошибка при удалении пользователя')
 async def delete_user(
     request: Request,
-    current_user: Annotated[UserSchema, Depends(get_current_user)],
+    current_user: CurrentUser,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
     service: Annotated[UserService, Depends(get_user_service)],
 ) -> None:

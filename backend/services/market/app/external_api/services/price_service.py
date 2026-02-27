@@ -1,10 +1,11 @@
-from typing import Dict, Any
 from datetime import datetime, timezone
 import logging
+from typing import Any, Dict
 
-from app.dependencies import get_sync_db
+from shared.dependencies.db import sync_session
+
+from app.core.database import SyncSessionLocal
 from app.repositories.sync_repo.ticker import TickerRepository
-
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class PriceService:
             updated_total = 0
             ticker_ids = list(price_data.keys())
 
-            with get_sync_db() as db:
+            with sync_session(SyncSessionLocal) as db:
                 ticker_repo = TickerRepository(db)
 
                 # Обрабатываем батчами

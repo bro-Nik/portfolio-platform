@@ -11,7 +11,7 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core.config import settings
-from app.dependencies import User, get_current_user, get_wallet_asset_service, get_wallet_service
+from app.dependencies import CurrentUser, get_wallet_asset_service, get_wallet_service
 from app.schemas import (
     TransactionResponse,
     WalletCreateRequest,
@@ -30,7 +30,7 @@ router = APIRouter(prefix='/wallets', tags=['Wallets'], responses=responses(401,
 @handle_errors('Ошибка при получении кошельков')
 async def get_user_wallets(
     request: Request,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
 ) -> WalletListResponse:
     """Получение всех кошельков пользователя."""
@@ -43,7 +43,7 @@ async def get_user_wallets(
 async def get_user_wallet(
     request: Request,
     wallet_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
 ) -> WalletResponse:
     """Получение кошелька пользователя."""
@@ -56,7 +56,7 @@ async def get_user_wallet(
 async def create_wallet(
     request: Request,
     data: WalletCreateRequest,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
 ) -> WalletResponse:
     """Создание нового кошелька."""
@@ -70,7 +70,7 @@ async def update_wallet(
     request: Request,
     wallet_id: int,
     data: WalletUpdateRequest,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
 ) -> WalletResponse:
     """Обновление кошелька."""
@@ -83,7 +83,7 @@ async def update_wallet(
 async def delete_wallet(
     request: Request,
     wallet_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     wallet_service: Annotated[WalletService, Depends(get_wallet_service)],
 ) -> WalletDeleteResponse:
     """Удаление кошелька."""
@@ -96,7 +96,7 @@ async def delete_wallet(
 async def get_asset_transactions(
     request: Request,
     asset_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     asset_service: Annotated[WalletAssetService, Depends(get_wallet_asset_service)],
 ) -> list[TransactionResponse]:
     """Получение транзакций актива."""
@@ -109,7 +109,7 @@ async def get_asset_transactions(
 async def get_asset(
     request: Request,
     asset_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     asset_service: Annotated[WalletAssetService, Depends(get_wallet_asset_service)],
 ) -> dict:
     """Получение информации о распределении актива по портфелям."""

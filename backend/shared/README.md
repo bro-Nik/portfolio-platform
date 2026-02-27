@@ -8,6 +8,9 @@ Shared modules for backend microservices.
 - [**Exceptions**](./shared/exceptions/) - Common business and HTTP exceptions
 - [**Rate Limit**](./shared/rate_limit/) - IP-based rate limiting
 - [**API**](./shared/api/) - API utilities
+- [**Dependencies**](./shared/dependencies/) - FastAPI dependencies
+- [**Schemas**](./shared/schemas/) - Shared Pydantic models
+- [**Utils**](./shared/utils/) - Utility functions
 
 ## 🚀 Quick Start
 

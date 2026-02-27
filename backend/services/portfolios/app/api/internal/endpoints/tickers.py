@@ -1,19 +1,14 @@
-from typing import Annotated
-
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from sqlalchemy import distinct, select, union_all
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_db_session
+from app.dependencies import DBSession
 from app.models import PortfolioAsset, WalletAsset
 
 router = APIRouter(tags=['Internal | Tickers'])
 
 
 @router.get('/all_used_tickers')
-async def get_all_used_tickers(
-    session: Annotated[AsyncSession, Depends(get_db_session)],
-) -> list:
+async def get_all_used_tickers(session: DBSession) -> list:
     """Получение всех используемых тикеров пользователями."""
     tickers = union_all(
         select(distinct(PortfolioAsset.ticker_id)),  # Тикеры из портфелей

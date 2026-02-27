@@ -1,16 +1,17 @@
+from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
+import json
+import logging
+import random
 import threading
 import time
-import random
-import json
-from typing import Optional, Dict, Tuple
-from datetime import datetime, timedelta, timezone
-import logging
-from contextlib import contextmanager
+from typing import Dict, Optional, Tuple
 
+from shared.dependencies.db import sync_session
+
+from app.core.database import SyncSessionLocal
 from app.core.redis import get_celery_redis
-from app.dependencies import get_sync_db
 from app.external_api.services.api_provider import ApiProviderService
-
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class RateLimiter:
                 logger.warning('Невалидный конфиг в Redis для провайдера %s', self.provider_name)
 
         # Загружаем из БД
-        with get_sync_db() as db:
+        with sync_session(SyncSessionLocal) as db:
             provider_service = ApiProviderService(db)
             provider = provider_service.get_provider(name=self.provider_name)
 
@@ -265,7 +266,7 @@ class RateLimiter:
     def _save_to_db(self, counts: Dict):
         """Сохранить счетчики в БД"""
         try:
-            with get_sync_db() as db:
+            with sync_session(SyncSessionLocal) as db:
                 # Блокируем запись для этого провайдера
                 provider_service = ApiProviderService(db)
                 provider = provider_service.get_provider_whith_lock(name=self.provider_name)
