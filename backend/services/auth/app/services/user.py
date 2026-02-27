@@ -5,10 +5,10 @@ from app.core.security import SecurityService
 from app.models import User
 from app.repositories import UserRepository
 from app.schemas import (
+    AuthUser,
     UserCreate,
     UserCreateRequest,
     UserRole,
-    UserSchema,
     UserUpdate,
     UserUpdateRequest,
 )
@@ -55,7 +55,7 @@ class UserService:
     async def create_user(
         self,
         user_data: UserCreateRequest,
-        current_user: UserSchema | None = None,
+        current_user: AuthUser | None = None,
     ) -> User:
         """Создать нового пользователя."""
         await self._validate_create_data(user_data, current_user)
@@ -74,7 +74,7 @@ class UserService:
         self,
         user_id: int,
         user_data: UserUpdateRequest,
-        current_user: UserSchema,
+        current_user: AuthUser,
     ) -> User:
         """Обновить пользователя."""
         await self._check_permission(current_user, user_id)
@@ -87,7 +87,7 @@ class UserService:
         await self.session.refresh(user)
         return user
 
-    async def delete_user(self, user_id: int, current_user: UserSchema) -> None:
+    async def delete_user(self, user_id: int, current_user: AuthUser) -> None:
         """Удалить пользователя."""
         await self._check_permission(current_user, user_id)
 
@@ -97,7 +97,7 @@ class UserService:
     async def _validate_create_data(
         self,
         user_data: UserCreateRequest,
-        current_user: UserSchema | None = None,
+        current_user: AuthUser | None = None,
     ) -> None:
         """Валидация данных для создания пользователя."""
         # Проверка правильности роли
@@ -114,7 +114,7 @@ class UserService:
     async def _validate_update_data(
         self,
         user_data: UserUpdateRequest,
-        current_user: UserSchema,
+        current_user: AuthUser,
         user_id: int,
     ) -> None:
         """Валидация данных для обновления пользователя."""
@@ -129,7 +129,7 @@ class UserService:
         """Обновить метрики активности пользователя."""
         await self.repo.update_activity(user_id)
 
-    async def _check_permission(self, current_user: UserSchema, target_user_id: int) -> None:
+    async def _check_permission(self, current_user: AuthUser, target_user_id: int) -> None:
         """Проверка прав доступа к пользователю."""
         target_user = await self.repo.get(target_user_id)
         if not target_user:

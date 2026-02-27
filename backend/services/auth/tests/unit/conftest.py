@@ -6,7 +6,7 @@ import pytest
 
 from app.core.security import SecurityService
 from app.repositories import SessionRepository, TokenRepository, UserRepository
-from app.schemas import UserLogin, UserRole, UserSchema
+from app.schemas import AuthUser, UserLogin, UserRole
 from app.services.user import UserService
 
 
@@ -37,21 +37,21 @@ def mock_login_data() -> UserLogin:
 
 
 @pytest.fixture
-def mock_user() -> UserSchema:
+def mock_user() -> AuthUser:
     """Мок пользователя USER роли."""
-    return UserSchema(id=1, role=UserRole.USER, email='user@example.com')
+    return AuthUser(id=1, role=UserRole.USER, email='user@example.com')
 
 
 @pytest.fixture
-def mock_admin() -> UserSchema:
+def mock_admin() -> AuthUser:
     """Мок пользователя ADMIN роли."""
-    return UserSchema(id=2, role=UserRole.ADMIN, email='admin@example.com')
+    return AuthUser(id=2, role=UserRole.ADMIN, email='admin@example.com')
 
 
 @pytest.fixture
-def mock_moderator() -> UserSchema:
+def mock_moderator() -> AuthUser:
     """Мок пользователя MODERATOR роли."""
-    return UserSchema(id=3, role=UserRole.MODERATOR, email='moderator@example.com')
+    return AuthUser(id=3, role=UserRole.MODERATOR, email='moderator@example.com')
 
 
 @pytest.fixture

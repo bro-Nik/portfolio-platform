@@ -4,13 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import SecurityService
 from app.repositories import TokenRepository
 from app.schemas import (
+    AuthUser,
     RefreshTokenCreate,
     RefreshTokenUpdate,
     TokensResponse,
     UserCreateRequest,
     UserLogin,
     UserRole,
-    UserSchema,
 )
 from app.services.user import UserService
 
@@ -93,7 +93,7 @@ class AuthService:
         """Выход из всех устройств."""
         return bool(await self.token_repo.delete_user_tokens(user_id))
 
-    async def _create_tokens(self, user: UserSchema) -> tuple[TokensResponse, int, int]:
+    async def _create_tokens(self, user: AuthUser) -> tuple[TokensResponse, int, int]:
         """Создание пары токенов с сохранением refresh в БД."""
         access_token, refresh_token, refresh_expires_at = self._generate_tokens(user)
 
@@ -113,7 +113,7 @@ class AuthService:
         )
         return tokens, user.id, db_token.id
 
-    def _generate_tokens(self, user: UserSchema) -> tuple[str, str, int]:
+    def _generate_tokens(self, user: AuthUser) -> tuple[str, str, int]:
         """Генерация токенов."""
         if not user:
             raise AuthenticationError('Пользователь не найден')

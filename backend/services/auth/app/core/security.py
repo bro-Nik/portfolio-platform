@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from shared.exceptions import AuthenticationError
 
 from app.core.config import settings as s
-from app.schemas import UserSchema
+from app.schemas import AuthUser
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -27,7 +27,7 @@ class SecurityService:
         return pwd_context.verify(plain_password, hashed_password)
 
     @staticmethod
-    def create_access_token(user: UserSchema) -> str:
+    def create_access_token(user: AuthUser) -> str:
         """Создает JWT access токен для пользователя."""
         exp = SecurityService._expires_timestamp(timedelta(minutes=s.access_token_expire_minutes))
         payload: dict[str, Any] = {
@@ -41,7 +41,7 @@ class SecurityService:
         return jwt.encode(payload, s.jwt_secret, algorithm=s.jwt_algorithm)
 
     @staticmethod
-    def create_refresh_token(user: UserSchema) -> str:
+    def create_refresh_token(user: AuthUser) -> str:
         """Создает JWT refresh токен для пользователя."""
         exp = SecurityService._expires_timestamp(timedelta(days=s.refresh_token_expire_days))
         payload: dict[str, Any] = {

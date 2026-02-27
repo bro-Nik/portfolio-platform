@@ -14,8 +14,8 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core.responses import DELETE_RESPONSES
-from app.dependencies import get_auth_service, get_current_user
-from app.schemas import RefreshTokenRequest, UserSchema
+from app.dependencies import get_auth_service, CurrentUser
+from app.schemas import RefreshTokenRequest
 from app.services.auth import AuthService
 
 router = APIRouter(tags=['User | Profile'])
@@ -38,7 +38,7 @@ async def logout(
 @handle_errors('Ошибка при выходе из всех устройств пользователя')
 async def logout_all(
     request: Request,
-    current_user: Annotated[UserSchema, Depends(get_current_user)],
+    current_user: CurrentUser,
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> None:
     """Выход из системы на всех устройствах (инвалидирует refresh tokens)."""

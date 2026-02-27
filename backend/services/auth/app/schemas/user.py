@@ -1,35 +1,11 @@
 from datetime import UTC, datetime
-from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
 from app.core.config import settings
 from app.schemas.session import LoginSessionResponse
 
-
-class UserRole(str, Enum):
-    """Роли пользователей."""
-
-    USER = 'user'
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-
-    @property
-    def priority(self) -> int:
-        """Приоритет роли (чем выше, тем больше прав)."""
-        return {
-            UserRole.USER: 1,
-            UserRole.MODERATOR: 2,
-            UserRole.ADMIN: 3,
-        }.get(self, 1)
-
-
-class UserSchema(BaseModel):
-    """Пользователь для внутреннего использования."""
-
-    id: int
-    email: EmailStr | None = None
-    role: UserRole = UserRole.USER
+from . import UserRole
 
 
 class UserCreateRequest(BaseModel):
