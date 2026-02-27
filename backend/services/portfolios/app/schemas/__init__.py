@@ -1,3 +1,5 @@
+from shared.schemas import AuthUser, UserRole
+
 from .portfolio_asset import (
     PortfolioAssetCreate,
     PortfolioAssetCreateRequest,

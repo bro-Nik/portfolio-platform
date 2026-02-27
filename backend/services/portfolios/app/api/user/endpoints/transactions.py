@@ -11,7 +11,7 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core.config import settings
-from app.dependencies import User, get_current_user, get_transaction_service
+from app.dependencies import CurrentUser, get_transaction_service
 from app.schemas import TransactionCreateRequest, TransactionResponseWithAssets
 from app.services import TransactionService
 
@@ -24,7 +24,7 @@ router = APIRouter(prefix='/transactions', tags=['Transactions'], responses=resp
 async def create_transaction(
     request: Request,
     data: TransactionCreateRequest,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     transaction_service: Annotated[TransactionService, Depends(get_transaction_service)],
 ) -> TransactionResponseWithAssets:
     """Создание новой транзакции."""
@@ -38,7 +38,7 @@ async def update_transaction(
     request: Request,
     transaction_id: int,
     data: TransactionCreateRequest,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     transaction_service: Annotated[TransactionService, Depends(get_transaction_service)],
 ) -> TransactionResponseWithAssets:
     """Изменение транзакции."""
@@ -51,7 +51,7 @@ async def update_transaction(
 async def delete_transaction(
     request: Request,
     transaction_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: CurrentUser,
     transaction_service: Annotated[TransactionService, Depends(get_transaction_service)],
 ) -> TransactionResponseWithAssets:
     """Удаление транзакции."""

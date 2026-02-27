@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.dependencies import get_db_session
 from app.main import app
 from app.models import PortfolioAsset, Base, Portfolio, Transaction, Wallet, WalletAsset
+from app.schemas import UserRole
 
 
 @pytest.fixture(scope='session')
@@ -144,6 +145,7 @@ async def transaction(db_session, portfolio, wallet, save) -> Transaction:
 def auth_headers(user):
     payload = {
         'sub': str(user.id),
+        'role': UserRole.USER,
         'exp': datetime.now(UTC) + timedelta(hours=1),
         'type': 'access',
     }
