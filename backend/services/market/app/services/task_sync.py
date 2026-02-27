@@ -1,21 +1,21 @@
+from datetime import datetime
 import json
 import logging
-from datetime import datetime
 
-from app.dependencies.database import get_sync_db
 from celery import current_app
 from celery.schedules import crontab
 from redbeat.schedulers import RedBeatSchedulerEntry, get_redis
+from shared.dependencies.db import sync_session
 from sqlalchemy.orm import Session
 
+from app.core.database import SyncSessionLocal
 from app.repositories.sync_repo.api_task import ApiTaskRepository
-
 
 logger = logging.getLogger(__name__)
 
 
 def get_active_task(task_id):
-    with get_sync_db() as db:
+    with sync_session(SyncSessionLocal) as db:
         task_repo = ApiTaskRepository(db)
         task = task_repo.get_with_provider(task_id)
 

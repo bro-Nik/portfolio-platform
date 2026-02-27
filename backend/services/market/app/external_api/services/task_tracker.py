@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from app.repositories.sync_repo.api_task import ApiTaskRepository
+from shared.dependencies.db import sync_session
 
+from app.core.database import SyncSessionLocal
 from app.models import ApiTask
-from app.dependencies import get_sync_db
+from app.repositories.sync_repo.api_task import ApiTaskRepository
 from app.services.task_sync import get_next_run_time
 
 
@@ -20,7 +21,7 @@ class ApiTaskTracker:
 
     def started(self, task_id: int) -> None:
         """Обновляет статус и статистику задачи при начале выполнения"""
-        with get_sync_db() as db:
+        with sync_session(SyncSessionLocal) as db:
             task = self.get_task(db, task_id)
             if task:
                 self.update_last_run(task)
@@ -29,7 +30,7 @@ class ApiTaskTracker:
 
     def completed(self, task_id: int):
         """Обновляет статус и статистику задачи при успешном завершении"""
-        with get_sync_db() as db:
+        with sync_session(SyncSessionLocal) as db:
             task = self.get_task(db, task_id)
             if task:
                 next_run = self.update_next_run(task)
@@ -41,7 +42,7 @@ class ApiTaskTracker:
 
     def error(self, task_id: int, error):
         """Обновляет статус и статистику задачи при завершении с ошибкой"""
-        with get_sync_db() as db:
+        with sync_session(SyncSessionLocal) as db:
             task = self.get_task(db, task_id)
             if task:
                 task.error_count += 1
