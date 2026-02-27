@@ -8,17 +8,17 @@
 
 
 from fastapi import APIRouter, Request
+from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
-from app.core.responses import DELETE_RESPONSES
 from app.dependencies import AuthServiceDep, CurrentUser
 from app.schemas import RefreshTokenRequest
 
-router = APIRouter(tags=['User | Profile'])
+router = APIRouter(tags=['User | Profile'], responses=responses(401, 429, 500))
 
 
-@router.delete('/logout', status_code=204, responses=DELETE_RESPONSES)
+@router.delete('/logout', status_code=204, responses=responses(400, 404))
 @limiter.limit('5/hour')
 @handle_errors('Ошибка выхода пользователя')
 async def logout(
@@ -30,7 +30,7 @@ async def logout(
     await auth_service.logout(request_data.token)
 
 
-@router.delete('/logout-all', status_code=204, responses=DELETE_RESPONSES)
+@router.delete('/logout-all', status_code=204, responses=responses(404))
 @limiter.limit('5/hour')
 @handle_errors('Ошибка при выходе из всех устройств пользователя')
 async def logout_all(

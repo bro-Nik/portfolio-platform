@@ -5,17 +5,17 @@
 """
 
 from fastapi import APIRouter, BackgroundTasks, Request
+from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
-from app.core.responses import POST_RESPONSES
 from app.dependencies import AuthServiceDep, SessionServiceDep, UserServiceDep
 from app.schemas import RefreshTokenRequest, TokensResponse, UserCreateRequest, UserLogin
 
-router = APIRouter(tags=['Authentication'])
+router = APIRouter(tags=['Authentication'], responses=responses(429, 500))
 
 
-@router.post('/register', status_code=201, responses=POST_RESPONSES)
+@router.post('/register', status_code=201, responses=responses(400, 409))
 @limiter.limit('5/hour')
 @handle_errors('Ошибка при регистрации пользователя')
 async def register(
@@ -35,7 +35,7 @@ async def register(
     return tokens
 
 
-@router.post('/login', responses=POST_RESPONSES)
+@router.post('/login', responses=responses(400, 401))
 @limiter.limit('5/minute')
 @handle_errors('Ошибка при входе пользователя')
 async def login(
@@ -55,7 +55,7 @@ async def login(
     return tokens
 
 
-@router.post('/refresh', responses=POST_RESPONSES)
+@router.post('/refresh', responses=responses(400, 401))
 @limiter.limit('5/minute')
 @handle_errors('Ошибка обновления токенов пользователя')
 async def refresh_tokens(

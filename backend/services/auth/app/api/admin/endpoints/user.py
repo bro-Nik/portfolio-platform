@@ -6,17 +6,17 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Path, Query, Request
+from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
-from app.core.responses import DELETE_RESPONSES, GET_RESPONSES, POST_RESPONSES, PUT_RESPONSES
 from app.dependencies import AuthServiceDep, CurrentUser, UserServiceDep
 from app.schemas import UserCreateRequest, UserResponse, UserRole, UserUpdateRequest
 
-router = APIRouter(prefix='/users', tags=['Admin | Users'])
+router = APIRouter(prefix='/users', tags=['Admin | Users'], responses=responses(401, 429, 500))
 
 
-@router.get('/', responses=GET_RESPONSES)
+@router.get('/')
 @limiter.limit('5/minute')
 @handle_errors('Ошибка при получении пользователей')
 async def get_users(
@@ -31,7 +31,7 @@ async def get_users(
     return await service.get_users_with_details(skip, limit, search, role)
 
 
-@router.get('/{user_id}', responses=GET_RESPONSES)
+@router.get('/{user_id}', responses=responses(403, 404))
 @limiter.limit('5/minute')
 @handle_errors('Ошибка при получении пользователя')
 async def get_user(
@@ -43,7 +43,7 @@ async def get_user(
     return await service.get_user_with_details(user_id)
 
 
-@router.post('/', status_code=201, responses=POST_RESPONSES)
+@router.post('/', status_code=201, responses=responses(400, 403, 409))
 @limiter.limit('5/minute')
 @handle_errors('Ошибка при создании пользователя')
 async def create_user(
@@ -57,7 +57,7 @@ async def create_user(
     return await service.get_user_with_details(user.id)
 
 
-@router.put('/{user_id}', responses=PUT_RESPONSES)
+@router.put('/{user_id}', responses=responses(400, 403, 404, 409))
 @limiter.limit('5/minute')
 @handle_errors('Ошибка при изменении пользователя')
 async def update_user(
@@ -72,7 +72,7 @@ async def update_user(
     return await service.get_user_with_details(user.id)
 
 
-@router.delete('/{user_id}', status_code=204, responses=DELETE_RESPONSES)
+@router.delete('/{user_id}', status_code=204, responses=responses(400, 403, 404))
 @limiter.limit('5/minute')
 @handle_errors('Ошибка при удалении пользователя')
 async def delete_user(
@@ -85,7 +85,7 @@ async def delete_user(
     await service.delete_user(user_id, current_user)
 
 
-@router.delete('/{user_id}/logout-all', status_code=204, responses=DELETE_RESPONSES)
+@router.delete('/{user_id}/logout-all', status_code=204, responses=responses(403, 404))
 @limiter.limit('5/minute')
 @handle_errors('Ошибка при выходе из всех устройств')
 async def logout_all(
