@@ -1,16 +1,17 @@
-from collections.abc import AsyncIterator, Callable
-from contextlib import asynccontextmanager
+from collections.abc import AsyncIterator, Callable, Iterator
+from contextlib import asynccontextmanager, contextmanager
 from typing import TYPE_CHECKING
 
 from fastapi import Depends
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+    from sqlalchemy.orm import Session
 
 
 @asynccontextmanager
 async def session_scope(session_factory: Callable[..., 'AsyncSession']) -> AsyncIterator['AsyncSession']:
-    """Контекстный менеджер для работы с сессией БД."""
+    """Асинхронный контекстный менеджер сессии БД."""
 
     async with session_factory() as session:
         try:
@@ -29,3 +30,17 @@ def create_session_dependency(session_factory: Callable) -> Callable:
             yield session
     
     return Depends(get_session)
+
+
+@contextmanager
+def sync_session(session_factory: Callable[..., 'Session']) -> Iterator['Session']:
+    """Синхронный контекстный менеджер для сессии БД."""
+    session = session_factory()
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
