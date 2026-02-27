@@ -7,7 +7,7 @@ import jwt
 from passlib.context import CryptContext
 from shared.exceptions import AuthenticationError
 
-from app.core.config import settings as s
+from app.core import settings as s
 from app.schemas import AuthUser
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')

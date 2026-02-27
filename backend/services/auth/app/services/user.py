@@ -1,7 +1,7 @@
 from shared.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import SecurityService
+from app.core import SecurityService
 from app.models import User
 from app.repositories import UserRepository
 from app.schemas import (

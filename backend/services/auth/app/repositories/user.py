@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from shared.repositories import BaseAsyncRepository as BaseRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
+from app.core import settings
 from app.models import User
 from app.schemas import UserCreate, UserUpdate
 

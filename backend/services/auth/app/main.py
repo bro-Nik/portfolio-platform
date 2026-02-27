@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from shared.rate_limit import setup_rate_limiter
 
 from app.api import api_router
-from app.core.config import settings
+from app.core import settings
 
 app = FastAPI(
     title='Auth Service API',

@@ -3,8 +3,7 @@ from typing import Annotated
 from shared.dependencies import auth, db
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
-from app.core.database import AsyncSessionLocal
+from app.core import AsyncSessionLocal, settings
 from app.schemas import AuthUser, UserRole
 
 get_current_user = auth.create_auth_dependency(
