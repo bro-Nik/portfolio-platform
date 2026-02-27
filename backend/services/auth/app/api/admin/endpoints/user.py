@@ -5,15 +5,13 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Request
+from fastapi import APIRouter, Path, Query, Request
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core.responses import DELETE_RESPONSES, GET_RESPONSES, POST_RESPONSES, PUT_RESPONSES
-from app.dependencies import CurrentUser, get_auth_service, get_user_service
+from app.dependencies import AuthServiceDep, CurrentUser, UserServiceDep
 from app.schemas import UserCreateRequest, UserResponse, UserRole, UserUpdateRequest
-from app.services.auth import AuthService
-from app.services.user import UserService
 
 router = APIRouter(prefix='/users', tags=['Admin | Users'])
 
@@ -23,7 +21,7 @@ router = APIRouter(prefix='/users', tags=['Admin | Users'])
 @handle_errors('Ошибка при получении пользователей')
 async def get_users(
     request: Request,
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: UserServiceDep,
     skip: Annotated[int, Query(ge=0, description='Количество записей для пропуска')] = 0,
     limit: Annotated[int, Query(ge=1, le=1000, description='Лимит записей')] = 100,
     search: Annotated[str | None, Query(description='Поиск по email')] = None,
@@ -39,7 +37,7 @@ async def get_users(
 async def get_user(
     request: Request,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: UserServiceDep,
 ) -> UserResponse:
     """Получить пользователя по ID."""
     return await service.get_user_with_details(user_id)
@@ -52,7 +50,7 @@ async def create_user(
     request: Request,
     current_user: CurrentUser,
     user_data: UserCreateRequest,
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: UserServiceDep,
 ) -> UserResponse:
     """Создать нового пользователя."""
     user = await service.create_user(user_data, current_user)
@@ -67,7 +65,7 @@ async def update_user(
     current_user: CurrentUser,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
     user_data: UserUpdateRequest,
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: UserServiceDep,
 ) -> UserResponse:
     """Обновить пользователя."""
     user = await service.update_user(user_id, user_data, current_user)
@@ -81,7 +79,7 @@ async def delete_user(
     request: Request,
     current_user: CurrentUser,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
-    service: Annotated[UserService, Depends(get_user_service)],
+    service: UserServiceDep,
 ) -> None:
     """Удалить пользователя."""
     await service.delete_user(user_id, current_user)
@@ -93,7 +91,7 @@ async def delete_user(
 async def logout_all(
     request: Request,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    auth_service: AuthServiceDep,
 ) -> None:
     """Выход из всех устройств."""
     await auth_service.logout_all(user_id)

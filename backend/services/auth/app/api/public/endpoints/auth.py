@@ -4,18 +4,13 @@
 и обновляют время последней активности пользователя.
 """
 
-from typing import Annotated
-
-from fastapi import APIRouter, BackgroundTasks, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Request
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core.responses import POST_RESPONSES
-from app.dependencies import get_auth_service, get_session_service, get_user_service
+from app.dependencies import AuthServiceDep, SessionServiceDep, UserServiceDep
 from app.schemas import RefreshTokenRequest, TokensResponse, UserCreateRequest, UserLogin
-from app.services.auth import AuthService
-from app.services.session import SessionService
-from app.services.user import UserService
 
 router = APIRouter(tags=['Authentication'])
 
@@ -27,9 +22,9 @@ async def register(
     user_data: UserCreateRequest,
     request: Request,
     bg_tasks: BackgroundTasks,
-    user_service: Annotated[UserService, Depends(get_user_service)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-    session_service: Annotated[SessionService, Depends(get_session_service)],
+    user_service: UserServiceDep,
+    auth_service: AuthServiceDep,
+    session_service: SessionServiceDep,
 ) -> TokensResponse:
     """Регистрация нового пользователя."""
     tokens, user_id, token_id = await auth_service.register(user_data)
@@ -47,9 +42,9 @@ async def login(
     user_data: UserLogin,
     request: Request,
     bg_tasks: BackgroundTasks,
-    user_service: Annotated[UserService, Depends(get_user_service)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-    session_service: Annotated[SessionService, Depends(get_session_service)],
+    user_service: UserServiceDep,
+    auth_service: AuthServiceDep,
+    session_service: SessionServiceDep,
 ) -> TokensResponse:
     """Вход зарегистрированного пользователя."""
     tokens, user_id, token_id = await auth_service.login(user_data)
@@ -67,9 +62,9 @@ async def refresh_tokens(
     request_data: RefreshTokenRequest,
     request: Request,
     bg_tasks: BackgroundTasks,
-    user_service: Annotated[UserService, Depends(get_user_service)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-    session_service: Annotated[SessionService, Depends(get_session_service)],
+    user_service: UserServiceDep,
+    auth_service: AuthServiceDep,
+    session_service: SessionServiceDep,
 ) -> TokensResponse:
     """Обновление токенов авторизации."""
     tokens, user_id, token_id = await auth_service.refresh_tokens(request_data.token)
