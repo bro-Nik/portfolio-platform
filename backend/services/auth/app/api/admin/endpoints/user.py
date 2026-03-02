@@ -10,6 +10,7 @@ from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
+from app.core import settings
 from app.dependencies import AuthServiceDep, CurrentUser, UserServiceDep
 from app.schemas import UserCreateRequest, UserResponse, UserRole, UserUpdateRequest
 
@@ -17,7 +18,7 @@ router = APIRouter(prefix='/users', tags=['Admin | Users'], responses=responses(
 
 
 @router.get('/')
-@limiter.limit('5/minute')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка при получении пользователей')
 async def get_users(
     request: Request,
@@ -32,7 +33,7 @@ async def get_users(
 
 
 @router.get('/{user_id}', responses=responses(403, 404))
-@limiter.limit('5/minute')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка при получении пользователя')
 async def get_user(
     request: Request,
@@ -44,7 +45,7 @@ async def get_user(
 
 
 @router.post('/', status_code=201, responses=responses(400, 403, 409))
-@limiter.limit('5/minute')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка при создании пользователя')
 async def create_user(
     request: Request,
@@ -58,7 +59,7 @@ async def create_user(
 
 
 @router.put('/{user_id}', responses=responses(400, 403, 404, 409))
-@limiter.limit('5/minute')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка при изменении пользователя')
 async def update_user(
     request: Request,
@@ -73,7 +74,7 @@ async def update_user(
 
 
 @router.delete('/{user_id}', status_code=204, responses=responses(400, 403, 404))
-@limiter.limit('5/minute')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка при удалении пользователя')
 async def delete_user(
     request: Request,
@@ -86,7 +87,7 @@ async def delete_user(
 
 
 @router.delete('/{user_id}/logout-all', status_code=204, responses=responses(403, 404))
-@limiter.limit('5/minute')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка при выходе из всех устройств')
 async def logout_all(
     request: Request,

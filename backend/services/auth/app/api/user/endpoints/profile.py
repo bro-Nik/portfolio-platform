@@ -12,6 +12,7 @@ from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
+from app.core import settings
 from app.dependencies import AuthServiceDep, CurrentUser
 from app.schemas import RefreshTokenRequest
 
@@ -19,7 +20,7 @@ router = APIRouter(tags=['User | Profile'], responses=responses(401, 429, 500))
 
 
 @router.delete('/logout', status_code=204, responses=responses(400, 404))
-@limiter.limit('5/hour')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка выхода пользователя')
 async def logout(
     request: Request,
@@ -31,7 +32,7 @@ async def logout(
 
 
 @router.delete('/logout-all', status_code=204, responses=responses(404))
-@limiter.limit('5/hour')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка при выходе из всех устройств пользователя')
 async def logout_all(
     request: Request,

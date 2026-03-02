@@ -9,6 +9,7 @@ from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
+from app.core import settings
 from app.dependencies import AuthServiceDep, SessionServiceDep, UserServiceDep
 from app.schemas import RefreshTokenRequest, TokensResponse, UserCreateRequest, UserLogin
 
@@ -16,7 +17,7 @@ router = APIRouter(tags=['Authentication'], responses=responses(429, 500))
 
 
 @router.post('/register', status_code=201, responses=responses(400, 409))
-@limiter.limit('5/hour')
+@limiter.limit(settings.rate_limit_public)
 @handle_errors('Ошибка при регистрации пользователя')
 async def register(
     user_data: UserCreateRequest,
@@ -36,7 +37,7 @@ async def register(
 
 
 @router.post('/login', responses=responses(400, 401))
-@limiter.limit('5/minute')
+@limiter.limit(settings.rate_limit_public)
 @handle_errors('Ошибка при входе пользователя')
 async def login(
     user_data: UserLogin,
@@ -56,7 +57,7 @@ async def login(
 
 
 @router.post('/refresh', responses=responses(400, 401))
-@limiter.limit('5/minute')
+@limiter.limit(settings.rate_limit_public)
 @handle_errors('Ошибка обновления токенов пользователя')
 async def refresh_tokens(
     request_data: RefreshTokenRequest,
