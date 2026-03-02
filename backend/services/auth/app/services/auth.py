@@ -91,7 +91,7 @@ class AuthService:
 
     async def logout_all(self, user_id: int) -> bool:
         """Выход из всех устройств."""
-        return bool(await self.token_repo.delete_user_tokens(user_id))
+        return bool(await self.token_repo.delete_many_by_user(user_id))
 
     async def _create_tokens(self, user: AuthUser) -> tuple[TokensResponse, int, int]:
         """Создание пары токенов с сохранением refresh в БД."""

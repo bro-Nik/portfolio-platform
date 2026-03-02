@@ -15,6 +15,6 @@ class TokenRepository(BaseRepository[RefreshToken, RefreshTokenCreate, RefreshTo
         """Найти refresh токен по его значению."""
         return await self.get_by(RefreshToken.token == token)
 
-    async def delete_user_tokens(self, user_id: int) -> int:
+    async def delete_many_by_user(self, user_id: int) -> int:
         """Удалить все refresh токены пользователя."""
         return len(await self.delete_many_by(RefreshToken.user_id == user_id))
