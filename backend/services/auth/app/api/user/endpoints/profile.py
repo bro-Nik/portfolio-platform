@@ -3,10 +3,6 @@
 Все эндпоинты требуют валидный access token
 """
 
-# TODO: Смена пароля
-# TODO: CRUD для сессий
-
-
 from fastapi import APIRouter, Request
 from shared.api import responses
 from shared.exceptions import handle_errors
@@ -24,11 +20,11 @@ router = APIRouter(tags=['User | Profile'], responses=responses(401, 429, 500))
 @handle_errors('Ошибка выхода пользователя')
 async def logout(
     request: Request,
-    request_data: RefreshTokenRequest,
+    data: RefreshTokenRequest,
     auth_service: AuthServiceDep,
 ) -> None:
     """Выход из системы (инвалидирует refresh token)."""
-    await auth_service.logout(request_data.token)
+    await auth_service.logout(data.token)
 
 
 @router.delete('/logout-all', status_code=204, responses=responses(404))

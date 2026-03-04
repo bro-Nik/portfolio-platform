@@ -56,6 +56,13 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserRegister(BaseModel):
+    """Регистрация пользователя."""
+
+    email: EmailStr
+    password: str
+
+
 class UserCreate(BaseModel):
     """Создание пользователя в БД."""
 

@@ -6,6 +6,7 @@ from .user import (
     UserCreate,
     UserCreateRequest,
     UserLogin,
+    UserRegister,
     UserResponse,
     UserUpdate,
     UserUpdateRequest,

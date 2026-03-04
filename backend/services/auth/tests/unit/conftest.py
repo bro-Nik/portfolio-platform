@@ -161,6 +161,16 @@ def mock_db_token() -> MagicMock:
 
     return token
 
+@pytest.fixture
+def mock_token_pair() -> MagicMock:
+    """Мок с JWT токенами."""
+    token = MagicMock()
+    token.access_token = 'access.token.value'
+    token.refresh_token = 'refresh.token.value'
+    token.refresh_expires_at = 9999999999
+
+    return token
+
 
 @pytest.fixture
 def mock_request() -> MagicMock:

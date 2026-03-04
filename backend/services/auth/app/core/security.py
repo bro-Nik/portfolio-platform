@@ -1,5 +1,4 @@
-# TODO: Логирование для мониторинга атак.
-
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -7,10 +6,17 @@ import jwt
 from passlib.context import CryptContext
 from shared.exceptions import AuthenticationError
 
-from app.core import settings as s
+from app.core import settings
 from app.schemas import AuthUser
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
+
+@dataclass
+class TokenPair:
+    access_token: str
+    refresh_token: str
+    refresh_expires_at: int
 
 
 class SecurityService:
@@ -26,37 +32,20 @@ class SecurityService:
         """Проверяет соответствие пароля хэшу."""
         return pwd_context.verify(plain_password, hashed_password)
 
-    @staticmethod
-    def create_access_token(user: AuthUser) -> str:
-        """Создает JWT access токен для пользователя."""
-        exp = SecurityService._expires_timestamp(timedelta(minutes=s.access_token_expire_minutes))
-        payload: dict[str, Any] = {
-            'sub': str(user.id),
-            'login': user.email.split('@')[0],
-            'role': user.role,
-            'type': 'access',
-            'exp': exp,
-        }
-
-        return jwt.encode(payload, s.jwt_secret, algorithm=s.jwt_algorithm)
-
-    @staticmethod
-    def create_refresh_token(user: AuthUser) -> str:
-        """Создает JWT refresh токен для пользователя."""
-        exp = SecurityService._expires_timestamp(timedelta(days=s.refresh_token_expire_days))
-        payload: dict[str, Any] = {
-            'sub': str(user.id),
-            'type': 'refresh',
-            'exp': exp,
-        }
-
-        return jwt.encode(payload, s.jwt_secret, algorithm=s.jwt_algorithm)
+    @classmethod
+    def create_token_pair(cls, user: AuthUser) -> TokenPair:
+        """Создает JWT токены для пользователя."""
+        return TokenPair(
+            access_token=cls._create_access_token(user),
+            refresh_token=cls._create_refresh_token(user),
+            refresh_expires_at=cls._get_refresh_token_expiry(),
+        )
 
     @staticmethod
     def verify_token(token: str) -> dict[str, Any]:
         """Верифицирует JWT токен. Возвращает payload или выбрасывает исключение."""
         try:
-            return jwt.decode(token, s.jwt_secret, algorithms=[s.jwt_algorithm])
+            return jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
         except jwt.ExpiredSignatureError as e:
             raise AuthenticationError('Токен устарел') from e
         except jwt.InvalidTokenError as e:
@@ -65,13 +54,34 @@ class SecurityService:
             # Обработка любых других ошибок PyJWT
             raise AuthenticationError('Ошибка верификации токена') from e
 
-    @staticmethod
-    def is_token_expired(expires_at: int) -> bool:
-        """Проверяет истек ли токен по timestamp."""
-        return datetime.now(UTC).timestamp() > expires_at
+    @classmethod
+    def _create_access_token(cls, user: AuthUser) -> str:
+        return cls._jwt_encode({
+            'sub': str(user.id),
+            'login': user.email.split('@')[0],
+            'role': user.role,
+            'type': 'access',
+            'exp': cls._get_access_token_expiry(),
+        })
 
-    @staticmethod
-    def _expires_timestamp(delta: timedelta) -> int:
-        """Timestamp сейчас + delta."""
-        date = datetime.now(UTC) + delta
-        return int(date.timestamp())
+    @classmethod
+    def _create_refresh_token(cls, user: AuthUser) -> str:
+        return cls._jwt_encode({
+            'sub': str(user.id),
+            'type': 'refresh',
+            'exp': cls._get_refresh_token_expiry(),
+        })
+
+    @classmethod
+    def _jwt_encode(cls, payload: dict[str, Any]) -> str:
+        return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+    @classmethod
+    def _get_refresh_token_expiry(cls) -> int:
+        delta = timedelta(days=settings.refresh_token_expire_days)
+        return int((datetime.now(UTC) + delta).timestamp())
+
+    @classmethod
+    def _get_access_token_expiry(cls) -> int:
+        delta = timedelta(minutes=settings.access_token_expire_minutes)
+        return int((datetime.now(UTC) + delta).timestamp())

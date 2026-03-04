@@ -22,14 +22,14 @@ router = APIRouter(prefix='/users', tags=['Admin | Users'], responses=responses(
 @handle_errors('Ошибка при получении пользователей')
 async def get_users(
     request: Request,
-    service: UserServiceDep,
+    user_service: UserServiceDep,
     skip: Annotated[int, Query(ge=0, description='Количество записей для пропуска')] = 0,
     limit: Annotated[int, Query(ge=1, le=1000, description='Лимит записей')] = 100,
     search: Annotated[str | None, Query(description='Поиск по email')] = None,
     role: Annotated[UserRole | None, Query(description='Фильтр по роли')] = None,
 ) -> list[UserResponse]:
     """Получить список пользователей с пагинацией и фильтрацией."""
-    return await service.get_users_with_details(skip, limit, search, role)
+    return await user_service.get_many_detailed(skip, limit, search, role)
 
 
 @router.get('/{user_id}', responses=responses(403, 404))
@@ -38,10 +38,10 @@ async def get_users(
 async def get_user(
     request: Request,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
-    service: UserServiceDep,
+    user_service: UserServiceDep,
 ) -> UserResponse:
     """Получить пользователя по ID."""
-    return await service.get_user_with_details(user_id)
+    return await user_service.get_detailed(user_id)
 
 
 @router.post('/', status_code=201, responses=responses(400, 403, 409))
@@ -50,12 +50,12 @@ async def get_user(
 async def create_user(
     request: Request,
     current_user: CurrentUser,
-    user_data: UserCreateRequest,
-    service: UserServiceDep,
+    data: UserCreateRequest,
+    user_service: UserServiceDep,
 ) -> UserResponse:
     """Создать нового пользователя."""
-    user = await service.create_user(user_data, current_user)
-    return await service.get_user_with_details(user.id)
+    user = await user_service.create(data, current_user)
+    return await user_service.get_detailed(user.id)
 
 
 @router.put('/{user_id}', responses=responses(400, 403, 404, 409))
@@ -65,12 +65,12 @@ async def update_user(
     request: Request,
     current_user: CurrentUser,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
-    user_data: UserUpdateRequest,
-    service: UserServiceDep,
+    data: UserUpdateRequest,
+    user_service: UserServiceDep,
 ) -> UserResponse:
     """Обновить пользователя."""
-    user = await service.update_user(user_id, user_data, current_user)
-    return await service.get_user_with_details(user.id)
+    user = await user_service.update(user_id, data, current_user)
+    return await user_service.get_detailed(user.id)
 
 
 @router.delete('/{user_id}', status_code=204, responses=responses(400, 403, 404))
@@ -80,10 +80,10 @@ async def delete_user(
     request: Request,
     current_user: CurrentUser,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
-    service: UserServiceDep,
+    user_service: UserServiceDep,
 ) -> None:
     """Удалить пользователя."""
-    await service.delete_user(user_id, current_user)
+    await user_service.delete(user_id, current_user)
 
 
 @router.delete('/{user_id}/logout-all', status_code=204, responses=responses(403, 404))

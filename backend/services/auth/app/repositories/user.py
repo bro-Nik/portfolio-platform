@@ -25,6 +25,10 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
             user.last_active_at = datetime.now(UTC)
             user.total_active_time += settings.access_token_expire_minutes * 60
 
+    async def get_with_sessions(self, user_id: int) -> User | None:
+        """Получить пользователя с сессиями."""
+        return await self.get_by(User.id == user_id, relations=('login_sessions',))
+
     async def get_many_with_sessions(
         self,
         skip: int = 0,
