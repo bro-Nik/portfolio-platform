@@ -8,12 +8,12 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.dependencies import get_db
+from app.dependencies.db import get_db
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
-from app.core.config import settings
+from app.core import settings
 from app.main import app
 from app.models import Base, User
 from app.repositories import UserRepository

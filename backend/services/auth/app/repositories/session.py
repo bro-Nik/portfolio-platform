@@ -1,13 +1,11 @@
-from shared.repositories import BaseAsyncRepository as BaseRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import LoginSession
+from app.repositories import BaseRepository
 from app.schemas import LoginSessionCreate, LoginSessionUpdate
 
 
-class SessionRepository(
-    BaseRepository[LoginSession, LoginSessionCreate, LoginSessionUpdate],
-):
+class SessionRepository(BaseRepository[LoginSession, LoginSessionCreate, LoginSessionUpdate]):
     """Репозиторий для работы с сессиями входа пользователя."""
 
     def __init__(self, session: AsyncSession) -> None:

@@ -4,10 +4,10 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 
-from app.core.security import SecurityService
+from app.core import SecurityService
 from app.repositories import SessionRepository, TokenRepository, UserRepository
 from app.schemas import AuthUser, UserLogin, UserRole
-from app.services.user import UserService
+from app.services import UserService
 
 
 @pytest.fixture
@@ -158,6 +158,16 @@ def mock_db_token() -> MagicMock:
     token.user_id = 1
     token.token = 'refresh.token.value'
     token.expires_at = 9999999999
+
+    return token
+
+@pytest.fixture
+def mock_token_pair() -> MagicMock:
+    """Мок с JWT токенами."""
+    token = MagicMock()
+    token.access_token = 'access.token.value'
+    token.refresh_token = 'refresh.token.value'
+    token.refresh_expires_at = 9999999999
 
     return token
 

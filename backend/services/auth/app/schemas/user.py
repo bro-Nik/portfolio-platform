@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
-from app.core.config import settings
+from app.core import settings
 from app.schemas.session import LoginSessionResponse
 
 from . import UserRole
@@ -51,6 +51,13 @@ class UserResponse(BaseModel):
 
 class UserLogin(BaseModel):
     """Вход пользователя."""
+
+    email: EmailStr
+    password: str
+
+
+class UserRegister(BaseModel):
+    """Регистрация пользователя."""
 
     email: EmailStr
     password: str
