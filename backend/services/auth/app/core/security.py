@@ -4,6 +4,7 @@ from typing import Any
 
 import jwt
 from passlib.context import CryptContext
+from pydantic import ValidationError
 from shared.exceptions import AuthenticationError
 
 from app.core import settings
@@ -48,16 +49,15 @@ class SecurityService:
             return jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
         except jwt.ExpiredSignatureError as e:
             raise AuthenticationError('Токен устарел') from e
-        except jwt.InvalidTokenError as e:
+        except (jwt.InvalidTokenError, ValidationError) as e:
             raise AuthenticationError('Некорректный токен') from e
         except jwt.PyJWTError as e:
-            # Обработка любых других ошибок PyJWT
             raise AuthenticationError('Ошибка верификации токена') from e
 
     @classmethod
     def _create_access_token(cls, user: AuthUser) -> str:
         return cls._jwt_encode({
-            'sub': str(user.id),
+            'id': str(user.id),
             'login': user.email.split('@')[0],
             'role': user.role,
             'type': 'access',
@@ -67,7 +67,7 @@ class SecurityService:
     @classmethod
     def _create_refresh_token(cls, user: AuthUser) -> str:
         return cls._jwt_encode({
-            'sub': str(user.id),
+            'id': str(user.id),
             'type': 'refresh',
             'exp': cls._get_refresh_token_expiry(),
         })

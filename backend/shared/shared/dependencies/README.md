@@ -6,25 +6,25 @@ Common FastAPI dependencies for services.
 
 ```python
 from shared.dependencies import auth
-from shared.schemas import AuthUser, UserRole
-from app.core.config import settings
+from app.core import settings
 
 # Create
-get_current_user = auth.create_auth_dependency(
+deps = auth.create_dependencies(
     jwt_secret=settings.jwt_secret,
     jwt_algorithm=settings.jwt_algorithm,
 )
 
-require_user = auth.create_role_requirement(UserRole.USER)
-require_admin = auth.create_role_requirement(UserRole.ADMIN)
+CurrentUser = deps.CurrentUser
 
-CurrentUser = Annotated[AuthUser, get_current_user]
-RequireUser = Annotated[None, require_user]
-RequireAdmin = Annotated[None, require_admin]
+require_admin = deps.require_admin
+require_user = deps.require_user
 
 # Use in endpoints
 @router.get("/users")
 async def get_users(current_user: CurrentUser):
+
+# Use in routers
+admin_router = APIRouter(dependencies=[require_admin])
     ...
 ```
 

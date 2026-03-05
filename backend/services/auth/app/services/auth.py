@@ -59,10 +59,10 @@ class AuthService:
     async def refresh_tokens(self, data: RefreshTokenRequest) -> AuthResult:
         """Обновление токенов с валидацией."""
         payload = self.security.verify_token(data.token)
-        if payload.get('type') != 'refresh' or not payload.get('sub'):
+        if payload.get('type') != 'refresh' or not payload.get('id'):
             raise AuthenticationError('Невалидный refresh токен')
 
-        user_id = int(payload['sub'])
+        user_id = int(payload['id'])
         user = await self.user_service.get(user_id)
         token = await self._get_refresh_token(data.token)
         return await self._create_tokens(user, token)

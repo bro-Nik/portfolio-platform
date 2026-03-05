@@ -51,7 +51,7 @@ export function isTokenValid (token) {
     if (Date.now() >= payload.exp * 1000) return false;
 
     // Проверка необходимых полей
-    if (!payload.sub || !payload.exp) return false;
+    if (!payload.id || !payload.exp) return false;
 
     return true;
   } catch (error) {

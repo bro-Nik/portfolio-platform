@@ -143,7 +143,7 @@ async def transaction(db_session, portfolio, wallet, save) -> Transaction:
 @pytest.fixture
 def auth_headers(user):
     payload = {
-        'sub': str(user.id),
+        'id': str(user.id),
         'role': UserRole.USER,
         'exp': datetime.now(UTC) + timedelta(hours=1),
         'type': 'access',
