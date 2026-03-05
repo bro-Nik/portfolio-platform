@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from app.core import settings
-from app.dependencies.db import get_db
+from app.dependencies import get_session
 from app.main import app
 from app.models import Base, Portfolio, PortfolioAsset, Transaction, Wallet, WalletAsset
 
@@ -62,7 +62,7 @@ def user():
 @pytest.fixture
 async def client(db_session):
     """Клиент с подменой зависимостей FastAPI."""
-    app.dependency_overrides[get_db.dependency] = lambda: db_session
+    app.dependency_overrides[get_session] = lambda: db_session
 
     async with LifespanManager(app) as manager, AsyncClient(
         transport=ASGITransport(app=manager.app),
@@ -141,7 +141,7 @@ async def client(db_session):
 @pytest.fixture
 def auth_headers(user):
     payload = {
-        'sub': str(user.id),
+        'id': str(user.id),
         'exp': datetime.now(UTC) + timedelta(hours=1),
         'type': 'access',
     }

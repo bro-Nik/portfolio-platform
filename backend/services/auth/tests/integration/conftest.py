@@ -8,7 +8,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.dependencies.db import get_db
+from app.dependencies import get_session
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -62,7 +62,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession]:
 async def client(db_session: AsyncSession):
     """Асинхронный клиент."""
     # Подменяем зависимость
-    app.dependency_overrides[get_db.dependency] = lambda: db_session
+    app.dependency_overrides[get_session] = lambda: db_session
 
     async with LifespanManager(app) as manager, AsyncClient(
         transport=ASGITransport(app=manager.app),

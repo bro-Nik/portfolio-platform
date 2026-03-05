@@ -35,22 +35,20 @@ admin_router = APIRouter(dependencies=[require_admin])
 
 ```python
 from shared.dependencies import db
-from app.core.database import AsyncSessionLocal
+from app.core import AsyncSessionLocal
 
 # Create
-get_db = db.create_session_dependency(AsyncSessionLocal)
-DBSession = Annotated[AsyncSession, get_db]
+deps = db.create_dependencies(AsyncSessionLocal)
+get_session = deps.get_session
+DBSession = deps.DBSession
 
 # Use in endpoints
 @router.get("/users")
-async def get_users(db: DBSession):
+async def get_users(session: DBSession):
     ...
 
 # Or use context manager directly
-from shared.dependencies.db import async_session
-from app.core.database import AsyncSessionLocal
-
-async with async_session(AsyncSessionLocal) as session:
+async with get_session() as session:
     user = await repo.get(user_id)
 ```
 
