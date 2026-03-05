@@ -10,7 +10,7 @@ export const authService = () => {
     if (!decodedToken) return;
 
     return {
-      id: decodedToken.sub,
+      id: decodedToken.id,
       login: decodedToken.login,
       role: decodedToken.role,
     }

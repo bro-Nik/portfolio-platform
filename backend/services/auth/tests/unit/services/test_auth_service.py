@@ -70,7 +70,7 @@ class TestAuthService:
     async def test_refresh_tokens_success(self, service, mock_db_user, mock_db_token, mock_token_pair):
         token_data = MagicMock()
         token_data.token = 'valid.refresh.token'
-        payload = {'sub': '1', 'type': 'refresh', 'exp': 9999999999}
+        payload = {'id': '1', 'type': 'refresh', 'exp': 9999999999}
         updated_token = MagicMock()
         updated_token.token = 'new.refresh.token'
 
@@ -92,7 +92,7 @@ class TestAuthService:
     async def test_refresh_tokens_invalid_type(self, service):
         token_data = MagicMock()
         token_data.token = 'access.token.not.refresh'
-        payload = {'sub': '1', 'type': 'access', 'exp': 9999999999}
+        payload = {'id': '1', 'type': 'access', 'exp': 9999999999}
 
         with (
             patch.object(service.security, 'verify_token', return_value=payload),
@@ -103,7 +103,7 @@ class TestAuthService:
     async def test_refresh_tokens_not_found_in_db(self, service):
         token_data = MagicMock()
         token_data.token = 'valid.but.not.in.db'
-        payload = {'sub': '1', 'type': 'refresh', 'exp': 9999999999}
+        payload = {'id': '1', 'type': 'refresh', 'exp': 9999999999}
 
         with (
             patch.object(service.security, 'verify_token', return_value=payload),
@@ -125,7 +125,7 @@ class TestAuthService:
     async def test_token_replaced_after_refresh(self, service, mock_db_user, mock_db_token, mock_token_pair):
         token_data = MagicMock()
         token_data.token = 'used.refresh.token'
-        payload = {'sub': '1', 'type': 'refresh', 'exp': 9999999999}
+        payload = {'id': '1', 'type': 'refresh', 'exp': 9999999999}
         updated_token = MagicMock()
         updated_token.token = 'new.refresh.token'
 

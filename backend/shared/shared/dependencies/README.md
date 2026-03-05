@@ -6,25 +6,25 @@ Common FastAPI dependencies for services.
 
 ```python
 from shared.dependencies import auth
-from shared.schemas import AuthUser, UserRole
-from app.core.config import settings
+from app.core import settings
 
 # Create
-get_current_user = auth.create_auth_dependency(
+deps = auth.create_dependencies(
     jwt_secret=settings.jwt_secret,
     jwt_algorithm=settings.jwt_algorithm,
 )
 
-require_user = auth.create_role_requirement(UserRole.USER)
-require_admin = auth.create_role_requirement(UserRole.ADMIN)
+CurrentUser = deps.CurrentUser
 
-CurrentUser = Annotated[AuthUser, get_current_user]
-RequireUser = Annotated[None, require_user]
-RequireAdmin = Annotated[None, require_admin]
+require_admin = deps.require_admin
+require_user = deps.require_user
 
 # Use in endpoints
 @router.get("/users")
 async def get_users(current_user: CurrentUser):
+
+# Use in routers
+admin_router = APIRouter(dependencies=[require_admin])
     ...
 ```
 
@@ -35,22 +35,20 @@ async def get_users(current_user: CurrentUser):
 
 ```python
 from shared.dependencies import db
-from app.core.database import AsyncSessionLocal
+from app.core import AsyncSessionLocal
 
 # Create
-get_db = db.create_session_dependency(AsyncSessionLocal)
-DBSession = Annotated[AsyncSession, get_db]
+deps = db.create_dependencies(AsyncSessionLocal)
+get_session = deps.get_session
+DBSession = deps.DBSession
 
 # Use in endpoints
 @router.get("/users")
-async def get_users(db: DBSession):
+async def get_users(session: DBSession):
     ...
 
 # Or use context manager directly
-from shared.dependencies.db import async_session
-from app.core.database import AsyncSessionLocal
-
-async with async_session(AsyncSessionLocal) as session:
+async with get_session() as session:
     user = await repo.get(user_id)
 ```
 
