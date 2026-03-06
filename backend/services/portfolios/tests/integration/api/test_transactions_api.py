@@ -31,14 +31,14 @@ class TestTransactionsAPI:
         assert data['portfolio_assets'] is not None
         assert len(data['portfolio_assets']) > 0
 
-        # Проверяем что в портфеле появился актив
+        # Проверяем в портфеле
         data_portfolio = (await client.get(f'/portfolios/{portfolio.id}', headers=auth_headers)).json()
         btc = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 'BTC'), {})
         usdt = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 'USDT'), {})
         assert Decimal(btc['quantity']) == Decimal('0.1')  # Купили 0.1 BTC
         assert Decimal(usdt['quantity']) == Decimal('-6000.0')  # Потратили 6000 USDT
 
-        # Проверяем что в кошельке появился актив
+        # Проверяем в кошельке
         data_wallet = (await client.get(f'/wallets/{wallet.id}', headers=auth_headers)).json()
         btc = next((a for a in data_wallet['assets'] if a['ticker_id'] == 'BTC'), {})
         usdt = next((a for a in data_wallet['assets'] if a['ticker_id'] == 'USDT'), {})
@@ -64,14 +64,14 @@ class TestTransactionsAPI:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        # Проверяем что в портфеле количество уменьшилось
+        # Проверяем в портфеле
         data_portfolio = (await client.get(f'/portfolios/{portfolio.id}', headers=auth_headers)).json()
         eth = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 'ETH'), {})
         usdt = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 'USDT'), {})
         assert Decimal(eth['quantity']) == Decimal('-2.5')  # Продали 2.5 ETH
         assert Decimal(usdt['quantity']) == Decimal('7500.0')  # Получили 7500 USDT
 
-        # Проверяем что в кошельке количество уменьшилось
+        # Проверяем в кошельке
         data_wallet = (await client.get(f'/wallets/{wallet.id}', headers=auth_headers)).json()
         eth = next((a for a in data_wallet['assets'] if a['ticker_id'] == 'ETH'), {})
         usdt = next((a for a in data_wallet['assets'] if a['ticker_id'] == 'USDT'), {})

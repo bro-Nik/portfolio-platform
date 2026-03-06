@@ -1,4 +1,3 @@
-from collections.abc import AsyncGenerator
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from unittest.mock import MagicMock
@@ -19,7 +18,6 @@ from app.schemas import UserRole
 
 @pytest.fixture(scope='session')
 async def test_engine():
-    """Создаёт новую БД для каждого запуска тестов."""
     engine = create_async_engine(
         settings.db_url,
         echo=False,
@@ -40,15 +38,10 @@ async def test_engine():
 
 
 @pytest.fixture
-async def db_session(test_engine) -> AsyncGenerator[AsyncSession]:
-    async_session = async_sessionmaker(
-        test_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-        autoflush=False,
-    )
+async def db_session(test_engine):
+    session = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)
 
-    async with async_session() as session:
+    async with session() as session:
         try:
             yield session
         finally:
@@ -63,7 +56,6 @@ def user():
 
 @pytest.fixture
 async def client(db_session):
-    """Клиент с подменой зависимостей FastAPI."""
     app.dependency_overrides[get_session] = lambda: db_session
 
     async with LifespanManager(app) as manager, AsyncClient(
@@ -76,7 +68,7 @@ async def client(db_session):
 
 
 @pytest.fixture
-async def portfolio(db_session, user, save) -> Portfolio:
+async def portfolio(db_session, user, save):
     portfolio = Portfolio(
         name='Тестовый портфель',
         comment='Тестовый комментарий',
@@ -87,7 +79,7 @@ async def portfolio(db_session, user, save) -> Portfolio:
 
 
 @pytest.fixture
-async def wallet(db_session, user, save) -> Wallet:
+async def wallet(db_session, user, save):
     wallet = Wallet(
         name='Тестовый кошелек',
         comment='Тестовый комментарий',
@@ -97,7 +89,7 @@ async def wallet(db_session, user, save) -> Wallet:
 
 
 @pytest.fixture
-async def portfolio_asset(db_session, portfolio, save) -> PortfolioAsset:
+async def portfolio_asset(db_session, portfolio, save):
     asset = PortfolioAsset(
         ticker_id='BTC',
         portfolio_id=portfolio.id,
@@ -112,7 +104,7 @@ async def portfolio_asset(db_session, portfolio, save) -> PortfolioAsset:
 
 
 @pytest.fixture
-async def wallet_asset(db_session, wallet, save) -> WalletAsset:
+async def wallet_asset(db_session, wallet, save):
     asset = WalletAsset(
         ticker_id='BTC',
         wallet_id=wallet.id,
@@ -124,7 +116,7 @@ async def wallet_asset(db_session, wallet, save) -> WalletAsset:
 
 
 @pytest.fixture
-async def transaction(db_session, portfolio, wallet, save) -> Transaction:
+async def transaction(db_session, portfolio, wallet, save):
     transaction = Transaction(
         date=datetime.now(UTC),
         ticker_id='BTC',

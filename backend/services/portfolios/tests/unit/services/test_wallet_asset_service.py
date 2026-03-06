@@ -3,15 +3,16 @@ from unittest.mock import patch
 
 import pytest
 
+from app.repositories import TransactionRepository, WalletAssetRepository
 from app.schemas import TransactionResponse
 from app.services import WalletAssetService
 
 
 @pytest.fixture
-async def service(db_session, wallet_asset_repo, transaction_repo):
+async def service(db_session, async_mock):
     service = WalletAssetService(db_session)
-    service.repo = wallet_asset_repo
-    service.transaction_repo = transaction_repo
+    service.repo = async_mock(spec=WalletAssetRepository, session=db_session)
+    service.transaction_repo = async_mock(spec=TransactionRepository, session=db_session)
     return service
 
 
@@ -21,12 +22,7 @@ class TestWalletAssetService:
         user_id = 1
         wallet_id = 1
 
-        asset = mock(
-            id=asset_id,
-            ticker_id='USD',
-            wallet_id=wallet_id,
-            quantity=Decimal('10000.0'),
-        )
+        asset = mock(id=asset_id, ticker_id='USD', wallet_id=wallet_id, quantity=Decimal('10000.0'))
 
         transactions = [
             mock(id=1, ticker_id='USD', quantity=Decimal('5000.0'), type='Input'),
@@ -51,12 +47,7 @@ class TestWalletAssetService:
         wallet1 = mock(id=1, name='Wallet 1')
         wallet2 = mock(id=2, name='Wallet 2')
 
-        asset = mock(
-            id=asset_id,
-            ticker_id='USD',
-            wallet=wallet1,
-            quantity=Decimal('7000.0'),
-        )
+        asset = mock(id=asset_id, ticker_id='USD', wallet=wallet1, quantity=Decimal('7000.0'))
 
         assets = [
             mock(wallet=wallet1, quantity=Decimal('7000.0')),

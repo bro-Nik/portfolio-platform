@@ -3,15 +3,16 @@ from unittest.mock import patch
 import pytest
 from shared.exceptions import ConflictError, NotFoundError
 
+from app.repositories import WalletRepository
 from app.schemas import WalletResponse
-from app.services import WalletService
+from app.services import WalletAssetService, WalletService
 
 
 @pytest.fixture
-async def service(db_session, wallet_repo, wallet_asset_service):
+async def service(db_session, async_mock):
     service = WalletService(db_session)
-    service.repo = wallet_repo
-    service.asset_service = wallet_asset_service
+    service.repo = async_mock(spec=WalletRepository, session=db_session)
+    service.asset_service = async_mock(spec=WalletAssetService, session=db_session)
     return service
 
 
@@ -107,7 +108,7 @@ class TestWalletService:
             service.repo.get_by_id_and_user.assert_called_once_with(1, 1)
             service.repo.delete.assert_called_once_with(1)
 
-    async def test_handle_transaction_trade(self, service, mock):
+    async def test_handle_transaction_trade_success(self, service, mock):
         transaction = mock(wallet_id=1, type='Buy')
         wallet = mock(id=1, user_id=1)
 
@@ -133,7 +134,7 @@ class TestWalletService:
             service.repo.get_by_id_and_user.assert_called_once_with(1, 1)
             service.asset_service.handle_transaction.assert_called_once_with(transaction, cancel=True)
 
-    async def test_handle_transaction_transfer(self, service, mock):
+    async def test_handle_transaction_transfer_success(self, service, mock):
         transaction = mock(wallet_id=1, wallet2_id=2, type='TransferOut')
         wallet1 = mock(id=1, user_id=1)
         wallet2 = mock(id=2, user_id=1)
@@ -154,7 +155,7 @@ class TestWalletService:
         service.repo.get_by_id_and_user.assert_not_called()
         service.asset_service.handle_transaction.assert_not_called()
 
-    async def test_handle_transaction_earning(self, service, mock):
+    async def test_handle_transaction_earning_success(self, service, mock):
         transaction = mock(wallet_id=1, type='Earning')
         wallet = mock(id=1, user_id=1)
 
@@ -166,7 +167,7 @@ class TestWalletService:
             service.repo.get_by_id_and_user.assert_called_once_with(1, 1)
             service.asset_service.handle_transaction.assert_called_once()
 
-    async def test_handle_transaction_input_output(self, service, mock):
+    async def test_handle_transaction_input_output_success(self, service, mock):
         for t_type in ['Input', 'Output']:
             transaction = mock(wallet_id=1, type=t_type)
             wallet = mock(id=1, user_id=1)

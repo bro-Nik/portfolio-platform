@@ -5,26 +5,24 @@ from unittest.mock import patch
 import pytest
 from shared.exceptions import NotFoundError
 
-from app.services import TransactionService
+from app.repositories import TransactionRepository
+from app.services import (
+    PortfolioAssetService,
+    PortfolioService,
+    TransactionService,
+    WalletAssetService,
+    WalletService,
+)
 
 
 @pytest.fixture
-async def service(
-    db_session,
-    transaction_repo,
-    portfolio_service,
-    portfolio_asset_service,
-    wallet_service,
-    wallet_asset_service,
-):
+async def service(db_session, async_mock):
     service = TransactionService(db_session)
-
-    service.repo = transaction_repo
-    service.portfolio_service = portfolio_service
-    service.portfolio_asset_service = portfolio_asset_service
-    service.wallet_service = wallet_service
-    service.wallet_asset_service = wallet_asset_service
-
+    service.repo = async_mock(spec=TransactionRepository, session=db_session)
+    service.portfolio_service = async_mock(spec=PortfolioService, session=db_session)
+    service.portfolio_asset_service = async_mock(spec=PortfolioAssetService, session=db_session)
+    service.wallet_service = async_mock(spec=WalletService, session=db_session)
+    service.wallet_asset_service = async_mock(spec=WalletAssetService, session=db_session)
     return service
 
 
