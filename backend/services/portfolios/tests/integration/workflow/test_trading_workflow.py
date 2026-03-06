@@ -4,9 +4,7 @@ from decimal import Decimal
 from fastapi import status
 
 
-class TestTradingWorkflowEndToEnd:
-    """Тесты полных торговых сценариев."""
-
+class TestTradingWorkflow:
     async def test_complete_trading_workflow(self, client, auth_headers):
         """Полный сценарий: создание портфеля, добавление средств, торговля."""
         auth_headers = {**auth_headers, 'X-Forwarded-For': '192.168.1.10'}
@@ -43,7 +41,7 @@ class TestTradingWorkflowEndToEnd:
         }
 
         funding_response = await client.post('/transactions/', json=funding_transaction, headers=auth_headers)
-        assert funding_response.status_code == status.HTTP_200_OK
+        assert funding_response.status_code == status.HTTP_201_CREATED
 
         # Добавление активов в портфель
         tickers = ['AAPL', 'GOOGL', 'MSFT']
@@ -76,7 +74,7 @@ class TestTradingWorkflowEndToEnd:
             }
 
             response = await client.post('/transactions/', json=transaction_data, headers=auth_headers)
-            assert response.status_code == status.HTTP_200_OK
+            assert response.status_code == status.HTTP_201_CREATED
 
         # Проверка состояния портфеля
         portfolio_response = await client.get(f'/portfolios/{portfolio_id}', headers=auth_headers)
@@ -120,7 +118,7 @@ class TestTradingWorkflowEndToEnd:
         }
 
         sell_response = await client.post('/transactions/', json=sell_transaction, headers=auth_headers)
-        assert sell_response.status_code == status.HTTP_200_OK
+        assert sell_response.status_code == status.HTTP_201_CREATED
 
         # Финансовый результат
 
@@ -159,19 +157,26 @@ class TestTradingWorkflowEndToEnd:
                 headers=auth_headers,
             )
 
+        # Создание кошелька
+        wallet_data = {'name': 'Кошелек'}
+        wallet_response = await client.post('/wallets/', json=wallet_data, headers=auth_headers)
+        wallet_id = wallet_response.json()['id']
+
         # Начальные инвестиции
         initial_investment = 100000
-        # auth_headers = {**auth_headers, 'X-Forwarded-For': '192.168.1.12'}
         for asset in assets:
             amount = initial_investment * (asset['target'] / 100)
             transaction_data = {
                 'date': datetime.now(UTC).isoformat(),
                 'ticker_id': asset['ticker'],
-                'quantity': str(amount / 100),  # Упрощенная модель
+                'ticker2_id': 'USD',
+                'quantity': str(amount / 100),
+                'quantity2': str(amount),
                 'price': '100.0',
                 'price_usd': '100.0',
                 'type': 'Buy',
                 'portfolio_id': portfolio_id,
+                'wallet_id': wallet_id,
                 'comment': f"Начальная покупка {asset['ticker']}",
             }
             await client.post('/transactions/', json=transaction_data, headers=auth_headers)
@@ -179,7 +184,6 @@ class TestTradingWorkflowEndToEnd:
         # Проверка начального распределения
         portfolio_response = await client.get(f'/portfolios/{portfolio_id}', headers=auth_headers)
         portfolio = portfolio_response.json()
-        print(portfolio)
 
         for asset in portfolio['assets']:
             percentage = (Decimal(asset['amount']) / Decimal(initial_investment)) * 100
@@ -202,11 +206,12 @@ class TestTradingWorkflowEndToEnd:
             'price_usd': '120.0',
             'type': 'Sell',
             'portfolio_id': portfolio_id,
+            'wallet_id': wallet_id,
             'comment': 'Ребалансировка: продажа части акций',
         }
 
         response = await client.post('/transactions/', json=rebalance_transaction, headers=auth_headers)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
 
         # Проверка конечного распределения
         portfolio_response = await client.get(f'/portfolios/{portfolio_id}', headers=auth_headers)

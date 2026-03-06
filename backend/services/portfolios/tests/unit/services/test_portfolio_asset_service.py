@@ -4,15 +4,16 @@ from unittest.mock import patch
 import pytest
 from shared.exceptions import ConflictError
 
+from app.repositories import PortfolioAssetRepository, TransactionRepository
 from app.schemas import PortfolioAssetResponse, TransactionResponse
 from app.services import PortfolioAssetService
 
 
 @pytest.fixture
-async def service(db_session, portfolio_asset_repo, transaction_repo):
+async def service(db_session, async_mock):
     service = PortfolioAssetService(db_session)
-    service.repo = portfolio_asset_repo
-    service.transaction_repo = transaction_repo
+    service.repo = async_mock(spec=PortfolioAssetRepository, session=db_session)
+    service.transaction_repo = async_mock(spec=TransactionRepository, session=db_session)
     return service
 
 

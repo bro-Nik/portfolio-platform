@@ -3,15 +3,16 @@ from unittest.mock import patch
 import pytest
 from shared.exceptions import ConflictError, NotFoundError
 
+from app.repositories import PortfolioRepository
 from app.schemas import PortfolioResponse
-from app.services import PortfolioService
+from app.services import PortfolioAssetService, PortfolioService
 
 
 @pytest.fixture
-async def service(db_session, portfolio_repo, portfolio_asset_service):
+async def service(db_session, async_mock):
     service = PortfolioService(db_session)
-    service.repo = portfolio_repo
-    service.asset_service = portfolio_asset_service
+    service.repo = async_mock(spec=PortfolioRepository, session=db_session)
+    service.asset_service = async_mock(spec=PortfolioAssetService, session=db_session)
     return service
 
 
@@ -125,7 +126,7 @@ class TestPortfolioService:
             service.asset_service.create.assert_called_once_with(asset_data)
             service.get.assert_called_once_with(portfolio_id, user_id)
 
-    async def test_handle_transaction_trade(self, service, mock):
+    async def test_handle_transaction_trade_success(self, service, mock):
         transaction = mock(portfolio_id=1, type='Buy')
         portfolio = mock(id=1, user_id=1)
 

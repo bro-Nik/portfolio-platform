@@ -1,15 +1,9 @@
-import pytest
-
 from app.models import LoginSession, RefreshToken
 from app.repositories import SessionRepository, TokenRepository, UserRepository
 
 
 class TestPublicAPI:
-    """Тесты для публичных эндпоинтов."""
-
-    @pytest.mark.asyncio
     async def test_service_info(self, client):
-        """Тест получения информации о сервисе."""
         response = await client.get('/')
 
         assert response.status_code == 200
@@ -17,9 +11,7 @@ class TestPublicAPI:
         assert '/docs' in data['docs']
         assert '/redoc' in data['redoc']
 
-    @pytest.mark.asyncio
     async def test_register_success(self, client, db_session):
-        """Полный тест удачной регистрации."""
         register_data = {'email': 'newuser@example.com', 'password': 'Password123!'}
         response = await client.post('/register', json=register_data)
 
@@ -45,9 +37,7 @@ class TestPublicAPI:
         sessions = await session_repo.get_many_by(LoginSession.user_id == user.id)
         assert len(sessions) == 1
 
-    @pytest.mark.asyncio
     async def test_login_success(self, client, db_session, test_user):
-        """Полный тест удачного входа."""
         login_data = {'email': 'test@example.com', 'password': 'testpass'}
         response = await client.post('/login', json=login_data)
 
@@ -67,9 +57,7 @@ class TestPublicAPI:
         sessions = await session_repo.get_many_by(LoginSession.user_id == test_user.id)
         assert len(sessions) == 1
 
-    @pytest.mark.asyncio
     async def test_refresh_tokens_success(self, client, db_session, test_user):
-        """Полный тест удачного обновления токенов."""
         # Входим для получения токена
         login_data = {'email': 'test@example.com', 'password': 'testpass'}
         response = await client.post('/login', json=login_data)
