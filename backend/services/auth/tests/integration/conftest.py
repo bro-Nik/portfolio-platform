@@ -1,28 +1,19 @@
-from collections.abc import AsyncGenerator
-from pathlib import Path
-import sys
-
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.dependencies import get_session
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-
 from app.core import settings
+from app.dependencies import get_session
 from app.main import app
-from app.models import Base, User
+from app.models import Base
 from app.repositories import UserRepository
 from app.schemas import UserCreate
 
 
 @pytest.fixture(scope='session')
 async def test_engine():
-    """Тестовый движок базы данных с NullPool для изоляции тестов."""
     engine = create_async_engine(
         settings.db_url,
         echo=False,
@@ -42,16 +33,11 @@ async def test_engine():
     await engine.dispose()
 
 
-@pytest.fixture(scope='function')
-async def db_session(test_engine) -> AsyncGenerator[AsyncSession]:
-    """Тестовая сессия базы данных."""
-    async_session = async_sessionmaker(
-        test_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-    )
+@pytest.fixture
+async def db_session(test_engine):
+    session = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)
 
-    async with async_session() as session:
+    async with session() as session:
         try:
             yield session
         finally:
@@ -59,9 +45,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession]:
 
 
 @pytest.fixture
-async def client(db_session: AsyncSession):
-    """Асинхронный клиент."""
-    # Подменяем зависимость
+async def client(db_session):
     app.dependency_overrides[get_session] = lambda: db_session
 
     async with LifespanManager(app) as manager, AsyncClient(
@@ -70,13 +54,11 @@ async def client(db_session: AsyncSession):
     ) as client:
         yield client
 
-    # Очищаем подмены
     app.dependency_overrides.clear()
 
 
 @pytest.fixture
-async def test_user(db_session: AsyncSession) -> User:
-    """Создание тестового пользователя."""
+async def test_user(db_session: AsyncSession):
     user_repo = UserRepository(db_session)
 
     user = await user_repo.get_by_email('test@example.com')
