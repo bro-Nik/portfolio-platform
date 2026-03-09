@@ -16,8 +16,6 @@ services:
       additional_contexts:
         - shared-context=../../shared
     env_file:
-      - path: ../../../.env
-        required: false
       - path: ./.env
         required: false
     depends_on: [auth-db]
