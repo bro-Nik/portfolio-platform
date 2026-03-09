@@ -11,10 +11,10 @@ class Portfolio(Base):
     __tablename__ = 'portfolio'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(Integer, index=True)
     name: Mapped[str] = mapped_column(String(100))
     market: Mapped[str] = mapped_column(String(32))
     comment: Mapped[str | None] = mapped_column(String(1024))
+    user_id: Mapped[int] = mapped_column(Integer, index=True)
 
     # Relationships
     assets: Mapped[list['PortfolioAsset']] = relationship(back_populates='portfolio')
@@ -32,6 +32,7 @@ class PortfolioAsset(Base):
     amount: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     percent: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     comment: Mapped[str | None] = mapped_column(String(1024))
+    user_id: Mapped[int] = mapped_column(Integer)
 
     # Relationships
     portfolio: Mapped['Portfolio'] = relationship(back_populates='assets')
@@ -55,6 +56,7 @@ class Transaction(Base):
     portfolio_id: Mapped[int | None] = mapped_column(Integer)
     portfolio2_id: Mapped[int | None] = mapped_column(Integer)
     order: Mapped[bool | None] = mapped_column(Boolean)
+    user_id: Mapped[int] = mapped_column(Integer)
 
     def get_direction(self, cancel: bool = False) -> int:
         """Метод для расчета направления."""
@@ -67,9 +69,9 @@ class Wallet(Base):
     __tablename__ = 'wallet'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(Integer, index=True)
     name: Mapped[str] = mapped_column(String(255))
     comment: Mapped[str | None] = mapped_column(String(1024))
+    user_id: Mapped[int] = mapped_column(Integer, index=True)
 
     # Relationships
     assets: Mapped[list['WalletAsset']] = relationship(back_populates='wallet')
@@ -84,6 +86,7 @@ class WalletAsset(Base):
     quantity: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     buy_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     sell_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
+    user_id: Mapped[int] = mapped_column(Integer)
 
     # Relationships
     wallet: Mapped['Wallet'] = relationship(back_populates='assets')

@@ -20,6 +20,8 @@ class PortfolioAssetCreateRequest(BaseModel):
 class PortfolioAssetCreate(PortfolioAssetBase):
     """Создание актива в БД."""
 
+    user_id: int
+
 
 class PortfolioAssetUpdate(PortfolioAssetBase):
     """Обновление актива в БД."""

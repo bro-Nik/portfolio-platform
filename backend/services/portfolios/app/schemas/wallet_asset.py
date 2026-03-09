@@ -13,6 +13,8 @@ class WalletAssetBase(BaseModel):
 class WalletAssetCreate(WalletAssetBase):
     """Создание актива в БД."""
 
+    user_id: int
+
 
 class WalletAssetUpdate(WalletAssetBase):
     """Обновление актива в БД."""

@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.dependencies import DBSession
+from app.dependencies import Ctx, DBSession
 from app.services import (
     PortfolioAssetService,
     PortfolioService,
@@ -12,29 +12,29 @@ from app.services import (
 )
 
 
-def get_portfolio_service(session: DBSession) -> PortfolioService:
+def get_portfolio_service(session: DBSession, ctx: Ctx) -> PortfolioService:
     """Зависимость для получения сервиса портфелей."""
-    return PortfolioService(session)
+    return PortfolioService(session, ctx)
 
 
-def get_portfolio_asset_service(session: DBSession) -> PortfolioAssetService:
+def get_portfolio_asset_service(session: DBSession, ctx: Ctx) -> PortfolioAssetService:
     """Зависимость для получения сервиса активов портфелей."""
-    return PortfolioAssetService(session)
+    return PortfolioAssetService(session, ctx)
 
 
-def get_wallet_service(session: DBSession) -> WalletService:
+def get_wallet_service(session: DBSession, ctx: Ctx) -> WalletService:
     """Зависимость для получения сервиса кошельков."""
-    return WalletService(session)
+    return WalletService(session, ctx)
 
 
-def get_wallet_asset_service(session: DBSession) -> WalletAssetService:
+def get_wallet_asset_service(session: DBSession, ctx: Ctx) -> WalletAssetService:
     """Зависимость для получения сервиса активов кошельков."""
-    return WalletAssetService(session)
+    return WalletAssetService(session, ctx)
 
 
-def get_transaction_service(session: DBSession) -> TransactionService:
+def get_transaction_service(session: DBSession, ctx: Ctx) -> TransactionService:
     """Зависимость для получения сервиса транзакций."""
-    return TransactionService(session)
+    return TransactionService(session, ctx)
 
 
 PortfolioServiceDep = Annotated[PortfolioService, Depends(get_portfolio_service)]

@@ -29,10 +29,7 @@ class TransactionRepository(BaseRepository[Transaction, TransactionCreate, Trans
             ),
         )
 
-        return await self.get_many_by(
-            condition,
-            order_by=[Transaction.date.desc()],
-        )
+        return await self.get_many_by(condition, order_by=[Transaction.date.desc()])
 
     async def get_many_by_ticker_and_wallet(
         self,
@@ -51,7 +48,4 @@ class TransactionRepository(BaseRepository[Transaction, TransactionCreate, Trans
             ),
         )
 
-        return await self.get_many_by(
-            condition,
-            order_by=[Transaction.date.desc()],
-        )
+        return await self.get_many_by(condition, order_by=[Transaction.date.desc()])

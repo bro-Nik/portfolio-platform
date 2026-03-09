@@ -38,12 +38,26 @@ class TransactionCreateRequest(TransactionBase):
 class TransactionUpdateRequest(BaseModel):
     """Обновление транзакции."""
 
-    status: str
-    amount: Decimal | None = None
+    date: datetime | None = None
+    ticker_id: str | None = None
+    ticker2_id: str | None = None
+    quantity: Decimal | None = None
+    quantity2: Decimal | None = None
+    price: Decimal | None = None
+    price_usd: Decimal | None = None
+    type: str | None = None
+    comment: str | None = None
+    wallet_id: int | None = None
+    wallet2_id: int | None = None
+    portfolio_id: int | None = None
+    portfolio2_id: int | None = None
+    order: bool | None = None
 
 
 class TransactionCreate(TransactionBase):
     """Создание транзакции в БД."""
+
+    user_id: int
 
 
 class TransactionUpdate(TransactionBase):

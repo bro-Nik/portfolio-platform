@@ -9,7 +9,7 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core import settings
-from app.dependencies import CurrentUser, PortfolioAssetServiceDep, PortfolioServiceDep
+from app.dependencies import PortfolioAssetServiceDep, PortfolioServiceDep
 from app.schemas import (
     PortfolioAssetCreateRequest,
     PortfolioCreateRequest,
@@ -28,11 +28,11 @@ router = APIRouter(prefix='/portfolios', tags=['Portfolios'], responses=response
 @handle_errors('Ошибка при получении портфелей')
 async def get_user_portfolios(
     request: Request,
-    current_user: CurrentUser,
     portfolio_service: PortfolioServiceDep,
 ) -> PortfolioListResponse:
     """Получение всех портфелей пользователя."""
-    return await portfolio_service.get_many(current_user.id)
+    portfolios = await portfolio_service.get_many_with_assets()
+    return PortfolioListResponse(portfolios=portfolios)
 
 
 @router.get('/{portfolio_id}', responses=responses(404))
@@ -41,11 +41,10 @@ async def get_user_portfolios(
 async def get_user_portfolio(
     request: Request,
     portfolio_id: int,
-    current_user: CurrentUser,
     portfolio_service: PortfolioServiceDep,
 ) -> PortfolioResponse:
     """Получение портфеля пользователя."""
-    return await portfolio_service.get(portfolio_id, current_user.id)
+    return await portfolio_service.get_with_assets(portfolio_id)
 
 
 @router.post('/', status_code=201, responses=responses(400, 409))
@@ -54,11 +53,11 @@ async def get_user_portfolio(
 async def create_portfolio(
     request: Request,
     data: PortfolioCreateRequest,
-    current_user: CurrentUser,
     portfolio_service: PortfolioServiceDep,
 ) -> PortfolioResponse:
     """Создание нового портфеля."""
-    return await portfolio_service.create(current_user.id, data)
+    portfolio = await portfolio_service.create(data)
+    return await portfolio_service.get_with_assets(portfolio.id)
 
 
 @router.put('/{portfolio_id}', responses=responses(400, 404, 409))
@@ -68,11 +67,11 @@ async def update_portfolio(
     request: Request,
     portfolio_id: int,
     data: PortfolioUpdateRequest,
-    current_user: CurrentUser,
     portfolio_service: PortfolioServiceDep,
 ) -> PortfolioResponse:
     """Обновление портфеля."""
-    return await portfolio_service.update(portfolio_id, current_user.id, data)
+    portfolio = await portfolio_service.update(portfolio_id, data)
+    return await portfolio_service.get_with_assets(portfolio.id)
 
 
 @router.delete('/{portfolio_id}', responses=responses(400, 404))
@@ -81,11 +80,11 @@ async def update_portfolio(
 async def delete_portfolio(
     request: Request,
     portfolio_id: int,
-    current_user: CurrentUser,
     portfolio_service: PortfolioServiceDep,
 ) -> PortfolioDeleteResponse:
     """Удаление портфеля."""
-    return await portfolio_service.delete(portfolio_id, current_user.id)
+    await portfolio_service.delete(portfolio_id)
+    return PortfolioDeleteResponse(portfolio_id=portfolio_id)
 
 
 @router.post('/{portfolio_id}/assets', status_code=201, responses=responses(400, 404, 409))
@@ -95,11 +94,11 @@ async def add_asset_to_portfolio(
     request: Request,
     portfolio_id: int,
     data: PortfolioAssetCreateRequest,
-    current_user: CurrentUser,
     portfolio_service: PortfolioServiceDep,
 ) -> PortfolioResponse:
     """Добавление актива в портфель."""
-    return await portfolio_service.add_asset(portfolio_id, current_user.id, data)
+    await portfolio_service.add_asset(portfolio_id, data)
+    return await portfolio_service.get_with_assets(portfolio_id)
 
 
 @router.delete('/{portfolio_id}/assets/{asset_id}', responses=responses(400, 404))
@@ -109,11 +108,11 @@ async def delete_asset_from_portfolio(
     request: Request,
     portfolio_id: int,
     asset_id: int,
-    current_user: CurrentUser,
     portfolio_service: PortfolioServiceDep,
 ) -> PortfolioResponse:
     """Удаление актива из портфеля."""
-    return await portfolio_service.delete_asset(portfolio_id, current_user.id, asset_id)
+    await portfolio_service.add_asset(portfolio_id, asset_id)
+    return await portfolio_service.get_with_assets(portfolio_id)
 
 
 @router.get('/assets/{asset_id}/transactions', responses=responses(404))
@@ -122,11 +121,10 @@ async def delete_asset_from_portfolio(
 async def get_asset_transactions(
     request: Request,
     asset_id: int,
-    current_user: CurrentUser,
     asset_service: PortfolioAssetServiceDep,
 ) -> list[TransactionResponse]:
     """Получение транзакций актива."""
-    return await asset_service.get_transactions(asset_id, current_user.id)
+    return await asset_service.get_transactions(asset_id)
 
 
 @router.get('/assets/{asset_id}/distribution', responses=responses(404))
@@ -135,8 +133,7 @@ async def get_asset_transactions(
 async def get_asset_distribution(
     request: Request,
     asset_id: int,
-    current_user: CurrentUser,
     asset_service: PortfolioAssetServiceDep,
 ) -> dict:
     """Получение информации о распределении актива по портфелям."""
-    return await asset_service.get_distribution(asset_id, current_user.id)
+    return await asset_service.get_distribution(asset_id)

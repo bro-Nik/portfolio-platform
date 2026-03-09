@@ -6,6 +6,7 @@ from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 import jwt
 import pytest
+from shared.rate_limit import limiter
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
@@ -57,6 +58,7 @@ def user():
 @pytest.fixture
 async def client(db_session):
     app.dependency_overrides[get_session] = lambda: db_session
+    limiter.enabled = False
 
     async with LifespanManager(app) as manager, AsyncClient(
         transport=ASGITransport(app=manager.app),
@@ -89,7 +91,7 @@ async def wallet(db_session, user, save):
 
 
 @pytest.fixture
-async def portfolio_asset(db_session, portfolio, save):
+async def portfolio_asset(db_session, portfolio, user, save):
     asset = PortfolioAsset(
         ticker_id='BTC',
         portfolio_id=portfolio.id,
@@ -99,24 +101,26 @@ async def portfolio_asset(db_session, portfolio, save):
         amount=Decimal('21500.00'),
         percent=100.0,
         comment='Комментарий',
+        user_id=user.id,
     )
     return await save(db_session, asset)
 
 
 @pytest.fixture
-async def wallet_asset(db_session, wallet, save):
+async def wallet_asset(db_session, wallet, user, save):
     asset = WalletAsset(
         ticker_id='BTC',
         wallet_id=wallet.id,
         quantity=Decimal(0),
         buy_orders=Decimal(0),
         sell_orders=Decimal(0),
+        user_id=user.id,
     )
     return await save(db_session, asset)
 
 
 @pytest.fixture
-async def transaction(db_session, portfolio, wallet, save):
+async def transaction(db_session, portfolio, wallet, user, save):
     transaction = Transaction(
         date=datetime.now(UTC),
         ticker_id='BTC',
@@ -128,6 +132,7 @@ async def transaction(db_session, portfolio, wallet, save):
         type='Buy',
         portfolio_id=portfolio.id,
         wallet_id=wallet.id,
+        user_id=user.id,
     )
     return await save(db_session, transaction)
 
