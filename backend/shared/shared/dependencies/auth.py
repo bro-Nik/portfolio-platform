@@ -7,7 +7,8 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import ValidationError
 
-from shared.exceptions import ForbiddenException, UnauthorizedException
+from shared.core import settings
+from shared.exceptions import AuthenticationError, ForbiddenException, UnauthorizedException
 from shared.schemas import AuthUser, UserRole
 
 security = HTTPBearer()
@@ -24,37 +25,37 @@ class AuthDependencies:
     CurrentUserOrNone: Annotated[AuthUser | None, ...]
 
 
-def create_dependencies(jwt_secret: str, jwt_algorithm: str = 'HS256') -> AuthDependencies:
+def get_current_user(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> AuthUser:
+    """Получить текущего пользователя из JWT токена."""
+    token = credentials.credentials
+
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+        return AuthUser(**payload)
+
+    except jwt.ExpiredSignatureError as e:
+        raise UnauthorizedException('Токен устарел') from e
+    except (jwt.InvalidTokenError, ValidationError) as e:
+        raise UnauthorizedException('Некорректный токен') from e
+    except jwt.PyJWTError as e:
+        raise AuthenticationError('Ошибка верификации токена') from e
+
+
+def get_current_user_or_none(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> AuthUser | None:
+    if not credentials:
+        return None
+
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+        return AuthUser(**payload)
+    except jwt.PyJWTError:
+        return None
+
+
+def create_dependencies() -> AuthDependencies:
     """Фабрика создает все зависимости для работы с аутентификацией."""
-    
-    def get_current_user(
-        credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-    ) -> AuthUser:
-        """Получить текущего пользователя из JWT токена."""
-        token = credentials.credentials
-
-        try:
-            payload = jwt.decode(token, jwt_secret, algorithms=[jwt_algorithm])
-            return AuthUser(**payload)
-
-        except jwt.ExpiredSignatureError as e:
-            raise UnauthorizedException('Токен устарел') from e
-        except (jwt.InvalidTokenError, ValidationError) as e:
-            raise UnauthorizedException('Некорректный токен') from e
-
-    def get_current_user_or_none(
-        credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-    ) -> AuthUser | None:
-        if not credentials:
-            return None
-
-        token = credentials.credentials
-        try:
-            payload = jwt.decode(token, jwt_secret, algorithms=[jwt_algorithm])
-            return AuthUser(**payload)
-        except jwt.PyJWTError:
-            return None
-    
+       
     def _create_role_requirement(required_role: UserRole) -> Callable[..., AuthUser]:
         """Создать зависимость для проверки конкретной роли."""
         

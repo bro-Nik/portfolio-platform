@@ -1,11 +1,6 @@
 from shared.dependencies import auth
 
-from app.core import settings
-
-deps = auth.create_dependencies(
-    jwt_secret=settings.jwt_secret,
-    jwt_algorithm=settings.jwt_algorithm,
-)
+deps = auth.create_dependencies()
 
 CurrentUser = deps.CurrentUser
 
