@@ -9,7 +9,7 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core import settings
-from app.dependencies import CurrentUser, TransactionServiceDep
+from app.dependencies import TransactionServiceDep
 from app.schemas import TransactionCreateRequest, TransactionResponseWithAssets
 
 router = APIRouter(prefix='/transactions', tags=['Transactions'], responses=responses(401, 429, 500))
@@ -21,11 +21,11 @@ router = APIRouter(prefix='/transactions', tags=['Transactions'], responses=resp
 async def create_transaction(
     request: Request,
     data: TransactionCreateRequest,
-    current_user: CurrentUser,
     transaction_service: TransactionServiceDep,
 ) -> TransactionResponseWithAssets:
     """Создание новой транзакции."""
-    return await transaction_service.create(current_user.id, data)
+    transaction = await transaction_service.create(data)
+    return await transaction_service.build_response_with_assets(transaction)
 
 
 @router.put('/{transaction_id}', responses=responses(400, 404, 409))
@@ -35,11 +35,11 @@ async def update_transaction(
     request: Request,
     transaction_id: int,
     data: TransactionCreateRequest,
-    current_user: CurrentUser,
     transaction_service: TransactionServiceDep,
 ) -> TransactionResponseWithAssets:
     """Изменение транзакции."""
-    return await transaction_service.update(current_user.id, transaction_id, data)
+    new_transaction, transaction = await transaction_service.update(transaction_id, data)
+    return await transaction_service.build_response_with_assets(new_transaction, transaction)
 
 
 @router.delete('/{transaction_id}', responses=responses(400, 404))
@@ -48,8 +48,8 @@ async def update_transaction(
 async def delete_transaction(
     request: Request,
     transaction_id: int,
-    current_user: CurrentUser,
     transaction_service: TransactionServiceDep,
 ) -> TransactionResponseWithAssets:
     """Удаление транзакции."""
-    return await transaction_service.delete(current_user.id, transaction_id)
+    transaction = await transaction_service.delete(transaction_id)
+    return await transaction_service.build_response_with_assets(transaction)

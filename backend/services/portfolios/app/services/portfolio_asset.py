@@ -1,40 +1,43 @@
 import asyncio
 from collections import defaultdict
 
-from shared.exceptions import ConflictError, NotFoundError
+from shared.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import PortfolioAsset, Transaction
 from app.repositories import PortfolioAssetRepository, TransactionRepository
-from app.schemas import (
-    PortfolioAssetCreate,
-    PortfolioAssetCreateRequest,
-    PortfolioAssetResponse,
-    TransactionResponse,
-)
+from app.schemas import Context, PortfolioAssetCreate, PortfolioAssetCreateRequest
 
 
 class PortfolioAssetService:
     """Сервис для работы с активами портфелей."""
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(self, session: AsyncSession, ctx: Context) -> None:
+        self.ctx = ctx
+        self.actor = ctx.actor
         self.session = session
         self.repo = PortfolioAssetRepository(session)
         self.transaction_repo = TransactionRepository(session)
 
-    async def create(self, data: PortfolioAssetCreateRequest) -> PortfolioAssetResponse:
+    async def get(self, id: int) -> PortfolioAsset:
+        """Получить актив пользователя."""
+        asset = await self.repo.get(id)
+        self._verify(asset)
+        return asset
+
+    async def create(self, data: PortfolioAssetCreateRequest) -> PortfolioAsset:
         """Создать актив для портфеля."""
         await self._validate_create_data(data)
 
-        asset_to_db = PortfolioAssetCreate(**data.model_dump())
+        asset_to_db = PortfolioAssetCreate(**data.model_dump(), user_id=self.actor.id)
         asset = await self.repo.create(asset_to_db)
         await self.session.flush()
+        return asset
 
-        return PortfolioAssetResponse.model_validate(asset)
-
-    async def delete(self, asset_id: int) -> bool:
+    async def delete(self, id: int) -> bool:
         """Удалить актив портфеля."""
-        return await self.repo.delete(asset_id)
+        await self.get(id)
+        return await self.repo.delete(id)
 
     async def handle_transaction(self, t: Transaction, *, cancel: bool = False) -> None:
         """Обработка транзакции."""
@@ -49,19 +52,15 @@ class PortfolioAssetService:
         elif t.type in ('Input', 'Output'):
             await self._handle_input_output(t, direction)
 
-    async def get_transactions(self, asset_id: int, user_id: int) -> list[TransactionResponse]:
+    async def get_transactions(self, id: int) -> list[Transaction]:
         """Получение транзакций актива."""
-        asset = await self._get_or_raise(asset_id, user_id)
-        transactions = await self.transaction_repo.get_many_by_ticker_and_portfolio(
-            asset.ticker_id, asset.portfolio_id,
-        )
-        return [TransactionResponse.model_validate(t) for t in transactions]
+        asset = await self.get(id)
+        return await self.transaction_repo.get_many_by_ticker_and_portfolio(asset.ticker_id, asset.portfolio_id)
 
-    async def get_distribution(self, asset_id: int, user_id: int) -> dict:
+    async def get_distribution(self, id: int) -> dict:
         """Получение информации о распределении актива по портфелям."""
-        asset = await self._get_or_raise(asset_id, user_id)
-
-        assets = await self.repo.get_many_by_ticker_and_user_with_portfolios(asset.ticker_id, user_id)
+        asset = await self.get(id)
+        assets = await self.repo.get_many_by_ticker_and_user_with_portfolios(asset.ticker_id, self.actor.id)
 
         total_quantity = sum(asset.quantity for asset in assets)
         total_amount = sum(asset.amount for asset in assets)
@@ -69,13 +68,15 @@ class PortfolioAssetService:
         distribution = []
         for asset in assets:
             percentage = (asset.quantity / total_quantity * 100) if total_quantity > 0 else 0
-            distribution.append({
-                'portfolio_id': asset.portfolio.id,
-                'portfolio_name': asset.portfolio.name,
-                'quantity': asset.quantity,
-                'amount': asset.amount,
-                'percentage_of_total': round(float(percentage), 2),
-            })
+            distribution.append(
+                {
+                    'portfolio_id': asset.portfolio.id,
+                    'portfolio_name': asset.portfolio.name,
+                    'quantity': asset.quantity,
+                    'amount': asset.amount,
+                    'percentage_of_total': round(float(percentage), 2),
+                }
+            )
 
         return {
             'total_quantity_all_portfolios': total_quantity,
@@ -83,7 +84,7 @@ class PortfolioAssetService:
             'portfolios': distribution,
         }
 
-    async def get_affected(self, *transactions: Transaction) -> list[PortfolioAssetResponse]:
+    async def get_affected(self, *transactions: Transaction) -> list[PortfolioAsset]:
         """Получить измененные активы портфелей на основе транзакций."""
         from app.services.transaction_analyzer import get_portfolio_pairs as get_pairs
 
@@ -103,19 +104,13 @@ class PortfolioAssetService:
             for portfolio_id, ticker_ids in assets_map.items()
         ])
 
-        assets = [asset for result in results for asset in result]
-        return [PortfolioAssetResponse.model_validate(a) for a in assets]
-
-    async def _get_or_raise(self, asset_id: int, user_id: int) -> PortfolioAsset:
-        asset = await self.repo.get_by_id_and_user(asset_id, user_id)
-        if not asset:
-            raise NotFoundError(f'Актив id={asset_id} не найден')
-        return asset
+        return [asset for result in results for asset in result]
 
     async def _get_or_create(self, *pairs: tuple) -> tuple[PortfolioAsset, ...]:
         results = await asyncio.gather(*[
-            self.repo.get_or_create(portfolio_id=p_id, ticker_id=t_id)
-            for p_id, t_id in pairs if p_id is not None and t_id is not None
+            self.repo.get_or_create(portfolio_id=p_id, ticker_id=t_id, user_id=self.actor.id)
+            for p_id, t_id in pairs
+            if p_id is not None and t_id is not None
         ])
         await self.session.flush()
         return tuple(results)
@@ -134,8 +129,12 @@ class PortfolioAssetService:
         handler(asset2, t, direction, is_base_asset=False)
 
     def _handle_trade_execution(
-        self, asset: PortfolioAsset, t: Transaction, direction: int,
-        *, is_base_asset: bool,
+        self,
+        asset: PortfolioAsset,
+        t: Transaction,
+        direction: int,
+        *,
+        is_base_asset: bool,
     ) -> None:
         if is_base_asset:
             asset.quantity += t.quantity * direction
@@ -145,8 +144,12 @@ class PortfolioAssetService:
             # asset.amount -= t.quantity * t.price_usd * direction
 
     def _handle_trade_order(
-        self, asset: PortfolioAsset, t: Transaction, direction: int,
-        *, is_base_asset: bool,
+        self,
+        asset: PortfolioAsset,
+        t: Transaction,
+        direction: int,
+        *,
+        is_base_asset: bool,
     ) -> None:
         if is_base_asset:
             if t.type == 'Buy':
@@ -157,7 +160,7 @@ class PortfolioAssetService:
             asset.sell_orders -= t.quantity2 * direction
 
     async def _handle_earning(self, t: Transaction, direction: int) -> None:
-        asset, = await self._get_or_create((t.portfolio_id, t.ticker_id))
+        (asset,) = await self._get_or_create((t.portfolio_id, t.ticker_id))
         asset.quantity += t.quantity * direction
 
     async def _handle_transfer(self, t: Transaction, direction: int) -> None:
@@ -175,5 +178,17 @@ class PortfolioAssetService:
         asset2.quantity -= quantity
 
     async def _handle_input_output(self, t: Transaction, direction: int) -> None:
-        asset, = await self._get_or_create((t.portfolio_id, t.ticker_id))
+        (asset,) = await self._get_or_create((t.portfolio_id, t.ticker_id))
         asset.quantity += t.quantity * direction
+
+    def _verify(self, asset: PortfolioAsset) -> None:
+        self._check_exists(asset)
+        self._check_permission(asset)
+
+    def _check_exists(self, asset: PortfolioAsset | None) -> None:
+        if not asset:
+            raise NotFoundError('Актив не найден')
+
+    def _check_permission(self, asset: PortfolioAsset) -> None:
+        if asset.user_id != self.actor.id:
+            raise PermissionDeniedError('Недостаточно прав для получения актива')

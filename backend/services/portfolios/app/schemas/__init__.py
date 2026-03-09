@@ -1,24 +1,27 @@
-from shared.schemas import AuthUser, UserRole
+from shared.schemas import AuthUser, Context, UserRole
 
+from .portfolio import (
+    PortfolioCreate,
+    PortfolioCreateRequest,
+    PortfolioDeleteResponse,
+    PortfolioListResponse,
+    PortfolioResponse,
+    PortfolioUpdate,
+    PortfolioUpdateRequest,
+)
 from .portfolio_asset import (
     PortfolioAssetCreate,
     PortfolioAssetCreateRequest,
     PortfolioAssetResponse,
     PortfolioAssetUpdate,
 )
-from .portfolio import (
-    PortfolioCreate,
-    PortfolioDeleteResponse,
-    PortfolioListResponse,
-    PortfolioResponse,
-    PortfolioUpdate,
-    PortfolioCreateRequest,
-    PortfolioUpdateRequest,
-)
-from .wallet_asset import (
-    WalletAssetCreate,
-    WalletAssetResponse,
-    WalletAssetUpdate,
+from .transaction import (
+    TransactionCreate,
+    TransactionCreateRequest,
+    TransactionResponse,
+    TransactionResponseWithAssets,
+    TransactionUpdate,
+    TransactionUpdateRequest,
 )
 from .wallet import (
     WalletCreate,
@@ -29,13 +32,10 @@ from .wallet import (
     WalletUpdate,
     WalletUpdateRequest,
 )
-from .transaction import (
-    TransactionCreateRequest,
-    TransactionResponse,
-    TransactionResponseWithAssets,
-    TransactionUpdateRequest,
-    TransactionUpdate,
-    TransactionCreate,
+from .wallet_asset import (
+    WalletAssetCreate,
+    WalletAssetResponse,
+    WalletAssetUpdate,
 )
 
 # Перестраиваем модели с форвард-декларациями
