@@ -46,7 +46,7 @@ class UserResponse(BaseModel):
             return False
 
         time_diff = datetime.now(UTC) - self.last_active_at
-        return time_diff.total_seconds() < settings.access_token_expire_minutes * 60
+        return time_diff.total_seconds() < settings.jwt_access_token_expire_minutes * 60
 
 
 class UserLogin(BaseModel):

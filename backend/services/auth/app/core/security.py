@@ -78,10 +78,10 @@ class SecurityService:
 
     @classmethod
     def _get_refresh_token_expiry(cls) -> int:
-        delta = timedelta(days=settings.refresh_token_expire_days)
+        delta = timedelta(days=settings.jwt_refresh_token_expire_days)
         return int((datetime.now(UTC) + delta).timestamp())
 
     @classmethod
     def _get_access_token_expiry(cls) -> int:
-        delta = timedelta(minutes=settings.access_token_expire_minutes)
+        delta = timedelta(minutes=settings.jwt_access_token_expire_minutes)
         return int((datetime.now(UTC) + delta).timestamp())
