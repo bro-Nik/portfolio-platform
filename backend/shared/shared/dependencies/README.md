@@ -61,3 +61,19 @@ def process_report(report_id: int):
         report = session.query(Report).get(report_id)
         # process report...
 ```
+
+
+## Context
+
+```python
+from shared.dependencies import context
+
+
+# Create
+deps = context.create_dependencies()
+Ctx = deps.Ctx
+
+# Use
+def get_service(ctx: Ctx):
+    ...
+```
