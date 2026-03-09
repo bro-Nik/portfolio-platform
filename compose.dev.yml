@@ -1,12 +1,24 @@
 services:
   auth:
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8001
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+    volumes:
+      - ./backend/services/auth/app:/app/app
+      - ./backend/services/auth/alembic.ini:/app/alembic.ini
+      - ./backend/shared:/shared
 
   portfolios:
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend/services/portfolios/app:/app/app
+      - ./backend/services/portfolios/alembic.ini:/app/alembic.ini
+      - ./backend/shared:/shared
 
   market:
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8003
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload
+    volumes:
+      - ./backend/services/market/app:/app/app
+      - ./backend/services/market/alembic.ini:/app/alembic.ini
+      - ./backend/shared:/shared
 
   market-celery-worker:
     depends_on:
