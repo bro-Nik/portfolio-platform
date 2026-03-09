@@ -5,38 +5,39 @@ import pytest
 from shared.exceptions import ConflictError
 
 from app.repositories import PortfolioAssetRepository, TransactionRepository
-from app.schemas import PortfolioAssetResponse, TransactionResponse
 from app.services import PortfolioAssetService
+
+user_id = 1
 
 
 @pytest.fixture
-async def service(db_session, async_mock):
-    service = PortfolioAssetService(db_session)
+async def service(db_session, async_mock, data):
+    ctx = data(actor=data(id=user_id))
+    service = PortfolioAssetService(db_session, ctx)
     service.repo = async_mock(spec=PortfolioAssetRepository, session=db_session)
     service.transaction_repo = async_mock(spec=TransactionRepository, session=db_session)
     return service
 
 
 class TestPortfolioAssetService:
-    async def test_create_asset_success(self, service, mock, data):
+    async def test_create_success(self, service, mock, data):
         asset_data = data(ticker_id='AAPL', portfolio_id=1)
-        asset = mock(id=1, ticker_id='AAPL', portfolio_id=1, quantity=Decimal(0))
+        asset = mock(id=1, ticker_id='AAPL', portfolio_id=1, quantity=Decimal(0), user_id=user_id)
 
         with (
             patch.object(service.repo, 'get_by_ticker_and_portfolio', return_value=None),
             patch.object(service.repo, 'create', return_value=asset),
-            patch.object(PortfolioAssetResponse, 'model_validate', return_value=asset),
         ):
             result = await service.create(asset_data)
 
             assert result.ticker_id == 'AAPL'
-            service.repo.get_by_ticker_and_portfolio.assert_called_once_with('AAPL', 1)
+            service.repo.get_by_ticker_and_portfolio.assert_called_once_with('AAPL', asset_data.portfolio_id)
             service.repo.create.assert_called_once()
             service.session.flush.assert_called_once()
 
-    async def test_create_asset_already_exists(self, service, mock, data):
+    async def test_create_already_exists(self, service, mock, data):
         asset_data = data(ticker_id='AAPL', portfolio_id=1)
-        existing_asset = mock(id=1, ticker_id='AAPL', portfolio_id=1)
+        existing_asset = mock(id=1, ticker_id='AAPL', portfolio_id=1, user_id=user_id)
 
         with (
             patch.object(service.repo, 'get_by_ticker_and_portfolio', return_value=existing_asset),
@@ -44,68 +45,57 @@ class TestPortfolioAssetService:
         ):
             await service.create(asset_data)
 
-    async def test_delete_asset_success(self, service):
+    async def test_delete_success(self, service, mock):
+        asset = mock(id=1, user_id=user_id)
+
         with (
+            patch.object(service.repo, 'get', return_value=asset),
             patch.object(service.repo, 'delete', return_value=True),
         ):
-            result = await service.delete(1)
+            result = await service.delete(asset.id)
 
             assert result is True
-            service.repo.delete.assert_called_once_with(1)
+            service.repo.delete.assert_called_once_with(asset.id)
 
-    async def test_get_asset_transactions_success(self, service, mock):
+    async def test_get_transactions_success(self, service, mock):
         asset_id = 1
-        user_id = 1
         portfolio_id = 1
 
-        asset = mock(
-            id=asset_id,
-            ticker_id='AAPL',
-            portfolio_id=portfolio_id,
-            quantity=Decimal('10.0'),
-        )
+        asset = mock(id=asset_id, ticker_id='AAPL', portfolio_id=portfolio_id, quantity=Decimal('10.0'), user_id=user_id)
 
         transactions = [
-            mock(id=1, ticker_id='AAPL', quantity=Decimal('5.0'), type='Buy'),
-            mock(id=2, ticker_id='AAPL', quantity=Decimal('5.0'), type='Buy'),
+            mock(id=1, ticker_id='AAPL', quantity=Decimal('5.0'), type='Buy', user_id=user_id),
+            mock(id=2, ticker_id='AAPL', quantity=Decimal('5.0'), type='Buy', user_id=user_id),
         ]
 
         with (
-            patch.object(service.repo, 'get_by_id_and_user', return_value=asset),
+            patch.object(service.repo, 'get', return_value=asset),
             patch.object(service.transaction_repo, 'get_many_by_ticker_and_portfolio', return_value=transactions),
-            patch.object(TransactionResponse, 'model_validate', side_effect=transactions),
         ):
-            result = await service.get_transactions(asset_id, user_id)
+            result = await service.get_transactions(asset_id)
 
             assert len(result) == 2
-            service.repo.get_by_id_and_user.assert_called_once_with(asset_id, user_id)
+            service.repo.get.assert_called_once_with(asset_id)
             service.transaction_repo.get_many_by_ticker_and_portfolio.assert_called_once_with('AAPL', portfolio_id)
 
-    async def test_get_asset_distribution_success(self, service, mock):
+    async def test_get_distribution_success(self, service, mock):
         asset_id = 1
-        user_id = 1
 
-        portfolio1 = mock(id=1, name='Portfolio 1')
-        portfolio2 = mock(id=2, name='Portfolio 2')
+        portfolio1 = mock(id=1, name='Portfolio 1', user_id=user_id)
+        portfolio2 = mock(id=2, name='Portfolio 2', user_id=user_id)
 
-        asset = mock(
-            id=asset_id,
-            ticker_id='AAPL',
-            portfolio=portfolio1,
-            quantity=Decimal('10.0'),
-            amount=Decimal('1500.0'),
-        )
+        asset = mock(id=asset_id, ticker_id='AAPL', portfolio=portfolio1, quantity=Decimal('10.0'), amount=Decimal('1500.0'), user_id=user_id)
 
         assets = [
-            mock(portfolio=portfolio1, quantity=Decimal('10.0'), amount=Decimal('1500.0')),
-            mock(portfolio=portfolio2, quantity=Decimal('5.0'), amount=Decimal('750.0')),
+            mock(portfolio=portfolio1, quantity=Decimal('10.0'), amount=Decimal('1500.0'), user_id=user_id),
+            mock(portfolio=portfolio2, quantity=Decimal('5.0'), amount=Decimal('750.0'), user_id=user_id),
         ]
 
         with (
-            patch.object(service.repo, 'get_by_id_and_user', return_value=asset),
+            patch.object(service.repo, 'get', return_value=asset),
             patch.object(service.repo, 'get_many_by_ticker_and_user_with_portfolios', return_value=assets),
         ):
-            result = await service.get_distribution(asset_id, user_id)
+            result = await service.get_distribution(asset_id)
 
             assert result['total_quantity_all_portfolios'] == Decimal('15.0')
             assert result['total_amount_all_portfolios'] == Decimal('2250.0')
@@ -113,7 +103,7 @@ class TestPortfolioAssetService:
             assert result['portfolios'][0]['portfolio_id'] == 1
             assert result['portfolios'][1]['percentage_of_total'] == 33.33
 
-            service.repo.get_by_id_and_user.assert_called_once_with(asset_id, user_id)
+            service.repo.get.assert_called_once_with(asset_id)
             service.repo.get_many_by_ticker_and_user_with_portfolios.assert_called_once_with('AAPL', user_id)
 
     async def test_handle_transaction_trade_execution(self, service, mock):
@@ -126,11 +116,12 @@ class TestPortfolioAssetService:
             price_usd=Decimal('150.0'),
             type='Buy',
             order=False,
+            user_id=user_id,
         )
         transaction.get_direction.return_value = 1
 
-        asset1 = mock(ticker_id='AAPL', quantity=Decimal(0), amount=Decimal(0))
-        asset2 = mock(ticker_id='USD', quantity=Decimal(10000), amount=Decimal(0))
+        asset1 = mock(ticker_id='AAPL', quantity=Decimal(0), amount=Decimal(0), user_id=user_id)
+        asset2 = mock(ticker_id='USD', quantity=Decimal(10000), amount=Decimal(0), user_id=user_id)
 
         with (
             patch.object(service.repo, 'get_or_create', side_effect=[asset1, asset2]),
@@ -151,11 +142,12 @@ class TestPortfolioAssetService:
             price_usd=Decimal('150.0'),
             type='Buy',
             order=True,
+            user_id=user_id,
         )
         transaction.get_direction.return_value = 1
 
-        asset1 = mock(ticker_id='AAPL', buy_orders=Decimal(0))
-        asset2 = mock(ticker_id='USD', sell_orders=Decimal(0))
+        asset1 = mock(ticker_id='AAPL', buy_orders=Decimal(0), user_id=user_id)
+        asset2 = mock(ticker_id='USD', sell_orders=Decimal(0), user_id=user_id)
 
         with (
             patch.object(service.repo, 'get_or_create', side_effect=[asset1, asset2]),
@@ -170,8 +162,8 @@ class TestPortfolioAssetService:
         transaction.type = 'Sell'
         transaction.order = True
 
-        asset3 = mock(ticker_id='AAPL', sell_orders=Decimal(0))
-        asset4 = mock(ticker_id='USD', sell_orders=Decimal(0))
+        asset3 = mock(ticker_id='AAPL', sell_orders=Decimal(0), user_id=user_id)
+        asset4 = mock(ticker_id='USD', sell_orders=Decimal(0), user_id=user_id)
 
         with (
             patch.object(service.repo, 'get_or_create', side_effect=[asset3, asset4]),
@@ -181,14 +173,10 @@ class TestPortfolioAssetService:
         assert asset3.sell_orders == Decimal('-10.0')
 
     async def test_handle_transaction_earning(self, service, mock):
-        transaction = mock(
-            ticker_id='USD',
-            quantity=Decimal('1000.0'),
-            type='Earning',
-        )
+        transaction = mock(ticker_id='USD', quantity=Decimal('1000.0'), type='Earning', user_id=user_id)
         transaction.get_direction.return_value = 1
 
-        asset = mock(ticker_id='USD', quantity=Decimal(0))
+        asset = mock(ticker_id='USD', quantity=Decimal(0), user_id=user_id)
 
         with (
             patch.object(service.repo, 'get_or_create', return_value=asset),
@@ -198,11 +186,11 @@ class TestPortfolioAssetService:
         assert asset.quantity == Decimal('1000.0')
 
     async def test_handle_transaction_transfer(self, service, mock):
-        transaction = mock(quantity=Decimal('1.0'), type='TransferOut')
+        transaction = mock(quantity=Decimal('1.0'), type='TransferOut', user_id=user_id)
         transaction.get_direction.return_value = -1
 
-        asset1 = mock(quantity=Decimal('5.0'), amount=Decimal('50000.0'))
-        asset2 = mock(quantity=Decimal('2.0'), amount=Decimal('20000.0'))
+        asset1 = mock(quantity=Decimal('5.0'), amount=Decimal('50000.0'), user_id=user_id)
+        asset2 = mock(quantity=Decimal('2.0'), amount=Decimal('20000.0'), user_id=user_id)
 
         with (
             patch.object(service.repo, 'get_or_create', side_effect=[asset1, asset2]),
@@ -216,10 +204,10 @@ class TestPortfolioAssetService:
 
     async def test_handle_transaction_input_output(self, service, mock):
         # Ввод
-        transaction = mock(quantity=Decimal('5000.0'), type='Input')
+        transaction = mock(quantity=Decimal('5000.0'), type='Input', user_id=user_id)
         transaction.get_direction.return_value = 1
 
-        asset = mock(quantity=Decimal(0))
+        asset = mock(quantity=Decimal(0), user_id=user_id)
 
         with (
             patch.object(service.repo, 'get_or_create', return_value=asset),
