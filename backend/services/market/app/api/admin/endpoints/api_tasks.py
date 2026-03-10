@@ -12,7 +12,7 @@ from app.schemas import (
 )
 from app.services import task_sync
 
-router = APIRouter(prefix='/tasks', tags=['Tasks'], responses=responses(401, 429, 500))
+router = APIRouter(prefix='/tasks', tags=['Admin | ApiTasks'], responses=responses(401, 429, 500))
 
 
 @router.get('/')

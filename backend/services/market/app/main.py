@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.api.admin import admin_router
-from app.api.user import user_router
+from app.api import api_router
 
 app = FastAPI(
     title='Portfolios Market API',
@@ -11,10 +10,6 @@ app = FastAPI(
     docs_url='/docs',
     redoc_url='/redoc',
 )
-
-
-app.include_router(user_router)
-app.include_router(admin_router)
 
 
 # Статические файлы
@@ -28,3 +23,6 @@ async def add_cache_headers(request, call_next):
     if request.url.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'public, max-age=31536000'  # 1 год
     return response
+
+
+app.include_router(api_router)

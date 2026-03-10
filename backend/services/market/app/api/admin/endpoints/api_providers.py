@@ -5,7 +5,7 @@ from shared.exceptions import handle_errors
 from app.dependencies import ApiProviderServiceDep
 from app.schemas import ApiProviderCreate, ApiProviderResponse, ApiProviderUpdate
 
-router = APIRouter(prefix='/providers', tags=['Providers'], responses=responses(401, 429, 500))
+router = APIRouter(prefix='/providers', tags=['Admin | ApiProviders'], responses=responses(401, 429, 500))
 
 
 @router.get('/')

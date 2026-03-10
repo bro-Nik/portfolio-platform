@@ -8,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import models
 from app.dependencies import DBSession
 
-router = APIRouter(prefix="/tickers", tags=["tickers"])
+router = APIRouter(prefix='/tickers', tags=['User | Tickers'])
+
 BASE_IMAGES_URL = '/market/static/images/tickers'
 
 
