@@ -1,6 +1,7 @@
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 import pytest
+from shared.rate_limit import limiter
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
@@ -47,6 +48,7 @@ async def db_session(test_engine):
 @pytest.fixture
 async def client(db_session):
     app.dependency_overrides[get_session] = lambda: db_session
+    limiter.enabled = False
 
     async with LifespanManager(app) as manager, AsyncClient(
         transport=ASGITransport(app=manager.app),
@@ -61,16 +63,10 @@ async def client(db_session):
 async def test_user(db_session: AsyncSession):
     user_repo = UserRepository(db_session)
 
-    user = await user_repo.get_by_email('test@example.com')
-    if user:
-        return user
-
     data = UserCreate(
         email='test@example.com',
         password_hash='$2b$12$Yn8dj.X/x2KcyS1twOGkteMqauO4dlECs/zFTzkH5tABpPbMFnFQS',  # "testpass"
         role='user',
         status='active',
     )
-    user = await user_repo.create(data)
-    await db_session.commit()
-    return user
+    return await user_repo.create(data)

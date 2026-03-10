@@ -10,7 +10,7 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core import settings
-from app.dependencies import AuthServiceDep, SessionServiceDep, UserServiceDep
+from app.dependencies import AuthServiceDep
 from app.schemas import RefreshTokenRequest, TokensResponse, UserLogin, UserRegister
 
 router = APIRouter(tags=['Authentication'], responses=responses(429, 500))
@@ -23,17 +23,15 @@ async def register(
     data: UserRegister,
     request: Request,
     bg_tasks: BackgroundTasks,
-    user_service: UserServiceDep,
-    auth_service: AuthServiceDep,
-    session_service: SessionServiceDep,
+    auth: AuthServiceDep,
 ) -> TokensResponse:
     """Регистрация нового пользователя."""
-    auth = await auth_service.register(data)
+    result = await auth.register(data)
 
-    bg_tasks.add_task(session_service.create, auth.user_id, auth.refresh_token_id, request)
-    bg_tasks.add_task(user_service.update_activity, auth.user_id)
+    bg_tasks.add_task(auth.session_service.create, result.refresh_token_id, result.user_id)
+    bg_tasks.add_task(auth.user_service.update_activity, result.user_id)
 
-    return auth.tokens
+    return result.tokens
 
 
 @router.post('/login', responses=responses(400, 401))
@@ -43,17 +41,15 @@ async def login(
     data: UserLogin,
     request: Request,
     bg_tasks: BackgroundTasks,
-    user_service: UserServiceDep,
-    auth_service: AuthServiceDep,
-    session_service: SessionServiceDep,
+    auth: AuthServiceDep,
 ) -> TokensResponse:
     """Вход зарегистрированного пользователя."""
-    auth = await auth_service.login(data)
+    result = await auth.login(data)
 
-    bg_tasks.add_task(session_service.create, auth.user_id, auth.refresh_token_id, request)
-    bg_tasks.add_task(user_service.update_activity, auth.user_id)
+    bg_tasks.add_task(auth.session_service.create, result.refresh_token_id, result.user_id)
+    bg_tasks.add_task(auth.user_service.update_activity, result.user_id)
 
-    return auth.tokens
+    return result.tokens
 
 
 @router.post('/refresh', responses=responses(400, 401))
@@ -63,14 +59,12 @@ async def refresh_tokens(
     data: RefreshTokenRequest,
     request: Request,
     bg_tasks: BackgroundTasks,
-    user_service: UserServiceDep,
-    auth_service: AuthServiceDep,
-    session_service: SessionServiceDep,
+    auth: AuthServiceDep,
 ) -> TokensResponse:
     """Обновление токенов авторизации."""
-    auth = await auth_service.refresh_tokens(data)
+    result = await auth.refresh_tokens(data)
 
-    bg_tasks.add_task(session_service.update, auth.refresh_token_id, request)
-    bg_tasks.add_task(user_service.update_activity, auth.user_id)
+    bg_tasks.add_task(auth.session_service.update, result.refresh_token_id)
+    bg_tasks.add_task(auth.user_service.update_activity, result.user_id)
 
-    return auth.tokens
+    return result.tokens

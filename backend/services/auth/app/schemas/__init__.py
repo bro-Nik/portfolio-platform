@@ -1,4 +1,4 @@
-from shared.schemas import AuthUser, UserRole
+from shared.schemas import AuthUser, UserRole, Context
 
 from .session import LoginSessionCreate, LoginSessionUpdate
 from .token import RefreshTokenCreate, RefreshTokenRequest, RefreshTokenUpdate, TokensResponse

@@ -11,7 +11,7 @@ from shared.core import settings
 from shared.exceptions import AuthenticationError, ForbiddenException, UnauthorizedException
 from shared.schemas import AuthUser, UserRole
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 @dataclass
@@ -27,8 +27,10 @@ class AuthDependencies:
 
 def get_current_user(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> AuthUser:
     """Получить текущего пользователя из JWT токена."""
-    token = credentials.credentials
+    if not credentials:
+        raise UnauthorizedException('Токен доступа отсутствует')
 
+    token = credentials.credentials
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
         return AuthUser(**payload)
