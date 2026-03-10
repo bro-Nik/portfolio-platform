@@ -1,6 +1,7 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+from shared.exceptions import handle_errors
 
 from app import schemas
 from app.dependencies import ApiTaskServiceDep
@@ -10,67 +11,46 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.get("/", response_model=List[schemas.ApiTaskResponse])
+@handle_errors('Ошибка при получении задач')
 async def get_tasks(
     ts: ApiTaskServiceDep,
     skip: int = 0,
     limit: Optional[int] = None,
 ) -> List[schemas.ApiTaskResponse]:
     """Получить список задач"""
-    try:
-        tasks = await ts.get_tasks(skip=skip, limit=limit)
-        return tasks
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return await ts.get_tasks(skip=skip, limit=limit)
 
 
 @router.post("/", response_model=schemas.ApiTaskResponse)
+@handle_errors('Ошибка при создании задачи')
 async def create_task(
     task_data: schemas.ApiTaskCreate,
     ts: ApiTaskServiceDep,
 ) -> schemas.ApiTaskResponse:
     """Создать новую задачу"""
-    try:
-        task = await ts.create_task(task_data)
-        return task
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return await ts.create_task(task_data)
 
 
 @router.put("/{task_id}", response_model=schemas.ApiTaskResponse)
+@handle_errors('Ошибка при обновлении задачи')
 async def update_task(
     task_id: int,
     task_data: schemas.ApiTaskUpdate,
     ts: ApiTaskServiceDep,
 ) -> schemas.ApiTaskResponse:
     """Обновить задачу"""
-    try:
-        task = await ts.update_task(task_id, task_data)
-        if not task:
-            raise HTTPException(status_code=404, detail="Задача не найдена")
-        return task
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return await ts.update_task(task_id, task_data)
 
 
 @router.delete("/{task_id}")
+@handle_errors('Ошибка при удалении задачи')
 async def delete_task(
     task_id: int,
     ts: ApiTaskServiceDep,
 ) -> dict:
     """Удалить задачу"""
-    try:
-        await ts.delete_task(task_id)
-        return {"message": "Задача удалена"}
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    await ts.delete_task(task_id)
+    return {"message": "Задача удалена"}
 
 
 @router.post("/run/")
@@ -81,10 +61,8 @@ def run_task(data: schemas.TaskRunRequest):
 
 
 @router.post("/schedule/")
+@handle_errors('Ошибка при попытке запланировать задачу')
 def schedule_periodic_task(data: schemas.TaskScheduleRequest):
     """Запланировать периодическую задачу"""
-    try:
-        task_sync.schedule_task_from_db(data.task_id)
-        return {"message": "Задача запланирована"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    task_sync.schedule_task_from_db(data.task_id)
+    return {"message": "Задача запланирована"}
