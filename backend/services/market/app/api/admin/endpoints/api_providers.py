@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import APIRouter
 from shared.api import responses
 from shared.exceptions import handle_errors
@@ -13,23 +11,24 @@ router = APIRouter(prefix='/providers', tags=['Providers'], responses=responses(
 @router.get('/')
 @handle_errors('Ошибка при получении провайдеров')
 async def get_providers(
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
     skip: int = 0,
-    limit: Optional[int] = None,
+    limit: int | None = None,
+    *,
     active_only: bool = False,
 ) ->list[ApiProviderResponse]:
-    """Получить список API провайдеров"""
-    return await ps.get_providers(skip=skip, limit=limit, active_only=active_only)
+    """Получить список API провайдеров."""
+    return await provider_service.get_providers(skip=skip, limit=limit, active_only=active_only)
 
 
 @router.post('/', status_code=201, responses=responses(400, 409))
 @handle_errors('Ошибка при создании провайдера')
 async def create_provider(
     provider_data: ApiProviderCreate,
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
 ) -> ApiProviderResponse:
-    """Создать новый API провайдер"""
-    return await ps.create_provider(provider_data)
+    """Создать новый API провайдер."""
+    return await provider_service.create_provider(provider_data)
 
 
 @router.put('/{provider_id}', responses=responses(400, 404, 409))
@@ -37,75 +36,75 @@ async def create_provider(
 async def update_provider(
     provider_id: int,
     provider_data: ApiProviderUpdate,
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
 ) -> ApiProviderResponse:
-    """Обновить API провайдер"""
-    return await ps.update_provider(provider_id, provider_data)
+    """Обновить API провайдер."""
+    return await provider_service.update_provider(provider_id, provider_data)
 
 
 @router.get('/{provider_id}', responses=responses(404))
 @handle_errors('Ошибка при получении провайдера')
 async def get_provider(
     provider_id: int,
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
 ) -> ApiProviderResponse:
-    """Получить информацию об API провайдере"""
-    return await ps.get_provider(provider_id)
+    """Получить информацию об API провайдере."""
+    return await provider_service.get_provider(provider_id)
 
 
 @router.delete('/{provider_id}', status_code=204, responses=responses(400, 404))
 @handle_errors('Ошибка при удалении провайдера')
 async def delete_provider(
     provider_id: int,
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
 ) -> None:
-    """Удалить API провайдер"""
-    await ps.delete_provider(provider_id)
+    """Удалить API провайдер."""
+    await provider_service.delete_provider(provider_id)
 
 
 @router.post('/{provider_id}/reset-counters', responses=responses(400, 404, 409))
 @handle_errors('Ошибка сброса счетчиков провайдера')
 async def reset_counters(
     provider_id: int,
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
 ) -> None:
-    """Сбросить счетчики API провайдера"""
-    await ps.reset_counters(provider_id)
+    """Сбросить счетчики API провайдера."""
+    await provider_service.reset_counters(provider_id)
 
 
 @router.get('/{provider_id}/stats', responses=responses(404))
 @handle_errors('Ошибка получения статистики провайдера')
 async def get_provider_stats(
     provider_id: int,
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
 ) -> dict:
-    """Получить статистику использования API провайдера"""
-    return await ps.get_stats(provider_id)
+    """Получить статистику использования API провайдера."""
+    return await provider_service.get_stats(provider_id)
 
 
 @router.get('/{provider_id}/logs', responses=responses(404))
 @handle_errors('Ошибка получения логов провайдера')
 async def get_provider_logs(
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
     provider_id: int,
     hours: int = 24,
     limit: int = 100,
 ):
-    """Получить логи запросов API провайдера"""
-    return await ps.get_logs(provider_id, hours=hours, limit=limit)
+    """Получить логи запросов API провайдера."""
+    return await provider_service.get_logs(provider_id, hours=hours, limit=limit)
 
 
-@router.get("/presets/default")
+@router.get('/presets/default')
 def get_default_presets(
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
 ):
-    """Получить предустановки для cуществующих API провайдеров"""
-    return {'presets': ps.get_providers_with_settings()}
+    """Получить предустановки для cуществующих API провайдеров."""
+    return {'presets': provider_service.get_providers_with_settings()}
 
 
-@router.get("/services/with/methods")
+@router.get('/services/with/methods')
 async def get_providers_with_methods(
-    ps: ApiProviderServiceDep,
+    provider_service: ApiProviderServiceDep,
 ):
-    """Получить список провайдеров с поддерживаемыми методами"""
-    return await ps.get_provider_with_methods()
+    """Получить список провайдеров с поддерживаемыми методами."""
+    return await provider_service.get_provider_with_methods()
