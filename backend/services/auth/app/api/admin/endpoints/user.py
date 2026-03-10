@@ -11,7 +11,7 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core import settings
-from app.dependencies import AuthServiceDep, CurrentUser, UserServiceDep
+from app.dependencies import AuthServiceDep, UserServiceDep
 from app.schemas import UserCreateRequest, UserResponse, UserRole, UserUpdateRequest
 
 router = APIRouter(prefix='/users', tags=['Admin | Users'], responses=responses(401, 429, 500))
@@ -49,12 +49,11 @@ async def get_user(
 @handle_errors('Ошибка при создании пользователя')
 async def create_user(
     request: Request,
-    current_user: CurrentUser,
     data: UserCreateRequest,
     user_service: UserServiceDep,
 ) -> UserResponse:
     """Создать нового пользователя."""
-    user = await user_service.create(data, current_user)
+    user = await user_service.create(data)
     return await user_service.get_detailed(user.id)
 
 
@@ -63,13 +62,12 @@ async def create_user(
 @handle_errors('Ошибка при изменении пользователя')
 async def update_user(
     request: Request,
-    current_user: CurrentUser,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
     data: UserUpdateRequest,
     user_service: UserServiceDep,
 ) -> UserResponse:
     """Обновить пользователя."""
-    user = await user_service.update(user_id, data, current_user)
+    user = await user_service.update(user_id, data)
     return await user_service.get_detailed(user.id)
 
 
@@ -78,12 +76,11 @@ async def update_user(
 @handle_errors('Ошибка при удалении пользователя')
 async def delete_user(
     request: Request,
-    current_user: CurrentUser,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
     user_service: UserServiceDep,
 ) -> None:
     """Удалить пользователя."""
-    await user_service.delete(user_id, current_user)
+    await user_service.delete(user_id)
 
 
 @router.delete('/{user_id}/logout-all', status_code=204, responses=responses(403, 404))
@@ -92,7 +89,7 @@ async def delete_user(
 async def logout_all(
     request: Request,
     user_id: Annotated[int, Path(..., description='ID пользователя')],
-    auth_service: AuthServiceDep,
+    auth: AuthServiceDep,
 ) -> None:
     """Выход из всех устройств."""
-    await auth_service.logout_all(user_id)
+    await auth.logout_all(user_id)

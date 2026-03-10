@@ -1,61 +1,45 @@
 from datetime import UTC, datetime
 
-from fastapi import Request
-from shared.utils import get_client_ip
 from sqlalchemy.ext.asyncio import AsyncSession
 from user_agents import parse
 
 from app.repositories import SessionRepository, TokenRepository
-from app.schemas import LoginSessionCreate, LoginSessionUpdate
+from app.schemas import Context, LoginSessionCreate, LoginSessionUpdate
 
 
 class SessionService:
     """Сервис для управления сессиями входа пользователей."""
 
-    def __init__(
-        self,
-        session: AsyncSession,
-        session_repo: SessionRepository | None = None,
-        token_repo: TokenRepository | None = None,
-    ) -> None:
+    def __init__(self, session: AsyncSession, ctx: Context) -> None:
+        self.ctx = ctx
         self.session = session
-        self.repo = session_repo or SessionRepository(session)
-        self.token_repo = token_repo or TokenRepository(session)
+        self.repo = SessionRepository(session)
+        self.token_repo = TokenRepository(session)
 
-    async def create(self, user_id: int, refresh_token_id: int, request: Request) -> None:
+    async def create(self, refresh_token_id: int, user_id: int) -> None:
         """Создает запись о новой сессии входа."""
-        ip_address = get_client_ip(request)
-        user_agent = request.headers.get('user-agent')
+        session_info = self._parse_user_agent(self.ctx.user_agent)
 
-        session_info = self._parse_user_agent(user_agent)
-
-        session = LoginSessionCreate(
+        session_to_db = LoginSessionCreate(
             user_id=user_id,
             refresh_token_id=refresh_token_id,
-            ip_address=ip_address,
-            user_agent=user_agent,
+            ip_address=self.ctx.client_ip,
+            user_agent=self.ctx.user_agent,
             **session_info,
         )
-        await self.repo.create(session)
+        await self.repo.create(session_to_db)
 
-    async def update(self, refresh_token_id: int, request: Request) -> None:
+    async def update(self, refresh_token_id: int) -> None:
         """Обновить запись о сессии входа."""
         db_session = await self.repo.get_by_token_id(refresh_token_id)
         if not db_session:
             return
 
-        ip_address = get_client_ip(request)
-        user_agent = request.headers.get('user-agent')
-
-        session_info = self._parse_user_agent(user_agent)
-
-        session = LoginSessionUpdate(
-            ip_address=ip_address,
+        session_to_db = LoginSessionUpdate(
+            ip_address=self.ctx.client_ip,
             last_activity_at=datetime.now(UTC),
-            user_agent=user_agent,
-            **session_info,
         )
-        await self.repo.update(db_session.id, session)
+        await self.repo.update(db_session.id, session_to_db)
 
     @staticmethod
     def _parse_user_agent(user_agent_string: str) -> dict:

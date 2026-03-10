@@ -9,7 +9,7 @@ from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
 
 from app.core import settings
-from app.dependencies import AuthServiceDep, CurrentUser
+from app.dependencies import AuthServiceDep
 from app.schemas import RefreshTokenRequest
 
 router = APIRouter(tags=['User | Profile'], responses=responses(401, 429, 500))
@@ -19,12 +19,12 @@ router = APIRouter(tags=['User | Profile'], responses=responses(401, 429, 500))
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка выхода пользователя')
 async def logout(
-    request: Request,
     data: RefreshTokenRequest,
-    auth_service: AuthServiceDep,
+    request: Request,
+    auth: AuthServiceDep,
 ) -> None:
     """Выход из системы (инвалидирует refresh token)."""
-    await auth_service.logout(data.token)
+    await auth.logout(data.token)
 
 
 @router.delete('/logout-all', status_code=204, responses=responses(404))
@@ -32,8 +32,7 @@ async def logout(
 @handle_errors('Ошибка при выходе из всех устройств пользователя')
 async def logout_all(
     request: Request,
-    current_user: CurrentUser,
     auth_service: AuthServiceDep,
 ) -> None:
     """Выход из системы на всех устройствах (инвалидирует refresh tokens)."""
-    await auth_service.logout_all(current_user.id)
+    await auth_service.logout_all()

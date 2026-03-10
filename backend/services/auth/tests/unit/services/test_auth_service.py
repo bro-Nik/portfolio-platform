@@ -4,20 +4,23 @@ import pytest
 from shared.exceptions import AuthenticationError
 
 from app.core import SecurityService
-from app.repositories import TokenRepository, UserRepository
+from app.repositories import TokenRepository
 from app.schemas import UserRole
-from app.services import AuthService
+from app.services import AuthService, SessionService, UserService
 from app.services.auth import AuthResult
+
+user_id = 1
 
 
 @pytest.fixture
-def service(db_session, async_mock, mock):
-    return AuthService(
-        session=db_session,
-        token_repo=async_mock(spec=TokenRepository, session=db_session),
-        user_service=async_mock(spec=UserRepository, session=db_session),
-        security=mock(spec=SecurityService),
-    )
+def service(db_session, async_mock, mock, data):
+    ctx = data(actor=data(id=user_id))
+    service = AuthService(db_session, ctx)
+    service.token_repo = async_mock(spec=TokenRepository, session=db_session)
+    service.user_service = async_mock(spec=UserService, session=db_session, ctx=ctx)
+    service.session_service = async_mock(spec=SessionService, session=db_session, ctx=ctx)
+    service.security = mock(spec=SecurityService)
+    return service
 
 
 class TestAuthService:
@@ -56,14 +59,14 @@ class TestAuthService:
         db_token = mock(id=99)
 
         with (
-            patch.object(service.user_service, 'get_by_email', return_value=user),
+            patch.object(service.user_service, 'get_for_auth', return_value=user),
             patch.object(service.security, 'verify_password', return_value=True),
             patch.object(service.security, 'create_token_pair', return_value=tokens),
             patch.object(service.token_repo, 'create', return_value=db_token),
         ):
             result = await service.login(login_data)
 
-            service.user_service.get_by_email.assert_called_once_with(login_data.email)
+            service.user_service.get_for_auth.assert_called_once_with(email=login_data.email)
             service.security.verify_password.assert_called_once_with(login_data.password, user.password_hash)
             service.security.verify_password.assert_called_once()
             service.security.create_token_pair.assert_called_once_with(user)
@@ -75,7 +78,7 @@ class TestAuthService:
         user = mock(id=1)
 
         with (
-            patch.object(service.user_service, 'get_by_email', return_value=user),
+            patch.object(service.user_service, 'get_for_auth', return_value=user),
             patch.object(service.security, 'verify_password', return_value=False),
             pytest.raises(AuthenticationError, match='Неверный email или пароль'),
         ):
@@ -93,7 +96,7 @@ class TestAuthService:
             patch.object(service.security, 'verify_token', return_value=payload),
             patch.object(service.token_repo, 'get_by_token', return_value=db_token),
             patch.object(service.security, 'create_token_pair', return_value=tokens),
-            patch.object(service.user_service, 'get', return_value=user),
+            patch.object(service.user_service, 'get_for_auth', return_value=user),
             patch.object(service.token_repo, 'update', return_value=updated_token),
         ):
             result = await service.refresh_tokens(token_data)

@@ -4,10 +4,10 @@ from shared.exceptions import AuthenticationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import SecurityService
-from app.models import RefreshToken
+from app.models import RefreshToken, User
 from app.repositories import TokenRepository
 from app.schemas import (
-    AuthUser,
+    Context,
     RefreshTokenCreate,
     RefreshTokenUpdate,
     TokensResponse,
@@ -17,6 +17,7 @@ from app.schemas import (
     UserRole,
 )
 from app.schemas.token import RefreshTokenRequest
+from app.services.session import SessionService
 from app.services.user import UserService
 
 
@@ -30,17 +31,13 @@ class AuthResult:
 class AuthService:
     """Сервис аутентификации."""
 
-    def __init__(
-        self,
-        session: AsyncSession,
-        token_repo: TokenRepository | None = None,
-        user_service: UserService | None = None,
-        security: SecurityService | None = None,
-    ) -> None:
+    def __init__(self, session: AsyncSession, ctx: Context) -> None:
+        self.ctx = ctx
         self.session = session
-        self.token_repo = token_repo or TokenRepository(session)
-        self.user_service = user_service or UserService(session)
-        self.security = security or SecurityService()
+        self.token_repo = TokenRepository(session)
+        self.user_service = UserService(session, ctx)
+        self.session_service = SessionService(session, ctx)
+        self.security = SecurityService()
 
     async def register(self, data: UserRegister) -> AuthResult:
         """Регистрация пользователя."""
@@ -50,7 +47,7 @@ class AuthService:
 
     async def login(self, data: UserLogin) -> AuthResult:
         """Аутентификация пользователя."""
-        user = await self.user_service.get_by_email(data.email)
+        user = await self.user_service.get_for_auth(email=data.email)
         if not self.security.verify_password(data.password, user.password_hash):
             raise AuthenticationError('Неверный email или пароль')
 
@@ -63,25 +60,26 @@ class AuthService:
             raise AuthenticationError('Невалидный refresh токен')
 
         user_id = int(payload['id'])
-        user = await self.user_service.get(user_id)
-        token = await self._get_refresh_token(data.token)
+        user = await self.user_service.get_for_auth(id=user_id)
+        token = await self._get_db_refresh_token(data.token)
         return await self._create_tokens(user, token)
 
     async def logout(self, refresh_token: str) -> bool:
         """Выход из системы."""
-        token = await self._get_refresh_token(refresh_token)
+        token = await self._get_db_refresh_token(refresh_token)
         return await self.token_repo.delete(token.id)
 
-    async def logout_all(self, user_id: int) -> bool:
+    async def logout_all(self, user_id: int | None = None) -> bool:
         """Выход из всех устройств."""
+        user_id = user_id or self.ctx.actor.id
         return bool(await self.token_repo.delete_many_by_user(user_id))
 
-    async def _get_refresh_token(self, refresh_token: str) -> RefreshToken:
+    async def _get_db_refresh_token(self, refresh_token: str) -> RefreshToken:
         if not (token := await self.token_repo.get_by_token(refresh_token)):
             raise AuthenticationError('Токен не найден в базе')
         return token
 
-    async def _create_tokens(self, user: AuthUser, db_token: RefreshToken | None = None) -> AuthResult:
+    async def _create_tokens(self, user: User, db_token: RefreshToken | None = None) -> AuthResult:
         """Создание пары токенов с сохранением/обновлением refresh в БД."""
         token_data = self.security.create_token_pair(user)
         access = token_data.access_token
