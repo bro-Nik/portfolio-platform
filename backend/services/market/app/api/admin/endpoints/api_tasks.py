@@ -1,21 +1,19 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
 from app import schemas
-from app.services.api_task import ApiTaskService
-from app.api.admin.dependencies import get_api_task_service
+from app.dependencies import ApiTaskServiceDep
 from app.services import task_sync
-
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.get("/", response_model=List[schemas.ApiTaskResponse])
 async def get_tasks(
+    ts: ApiTaskServiceDep,
     skip: int = 0,
     limit: Optional[int] = None,
-    ts: ApiTaskService = Depends(get_api_task_service)
 ) -> List[schemas.ApiTaskResponse]:
     """Получить список задач"""
     try:
@@ -30,7 +28,7 @@ async def get_tasks(
 @router.post("/", response_model=schemas.ApiTaskResponse)
 async def create_task(
     task_data: schemas.ApiTaskCreate,
-    ts: ApiTaskService = Depends(get_api_task_service)
+    ts: ApiTaskServiceDep,
 ) -> schemas.ApiTaskResponse:
     """Создать новую задачу"""
     try:
@@ -46,7 +44,7 @@ async def create_task(
 async def update_task(
     task_id: int,
     task_data: schemas.ApiTaskUpdate,
-    ts: ApiTaskService = Depends(get_api_task_service)
+    ts: ApiTaskServiceDep,
 ) -> schemas.ApiTaskResponse:
     """Обновить задачу"""
     try:
@@ -63,7 +61,7 @@ async def update_task(
 @router.delete("/{task_id}")
 async def delete_task(
     task_id: int,
-    ts: ApiTaskService = Depends(get_api_task_service)
+    ts: ApiTaskServiceDep,
 ) -> dict:
     """Удалить задачу"""
     try:

@@ -1,22 +1,19 @@
 from typing import List, Optional
 
-from app.external_api.management.registry import ApiProviderRegistry, registry
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
 from app import schemas
-from app.services.api_provider import ApiProviderService
-from ..dependencies import get_api_provider_service
-
+from app.dependencies import ApiProviderServiceDep
 
 router = APIRouter(prefix="/providers", tags=["providers"])
 
 
 @router.get("/", response_model=List[schemas.ApiProviderResponse])
 async def get_providers(
+    ps: ApiProviderServiceDep,
     skip: int = 0,
     limit: Optional[int] = None,
     active_only: bool = False,
-    ps: ApiProviderService = Depends(get_api_provider_service)
 ) ->List[schemas.ApiProviderResponse]:
     """Получить список API провайдеров"""
     try:
@@ -31,7 +28,7 @@ async def get_providers(
 @router.post("/", response_model=schemas.ApiProviderResponse)
 async def create_provider(
     provider_data: schemas.ApiProviderCreate,
-    ps: ApiProviderService = Depends(get_api_provider_service)
+    ps: ApiProviderServiceDep,
 ) -> schemas.ApiProviderResponse:
     """Создать новый API провайдер"""
     try:
@@ -47,7 +44,7 @@ async def create_provider(
 async def update_provider(
     provider_id: int,
     provider_data: schemas.ApiProviderUpdate,
-    ps: ApiProviderService = Depends(get_api_provider_service)
+    ps: ApiProviderServiceDep,
 ) -> schemas.ApiProviderResponse:
     """Обновить API провайдер"""
     try:
@@ -64,7 +61,7 @@ async def update_provider(
 @router.get("/{provider_id}", response_model=schemas.ApiProviderResponse)
 async def get_provider(
     provider_id: int,
-    ps: ApiProviderService = Depends(get_api_provider_service)
+    ps: ApiProviderServiceDep,
 ) -> schemas.ApiProviderResponse:
     """Получить информацию об API провайдере"""
     try:
@@ -81,7 +78,7 @@ async def get_provider(
 @router.delete("/{provider_id}")
 async def delete_provider(
     provider_id: int,
-    ps: ApiProviderService = Depends(get_api_provider_service)
+    ps: ApiProviderServiceDep,
 ) -> dict:
     """Удалить API провайдер"""
     try:
@@ -96,7 +93,7 @@ async def delete_provider(
 @router.post("/{provider_id}/reset-counters")
 async def reset_counters(
     provider_id: int,
-    ps: ApiProviderService = Depends(get_api_provider_service)
+    ps: ApiProviderServiceDep,
 ) -> dict:
     """Сбросить счетчики API провайдера"""
     try:
@@ -113,7 +110,7 @@ async def reset_counters(
 @router.get("/{provider_id}/stats")
 async def get_provider_stats(
     provider_id: int,
-    ps: ApiProviderService = Depends(get_api_provider_service)
+    ps: ApiProviderServiceDep,
 ) -> dict:
     """Получить статистику использования API провайдера"""
     try:
@@ -129,10 +126,10 @@ async def get_provider_stats(
 
 @router.get("/{provider_id}/logs")
 async def get_provider_logs(
+    ps: ApiProviderServiceDep,
     provider_id: int,
     hours: int = 24,
     limit: int = 100,
-    ps: ApiProviderService = Depends(get_api_provider_service)
 ):
     """Получить логи запросов API провайдера"""
     try:
@@ -146,7 +143,7 @@ async def get_provider_logs(
 
 @router.get("/presets/default")
 def get_default_presets(
-    ps: ApiProviderService = Depends(get_api_provider_service)
+    ps: ApiProviderServiceDep,
 ):
     """Получить предустановки для cуществующих API провайдеров"""
     return {'presets': ps.get_providers_with_settings()}
@@ -154,7 +151,7 @@ def get_default_presets(
 
 @router.get("/services/with/methods")
 async def get_provider_with_methods(
-    ps: ApiProviderService = Depends(get_api_provider_service)
+    ps: ApiProviderServiceDep,
 ):
     """Получить список провайдеров с поддерживаемыми методами"""
     return await ps.get_provider_with_methods()
