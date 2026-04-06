@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Task
-from app.repositories.async_repo import BaseRepository
+from app.repositories import BaseRepository
 from app.schemas import TaskCreate, TaskUpdate
 
 
@@ -22,3 +22,7 @@ class TaskRepository(BaseRepository[Task, TaskCreate, TaskUpdate]):
     async def exists_by_name(self, name: str) -> bool:
         """Проверить, есть ли задача с таким именем."""
         return await self.exists_by(Task.name == name)
+
+    async def get_all_active_with_providers(self) -> list[Task]:
+        """Получить активные задачи."""
+        return await self.get_all(Task.is_active, relations=['provider'])

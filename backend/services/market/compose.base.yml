@@ -20,19 +20,27 @@ services:
         required: false
     depends_on: [market-db]
 
-  market-celery-worker:
+  market-worker:
     build:
       context: .
       dockerfile: ../../base.Dockerfile
       additional_contexts:
         - shared-context=../../shared
+    env_file:
+      - path: ./.env
+        required: false
+    depends_on: [market-db]
 
-  market-celery-beat:
+  market-scheduler:
     build:
       context: .
       dockerfile: ../../base.Dockerfile
       additional_contexts:
         - shared-context=../../shared
+    env_file:
+      - path: ./.env
+        required: false
+    depends_on: [market-db]
 
 volumes:
   market_db_data:

@@ -11,11 +11,16 @@ target-version = "py313"
 ignore = [
     # Игнорировать проверку кириллических символов
     "RUF001", "RUF002", "RUF003",
+
+    # Игнорировать проверку статичных словарей
+    "RUF012",
     
-    # Игнорировать docstring для методов __init__ и модулей
+    # Игнорировать docstring
+    "D101",  # Отсутствие docstring в class
     "D107",  # Отсутствие docstring в __init__
     "D100",  # Отсутствие docstring в public module
     "D104",  # Отсутствие docstring в public package
+    "D102",  # Отсутствие docstring в public method
     
     # Игнорировать строгие проверки для обработки ошибок
     "EM101", "EM102",  # Слишком широкие/узкие исключения
@@ -26,6 +31,9 @@ ignore = [
 
     # Игнорировать предупреждения о переопределении встроенных имен
     "A001", "A002",
+
+    # Игнорировать предупреждения о типизации
+    "ANN003",
 ]
 
 # Настройки форматирования
@@ -43,7 +51,8 @@ docstring-quotes = "double"   # Двойные кавычки для docstring
 
 # Настройки сортировки импортов (isort)
 [tool.ruff.lint.isort]
-known-first-party = ["app"]           # Известные first-party модули
+known-first-party = ["app", "shared"] # Известные first-party модули
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 lines-between-types = 1               # Пустые строки между типами импортов
 combine-as-imports = true             # Объединять as-импорты
 force-sort-within-sections = true     # Сортировка внутри секций
@@ -56,6 +65,12 @@ force-sort-within-sections = true     # Сортировка внутри сек
 # Правила в роутах
 "**/endpoints/**/*.py" = [
     "PLR0913",  # Максимальное количество аргументов
+    "ARG001",   # Неиспользуемый аргумент (для request в rate limiting)
+]
+
+# Правила в external_api
+"**/external_api/**/*.py" = [
+    "D102",     # Докстринги
     "ARG001",   # Неиспользуемый аргумент (для request в rate limiting)
 ]
 
@@ -81,9 +96,15 @@ force-sort-within-sections = true     # Сортировка внутри сек
 
 # Настройки Pyright
 [tool.pyright]
-reportMissingImports = false
-reportMissingModuleSource = false
-include = ["app"]
+# reportMissingImports = false
+# reportMissingModuleSource = false
+# include = ["app"]
+include = ["app", "../../shared"] # Указываем путь относительно корня сервиса
+extraPaths = ["../../shared"]     # Добавляет shared в PYTHONPATH для статического анализа
+typeCheckingMode = "basic"        # Или "standard", если хотите строже
+pythonVersion = "3.13"
+venvPath = "../../" 
+venv = ".venv"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

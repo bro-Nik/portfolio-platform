@@ -4,7 +4,7 @@ from sqlalchemy import Integer, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import RequestLog
-from app.repositories.async_repo import BaseRepository
+from app.repositories import BaseRepository
 from app.schemas import RequestLogCreate, RequestLogUpdate
 
 

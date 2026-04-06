@@ -1,17 +1,33 @@
+from collections.abc import Callable
 import logging
-from typing import Optional, List
 
-import requests
-from app.external_api.services.price_service import PriceService
+import httpx
 
+from app.external_api.methods.base import MethodBase
+from app.services.ticker import MarketTickerPrefix
 
 logger = logging.getLogger(__name__)
 
+class SmartPriceUpdater(MethodBase):
+    """Умное обновление цен."""
 
-class SmartPriceUpdater:
-    """Класс для умного обновления цен"""
+    NAME = 'Умное обновление цен'
+    DESCRIPTION = """Умное обновление цен с различными стратегиями.
 
-    _strategies = {
+        Стратегии:
+        - 'top': только топ-N монет по капитализации
+        - 'active': только активно торгуемые монеты
+        - 'all': все монеты
+        - 'used': используемые пользователями монеты
+        - 'auto': автоматический выбор стратегии
+    """
+
+    EXEMPLE_PARAMS = {
+        'strategy': 'used',
+        'limit': 100,
+    }
+
+    STRATEGIES = {
         'top': '_fetch_top_coins',
         'active': '_fetch_active_coins',
         'all': '_fetch_all_coins',
@@ -19,141 +35,71 @@ class SmartPriceUpdater:
         'auto': '_fetch_smart_coins',
     }
 
-    def __init__(self, client):
-        self._client = client
-        self._validate_client(client)
+    async def run(self, market: str, get_prices: Callable, strategy: str = 'used', limit: int | None = None, **_) -> dict:
+        """Умное обновление цен с различными стратегиями."""
+        logger.info('Старт умного обновления цен со стратегией: %s', strategy)
 
-    @staticmethod
-    def _validate_client(client):
-        if not hasattr(client, 'get_prices'):
-            raise ValueError('Метод "get_prices" не найден в клиенте')
+        ticker_ids = await self._fetch_ticker_ids(market, strategy, limit)
 
-    @property
-    def description(self):
-        return """
-            Умное обновление цен с различными стратегиями
-            
-            Стратегии:
-            - 'top': только топ-N монет по капитализации
-            - 'active': только активно торгуемые монеты
-            - 'all': все монеты
-            - 'used': используемые пользователями монеты
-            - 'auto': автоматический выбор стратегии
+        if not ticker_ids:
+            logger.warning('Не получено тикеров для стратегии: %s', strategy)
+            return {'status': 'error', 'message': 'Нет тикеров для обновления'}
 
-            Args:
-                strategy: Название стратегии выбора монет
-                limit: Ограничение на количество монет
+        prices = await get_prices(ticker_ids)
 
-        """
+        updated_count = await self._save_prices(market, prices)
+        return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
-    @property
-    def exemple_params(self):
-        return {
-            'strategy': 'used',
-            'limit': 100
-        }
+    async def _save_prices(self, market: str, prices: dict) -> int:
+        """Сохранить цены в БД."""
+        from app.core.db import SessionLocal
+        from app.services.ticker import TickerService
 
-    def __call__(self, strategy: str = 'used', limit: Optional[int] = None, **kwargs) -> dict:
-        """
-        Умное обновление цен с различными стратегиями
-        
-        Args:
-            strategy: Название стратегии выбора монет
-            limit: Ограничение на количество монет
+        async with SessionLocal() as session:
+            ticker_service = TickerService(session)
+            updated = await ticker_service.save_prices(market, prices)
+            await session.commit()
+            return updated
 
-        Returns:
-            Результат запуска задачи обновления цен
-        """
-
-        logger.info(f'Старт умного обновления цен со стратегией: {strategy}')
-
-        if strategy not in self._strategies:
-            logger.warning(f'Неизвестная стратегия "{strategy}", возврат к "used"')
+    async def _fetch_ticker_ids(self, market: str, strategy: str, limit: int | None) -> list[str]:
+        """Получить ID тикеров по стратегии."""
+        if strategy not in self.STRATEGIES:
+            logger.warning('Неизвестная стратегия "%s", возврат к "used"', strategy)
             strategy = 'used'
 
-        try:
-            # Получаем список ID согласно стратегии
-            fetch_method_name = self._strategies[strategy]
-            fetch_method = getattr(self, fetch_method_name)
-            ticker_ids = fetch_method(limit)
+        method_name = self.STRATEGIES[strategy]
+        fetch_method = getattr(self, method_name)
+        ticker_ids = await fetch_method(market, limit)
 
-            if not ticker_ids:
-                logger.warning(f'Не получено тикеров для стратегии: {strategy}')
-                return {'status': 'error', 'message': 'Нет тикеров для обновления'}
+        # Убираем префиксы
+        return MarketTickerPrefix.remove_list(market, ticker_ids)
 
-            # Получаем цены от клиента API
-            price_list = self._client.get_prices(ticker_ids=ticker_ids)
-
-            # Сохраняем цены в базу данных
-            price_service = PriceService()
-            save_result = price_service.save_prices(price_list)
-
-            return {
-                'status': 'success',
-                'data': {
-                    'requested_count': len(ticker_ids),
-                    'received_count': len(price_list),
-                    'updated_count': save_result.get('updated', 0),
-                },
-                'message': f'Обновлено {save_result.get('updated', 0)} цен'
-            }
-
-        except Exception as e:
-            logger.error(f"Ошибка умного обновления цен: {e}")
-            return {'status': 'error', 'message': str(e)}
-
-    def _fetch_top_coins(self, limit: Optional[int] = None) -> List[str]:
-        """Получить топ-N монет по капитализации"""
+    async def _fetch_top_coins(self, market: str, limit: int | None = None) -> list[str]:
         ids = []
         return ids[:limit] if limit else ids
 
-    def _fetch_active_coins(self, limit: Optional[int] = None) -> List[str]:
-        """Получить активно торгуемые монеты"""
+    async def _fetch_active_coins(self, market: str, limit: int | None = None) -> list[str]:
         ids = []
         return ids[:limit] if limit else ids
 
-    def _fetch_all_coins(self, limit: Optional[int] = None) -> List[str]:
-        """Получить все монеты"""
+    async def _fetch_all_coins(self, market: str, limit: int | None = None) -> list[str]:
         ids = []
         return ids[:limit] if limit else ids
 
-    def _fetch_smart_coins(self, limit: Optional[int] = None) -> List[str]:
-        """Умный выбор монет для обновления"""
+    async def _fetch_smart_coins(self, market: str, limit: int | None = None) -> list[str]:
         ids = []
         return ids[:limit] if limit else ids
 
-    def _fetch_used_coins(self, limit: Optional[int] = None) -> List[str]:
-        """
-        Получить список монет, используемых пользователями
-        
-        Args:
-            limit: Максимальное количество возвращаемых монет
-            
-        Returns:
-            Список уникальных ID монет без префикса
-        """
-        try:
-            url = 'http://nginx:81/api/internal/all_used_tickers'
-            # url = 'http://backend:8000/api/admin/all_used_tickers'
-            response = requests.get(url, timeout=30)
+    async def _fetch_used_coins(self, market: str, limit: int | None = None) -> list[str]:
+        url = 'http://portfolios:8000/api/internal/all_used_tickers'
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, timeout=30)
             response.raise_for_status()
             data = response.json()
 
-            # ToDo обрабатывать разные рынки
-            # Обрабатываем только криптовалютные тикеры (с префиксом 'cr-')
-            prefix = 'cr-'
-            ticker_ids = [id.removeprefix(prefix) for id in data if id.startswith(prefix)]
+        unique_ids = list(set(data))
+        logger.info('Получено %s уникальных используемых тикеров', len(unique_ids))
+        return unique_ids[:limit] if limit else unique_ids
 
-            # Убираем дубликаты
-            unique_ids = list(set(ticker_ids))
-
-            logger.info(f'Получено {len(unique_ids)} уникальных использованных тикеров')
-
-            return unique_ids[:limit] if limit else unique_ids
-
-        except requests.RequestException as e:
-            logger.error(f"Ошибка получения используемых тикеров: {e}")
-            return []
-        except Exception as e:
-            logger.error(f"Неизвестная ошибка получения используемых тикеров: {e}")
-            return []
+smart_price_updater = SmartPriceUpdater()

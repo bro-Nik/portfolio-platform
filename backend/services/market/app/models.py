@@ -22,7 +22,7 @@ class Ticker(Base):
 
 
 class Provider(Base):
-    __tablename__ = 'providers'
+    __tablename__ = 'provider'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
@@ -34,18 +34,6 @@ class Provider(Base):
     requests_per_hour: Mapped[int | None] = mapped_column(Integer)
     requests_per_day: Mapped[int | None] = mapped_column(Integer)
     requests_per_month: Mapped[int | None] = mapped_column(Integer)
-
-    # Текущие счетчики
-    minute_counter: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    hour_counter: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    day_counter: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    month_counter: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-
-    # Время сброса счетчиков
-    last_minute_reset: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC), nullable=False)
-    last_hour_reset: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC), nullable=False)
-    last_day_reset: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC), nullable=False)
-    last_month_reset: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC), nullable=False)
 
     # Настройки
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -65,10 +53,10 @@ class Provider(Base):
 
 
 class RequestLog(Base):
-    __tablename__ = 'request_logs'
+    __tablename__ = 'request_log'
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    provider_id: Mapped[int | None] = mapped_column(Integer, ForeignKey('providers.id', ondelete='CASCADE'), nullable=False, index=True)
+    provider_id: Mapped[int | None] = mapped_column(Integer, ForeignKey('provider.id', ondelete='CASCADE'), nullable=False, index=True)
     endpoint: Mapped[str] = mapped_column(String(500), nullable=False)
     method: Mapped[str] = mapped_column(String(10), default='GET', nullable=False)
     status_code: Mapped[int | None] = mapped_column(Integer)
@@ -93,8 +81,7 @@ class RequestLog(Base):
     response_content_type: Mapped[str | None] = mapped_column(String(200))
 
     # Связь с задачами
-    celery_task_id: Mapped[str | None] = mapped_column(String(100))
-    task_id: Mapped[int | None] = mapped_column(Integer, ForeignKey('tasks.id', ondelete='CASCADE'), index=True)
+    task_id: Mapped[int | None] = mapped_column(Integer, ForeignKey('task.id', ondelete='CASCADE'), index=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC), nullable=False)
 
@@ -103,14 +90,14 @@ class RequestLog(Base):
 
 
 class Task(Base):
-    __tablename__ = 'tasks'
+    __tablename__ = 'task'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
 
     task_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    provider_id: Mapped[int] = mapped_column(Integer, ForeignKey('providers.id', ondelete='CASCADE'), nullable=False, index=True)
+    provider_id: Mapped[int] = mapped_column(Integer, ForeignKey('provider.id', ondelete='CASCADE'), nullable=False, index=True)
 
     # Расписание
     schedule: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -126,11 +113,11 @@ class Task(Base):
     task_priority: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
 
     # История выполнения
-    last_run: Mapped[datetime | None] = mapped_column(DateTime)
+    last_run: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_run_status: Mapped[str | None] = mapped_column(String(50))
     last_run_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     last_error: Mapped[str | None] = mapped_column(Text)
-    next_run: Mapped[datetime | None] = mapped_column(DateTime)
+    next_run: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     run_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
     success_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)

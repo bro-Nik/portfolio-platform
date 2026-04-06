@@ -1,7 +1,18 @@
+from contextlib import asynccontextmanager
+
+from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.api import api_router
+from app.dependencies.di import container
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    await container.close()
+
 
 app = FastAPI(
     title='Portfolios Market API',
@@ -11,6 +22,7 @@ app = FastAPI(
     redoc_url='/redoc',
 )
 
+setup_dishka(container=container, app=app)
 
 # Статические файлы
 app.mount('/static', StaticFiles(directory='static'), name='static')

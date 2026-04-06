@@ -11,13 +11,3 @@ services:
     volumes:
       - ./app:/app/app
       - ../../shared:/shared
-
-  market-celery-worker:
-    build:
-      target: development
-    command: celery -A app.core.celery worker --loglevel=info
-
-  market-celery-beat:
-    build:
-      target: development
-    command: celery -A app.core.celery beat --loglevel=info --scheduler redbeat.RedBeatScheduler

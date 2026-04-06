@@ -16,5 +16,6 @@ from .task import (
     TaskUpdate,
     TaskUpdateRequest,
 )
+from .ticker import ImagesResponse, PricesResponse, TickerInfoListResponse, TickerSearchResponse
 
 TaskResponse.model_rebuild()

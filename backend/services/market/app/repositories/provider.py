@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Provider
-from app.repositories.async_repo import BaseRepository
+from app.repositories import BaseRepository
 from app.schemas import ProviderCreate, ProviderUpdate
 
 
@@ -13,7 +13,7 @@ class ProviderRepository(BaseRepository[Provider, ProviderCreate, ProviderUpdate
 
     async def get_all_active(self) -> list[Provider]:
         """Получить активные API провайдеры."""
-        return await self.get_all(Provider.is_active)
+        return await self.get_all(Provider.is_active == True)
 
     async def get_by_name(self, name: str) -> Provider | None:
         """Получить API провайдера по названию."""

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pydantic import BaseModel, ConfigDict
 
 
@@ -42,17 +40,10 @@ class ProviderResponse(ProviderBase):
     id: int
     name: str
 
-    # Текущие счетчики
-    minute_counter: int
-    hour_counter: int
-    day_counter: int
-    month_counter: int
-
-    # Время последнего сброса
-    last_minute_reset: datetime
-    last_hour_reset: datetime
-    last_day_reset: datetime
-    last_month_reset: datetime
+    minute_counter: int | None = None
+    hour_counter: int | None = None
+    day_counter: int | None = None
+    month_counter: int | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -73,5 +64,4 @@ class ProviderStats(BaseModel):
     day_limit: int
     month_counter: int
     month_limit: int
-    pending_in_queue: int
     utilization_percent: dict[str, float]

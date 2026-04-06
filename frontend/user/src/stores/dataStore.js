@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { apiService } from '/app/src/services/api';
+import { authService } from '/app/src/services/auth';
+
+const { getValidToken } = authService();
 
 export const useDataStore = create(
   devtools(
@@ -105,7 +108,7 @@ export const useDataStore = create(
         if (ids.length === 0) return;
         
         try {
-          const api = apiService('/market/api/tickers');
+          const api = apiService('/market/api/tickers', getValidToken);
           const result = await api.post('/prices', ids);
           
           if (result.success) {
@@ -125,7 +128,7 @@ export const useDataStore = create(
         if (ids.length === 0) return;
         
         try {
-          const api = apiService('/market/api/tickers');
+          const api = apiService('/market/api/tickers', getValidToken);
           const result = await api.post('/info', ids);
           
           if (result.success) {
