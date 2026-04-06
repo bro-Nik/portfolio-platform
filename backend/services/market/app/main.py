@@ -1,8 +1,18 @@
+from contextlib import asynccontextmanager
+
+from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.api.admin import admin_router
-from app.api.user import user_router
+from app.api import api_router
+from app.dependencies.di import container
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    await container.close()
+
 
 app = FastAPI(
     title='Portfolios Market API',
@@ -12,10 +22,7 @@ app = FastAPI(
     redoc_url='/redoc',
 )
 
-
-app.include_router(user_router)
-app.include_router(admin_router)
-
+setup_dishka(container=container, app=app)
 
 # Статические файлы
 app.mount('/static', StaticFiles(directory='static'), name='static')
@@ -28,3 +35,6 @@ async def add_cache_headers(request, call_next):
     if request.url.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'public, max-age=31536000'  # 1 год
     return response
+
+
+app.include_router(api_router)

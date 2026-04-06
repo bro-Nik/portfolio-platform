@@ -1,20 +1,7 @@
-from enum import Enum
-
 from pydantic import model_validator
 from pydantic_settings import SettingsConfigDict
+
 from shared.core.config import Settings as CommonSettings
-
-
-class MarketType(str, Enum):
-    CRYPTO = 'crypto'
-    STOCK = 'stock'
-    CURRENCY = 'currency'
-
-
-class MarketTickerPrefix(str):
-    CRYPTO = 'cr-'
-    STOCK = 'st-'
-    CURRENCY = 'cu-'
 
 
 class Settings(CommonSettings):

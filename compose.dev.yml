@@ -17,14 +17,25 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload
     volumes:
       - ./backend/services/market/app:/app/app
-      - ./backend/services/market/alembic.ini:/app/alembic.ini
       - ./backend/shared:/shared
 
-  market-celery-worker:
+  market-worker:
+    build:
+      target: development
+    command: taskiq worker app.core.taskiq:broker app.tasks --log-level INFO
+    volumes:
+      - ./backend/services/market/app:/app/app
+      - ./backend/shared:/shared
     depends_on:
       - redis
 
-  market-celery-beat:
+  market-scheduler:
+    build:
+      target: development
+    command: taskiq scheduler app.core.taskiq:scheduler --log-level INFO
+    volumes:
+      - ./backend/services/market/app:/app/app
+      - ./backend/shared:/shared
     depends_on:
       - redis
 

@@ -14,3 +14,7 @@ celery-redbeat
 requests
 croniter
 pydantic-settings
+taskiq
+taskiq-redis
+dishka
+httpx

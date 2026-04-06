@@ -1,181 +1,61 @@
-from typing import List, Optional
+"""Тикеры.
 
-from fastapi import APIRouter, Query
-from pydantic import BaseModel
-from sqlalchemy import func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
+Все эндпоинты требуют валидный access token
+В некоторых эндпоинтах используется POST вместо GET для передачи большого количества ID
+"""
 
-from app import models
-from app.dependencies import DBSession
+from fastapi import Query
 
-router = APIRouter(prefix="/tickers", tags=["tickers"])
-BASE_IMAGES_URL = '/market/static/images/tickers'
+from app.api.router import AppRouter
+from app.dependencies import TickerServiceDep
+from app.schemas import ImagesResponse, PricesResponse, TickerInfoListResponse, TickerSearchResponse
+from shared.exceptions import handle_errors
 
-
-class TickerResponse(BaseModel):
-    """Модель ответа для тикера"""
-    id: str
-    name: str
-    symbol: str
-    image: Optional[str] = None
-    market_cap_rank: Optional[int] = None
-    price: float
-    market: str
-
-    class Config:
-        from_attributes = True
+router = AppRouter(prefix='/tickers', tags=['User | Tickers'])
 
 
-class TickerSearchResponse(BaseModel):
-    """Модель ответа для поиска тикеров"""
-    data: List[TickerResponse]
-    has_more: bool
-
-
-class AssetPricesResponse(BaseModel):
-    """Модель ответа для цен активов"""
-    prices: dict[str, float]
-
-
-class AssetImagesResponse(BaseModel):
-    """Модель ответа для картинок активов"""
-    images: dict[str, str]
-
-
-class AssetInfoResponse(BaseModel):
-    """Модель ответа для информации о активове"""
-    info: dict[str, dict]
-
-
-@router.get("", response_model=TickerSearchResponse)
+@router.get('')
+@handle_errors('Ошибка при получении тикеров')
 async def search_tickers(
-    db: DBSession,
-    search: Optional[str] = Query(None, description="Поиск по названию или символу"),
-    market: Optional[str] = Query(None, description="Фильтр по рынку"),
-    page: int = Query(1, ge=1, description="Номер страницы"),
-    page_size: int = Query(20, ge=1, le=100, description="Размер страницы"),
+    ticker_service: TickerServiceDep,
+    search: str | None = Query(None, description='Поиск по названию или символу'),
+    market: str | None = Query(None, description='Рынок (crypto, stock, currency)'),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
 ) -> TickerSearchResponse:
-    """
-    Поиск тикеров с пагинацией и фильтрацией
-    """
-    # Базовые запросы
-    query = select(models.Ticker)
-    count_query = select(func.count()).select_from(models.Ticker)
-
-    # Собираем условия
-    where_conditions = []
-
-    # Применяем поиск если указан
-    if search:
-        search_term = f"%{search}%"
-        where_conditions.append(
-            or_(
-                models.Ticker.name.ilike(search_term),
-                models.Ticker.symbol.ilike(search_term)
-            )
-        )
-
-    # Применяем фильтр по рынку если указан
-    if market:
-        where_conditions.append(models.Ticker.market == market)
-
-    # Применяем условия если они есть
-    if where_conditions:
-        query = query.where(*where_conditions)
-        count_query = count_query.where(*where_conditions)
-
-    # Получаем общее количество
-    total_count_result = await db.execute(count_query)
-    total_count = total_count_result.scalar_one()
-
-    # Вычисляем смещение
-    offset = (page - 1) * page_size
-
-    # Получаем данные с пагинацией
-    query = query.order_by(
-        models.Ticker.market_cap_rank.asc().nulls_last(),
-        models.Ticker.symbol.asc()
-    ).offset(offset).limit(page_size + 1)  # Берем на один элемент больше для проверки has_more
-
-    result = await db.execute(query)
-    tickers = result.scalars().all()
-
-    # Проверяем есть ли следующая страница
-    has_more = len(tickers) > page_size
-    if has_more:
-        tickers = tickers[:-1]  # Убираем лишний элемент
-
-    return TickerSearchResponse(
-        data=tickers,
-        has_more=has_more
-    )
+    """Поиск тикеров с пагинацией и фильтрацией."""
+    result = await ticker_service.search(search, market, page, page_size)
+    return TickerSearchResponse(**result)
 
 
-@router.post("/prices", response_model=AssetPricesResponse)
-async def get_assets_prices(
-    asset_ids: List[str],
-    db: DBSession,
-) -> AssetPricesResponse:
-    """
-    Возвращает текущие цены для списка активов
-    """
-    tickers = await _get_tickers_by_ids(asset_ids, db)
-
-    prices = {
-        ticker.id: ticker.price
-        for ticker in tickers
-    }
-
-    return AssetPricesResponse(prices=prices)
+@router.post('/prices')
+@handle_errors('Ошибка при получении цен')
+async def get_prices(
+    ticker_ids: list[str],
+    ticker_service: TickerServiceDep,
+) -> PricesResponse:
+    """Возвращает текущие цены для списка активов."""
+    prices = await ticker_service.get_prices(ticker_ids)
+    return PricesResponse(prices=prices)
 
 
-@router.post('/images', response_model=AssetImagesResponse)
-async def get_assets_images(
-    asset_ids: List[str],
-    db: DBSession,
-) -> AssetImagesResponse:
-    """
-    Возвращает URL изображений для списка активов
-    """
-    tickers = await _get_tickers_by_ids(asset_ids, db)
-
-    size = 24
-    images = {t.id: f'{BASE_IMAGES_URL}/{t.market}/{size}/{t.image}' for t in tickers}
-
-    return AssetImagesResponse(images=images)
+@router.post('/images')
+@handle_errors('Ошибка при получении изображений')
+async def get_images(
+    ticker_ids: list[str],
+    ticker_service: TickerServiceDep,
+) -> ImagesResponse:
+    """Возвращает URL изображений для списка активов."""
+    images = await ticker_service.get_images(ticker_ids)
+    return ImagesResponse(images=images)
 
 
-@router.post('/info', response_model=AssetInfoResponse)
-async def get_assets_info(
-    asset_ids: List[str],
-    db: DBSession,
-) -> AssetInfoResponse:
-    """
-    Возвращает информацию о тикерах для списка активов
-    """
-    tickers = await _get_tickers_by_ids(asset_ids, db)
-
-    info = {}
-    for ticker in tickers:
-        ticker_data = {
-            'image': f'{BASE_IMAGES_URL}/{ticker.market}/24/{ticker.image}',
-            'name': ticker.name,
-            'symbol': ticker.symbol,
-        }
-        info[ticker.id] = ticker_data
-
-    return AssetInfoResponse(info=info)
-
-
-async def _get_tickers_by_ids(
-    asset_ids: List[str],
-    db: AsyncSession
-) -> List[models.Ticker]:
-    """Общая функция для получения тикеров по списку ID"""
-    if not asset_ids:
-        return []
-    
-    result = await db.execute(
-        select(models.Ticker).where(models.Ticker.id.in_(asset_ids))
-    )
-    return result.scalars().all()
+@router.post('/info')
+@handle_errors('Ошибка при получении информации о тикерах')
+async def get_info(
+    ticker_ids: list[str],
+    ticker_service: TickerServiceDep,
+) -> TickerInfoListResponse:
+    """Возвращает информацию о тикерах для списка активов."""
+    info = await ticker_service.get_info(ticker_ids)
+    return TickerInfoListResponse(info=info)
