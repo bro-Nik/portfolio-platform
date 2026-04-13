@@ -1,0 +1,27 @@
+name: portfolios
+
+services:
+  ui-admin:
+    build:
+      context: .
+      dockerfile: ../base.Dockerfile
+      target: development
+      additional_contexts:
+        - shared-context=../shared
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+      - FAST_REFRESH=true
+      - REACT_APP_AUTH_SERVICE_URL=/auth
+      - REACT_APP_MARKET_SERVICE_URL=/market
+      - REACT_APP_IMAGE_BASE_URL=/market/static/images/tickers/
+    env_file:
+      - path: ./.env
+        required: false
+      - path: ../../.env
+        required: false
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      # - ../shared:/app/shared
+      - /app/node_modules  # Сохраняем node_modules в Docker volume
