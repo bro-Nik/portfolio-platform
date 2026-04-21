@@ -18,8 +18,8 @@ security = HTTPBearer(auto_error=False)
 class AuthDependencies:
     """Контейнер со всеми зависимостями аутентификации."""
     
-    require_user: Callable[..., AuthUser]
-    require_admin: Callable[..., AuthUser]
+    require_user: Depends
+    require_admin: Depends
     
     CurrentUser: Annotated[AuthUser, ...]
     CurrentUserOrNone: Annotated[AuthUser | None, ...]
@@ -55,20 +55,22 @@ def get_current_user_or_none(credentials: Annotated[HTTPAuthorizationCredentials
         return None
 
 
+def _create_role_requirement(required_role: UserRole) -> Callable[..., AuthUser]:
+    """Создать зависимость для проверки конкретной роли."""
+    
+    def require_role(current_user: AuthUser = Depends(get_current_user)) -> AuthUser:
+        """Проверить что пользователь имеет требуемую роль и вернуть его."""
+        if required_role.priority > current_user.role.priority:
+            raise ForbiddenException(f'Требуется роль: {required_role.value}')
+        
+        return current_user
+    
+    return Depends(require_role)
+
+
 def create_dependencies() -> AuthDependencies:
     """Фабрика создает все зависимости для работы с аутентификацией."""
        
-    def _create_role_requirement(required_role: UserRole) -> Callable[..., AuthUser]:
-        """Создать зависимость для проверки конкретной роли."""
-        
-        def require_role(current_user: AuthUser = Depends(get_current_user)) -> AuthUser:
-            """Проверить что пользователь имеет требуемую роль и вернуть его."""
-            if required_role.priority > current_user.role.priority:
-                raise ForbiddenException(f'Требуется роль: {required_role.value}')
-            
-            return current_user
-        
-        return Depends(require_role)
     
     require_user = _create_role_requirement(UserRole.USER)
     require_admin = _create_role_requirement(UserRole.ADMIN)
@@ -82,3 +84,10 @@ def create_dependencies() -> AuthDependencies:
         CurrentUser=CurrentUser,
         CurrentUserOrNone=CurrentUserOrNone,
     )
+
+
+require_user = _create_role_requirement(UserRole.USER)
+require_admin = _create_role_requirement(UserRole.ADMIN)
+
+CurrentUser = Annotated[AuthUser, Depends(get_current_user)]
+CurrentUserOrNone = Annotated[AuthUser | None, Depends(get_current_user_or_none)]
