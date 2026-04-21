@@ -1,8 +1,17 @@
-export const apiService = (baseUrl = '', getToken) => {
+const errorTranslations = {
+  'Field required': 'обязательное поле',
+  'Input should be a valid integer': 'должно быть числом',
+  'Input should be a valid string': 'должно быть строкой',
+  'ensure this value is not empty': 'не должно быть пустым',
+};
+
+const translateError = (msg) => errorTranslations[msg] || msg;
+
+export const apiService = (baseUrl = '', getToken, convertCase = false) => {
 
   const getAuthHeaders = async () => {
     if (!getToken) return {};
-    
+
     const token = await getToken();
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   };
@@ -22,15 +31,30 @@ export const apiService = (baseUrl = '', getToken) => {
       data = snakeToCamel(data);
 
       if (!response.ok) {
-        throw data?.detail || data?.message || `Ошибка ${response.status}`;
+        let message;
+        if (data?.detail) {
+          if (Array.isArray(data.detail)) {
+            message = data.detail.map(d => {
+              const field = d.loc?.[1] || d.loc?.[0] || 'поле';
+              const msg = translateError(d.msg);
+              return `${field}: ${msg}`;
+            }).join(', ');
+          } else {
+            message = data.detail;
+          }
+        } else if (data?.message) {
+          message = data.message;
+        } else {
+          message = `Ошибка ${response.status}`;
+        }
+        throw new Error(message);
       }
 
       console.log('Запрос завершен, ', fullUrl)
       return data;
     } catch (error) {
-      const normalizedError = normalizeError(error);
-      console.log('Ошибка запроса, ', fullUrl, normalizedError)
-      throw normalizedError;
+      console.log('Ошибка запроса, ', fullUrl, error)
+      throw error;
     }
   };
 
@@ -38,17 +62,18 @@ export const apiService = (baseUrl = '', getToken) => {
     return request(url);
   };
 
-  const post = (url, body, convert = false) => {
+
+  const post = (url, body) => {
     return request(url, {
       method: 'POST',
-      body: JSON.stringify(convert ? camelToSnake(body) : body),
+      body: JSON.stringify(convertCase ? camelToSnake(body) : body),
     });
   };
 
-  const put = (url, body, convert = false) => {
+  const put = (url, body) => {
     return request(url, {
       method: 'PUT',
-      body: JSON.stringify(convert ? camelToSnake(body) : body),
+      body: JSON.stringify(convertCase ? camelToSnake(body) : body),
     });
   };
 
@@ -79,7 +104,6 @@ const snakeToCamel = (obj) => {
 const camelToSnake = (obj) => {
   if (obj === undefined || obj === null) return obj;
 
-  const oldObj = obj;
   if (Array.isArray(obj)) {
     return obj.map(v => camelToSnake(v));
   } else if (obj.constructor === Object) {
@@ -91,20 +115,3 @@ const camelToSnake = (obj) => {
   }
   return obj;
 };
-
-const normalizeError = (error) => {
-  // Создаем стандартный объект ошибки
-  const normalized = {
-    message: '',
-  };
-  
-  if (error.response) {
-    normalized.message = error.response.data?.message || `Ошибка ${error.response.status}`;
-  } else if (error.request) {
-    normalized.message = 'Нет ответа от сервера';
-  } else {
-    normalized.message = error || 'Неизвестная ошибка';
-  }
-  
-  return normalized;
-}

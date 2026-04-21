@@ -1,13 +1,12 @@
 import { notification } from 'antd';
-import { getErrorMessage } from './errorUtils';
 
-export const errorNotification = (error: Error, title: string = 'Ошибка'): void => {
+export const errorNotification = (error: unknown, title: string = 'Ошибка'): void => {
+  const message = error instanceof Error ? error.message : String(error);
   notification.error({
     title: title,
-    description: getErrorMessage(error),
+    description: message,
     duration: 5,
   });
-  console.error('API Error:', error);
 };
 
 export const successNotification = (description: string): void => {

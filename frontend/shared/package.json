@@ -1,5 +1,13 @@
 {
   "name": "@portfolios/shared",
   "version": "1.0.0",
-  "type": "module"
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "jwt-decode": "^4.0.0"
+  },
+  "peerDependencies": {
+    "zustand": "^5.0.9",
+    "react": "^19.2.1"
+  }
 }
