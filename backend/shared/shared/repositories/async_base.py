@@ -180,7 +180,7 @@ class BaseAsyncRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseMode
 
     async def _update_one(self, data: UpdateSchema, *where: Where, partial: bool = True) -> Model | None:
         dump = data.model_dump(exclude_unset=partial)
-        stmt = update(self.model).where(*where).values(**dump).returning(self.model).limit(1)
+        stmt = update(self.model).where(*where).values(**dump).returning(self.model)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -193,7 +193,7 @@ class BaseAsyncRepository[Model, CreateSchema: BaseModel, UpdateSchema: BaseMode
     async def _delete_one(self, *where: Where, order: Order = None) -> Id:
         stmt = delete(self.model)
         stmt = self._apply(stmt, where=where, order=order)
-        stmt = stmt.limit(1).returning(self.model.id)
+        stmt = stmt.returning(self.model.id)
         
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
