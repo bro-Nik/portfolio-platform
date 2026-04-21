@@ -8,7 +8,8 @@ default:
     @echo 'Доступные команды:'
     @echo ''
     @echo 'Запуск и остановка:'
-    @echo '  just up [args]             - Запустить проект (пример: just up, just up -d, just up --build)'
+    @echo '  just up [args]             - Запустить проект без воркеров (пример: just up, just up -d)'
+    @echo '  just up-workers [args]    	- Запустить проект с воркерами taskiq'
     @echo '  just down                  - Остановить проект'
     @echo '  just restart               - Перезапустить проект'
     @echo '  just ps                    - Список контейнеров'
@@ -16,11 +17,12 @@ default:
     @echo 'Логи и отладка:'
     @echo '  just logs [service]        - Показать логи (пример: just logs, just logs auth)'
     @echo '  just logs-f [service]      - Следить за логами'
-    @echo '  just shell service       	- Войти в контейнер'
-    @echo '  just exec service [cmd]  	- Выполнить команду (пример: just exec auth "python -m app.migrate")'
+    @echo '  just shell service         - Войти в контейнер'
+    @echo '  just exec service [cmd]    - Выполнить команду (пример: just exec auth "python -m app.migrate")'
     @echo ''
-    @echo 'Разработка:'
+    @echo 'Разработка Backend:'
     @echo '  just tests [args]          - Запустить тесты (пример: just tests, just tests --build)'
+    @echo '  just build-back-local-env  - Создать локальное окружение'
     @echo ''
     @echo 'Базы данных:'
     @echo '  just backup                - Сделать бэкап всех БД'
@@ -28,17 +30,21 @@ default:
     @echo '  just backup-del [keep=5]   - Удалить бэкапы (пример: just backup-del, just backup-del 0)'
     @echo ''
     @echo 'Миграции:'
-    @echo '  just migrate [service]     - Применить миграции (пример: just migrate, just migrate auth)'
-    @echo '  just migrate-new service [msg] - Создать миграцию'
-    @echo '  just migrate-down service - Откатить миграцию'
+    @echo '  just migrate [service]          - Применить миграции (пример: just migrate, just migrate auth)'
+    @echo '  just migrate-new service [msg]  - Создать миграцию'
+    @echo '  just migrate-down service       - Откатить миграцию'
     @echo ''
     @echo 'Очистка:'
     @echo '  just clean                 - Остановить и удалить данные'
 
 # -------------------- Запуск и остановка --------------------
-# Запустить проект
+# Запустить проект без воркеров
 up *args:
 	@docker compose {{compose}} up {{args}}
+
+# Запустить проект с воркерами taskiq
+up-workers *args:
+	@docker compose {{compose}} --profile worker up {{args}}
 
 # Остановить проект
 down:
@@ -72,7 +78,7 @@ exec service cmd:
 	@just _ensure_app {{service}}
 	@docker compose {{compose}} exec {{service}} {{cmd}}
 
-# -------------------- Разработка --------------------
+# -------------------- Разработка Backend --------------------
 # Запустить все тесты
 tests *args:
 	@echo "🧪 Запуск тестов..."
@@ -82,6 +88,19 @@ tests *args:
 		[ "$(just _service_ready $s)" = "true" ] || { echo "❗ сервис не настроен"; continue; }; \
 		[ "$(just _service_has_tests $s)" = "true" ] || { echo "❗ нет тестов"; continue; }; \
 		just _run_in_service $s "tests {{args}}"; \
+	done
+
+# Создать локальное окружение для работы автодополнения (LSP)
+build-local-env:
+	@echo "🔧 Настройка локального окружения для LSP..."
+	@python3 -m venv backend/.venv
+	@backend/.venv/bin/pip install --upgrade pip
+	@services=$(just _get_services); \
+	for s in $services; do \
+		printf "  📦 %-20s" "$s..."; \
+		[ -f "{{backend_path}}/$s/requirements.txt" ] && \
+			backend/.venv/bin/pip install -r "{{backend_path}}/$s/requirements.txt" > /dev/null 2>&1 && \
+			echo "✅" || echo "❌"; \
 	done
 
 # -------------------- Базы данных --------------------

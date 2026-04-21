@@ -28,6 +28,8 @@ services:
       - ./backend/shared:/shared
     depends_on:
       - redis
+    profiles:
+      - worker
 
   market-scheduler:
     build:
@@ -38,6 +40,8 @@ services:
       - ./backend/shared:/shared
     depends_on:
       - redis
+    profiles:
+      - worker
 
   nginx:
     ports: ["8081:80"]
