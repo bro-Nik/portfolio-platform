@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from .provider import (
     ProviderCreate,
     ProviderCreateRequest,
+    ProviderLog,
     ProviderResponse,
     ProviderStats,
     ProviderUpdate,

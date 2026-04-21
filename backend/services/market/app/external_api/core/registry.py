@@ -29,7 +29,7 @@ class ProviderRegistry:
             func.__dict__['api_method_info'] = {
                 'name': method.name,
                 'description': method.description,
-                'exemple_params': method.exemple_params,
+                'example_params': method.exemple_params,
                 **kwargs,
             }
             return func

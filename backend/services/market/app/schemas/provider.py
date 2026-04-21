@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 
@@ -65,3 +67,21 @@ class ProviderStats(BaseModel):
     month_counter: int
     month_limit: int
     utilization_percent: dict[str, float]
+
+
+class ProviderLog(BaseModel):
+    """Ответ со логами API провайдера."""
+
+    id: int
+    provider_id: int
+    endpoint: str
+    method: str
+    status_code: int | None
+    response_time: float | None
+    was_successful: bool
+    error_message: str | None
+    request_params: dict[str, Any] | None
+    task_id: int | None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

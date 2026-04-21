@@ -5,7 +5,13 @@
 
 from app.api.router import AppRouter
 from app.dependencies import ProviderServiceDep
-from app.schemas import ProviderCreateRequest, ProviderResponse, ProviderUpdateRequest
+from app.schemas import (
+    ProviderCreateRequest,
+    ProviderLog,
+    ProviderResponse,
+    ProviderStats,
+    ProviderUpdateRequest,
+)
 from shared.api import responses
 from shared.exceptions import handle_errors
 
@@ -77,7 +83,7 @@ async def reset_counters(
 async def get_provider_stats(
     provider_id: int,
     provider_service: ProviderServiceDep,
-) -> dict:
+) -> ProviderStats:
     """Получить статистику использования API провайдера."""
     return await provider_service.get_stats(provider_id)
 
@@ -88,14 +94,14 @@ async def get_provider_logs(
     provider_service: ProviderServiceDep,
     provider_id: int,
     hours: int = 24,
-) -> list:
+) -> list[ProviderLog]:
     """Получить логи запросов API провайдера."""
     return await provider_service.get_logs(provider_id, hours=hours)
 
 
 @router.get('/with/settings')
 @handle_errors('Ошибка при получении настроек провайдеров')
-def get_providers_with_settings(
+async def get_providers_with_settings(
     provider_service: ProviderServiceDep,
 ) -> list:
     """Получить предустановки для cуществующих API провайдеров."""

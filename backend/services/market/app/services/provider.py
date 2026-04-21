@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, Any
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.external_api.core import registry
 from app.models import Provider, RequestLog
 from app.schemas import (
     ProviderCreate,
     ProviderCreateRequest,
     ProviderResponse,
     ProviderStats,
+    ProviderUpdate,
     ProviderUpdateRequest,
 )
 from shared.exceptions import ConflictError, NotFoundError
@@ -87,7 +87,7 @@ class ProviderService:
 
         await self._validate_update_data(data, provider)
 
-        data_to_db = ProviderCreate(**data.model_dump())
+        data_to_db = ProviderUpdate(**data.model_dump())
         return await self.repo.update(id, data_to_db)
 
     async def delete(self, id: int) -> None:
@@ -151,10 +151,11 @@ class ProviderService:
 
     async def get_many_with_methods(self) -> list[dict[str, Any]]:
         """Получить провайдеров с доступными методами."""
+        from app.external_api.core.registry import ProviderRegistry
         result = []
         providers = await self.repo.get_all_active()
         for provider in providers:
-            methods = list(registry.get_provider_methods(provider.name))
+            methods = list(ProviderRegistry.get_provider_methods(provider.name))
             if methods:
                 result.append({
                     'id': provider.id,
@@ -165,8 +166,9 @@ class ProviderService:
 
     def get_many_with_settings(self) -> list[dict[str, Any]]:
         """Получить провайдеров с настройками."""
+        from app.external_api.core.registry import ProviderRegistry
         result = []
-        providers = registry.PROVIDERS
+        providers = ProviderRegistry.PROVIDERS
         for provider_name in providers:
             provider = providers[provider_name]
             provider_dict = {

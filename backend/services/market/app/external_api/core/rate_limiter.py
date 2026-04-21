@@ -145,6 +145,6 @@ class RateCounter:
         ttl_values = [self.PERIODS[period] for period in periods]
         args = limit_values + ttl_values
 
-        result = await self._script(args=[len(keys), *keys, *args])
+        result = await self._script(keys=keys, args=limit_values + ttl_values)
 
         return result == 1
