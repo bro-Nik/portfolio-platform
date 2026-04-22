@@ -27,7 +27,7 @@ class SessionService:
             user_agent=self.ctx.user_agent,
             **session_info,
         )
-        await self.repo.create(session_to_db)
+        await self.repo.create(session_to_db.model_dump())
 
     async def update(self, refresh_token_id: int) -> None:
         """Обновить запись о сессии входа."""
@@ -39,7 +39,7 @@ class SessionService:
             ip_address=self.ctx.client_ip,
             last_activity_at=datetime.now(UTC),
         )
-        await self.repo.update(db_session.id, session_to_db)
+        await self.repo.update(db_session.id, session_to_db.model_dump())
 
     @staticmethod
     def _parse_user_agent(user_agent_string: str) -> dict:

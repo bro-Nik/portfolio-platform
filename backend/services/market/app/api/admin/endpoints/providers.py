@@ -3,6 +3,9 @@
 Все эндпоинты требуют валидный access token с ролью ADMIN
 """
 
+from shared.api import responses
+from shared.exceptions import handle_errors
+
 from app.api.router import AppRouter
 from app.dependencies import ProviderServiceDep
 from app.schemas import (
@@ -12,8 +15,6 @@ from app.schemas import (
     ProviderStats,
     ProviderUpdateRequest,
 )
-from shared.api import responses
-from shared.exceptions import handle_errors
 
 router = AppRouter(prefix='/providers', tags=['Admin | ApiProviders'])
 
@@ -105,7 +106,7 @@ async def get_providers_with_settings(
     provider_service: ProviderServiceDep,
 ) -> list:
     """Получить предустановки для cуществующих API провайдеров."""
-    return provider_service.get_many_with_settings()
+    return provider_service.get_all_with_settings()
 
 
 @router.get('/with/methods')
@@ -114,4 +115,4 @@ async def get_providers_with_methods(
     provider_service: ProviderServiceDep,
 ) -> list:
     """Получить список провайдеров с поддерживаемыми методами."""
-    return await provider_service.get_many_with_methods()
+    return await provider_service.get_all_with_methods()

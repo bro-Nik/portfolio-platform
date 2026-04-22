@@ -3,12 +3,12 @@ from datetime import datetime
 from sqlalchemy import Integer, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.repositories import BaseRepository
+
 from app.models import RequestLog
-from app.repositories import BaseRepository
-from app.schemas import RequestLogCreate, RequestLogUpdate
 
 
-class RequestLogRepository(BaseRepository[RequestLog, RequestLogCreate, RequestLogUpdate]):
+class RequestLogRepository(BaseRepository[RequestLog]):
     """Репозиторий для работы с логами API запросов."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -25,10 +25,10 @@ class RequestLogRepository(BaseRepository[RequestLog, RequestLogCreate, RequestL
             RequestLog.created_at >= last_time,
         )
 
-        result = await self.session.execute(query)
+        result = await self._session.execute(query)
         return result.first()
 
-    async def get_many_by_provider(self, provider_id: int, last_time: datetime) -> list[RequestLog]:
+    async def get_all_by_provider(self, provider_id: int, last_time: datetime) -> list[RequestLog]:
         """Получить логи по провайдеру."""
         return await self.get_all(
             RequestLog.provider_id == provider_id,

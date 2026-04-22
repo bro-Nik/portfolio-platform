@@ -4,6 +4,7 @@
 """
 
 from fastapi import APIRouter, Request
+
 from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
@@ -30,7 +31,7 @@ async def get_user_wallets(
     wallet_service: WalletServiceDep,
 ) -> WalletListResponse:
     """Получение всех кошельков пользователя."""
-    wallets = await wallet_service.get_many_with_assets()
+    wallets = await wallet_service.get_all_with_assets()
     return WalletListResponse(wallets=wallets)
 
 

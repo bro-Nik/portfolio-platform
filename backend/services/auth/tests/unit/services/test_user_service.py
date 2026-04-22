@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from shared.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 
 from app.core import SecurityService
@@ -92,9 +93,9 @@ class TestUserService:
 
             call_args = service.repo.create.call_args
             user_create = call_args[0][0]
-            assert user_create.email == create_data.email
-            assert user_create.password_hash == password_hash
-            assert user_create.role == USER
+            assert user_create['email'] == create_data.email
+            assert user_create['password_hash'] == password_hash
+            assert user_create['role'] == USER
 
         service.session.flush.assert_called_once()
         assert result == user

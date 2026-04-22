@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.exceptions import ConflictError, NotFoundError
+
 from app.models import Provider, RequestLog
 from app.schemas import (
     ProviderCreate,
@@ -13,7 +15,6 @@ from app.schemas import (
     ProviderUpdate,
     ProviderUpdateRequest,
 )
-from shared.exceptions import ConflictError, NotFoundError
 
 if TYPE_CHECKING:
     from app.repositories import ProviderRepository, RequestLogRepository
@@ -74,7 +75,7 @@ class ProviderService:
         await self._validate_create_data(data)
 
         data_to_db = ProviderCreate(**data.model_dump())
-        provider = await self.repo.create(data_to_db)
+        provider = await self.repo.create(data_to_db.model_dump())
         await self.session.flush()
         return provider
 
@@ -88,7 +89,7 @@ class ProviderService:
         await self._validate_update_data(data, provider)
 
         data_to_db = ProviderUpdate(**data.model_dump())
-        return await self.repo.update(id, data_to_db)
+        return await self.repo.update(id, data_to_db.model_dump())
 
     async def delete(self, id: int) -> None:
         """Удалить провайдера."""
@@ -147,9 +148,9 @@ class ProviderService:
     async def get_logs(self, id: int, hours: int = 24) -> list[RequestLog]:
         """Получить логи провайдера."""
         last_time = datetime.now(UTC) - timedelta(hours=hours)
-        return await self.log_repo.get_many_by_provider(id, last_time)
+        return await self.log_repo.get_all_by_provider(id, last_time)
 
-    async def get_many_with_methods(self) -> list[dict[str, Any]]:
+    async def get_all_with_methods(self) -> list[dict[str, Any]]:
         """Получить провайдеров с доступными методами."""
         from app.external_api.core.registry import ProviderRegistry
         result = []
@@ -164,7 +165,7 @@ class ProviderService:
                 })
         return result
 
-    def get_many_with_settings(self) -> list[dict[str, Any]]:
+    def get_all_with_settings(self) -> list[dict[str, Any]]:
         """Получить провайдеров с настройками."""
         from app.external_api.core.registry import ProviderRegistry
         result = []

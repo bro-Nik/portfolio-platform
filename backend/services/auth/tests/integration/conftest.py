@@ -1,9 +1,10 @@
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 import pytest
-from shared.rate_limit import limiter
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
+
+from shared.rate_limit import limiter
 
 from app.core import settings
 from app.dependencies import get_session
@@ -69,4 +70,4 @@ async def test_user(db_session: AsyncSession):
         role='user',
         status='active',
     )
-    return await user_repo.create(data)
+    return await user_repo.create(data.model_dump())

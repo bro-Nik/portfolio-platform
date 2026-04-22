@@ -1,8 +1,9 @@
 import asyncio
 from collections import defaultdict
 
-from shared.exceptions import NotFoundError, PermissionDeniedError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared.exceptions import NotFoundError, PermissionDeniedError
 
 from app.models import Transaction, WalletAsset
 from app.repositories import TransactionRepository, WalletAssetRepository
@@ -41,12 +42,12 @@ class WalletAssetService:
     async def get_transactions(self, id: int) -> list[Transaction]:
         """Получение транзакций актива."""
         asset = await self.get(id)
-        return await self.transaction_repo.get_many_by_ticker_and_wallet(asset.ticker_id, asset.wallet_id)
+        return await self.transaction_repo.get_all_by_ticker_and_wallet(asset.ticker_id, asset.wallet_id)
 
     async def get_distribution(self, id: int) -> dict:
         """Получение информации о распределении актива по кошелькам."""
         asset = await self.get(id)
-        assets = await self.repo.get_many_by_ticker_and_user_with_wallets(asset.ticker_id, self.actor.id)
+        assets = await self.repo.get_all_by_ticker_and_user_with_wallets(asset.ticker_id, self.actor.id)
 
         total_quantity = sum(asset.quantity for asset in assets)
 
@@ -83,7 +84,7 @@ class WalletAssetService:
 
         # Получение активов для каждого кошелька
         results = await asyncio.gather(*[
-            self.repo.get_many_by_tickers_and_wallet(ticker_ids, wallet_id)
+            self.repo.get_all_by_tickers_and_wallet(ticker_ids, wallet_id)
             for wallet_id, ticker_ids in assets_map.items()
         ])
 

@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.repositories import BaseRepository
+
 from app.models import Provider
-from app.repositories import BaseRepository
-from app.schemas import ProviderCreate, ProviderUpdate
 
 
-class ProviderRepository(BaseRepository[Provider, ProviderCreate, ProviderUpdate]):
+class ProviderRepository(BaseRepository[Provider]):
     """Репозиторий для работы с API провайдерами."""
 
     def __init__(self, session: AsyncSession) -> None:

@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.repositories import BaseRepository
+
 from app.models import PortfolioAsset
-from app.repositories import BaseRepository
-from app.schemas import PortfolioAssetCreate, PortfolioAssetUpdate
 
 
-class PortfolioAssetRepository(BaseRepository[PortfolioAsset, PortfolioAssetCreate, PortfolioAssetUpdate]):
+class PortfolioAssetRepository(BaseRepository[PortfolioAsset]):
     """Репозиторий для работы с активами портфелей."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -18,17 +18,17 @@ class PortfolioAssetRepository(BaseRepository[PortfolioAsset, PortfolioAssetCrea
             PortfolioAsset.ticker_id == ticker_id,
         )
 
-    async def get_many_by_ticker_and_user_with_portfolios(self, ticker_id: str, user_id: int) -> list[PortfolioAsset]:
+    async def get_all_by_ticker_and_user_with_portfolios(self, ticker_id: str, user_id: int) -> list[PortfolioAsset]:
         """Получить активы пользователя по тикеру."""
-        return await self.get_many_by(
+        return await self.get_all(
             PortfolioAsset.ticker_id == ticker_id,
             PortfolioAsset.user_id == user_id,
             relations=('portfolio',),
         )
 
-    async def get_many_by_tickers_and_portfolio(self, ticker_ids: list[str], portfolio_id: int) -> list[PortfolioAsset]:
+    async def get_all_by_tickers_and_portfolio(self, ticker_ids: list[str], portfolio_id: int) -> list[PortfolioAsset]:
         """Получить активы портфеля по списку тикеров."""
-        return await self.get_many_by(
+        return await self.get_all(
             PortfolioAsset.portfolio_id == portfolio_id,
             PortfolioAsset.ticker_id.in_(ticker_ids),
         )

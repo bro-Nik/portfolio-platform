@@ -1,8 +1,9 @@
 import asyncio
 from collections import defaultdict
 
-from shared.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 
 from app.models import PortfolioAsset, Transaction
 from app.repositories import PortfolioAssetRepository, TransactionRepository
@@ -30,14 +31,14 @@ class PortfolioAssetService:
         await self._validate_create_data(data)
 
         asset_to_db = PortfolioAssetCreate(**data.model_dump(), user_id=self.actor.id)
-        asset = await self.repo.create(asset_to_db)
+        asset = await self.repo.create(asset_to_db.model_dump())
         await self.session.flush()
         return asset
 
     async def delete(self, id: int) -> bool:
         """Удалить актив портфеля."""
         await self.get(id)
-        return await self.repo.delete(id)
+        return bool(await self.repo.delete(id))
 
     async def handle_transaction(self, t: Transaction, *, cancel: bool = False) -> None:
         """Обработка транзакции."""
@@ -55,12 +56,12 @@ class PortfolioAssetService:
     async def get_transactions(self, id: int) -> list[Transaction]:
         """Получение транзакций актива."""
         asset = await self.get(id)
-        return await self.transaction_repo.get_many_by_ticker_and_portfolio(asset.ticker_id, asset.portfolio_id)
+        return await self.transaction_repo.get_all_by_ticker_and_portfolio(asset.ticker_id, asset.portfolio_id)
 
     async def get_distribution(self, id: int) -> dict:
         """Получение информации о распределении актива по портфелям."""
         asset = await self.get(id)
-        assets = await self.repo.get_many_by_ticker_and_user_with_portfolios(asset.ticker_id, self.actor.id)
+        assets = await self.repo.get_all_by_ticker_and_user_with_portfolios(asset.ticker_id, self.actor.id)
 
         total_quantity = sum(asset.quantity for asset in assets)
         total_amount = sum(asset.amount for asset in assets)
@@ -100,7 +101,7 @@ class PortfolioAssetService:
 
         # Получение активов для каждого портфеля
         results = await asyncio.gather(*[
-            self.repo.get_many_by_tickers_and_portfolio(ticker_ids, portfolio_id)
+            self.repo.get_all_by_tickers_and_portfolio(ticker_ids, portfolio_id)
             for portfolio_id, ticker_ids in assets_map.items()
         ])
 

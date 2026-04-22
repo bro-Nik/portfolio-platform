@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from shared.exceptions import AuthenticationError
+from shared.exceptions.http import UnauthorizedException
 from shared.schemas import AuthUser
 
 
@@ -17,7 +17,8 @@ class Context:
     def actor(self) -> AuthUser:
         """Получение пользователя с проверкой наличия."""
         if self._actor is None:
-            raise AuthenticationError('Необходимо авторизоваться')
+            # TODO: Переделать на AuthenticationError
+            raise UnauthorizedException('Необходимо авторизоваться')
         return self._actor
 
     @property

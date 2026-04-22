@@ -1,22 +1,18 @@
 from sqlalchemy import and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.repositories import BaseRepository
+
 from app.models import Transaction
-from app.repositories import BaseRepository
-from app.schemas import TransactionCreate, TransactionUpdate
 
 
-class TransactionRepository(BaseRepository[Transaction, TransactionCreate, TransactionUpdate]):
+class TransactionRepository(BaseRepository[Transaction]):
     """Репозиторий для работы с транзакциями."""
 
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(Transaction, session)
 
-    async def get_many_by_ticker_and_portfolio(
-        self,
-        ticker_id: str,
-        portfolio_id: int,
-    ) -> list[Transaction]:
+    async def get_all_by_ticker_and_portfolio(self, ticker_id: str, portfolio_id: int) -> list[Transaction]:
         """Получить транзакции портфеля по тикеру."""
         condition = or_(
             and_(
@@ -29,13 +25,9 @@ class TransactionRepository(BaseRepository[Transaction, TransactionCreate, Trans
             ),
         )
 
-        return await self.get_many_by(condition, order_by=[Transaction.date.desc()])
+        return await self.get_all(condition, order=[Transaction.date.desc()])
 
-    async def get_many_by_ticker_and_wallet(
-        self,
-        ticker_id: str,
-        wallet_id: int,
-    ) -> list[Transaction]:
+    async def get_all_by_ticker_and_wallet(self, ticker_id: str, wallet_id: int) -> list[Transaction]:
         """Получить транзакции кошелька по тикеру."""
         condition = or_(
             and_(
@@ -48,4 +40,4 @@ class TransactionRepository(BaseRepository[Transaction, TransactionCreate, Trans
             ),
         )
 
-        return await self.get_many_by(condition, order_by=[Transaction.date.desc()])
+        return await self.get_all(condition, order=[Transaction.date.desc()])

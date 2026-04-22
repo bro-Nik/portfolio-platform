@@ -4,6 +4,7 @@
 """
 
 from fastapi import APIRouter, Request
+
 from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
@@ -31,7 +32,7 @@ async def get_user_portfolios(
     portfolio_service: PortfolioServiceDep,
 ) -> PortfolioListResponse:
     """Получение всех портфелей пользователя."""
-    portfolios = await portfolio_service.get_many_with_assets()
+    portfolios = await portfolio_service.get_all_with_assets()
     return PortfolioListResponse(portfolios=portfolios)
 
 

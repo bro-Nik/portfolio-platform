@@ -4,6 +4,7 @@
 """
 
 from fastapi import APIRouter, Request
+
 from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
@@ -11,6 +12,7 @@ from shared.rate_limit import limiter
 from app.core import settings
 from app.dependencies import TransactionServiceDep
 from app.schemas import TransactionCreateRequest, TransactionResponseWithAssets
+from app.schemas.transaction import TransactionUpdateRequest
 
 router = APIRouter(prefix='/transactions', tags=['Transactions'], responses=responses(401, 429, 500))
 
@@ -34,10 +36,15 @@ async def create_transaction(
 async def update_transaction(
     request: Request,
     transaction_id: int,
-    data: TransactionCreateRequest,
+    data: TransactionUpdateRequest,
     transaction_service: TransactionServiceDep,
 ) -> TransactionResponseWithAssets:
     """Изменение транзакции."""
+    print(f"Updating transaction {transaction_id} with data: {data}")  # 👈
+    result = await transaction_service.update(transaction_id, data)
+    print(f"Result: {result}")  # 👈
+    # return result
+    return await transaction_service.build_response_with_assets(result)
     new_transaction, transaction = await transaction_service.update(transaction_id, data)
     return await transaction_service.build_response_with_assets(new_transaction, transaction)
 

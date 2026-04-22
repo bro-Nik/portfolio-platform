@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.repositories import BaseRepository
+
 from app.models import WalletAsset
-from app.repositories import BaseRepository
-from app.schemas import WalletAssetCreate, WalletAssetUpdate
 
 
-class WalletAssetRepository(BaseRepository[WalletAsset, WalletAssetCreate, WalletAssetUpdate]):
+class WalletAssetRepository(BaseRepository[WalletAsset]):
     """Репозиторий для работы с активами кошельков."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -18,17 +18,17 @@ class WalletAssetRepository(BaseRepository[WalletAsset, WalletAssetCreate, Walle
             WalletAsset.ticker_id == ticker_id,
         )
 
-    async def get_many_by_ticker_and_user_with_wallets(self, ticker_id: str, user_id: int) -> list[WalletAsset]:
+    async def get_all_by_ticker_and_user_with_wallets(self, ticker_id: str, user_id: int) -> list[WalletAsset]:
         """Получить активы пользователя по тикеру."""
-        return await self.get_many_by(
+        return await self.get_all(
             WalletAsset.ticker_id == ticker_id,
             WalletAsset.user_id == user_id,
             relations=('wallet',),
         )
 
-    async def get_many_by_tickers_and_wallet(self, ticker_ids: list[str], wallet_id: int) -> list[WalletAsset]:
+    async def get_all_by_tickers_and_wallet(self, ticker_ids: list[str], wallet_id: int) -> list[WalletAsset]:
         """Получить активы кошелька по списку тикеров."""
-        return await self.get_many_by(
+        return await self.get_all(
             WalletAsset.wallet_id == wallet_id,
             WalletAsset.ticker_id.in_(ticker_ids),
         )

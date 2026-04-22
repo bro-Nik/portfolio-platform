@@ -5,7 +5,6 @@ from freezegun import freeze_time
 import pytest
 
 from app.repositories import SessionRepository, TokenRepository
-from app.schemas import LoginSessionCreate, LoginSessionUpdate
 from app.services import SessionService
 
 user_id = 1
@@ -34,14 +33,13 @@ class TestSessionService:
         assert call_args is not None
 
         session_data = call_args[0][0]
-        assert isinstance(session_data, LoginSessionCreate)
-        assert session_data.user_id == user_id
-        assert session_data.refresh_token_id == refresh_token_id
-        assert session_data.ip_address == service.ctx.client_ip
-        assert session_data.user_agent == service.ctx.user_agent
-        assert session_data.device_type == 'desktop'
-        assert session_data.browser == 'Other'
-        assert session_data.os == 'Windows'
+        assert session_data['user_id'] == user_id
+        assert session_data['refresh_token_id'] == refresh_token_id
+        assert session_data['ip_address'] == service.ctx.client_ip
+        assert session_data['user_agent'] == service.ctx.user_agent
+        assert session_data['device_type'] == 'desktop'
+        assert session_data['browser'] == 'Other'
+        assert session_data['os'] == 'Windows'
 
     @freeze_time('2026-01-01 12:00:00', tz_offset=0)
     async def test_update_success(self, service, mock):
@@ -58,9 +56,8 @@ class TestSessionService:
             service.repo.update.assert_called_once()
 
         update_data = service.repo.update.call_args[0][1]
-        assert isinstance(update_data, LoginSessionUpdate)
-        assert update_data.ip_address == service.ctx.client_ip
-        assert update_data.last_activity_at == datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
+        assert update_data['ip_address'] == service.ctx.client_ip
+        assert update_data['last_activity_at'] == datetime(2026, 1, 1, 12, 0, 0, tzinfo=UTC)
 
     async def test_update_not_found(self, service):
         with (

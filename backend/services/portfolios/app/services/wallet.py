@@ -1,7 +1,8 @@
 import asyncio
 
-from shared.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 
 from app.models import Transaction, Wallet
 from app.repositories import WalletRepository
@@ -37,16 +38,16 @@ class WalletService:
         self._verify(wallet)
         return wallet
 
-    async def get_many_with_assets(self) -> list[Wallet]:
+    async def get_all_with_assets(self) -> list[Wallet]:
         """Получить все кошельки пользователя с активами."""
-        return await self.repo.get_many_by_user_with_assets(self.actor.id)
+        return await self.repo.get_all_by_user_with_assets(self.actor.id)
 
     async def create(self, data: WalletCreateRequest) -> Wallet:
         """Создать кошелек для пользователя."""
         await self._validate_create_data(data)
 
         wallet_to_db = WalletCreate(**data.model_dump(), user_id=self.actor.id)
-        wallet = await self.repo.create(wallet_to_db)
+        wallet = await self.repo.create(wallet_to_db.model_dump())
         await self.session.flush()
         return wallet
 
@@ -56,7 +57,7 @@ class WalletService:
         await self._validate_update_data(data, wallet)
 
         wallet_to_db = WalletUpdate(**data.model_dump())
-        return await self.repo.update(id, wallet_to_db)
+        return await self.repo.update(id, wallet_to_db.model_dump())
 
     async def delete(self, id: int) -> None:
         """Удалить кошелек пользователя."""

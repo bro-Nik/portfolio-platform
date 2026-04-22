@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.repositories import BaseRepository
+
 from app.models import Task
-from app.repositories import BaseRepository
-from app.schemas import TaskCreate, TaskUpdate
 
 
-class TaskRepository(BaseRepository[Task, TaskCreate, TaskUpdate]):
+class TaskRepository(BaseRepository[Task]):
     """Репозиторий для работы с API задачами."""
 
     def __init__(self, session: AsyncSession) -> None:

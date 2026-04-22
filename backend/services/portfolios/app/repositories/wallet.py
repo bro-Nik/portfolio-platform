@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.repositories import BaseRepository
+
 from app.models import Wallet
-from app.repositories import BaseRepository
-from app.schemas import WalletCreate, WalletUpdate
 
 
-class WalletRepository(BaseRepository[Wallet, WalletCreate, WalletUpdate]):
+class WalletRepository(BaseRepository[Wallet]):
     """Репозиторий для работы с кошельками."""
 
     def __init__(self, session: AsyncSession) -> None:
@@ -15,9 +15,9 @@ class WalletRepository(BaseRepository[Wallet, WalletCreate, WalletUpdate]):
         """Получить кошелек с активами."""
         return await self.get(id, relations=('assets',))
 
-    async def get_many_by_user_with_assets(self, user_id: int) -> list[Wallet]:
+    async def get_all_by_user_with_assets(self, user_id: int) -> list[Wallet]:
         """Получить кошельки пользователя."""
-        return await self.get_many_by(Wallet.user_id == user_id, relations=('assets',))
+        return await self.get_all(Wallet.user_id == user_id, relations=('assets',))
 
     async def exists_by_name_and_user(self, name: str, user_id: int) -> bool:
         """Проверить, есть ли у пользователя кошелек с таким именем."""

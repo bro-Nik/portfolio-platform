@@ -1,9 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.exceptions import ConflictError, NotFoundError
+
 from app.models import Task
 from app.repositories import TaskRepository
 from app.schemas import TaskCreateRequest, TaskUpdateRequest
-from shared.exceptions import ConflictError, NotFoundError
 
 
 class TaskService:
@@ -41,7 +42,7 @@ class TaskService:
         """Создать задачу."""
         await self._validate_create_data(data)
 
-        task = await self.repo.create(data)
+        task = await self.repo.create(data.model_dump())
         await self.session.flush()
         return task
 
@@ -49,7 +50,7 @@ class TaskService:
         """Обновить задачу."""
         task = await self.get(id)
         await self._validate_update_data(data, task)
-        return await self.repo.update(id, data)
+        return await self.repo.update(id, data.model_dump())
 
     async def delete(self, id: int) -> Task | None:
         """Удалить задачу."""

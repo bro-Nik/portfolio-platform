@@ -32,13 +32,13 @@ class TestWalletAssetService:
 
         with (
             patch.object(service.repo, 'get', return_value=asset),
-            patch.object(service.transaction_repo, 'get_many_by_ticker_and_wallet', return_value=transactions),
+            patch.object(service.transaction_repo, 'get_all_by_ticker_and_wallet', return_value=transactions),
         ):
             result = await service.get_transactions(asset_id)
 
             assert len(result) == 2
             service.repo.get.assert_called_once_with(asset_id)
-            service.transaction_repo.get_many_by_ticker_and_wallet.assert_called_once_with('USD', wallet_id)
+            service.transaction_repo.get_all_by_ticker_and_wallet.assert_called_once_with('USD', wallet_id)
 
     async def test_get_distribution_success(self, service, mock):
         asset_id = 1
@@ -56,7 +56,7 @@ class TestWalletAssetService:
 
         with (
             patch.object(service.repo, 'get', return_value=asset),
-            patch.object(service.repo, 'get_many_by_ticker_and_user_with_wallets', return_value=assets),
+            patch.object(service.repo, 'get_all_by_ticker_and_user_with_wallets', return_value=assets),
         ):
             result = await service.get_distribution(asset_id)
 
@@ -66,7 +66,7 @@ class TestWalletAssetService:
             assert result['wallets'][0]['percentage_of_total'] == 70.0
 
             service.repo.get.assert_called_once_with(asset_id)
-            service.repo.get_many_by_ticker_and_user_with_wallets.assert_called_once_with('USD', user_id)
+            service.repo.get_all_by_ticker_and_user_with_wallets.assert_called_once_with('USD', user_id)
 
     async def test_handle_transaction_trade_execution(self, service, mock):
         transaction = mock(

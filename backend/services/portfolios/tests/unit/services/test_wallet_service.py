@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from shared.exceptions import ConflictError, NotFoundError
 
 from app.repositories import WalletRepository
@@ -19,21 +20,21 @@ async def service(db_session, async_mock, data):
 
 
 class TestWalletService:
-    async def test_get_many_with_assets_success(self, service, mock):
+    async def test_get_all_with_assets_success(self, service, mock):
         wallets = [
             mock(id=1, name='Wallet 1', user_id=user_id),
             mock(id=2, name='Wallet 2', user_id=user_id),
         ]
 
         with (
-            patch.object(service.repo, 'get_many_by_user_with_assets', return_value=wallets),
+            patch.object(service.repo, 'get_all_by_user_with_assets', return_value=wallets),
         ):
-            result = await service.get_many_with_assets()
+            result = await service.get_all_with_assets()
 
             assert len(result) == 2
             assert result[0].name == 'Wallet 1'
             assert result[1].name == 'Wallet 2'
-            service.repo.get_many_by_user_with_assets.assert_called_once_with(user_id)
+            service.repo.get_all_by_user_with_assets.assert_called_once_with(user_id)
 
     async def test_get_with_assets_success(self, service, mock):
         wallet = mock(id=1, name='Test', assets=[mock()], user_id=user_id)

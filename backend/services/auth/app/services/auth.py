@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
-from shared.exceptions import AuthenticationError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared.exceptions import AuthenticationError
 
 from app.core import SecurityService
 from app.models import RefreshToken, User
@@ -67,12 +68,12 @@ class AuthService:
     async def logout(self, refresh_token: str) -> bool:
         """Выход из системы."""
         token = await self._get_db_refresh_token(refresh_token)
-        return await self.token_repo.delete(token.id)
+        return bool(await self.token_repo.delete(token.id))
 
     async def logout_all(self, user_id: int | None = None) -> bool:
         """Выход из всех устройств."""
         user_id = user_id or self.ctx.actor.id
-        return bool(await self.token_repo.delete_many_by_user(user_id))
+        return bool(await self.token_repo.delete_all_by_user(user_id))
 
     async def _get_db_refresh_token(self, refresh_token: str) -> RefreshToken:
         if not (token := await self.token_repo.get_by_token(refresh_token)):
@@ -88,10 +89,10 @@ class AuthService:
 
         if db_token:
             token_to_db = RefreshTokenUpdate(token=refresh, expires_at=refresh_expires_at)
-            token = await self.token_repo.update(db_token.id, token_to_db)
+            token = await self.token_repo.update(db_token.id, token_to_db.model_dump())
         else:
             token_to_db = RefreshTokenCreate(user_id=user.id, token=refresh, expires_at=refresh_expires_at)
-            token = await self.token_repo.create(token_to_db)
+            token = await self.token_repo.create(token_to_db.model_dump())
             await self.session.flush()
 
         return AuthResult(

@@ -1,15 +1,14 @@
 # Shared Repositories
 
 Base async CRUD repository for SQLAlchemy.
-- `BaseAsyncRepository` - async repo
+- `BaseRepository` - async repo
 
 ## 🚀 Quick Start
 
 ```python
-from shared.repositories import BaseAsyncRepository
+from shared.repositories import BaseRepository
 
-class UserRepository(BaseAsyncRepository[User, UserCreate, UserUpdate]):
+class UserRepository(BaseRepository[User]):
     def __init__(self, session: AsyncSession):
         super().__init__(User, session)
-```
 ```

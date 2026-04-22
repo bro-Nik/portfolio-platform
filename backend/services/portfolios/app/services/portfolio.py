@@ -1,7 +1,8 @@
 import asyncio
 
-from shared.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 
 from app.models import Portfolio, Transaction
 from app.repositories import PortfolioRepository
@@ -38,16 +39,16 @@ class PortfolioService:
         self._verify(portfolio)
         return portfolio
 
-    async def get_many_with_assets(self) -> list[Portfolio]:
+    async def get_all_with_assets(self) -> list[Portfolio]:
         """Получить все портфели пользователя с активами."""
-        return await self.repo.get_many_by_user_with_assets(self.actor.id)
+        return await self.repo.get_all_by_user_with_assets(self.actor.id)
 
     async def create(self, data: PortfolioCreateRequest) -> Portfolio:
         """Создать портфель для пользователя."""
         await self._validate_create_data(data)
 
         portfolio_to_db = PortfolioCreate(**data.model_dump(), user_id=self.actor.id)
-        portfolio = await self.repo.create(portfolio_to_db)
+        portfolio = await self.repo.create(portfolio_to_db.model_dump())
         await self.session.flush()
         return portfolio
 
@@ -57,7 +58,7 @@ class PortfolioService:
         await self._validate_update_data(data, portfolio)
 
         portfolio_to_db = PortfolioUpdate(**data.model_dump())
-        return await self.repo.update(id, portfolio_to_db)
+        return await self.repo.update(id, portfolio_to_db.model_dump())
 
     async def delete(self, id: int) -> None:
         """Удалить портфель пользователя."""

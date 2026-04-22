@@ -2,6 +2,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+
 from shared.exceptions import ConflictError
 
 from app.repositories import PortfolioAssetRepository, TransactionRepository
@@ -70,13 +71,13 @@ class TestPortfolioAssetService:
 
         with (
             patch.object(service.repo, 'get', return_value=asset),
-            patch.object(service.transaction_repo, 'get_many_by_ticker_and_portfolio', return_value=transactions),
+            patch.object(service.transaction_repo, 'get_all_by_ticker_and_portfolio', return_value=transactions),
         ):
             result = await service.get_transactions(asset_id)
 
             assert len(result) == 2
             service.repo.get.assert_called_once_with(asset_id)
-            service.transaction_repo.get_many_by_ticker_and_portfolio.assert_called_once_with('AAPL', portfolio_id)
+            service.transaction_repo.get_all_by_ticker_and_portfolio.assert_called_once_with('AAPL', portfolio_id)
 
     async def test_get_distribution_success(self, service, mock):
         asset_id = 1
@@ -93,7 +94,7 @@ class TestPortfolioAssetService:
 
         with (
             patch.object(service.repo, 'get', return_value=asset),
-            patch.object(service.repo, 'get_many_by_ticker_and_user_with_portfolios', return_value=assets),
+            patch.object(service.repo, 'get_all_by_ticker_and_user_with_portfolios', return_value=assets),
         ):
             result = await service.get_distribution(asset_id)
 
@@ -104,7 +105,7 @@ class TestPortfolioAssetService:
             assert result['portfolios'][1]['percentage_of_total'] == 33.33
 
             service.repo.get.assert_called_once_with(asset_id)
-            service.repo.get_many_by_ticker_and_user_with_portfolios.assert_called_once_with('AAPL', user_id)
+            service.repo.get_all_by_ticker_and_user_with_portfolios.assert_called_once_with('AAPL', user_id)
 
     async def test_handle_transaction_trade_execution(self, service, mock):
         transaction = mock(

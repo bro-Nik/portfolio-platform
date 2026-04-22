@@ -1,5 +1,6 @@
-from shared.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 
 from app.core import SecurityService
 from app.models import User
@@ -41,7 +42,7 @@ class UserService:
         self._check_exists(user)
         return user
 
-    async def get_many_detailed(
+    async def get_all_detailed(
         self,
         skip: int = 0,
         limit: int = 20,
@@ -49,7 +50,7 @@ class UserService:
         role: str | None = None,
     ) -> list[User]:
         """Получить список пользователей с детальной информацией."""
-        return await self.repo.get_many_with_sessions(skip, limit, search, role)
+        return await self.repo.get_all_with_sessions(skip, limit, search, role)
 
     async def create(self, data: UserCreateRequest) -> User:
         """Создать нового пользователя."""
@@ -60,7 +61,7 @@ class UserService:
             password_hash=self.security.get_password_hash(data.password),
         )
 
-        user = await self.repo.create(user_to_db)
+        user = await self.repo.create(user_to_db.model_dump())
         await self.session.flush()
         return user
 
@@ -70,7 +71,7 @@ class UserService:
         await self._validate_update_data(data, user)
 
         user_to_db = UserUpdate(**data.model_dump())
-        return await self.repo.update(id, user_to_db)
+        return await self.repo.update(id, user_to_db.model_dump())
 
     async def delete(self, id: int) -> None:
         """Удалить пользователя."""

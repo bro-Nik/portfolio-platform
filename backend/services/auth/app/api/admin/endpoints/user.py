@@ -6,6 +6,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Path, Query, Request
+
 from shared.api import responses
 from shared.exceptions import handle_errors
 from shared.rate_limit import limiter
@@ -29,7 +30,7 @@ async def get_users(
     role: Annotated[UserRole | None, Query(description='Фильтр по роли')] = None,
 ) -> list[UserResponse]:
     """Получить список пользователей с пагинацией и фильтрацией."""
-    return await user_service.get_many_detailed(skip, limit, search, role)
+    return await user_service.get_all_detailed(skip, limit, search, role)
 
 
 @router.get('/{user_id}', responses=responses(403, 404))

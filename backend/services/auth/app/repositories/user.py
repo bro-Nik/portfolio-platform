@@ -2,17 +2,17 @@ from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.repositories import BaseRepository
+
 from app.core import settings
 from app.models import User
-from app.repositories import BaseRepository
-from app.schemas import UserCreate, UserUpdate
 
 
-class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
+class UserRepository(BaseRepository[User]):
     """Репозиторий для работы с пользователями."""
 
-    def __init__(self, db: AsyncSession) -> None:
-        super().__init__(User, db)
+    def __init__(self, session: AsyncSession) -> None:
+        super().__init__(User, session)
 
     async def get_by_email(self, email: str) -> User | None:
         """Найти пользователя по email."""
@@ -29,7 +29,7 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
         """Получить пользователя с сессиями."""
         return await self.get_by(User.id == user_id, relations=('login_sessions',))
 
-    async def get_many_with_sessions(
+    async def get_all_with_sessions(
         self,
         skip: int = 0,
         limit: int = 20,
@@ -39,18 +39,14 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
         """Получить список пользователей с пагинацией и сессиями."""
         where = []
 
-        # Поиск
         if search:
             where.append(User.email.ilike(f'%{search}%'))
 
-        # Фильтр по роли
         if role:
             where.append(User.role == role)
 
-        return await self.get_many_by(
+        return await self.get_all(
             *where,
-            skip=skip,
-            limit=limit,
-            order_by=[User.created_at.desc()],
+            order=[User.created_at.desc()],
             relations=('login_sessions',),
         )

@@ -51,7 +51,8 @@ docstring-quotes = "double"   # Двойные кавычки для docstring
 
 # Настройки сортировки импортов (isort)
 [tool.ruff.lint.isort]
-known-first-party = ["app", "shared"] # Известные first-party модули
+known-first-party = ["shared"]
+known-local-folder = ["app"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 lines-between-types = 1               # Пустые строки между типами импортов
 combine-as-imports = true             # Объединять as-импорты

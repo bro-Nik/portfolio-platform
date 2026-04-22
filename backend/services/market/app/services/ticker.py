@@ -104,12 +104,12 @@ class TickerService:
 
     async def get_prices(self, ids: list[str]) -> dict[str, float]:
         """Получить цены для списка тикеров."""
-        tickers = await self.get_many(ids)
+        tickers = await self.get_all(ids)
         return {ticker.id: ticker.price for ticker in tickers}
 
     async def get_images(self, ids: list[str]) -> dict[str, str]:
         """Получить URL изображений для списка тикеров."""
-        tickers = await self.get_many(ids)
+        tickers = await self.get_all(ids)
         return {
             t.id: f'{BASE_IMAGES_URL}/{t.market}/24/{t.image}'
             for t in tickers if t.image
@@ -117,7 +117,7 @@ class TickerService:
 
     async def get_info(self, ids: list[str]) -> dict[str, dict]:
         """Получить информацию о тикерах."""
-        tickers = await self.get_many(ids)
+        tickers = await self.get_all(ids)
 
         info = {}
         for ticker in tickers:
@@ -128,9 +128,9 @@ class TickerService:
             }
         return info
 
-    async def get_many(self, ids: list) -> list[Ticker]:
+    async def get_all(self, ids: list) -> list[Ticker]:
         """Получить список тикеров."""
-        return await self.repo.get_many(ids)
+        return await self.repo.get_all_by_ids(ids)
 
     async def save_prices(self, market: str, price_data: dict) -> int:
         """Сохраняет цены."""

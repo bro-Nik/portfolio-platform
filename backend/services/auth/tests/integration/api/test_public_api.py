@@ -1,4 +1,4 @@
-from app.models import LoginSession, RefreshToken
+from app.models import LoginSession, RefreshToken  # noqa: INP001
 from app.repositories import SessionRepository, TokenRepository, UserRepository
 
 
@@ -29,12 +29,12 @@ class TestPublicAPI:
 
         # Проверяем что refresh токен сохранен
         token_repo = TokenRepository(db_session)
-        tokens = await token_repo.get_many_by(RefreshToken.user_id == user.id)
+        tokens = await token_repo.get_all(RefreshToken.user_id == user.id)
         assert len(tokens) == 1
 
         # Проверяем что создана сессия
         session_repo = SessionRepository(db_session)
-        sessions = await session_repo.get_many_by(LoginSession.user_id == user.id)
+        sessions = await session_repo.get_all(LoginSession.user_id == user.id)
         assert len(sessions) == 1
 
     async def test_login_success(self, client, db_session, test_user):
@@ -49,12 +49,12 @@ class TestPublicAPI:
 
         # Проверяем что refresh токен сохранен
         token_repo = TokenRepository(db_session)
-        tokens = await token_repo.get_many_by(RefreshToken.user_id == test_user.id)
+        tokens = await token_repo.get_all(RefreshToken.user_id == test_user.id)
         assert len(tokens) == 1
 
         # Проверяем что создана сессия
         session_repo = SessionRepository(db_session)
-        sessions = await session_repo.get_many_by(LoginSession.user_id == test_user.id)
+        sessions = await session_repo.get_all(LoginSession.user_id == test_user.id)
         assert len(sessions) == 1
 
     async def test_refresh_tokens_success(self, client, db_session, test_user):
@@ -78,10 +78,10 @@ class TestPublicAPI:
 
         # Проверяем что refresh токен по прежнему один
         token_repo = TokenRepository(db_session)
-        tokens = await token_repo.get_many_by(RefreshToken.user_id == test_user.id)
+        tokens = await token_repo.get_all(RefreshToken.user_id == test_user.id)
         assert len(tokens) == 1
 
         # Проверяем что сессия одна
         session_repo = SessionRepository(db_session)
-        sessions = await session_repo.get_many_by(LoginSession.user_id == test_user.id)
+        sessions = await session_repo.get_all(LoginSession.user_id == test_user.id)
         assert len(sessions) == 1

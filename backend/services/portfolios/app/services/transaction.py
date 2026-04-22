@@ -1,7 +1,8 @@
 import asyncio
 
-from shared.exceptions import BusinessRuleError, NotFoundError, PermissionDeniedError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from shared.exceptions import BusinessRuleError, NotFoundError, PermissionDeniedError
 
 from app.models import PortfolioAsset, Transaction, WalletAsset
 from app.repositories import TransactionRepository
@@ -43,7 +44,7 @@ class TransactionService:
         await self._validate_transaction_data(data)
 
         transaction_to_db = TransactionCreate(**data.model_dump(exclude_unset=True), user_id=self.actor.id)
-        transaction = await self.repo.create(transaction_to_db)
+        transaction = await self.repo.create(transaction_to_db.model_dump())
         await self.session.flush()
 
         # Уведомление сервисов о транзакции
@@ -60,7 +61,7 @@ class TransactionService:
         await self._notify_services(old_transaction, cancel=True)
 
         transaction_to_db = TransactionUpdate(**data.model_dump(exclude_unset=True))
-        updated_transaction = await self.repo.update(old_transaction.id, transaction_to_db)
+        updated_transaction = await self.repo.update(old_transaction.id, transaction_to_db.model_dump())
 
         # Уведомление сервисов о транзакции
         await self._notify_services(updated_transaction)
@@ -86,12 +87,12 @@ class TransactionService:
     async def get_asset_transactions(self, asset: PortfolioAsset | WalletAsset) -> list[Transaction]:
         """Получить транзакции портфеля."""
         if isinstance(asset, PortfolioAsset):
-            transactions = await self.repo.get_many_by_ticker_and_portfolio(
+            transactions = await self.repo.get_all_by_ticker_and_portfolio(
                 asset.ticker_id,
                 asset.portfolio_id,
             )
         else:
-            transactions = await self.repo.get_many_by_ticker_and_wallet(
+            transactions = await self.repo.get_all_by_ticker_and_wallet(
                 asset.ticker_id,
                 asset.wallet_id,
             )

@@ -3,19 +3,18 @@ from datetime import UTC, datetime
 from sqlalchemy import case, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.repositories import BaseRepository
+
 from app.models import Ticker
-from app.repositories import BaseRepository
-
-Id = int | str
 
 
-class TickerRepository(BaseRepository[Ticker, None, None]):
+class TickerRepository(BaseRepository[Ticker]):
     """Репозиторий для работы с тикерами."""
 
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(Ticker, session)
 
-    async def update_ticker_prices(self, data: dict[Id, object]) -> int:
+    async def update_ticker_prices(self, data: dict[str, object]) -> int:
         """Обновить цены тикеров."""
         if not data:
             return 0
@@ -34,5 +33,5 @@ class TickerRepository(BaseRepository[Ticker, None, None]):
             .execution_options(synchronize_session=False)
         )
 
-        result = await self.session.execute(stmt)
+        result = await self._session.execute(stmt)
         return result.rowcount

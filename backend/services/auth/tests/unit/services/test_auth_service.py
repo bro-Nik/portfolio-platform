@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from shared.exceptions import AuthenticationError
 
 from app.core import SecurityService
@@ -155,7 +156,7 @@ class TestAuthService:
             await service.refresh_tokens(token_data)
 
             service.token_repo.update.assert_called_once()
-            assert service.token_repo.update.call_args[0][1].token == tokens.refresh_token
+            assert service.token_repo.update.call_args[0][1]['token'] == tokens.refresh_token
 
     async def test_logout_success(self, service, mock):
         token = 'valid.token.to.logout'
@@ -175,9 +176,9 @@ class TestAuthService:
         user_id = 1
 
         with (
-            patch.object(service.token_repo, 'delete_many_by_user', return_value=3),  # Удалено 3 токена
+            patch.object(service.token_repo, 'delete_all_by_user', return_value=3),  # Удалено 3 токена
         ):
             result = await service.logout_all(user_id)
 
-            service.token_repo.delete_many_by_user.assert_called_once_with(user_id)
+            service.token_repo.delete_all_by_user.assert_called_once_with(user_id)
             assert result is True
