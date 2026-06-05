@@ -12,7 +12,7 @@ const AuthPage = ({ type }) => {
   const [loading, setLoading] = useState(false);
   
   const { addToast, clearToasts } = useToastStore();
-  const { login, register } = authService();
+  const { login, register, getCurrentUser } = authService();
   const { isAuthenticated, loading: authLoading, login: authLogin } = useAuthStore();
   const isLogin = type === 'login';
 
@@ -36,7 +36,7 @@ const AuthPage = ({ type }) => {
     const result = await handler(email, password)
     
     if (result.success) {
-      authLogin(result.data);
+      authLogin(await getCurrentUser());
     } else {
       addToast(result.error, 'error');
     }
