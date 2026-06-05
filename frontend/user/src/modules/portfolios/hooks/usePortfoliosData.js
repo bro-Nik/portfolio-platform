@@ -33,6 +33,7 @@ export const usePortfoliosData = () => {
     let totalInvested = 0;
     let totalBuyOrders = 0;
     let totalProfit = 0;
+    let totalCapitalDeployed = 0;
     
     // Расчет статистики для каждого портфеля
     const portfoliosWithStats = portfolios.map(portfolio => {
@@ -40,29 +41,35 @@ export const usePortfoliosData = () => {
       let invested = 0;
       let buyOrders = 0;
       let profit = 0;
+      let capitalDeployed = 0;
 
       // Расчет статистики для каждого актива
       const assetsWithStats = portfolio.assets?.map(asset => {
         const assetQuantity = Number(asset.quantity) || 0;
         const assetAmount = Number(asset.amount) || 0;
         const assetBuyOrders = Number(asset.buyOrders) || 0;
+        const assetRealizedProfit = Number(asset.realizedProfit) || 0;
+        const assetTotalInvested = Number(asset.totalInvested) || 0;
 
         const price = prices[asset.tickerId] || 0;
         const assetCostNow = assetQuantity * price;
-        const assetInvested = assetAmount;
-        const assetAveragePrice = assetInvested / assetQuantity;
-        const assetProfit = assetAveragePrice ? assetCostNow - assetInvested : 0;
+        const assetInvested = Math.max(0, assetAmount);
+        const assetAveragePrice = assetQuantity > 0 ? assetInvested / assetQuantity : 0;
+        const assetProfit = assetCostNow - assetInvested + assetRealizedProfit;
 
         costNow += assetCostNow;
-        invested += assetInvested;
+        invested += Math.max(0, assetAmount);
         buyOrders += assetBuyOrders;
         profit += assetProfit;
+        capitalDeployed += assetTotalInvested;
 
         return {
           ...asset,
           costNow: assetCostNow,
           averagePrice: assetAveragePrice,
-          invested: assetInvested,
+          invested: Math.max(0, assetAmount),
+          totalInvested: assetTotalInvested || Math.max(0, assetAmount),
+          realizedProfit: assetRealizedProfit,
           profit: assetProfit,
           price
         };
@@ -72,12 +79,14 @@ export const usePortfoliosData = () => {
       totalInvested += invested;
       totalBuyOrders += buyOrders;
       totalProfit += profit;
+      totalCapitalDeployed += capitalDeployed;
 
       return {
         ...portfolio,
         assets: assetsWithStats,
         costNow,
         invested,
+        totalInvested: capitalDeployed,
         buyOrders,
         profit,
       };
@@ -94,7 +103,8 @@ export const usePortfoliosData = () => {
         totalCostNow,
         totalInvested,
         totalProfit,
-        totalBuyOrders
+        totalBuyOrders,
+        totalCapitalDeployed,
       }
     };
   }, [portfolios, prices]);

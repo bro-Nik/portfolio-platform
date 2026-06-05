@@ -33,6 +33,8 @@ class PortfolioAssetResponse(PortfolioAssetBase):
     id: int
     quantity: Decimal
     amount: Decimal
+    realized_profit: Decimal
+    total_invested: Decimal
     buy_orders: Decimal
 
     model_config = ConfigDict(from_attributes=True)

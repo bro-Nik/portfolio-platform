@@ -30,12 +30,13 @@ export const formatPercentage = (value, decimals = 0) => {
   return `${Math.abs(+value.toFixed(+decimals))}%`;
 };
 
-export const formatProfit = (profit, invested) => {
+export const formatProfit = (profit, invested, totalInvested) => {
   profit = Number(profit);
   invested = Number(invested);
   if (isNaN(profit) || isNaN(invested)) return;
 
-  const percentage = invested === 0 ? 0 : (profit / invested) * 100;
+  const base = totalInvested !== undefined ? Number(totalInvested) : invested;
+  const percentage = base === 0 ? 0 : (profit / base) * 100;
   let profitStr = formatCurrency(profit);
   if (percentage) profitStr += ` (${formatPercentage(percentage)})`;
   return profitStr;

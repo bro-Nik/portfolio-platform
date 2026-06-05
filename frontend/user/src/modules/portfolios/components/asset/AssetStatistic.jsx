@@ -37,7 +37,7 @@ const AssetStatistic = ({ portfolio, asset }) => {
     },
     {
       title: 'Прибыль',
-      value: formatProfit(asset.profit || 0, asset.invested || 0),
+      value: formatProfit(asset.profit || 0, asset.invested || 0, asset.totalInvested),
       class: getColorClass(asset.profit),
       description: 'Прибыль/убыток за все время'
     }

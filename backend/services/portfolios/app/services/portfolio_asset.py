@@ -138,8 +138,17 @@ class PortfolioAssetService:
         is_base_asset: bool,
     ) -> None:
         if is_base_asset:
-            asset.quantity += t.quantity * direction
-            asset.amount += t.quantity * t.price_usd * direction
+            if direction > 0:  # Buy
+                asset.quantity += t.quantity
+                asset.amount += t.quantity * t.price_usd
+                asset.total_invested += t.quantity * t.price_usd
+            else:  # Sell
+                if asset.quantity > 0:
+                    avg_cost = asset.amount / asset.quantity
+                    sold_qty = t.quantity
+                    asset.amount -= sold_qty * avg_cost
+                    asset.realized_profit += sold_qty * (t.price_usd - avg_cost)
+                asset.quantity -= t.quantity
         elif not is_base_asset:
             asset.quantity -= t.quantity2 * direction
             # asset.amount -= t.quantity * t.price_usd * direction

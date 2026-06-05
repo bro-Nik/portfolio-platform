@@ -30,6 +30,8 @@ class PortfolioAsset(Base):
     buy_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     sell_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     amount: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
+    realized_profit: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
+    total_invested: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     percent: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     comment: Mapped[str | None] = mapped_column(String(1024))
     user_id: Mapped[int] = mapped_column(Integer)

@@ -95,7 +95,7 @@ export const createProfitColumn = (hideCondition) => ({
 
     return (
       <span className={getColorClass(row.original.profit)}>
-        {formatProfit(row.original.profit, row.original.invested)}
+        {formatProfit(row.original.profit, row.original.invested, row.original.totalInvested)}
       </span>
     );
   },
