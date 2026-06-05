@@ -112,6 +112,13 @@ export const usePortfoliosData = () => {
   const getPortfolio = (id) => portfolios?.find(p => p.id === id);
   const getPortfolioAsset = (portfolio, id) => portfolio.assets?.find(a => a.id === id);
 
+  const refresh = async () => {
+    setLoading(true);
+    const result = await portfolioApi.getPortfolios();
+    if (result.success) setPortfolios(result.data.portfolios || []);
+    setLoading(false);
+  };
+
   return {
     // Данные с расчетами
     portfolios: portfoliosWithStats,
@@ -123,5 +130,6 @@ export const usePortfoliosData = () => {
     // Методы
     getPortfolio,
     getPortfolioAsset,
+    refresh,
   };
 };

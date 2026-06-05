@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
+from .tag import TagResponse
+
 
 class WalletAssetBase(BaseModel):
     """Базовые поля."""
@@ -26,5 +28,6 @@ class WalletAssetResponse(WalletAssetBase):
     id: int
     quantity: Decimal
     buy_orders: Decimal
+    tags: list[TagResponse] = []
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,9 +1,10 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import DataTable from '/app/src/features/tables/DataTable';
 import { useNavigation } from '/app/src/hooks/useNavigation';
 import { useTicker } from '/app/src/hooks/useTicker';
 import { useLocalStorage } from '/app/src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
+import TagFilter from '../TagFilter';
 import {
   createCostColumn,
   createShareColumn,
@@ -16,11 +17,12 @@ import {
   createActionsColumn
 } from '/app/src/features/tables/tableColumns';
 
-const PortfolioTable = memo(({ portfolio, assets }) => {
+const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const { openItem } = useNavigation();
   const { getTicker } = useTicker();
 
   const [hideCheap, setHideCheap] = useLocalStorage('portfolio-hide-cheap', false);
+  const [tagFilterIds, setTagFilterIds] = useState([]);
 
   // Подготавливаем данные для таблицы
   const preparedAssets = useMemo(() => {
@@ -40,9 +42,15 @@ const PortfolioTable = memo(({ portfolio, assets }) => {
   }, [assets, portfolio.costNow]);
 
   const filteredAssets = useMemo(() => {
-    if (!hideCheap) return preparedAssets;
-    return preparedAssets.filter(asset => asset.costNow >= 1);
-  }, [preparedAssets, hideCheap]);
+    let result = preparedAssets;
+    if (hideCheap) result = result.filter(asset => asset.costNow >= 1);
+    if (tagFilterIds.length > 0) {
+      result = result.filter(asset =>
+        asset.tags?.some(t => tagFilterIds.includes(t.id))
+      );
+    }
+    return result;
+  }, [preparedAssets, hideCheap, tagFilterIds]);
 
   const columns = useMemo(() => [
     createAssetNameColumn(openItem, 'portfolio_asset', portfolio.id),
@@ -53,8 +61,8 @@ const PortfolioTable = memo(({ portfolio, assets }) => {
     createProfitColumn((a) => !a.quantity),
     createShareColumn((a) => !a.quantity),
     createBuyOrdersColumn((a) => !a.quantity && !a.buyOrders),
-    createActionsColumn(({ row }) => <AssetActionsDropdown portfolio={portfolio} asset={row.original} btn='icon' />),
-  ], [openItem, portfolio]);
+    createActionsColumn(({ row }) => <AssetActionsDropdown portfolio={portfolio} asset={row.original} btn='icon' onUpdate={onRefresh} />),
+  ], [openItem, portfolio, onRefresh]);
 
   return (
     <>
@@ -68,6 +76,7 @@ const PortfolioTable = memo(({ portfolio, assets }) => {
           />
           Спрятать дешевле $1
         </label>
+        <TagFilter onChange={setTagFilterIds} />
       </div>
 
     <DataTable 

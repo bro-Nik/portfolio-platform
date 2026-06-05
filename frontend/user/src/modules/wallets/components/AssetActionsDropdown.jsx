@@ -5,11 +5,13 @@ import {
   Square2StackIcon,
   TrashIcon,
   ArrowTopRightOnSquareIcon,
+  TagIcon,
 } from '@heroicons/react/16/solid'
 import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
-// import AssetDeleteModal from './modals/AssetDelete';
+import TagManagementModal from '/app/src/modules/portfolios/components/modals/TagManagementModal';
+import TagAssignPopover from '/app/src/modules/portfolios/components/TagAssignPopover';
 
-const AssetActionsDropdown = ({ wallet, asset, btn }) => {
+const AssetActionsDropdown = ({ wallet, asset, btn, onUpdate }) => {
   const { openModal } = useModalStore();
 
   const menuItems = [
@@ -40,6 +42,15 @@ const AssetActionsDropdown = ({ wallet, asset, btn }) => {
       type: 'divider',
     },
     {
+      key: 'tags',
+      icon: <TagIcon />,
+      label: 'Управление тегами',
+      onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
+    },
+    {
+      type: 'divider',
+    },
+    {
       key: 'archive',
       icon: <ArchiveBoxXMarkIcon />,
       label: 'Архивировать',
@@ -54,7 +65,12 @@ const AssetActionsDropdown = ({ wallet, asset, btn }) => {
     },
   ];
 
-  return <ActionsDropdown items={menuItems} btn={btn}/>;
+  return (
+    <div className="d-flex align-items-center gap-1">
+      <TagAssignPopover entityType="wallet_asset" entityId={asset?.id} assignedTags={asset?.tags} onUpdate={onUpdate} />
+      <ActionsDropdown items={menuItems} btn={btn}/>
+    </div>
+  );
 };
 
 export default AssetActionsDropdown;

@@ -5,6 +5,7 @@ from .redis import redis_client
 from .services import (
     PortfolioAssetServiceDep,
     PortfolioServiceDep,
+    TagServiceDep,
     TransactionServiceDep,
     WalletAssetServiceDep,
     WalletServiceDep,

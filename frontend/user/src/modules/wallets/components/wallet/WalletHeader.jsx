@@ -4,7 +4,7 @@ import { useModalStore } from '/app/src/stores/modalStore';
 import CloseMinimizeBtns from '/app/src/components/ui/CloseMinimizeBtns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
 
-const WalletHeader = ({ wallet }) => {
+const WalletHeader = ({ wallet, onRefresh }) => {
   const { openModal } = useModalStore();
 
   return (
@@ -23,7 +23,7 @@ const WalletHeader = ({ wallet }) => {
 
         <div class="col-auto ms-auto">
           <Space>
-            <WalletActionsDropdown wallet={wallet} btn='btn' />
+            <WalletActionsDropdown wallet={wallet} btn='btn' onUpdate={onRefresh} />
           </Space>
         </div>
 

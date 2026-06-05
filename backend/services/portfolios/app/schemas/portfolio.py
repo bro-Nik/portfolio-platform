@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
+from .tag import TagResponse
+
 
 class PortfolioBase(BaseModel):
     """Базовые поля."""
@@ -35,6 +37,7 @@ class PortfolioResponse(PortfolioBase):
     id: int
     market: str
     assets: list['PortfolioAssetResponse'] = []
+    tags: list[TagResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 

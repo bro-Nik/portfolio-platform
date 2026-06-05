@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from shared.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 
 from app.models import Transaction, Wallet
-from app.repositories import WalletRepository
+from app.repositories import TaggableRepository, WalletRepository
 from app.schemas import (
     Context,
     WalletCreate,
@@ -19,12 +19,28 @@ from app.services.wallet_asset import WalletAssetService
 class WalletService:
     """Сервис для работы с кошельками пользователей."""
 
+    ENTITY_TYPE = 'wallet'
+    ASSET_ENTITY_TYPE = 'wallet_asset'
+
     def __init__(self, session: AsyncSession, ctx: Context) -> None:
         self.ctx = ctx
         self.actor = ctx.actor
         self.session = session
         self.repo = WalletRepository(session)
         self.asset_service = WalletAssetService(session, ctx)
+        self.taggable_repo = TaggableRepository(session)
+
+    async def _bulk_load_tags(self, wallets: list[Wallet]) -> None:
+        items: list[tuple[str, int]] = []
+        for w in wallets:
+            items.append((self.ENTITY_TYPE, w.id))
+            for a in w.assets:
+                items.append((self.ASSET_ENTITY_TYPE, a.id))
+        tags_map = await self.taggable_repo.bulk_get_tags(items)
+        for wallet in wallets:
+            wallet.tags = tags_map.get((self.ENTITY_TYPE, wallet.id), [])
+            for asset in wallet.assets:
+                asset.tags = tags_map.get((self.ASSET_ENTITY_TYPE, asset.id), [])
 
     async def get(self, id: int) -> Wallet:
         """Получить кошелек пользователя."""
@@ -40,7 +56,9 @@ class WalletService:
 
     async def get_all_with_assets(self) -> list[Wallet]:
         """Получить все кошельки пользователя с активами."""
-        return await self.repo.get_all_by_user_with_assets(self.actor.id)
+        wallets = await self.repo.get_all_by_user_with_assets(self.actor.id)
+        await self._bulk_load_tags(wallets)
+        return wallets
 
     async def create(self, data: WalletCreateRequest) -> Wallet:
         """Создать кошелек для пользователя."""

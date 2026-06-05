@@ -1,5 +1,6 @@
 from shared.schemas import AuthUser, Context, UserRole
 
+from .tag import TagAttachRequest, TagCreate, TagResponse, TagUpdate
 from .portfolio import (
     PortfolioCreate,
     PortfolioCreateRequest,

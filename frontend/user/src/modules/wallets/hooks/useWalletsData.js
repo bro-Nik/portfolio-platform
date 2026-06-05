@@ -81,10 +81,16 @@ export const useWalletsData = () => {
     };
   }, [wallets, prices]);
 
+  const refresh = async () => {
+    const result = await walletApi.getAllWallets();
+    if (result.success) setWallets(result.data.wallets || []);
+  };
+
   return {
     wallets: walletsWithStats,
     overallStats,
     loading: wallets === null,
-    getWallet
+    getWallet,
+    refresh,
   };
 };

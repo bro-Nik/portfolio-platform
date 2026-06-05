@@ -6,6 +6,7 @@ from app.dependencies import Ctx, DBSession
 from app.services import (
     PortfolioAssetService,
     PortfolioService,
+    TagService,
     TransactionService,
     WalletAssetService,
     WalletService,
@@ -32,6 +33,11 @@ def get_wallet_asset_service(session: DBSession, ctx: Ctx) -> WalletAssetService
     return WalletAssetService(session, ctx)
 
 
+def get_tag_service(session: DBSession, ctx: Ctx) -> TagService:
+    """Зависимость для получения сервиса тегов."""
+    return TagService(session, ctx)
+
+
 def get_transaction_service(session: DBSession, ctx: Ctx) -> TransactionService:
     """Зависимость для получения сервиса транзакций."""
     return TransactionService(session, ctx)
@@ -39,6 +45,7 @@ def get_transaction_service(session: DBSession, ctx: Ctx) -> TransactionService:
 
 PortfolioServiceDep = Annotated[PortfolioService, Depends(get_portfolio_service)]
 PortfolioAssetServiceDep = Annotated[PortfolioAssetService, Depends(get_portfolio_asset_service)]
+TagServiceDep = Annotated[TagService, Depends(get_tag_service)]
 WalletServiceDep = Annotated[WalletService, Depends(get_wallet_service)]
 WalletAssetServiceDep = Annotated[WalletAssetService, Depends(get_wallet_asset_service)]
 TransactionServiceDep = Annotated[TransactionService, Depends(get_transaction_service)]

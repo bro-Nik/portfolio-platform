@@ -22,8 +22,8 @@ const ModalContainer = () => {
 
 const AppPage = () => {
   const { activeSection, openedItems } = useNavigation();
-  const { portfolios } = usePortfoliosData();
-  const { wallets } = useWalletsData();
+  const { portfolios, refresh: refreshPortfolios } = usePortfoliosData();
+  const { wallets, refresh: refreshWallets } = useWalletsData();
 
   const mainSections = {
     'portfolios': PortfoliosPage,
@@ -57,7 +57,7 @@ const AppPage = () => {
       // Портфель
       if (activeSection === `portfolio-${portfolio.id}`) {
         renderItems.push(
-          <PortfolioPage key={`portfolio-${portfolio.id}`} portfolio={portfolioData} />
+          <PortfolioPage key={`portfolio-${portfolio.id}`} portfolio={portfolioData} onRefresh={refreshPortfolios} />
         );
       }
       
@@ -82,7 +82,7 @@ const AppPage = () => {
       // Кошелек
       if (activeSection === `wallet-${wallet.id}`) {
         renderItems.push(
-          <WalletPage key={`wallet-${wallet.id}`} wallet={walletData} />
+          <WalletPage key={`wallet-${wallet.id}`} wallet={walletData} onRefresh={refreshWallets} />
         );
       }
       

@@ -9,6 +9,8 @@ import {
 
 const DEFAULT_VALUE = '-';
 
+import TagBadges from '/app/src/modules/portfolios/components/TagBadges';
+
 export const createNameColumn = (openItem, itemType) => ({
   accessorKey: 'name',
   header: 'Название',
@@ -17,6 +19,7 @@ export const createNameColumn = (openItem, itemType) => ({
       <span>{row.original.name}</span>
       <span className="text-muted small-text capitalize">{row.original.market}</span>
       <span className="text-muted small-text">{row.original.assets?.length || 0} активов</span>
+      <TagBadges tags={row.original.tags} />
     </div>
   ),
   size: 300,
@@ -28,8 +31,13 @@ export const createAssetNameColumn = (openItem, itemType, parentId) => ({
   cell: ({ row }) => (
     <div className="text-average d-flex gap-2 name" onClick={() => openItem(row.original, itemType, parentId)}>
       <img className="img-asset-min" loading="lazy" src={row.original.image} />
-      <span className="text-truncate" title={row.original.name}>{row.original.name}</span>
-      <span className="text-muted text-uppercase">{row.original.symbol}</span>
+      <div className="d-flex flex-column">
+        <span>
+          <span className="text-truncate" title={row.original.name}>{row.original.name}</span>
+          <span className="text-muted text-uppercase ms-1">{row.original.symbol}</span>
+        </span>
+        <TagBadges tags={row.original.tags} />
+      </div>
     </div>
   ),
   size: 300,

@@ -1,0 +1,413 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+  Tooltip, Legend, ResponsiveContainer, AreaChart, Area 
+} from 'recharts';
+
+const AssetDetail = ({ asset, onClose, onMinimize }) => {
+  const [assetData, setAssetData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState(null);
+
+  useEffect(() => {
+    const fetchAssetData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/portfolios/assets/${asset.id}/detail`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          setAssetData(data);
+          
+          // Генерируем данные для графиков
+          generateChartData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching asset data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssetData();
+  }, [asset.id]);
+
+  const generateChartData = (data) => {
+    if (!data) return;
+
+    // Данные для графика распределения по портфелям
+    const portfolioDistribution = data.distribution.portfolios.map(portfolio => ({
+      name: portfolio.portfolio_name,
+      value: portfolio.amount,
+      quantity: portfolio.quantity,
+      percentage: portfolio.percentage_of_total
+    }));
+
+    // Данные для графика доходности (заглушка)
+    const performanceData = [
+      { month: 'Янв', return: 2.5 },
+      { month: 'Фев', return: 1.8 },
+      { month: 'Мар', return: -0.5 },
+      { month: 'Апр', return: 3.2 },
+      { month: 'Май', return: 2.1 },
+      { month: 'Июн', return: 4.5 }
+    ];
+
+    // Данные для сравнения стоимости
+    const valueComparison = [
+      { name: 'Вложено', value: data.asset_info.amount },
+      { name: 'Текущая стоимость', value: data.current_market_data.current_value },
+      { name: 'Прибыль', value: Math.max(0, data.current_market_data.profit_loss.absolute) },
+      { name: 'Убыток', value: Math.max(0, -data.current_market_data.profit_loss.absolute) }
+    ];
+
+    setChartData({
+      portfolioDistribution,
+      performanceData,
+      valueComparison
+    });
+  };
+
+  // Цвета для графиков
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+  const PROFIT_COLORS = ['#22c55e', '#ef4444'];
+
+  if (loading) {
+    return (
+      <div className="asset-detail">
+        <div className="text-center py-5">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Загрузка...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!assetData) {
+    return (
+      <div className="asset-detail">
+        <div className="alert alert-danger">Не удалось загрузить данные актива</div>
+      </div>
+    );
+  }
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(amount || 0);
+  };
+
+  const formatPercentage = (value) => {
+    return `${value >= 0 ? '+' : ''}${value?.toFixed(2)}%`;
+  };
+
+  // Кастомный тултип для графиков
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip bg-dark text-white p-3 rounded shadow">
+          <p className="mb-1">{`${label}`}</p>
+          {payload.map((entry, index) => (
+            <p key={index} className="mb-0" style={{ color: entry.color }}>
+              {`${entry.name}: ${formatCurrency(entry.value)}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="asset-detail">
+      {/* Хедер актива */}
+      <div className="asset-header mb-4">
+        <div className="row align-items-center">
+          <div className="col">
+            <div className="d-flex align-items-center">
+              <button 
+                className="btn btn-outline-secondary btn-sm me-3"
+                onClick={() => onMinimize()}
+                title="Свернуть"
+              >
+                <i className="bi bi-dash-lg"></i>
+              </button>
+              <div>
+                <h1 className="h3 mb-1">
+                  {assetData.asset_info.name} ({assetData.asset_info.symbol})
+                </h1>
+                <div className="text-muted small">
+                  <span className="me-3">Портфель: {assetData.portfolio_info.portfolio_name}</span>
+                  <span>Рынок: {assetData.portfolio_info.portfolio_market}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-auto">
+            <div className="btn-group">
+              <button className="btn btn-outline-primary btn-sm">
+                <i className="bi bi-pencil me-2"></i>
+                Редактировать
+              </button>
+              <button 
+                className="btn btn-outline-danger btn-sm"
+                onClick={() => onClose()}
+                title="Закрыть"
+              >
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Основная информация и прибыль */}
+      <div className="row mb-4">
+        <div className="col-md-3">
+          <div className="card">
+            <div className="card-body text-center">
+              <small className="text-muted">Количество</small>
+              <div className="fw-bold fs-5">{assetData.asset_info.quantity}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="col-md-3">
+          <div className="card">
+            <div className="card-body text-center">
+              <small className="text-muted">Средняя цена</small>
+              <div className="fw-bold fs-5">{formatCurrency(assetData.asset_info.average_price)}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="col-md-3">
+          <div className="card">
+            <div className="card-body text-center">
+              <small className="text-muted">Текущая цена</small>
+              <div className="fw-bold fs-5">{formatCurrency(assetData.current_market_data.current_price)}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="col-md-3">
+          <div className="card">
+            <div className="card-body text-center">
+              <small className="text-muted">Прибыль/Убыток</small>
+              <div className={`fw-bold fs-5 ${
+                assetData.current_market_data.profit_loss.is_positive ? 'text-success' : 'text-danger'
+              }`}>
+                {formatCurrency(assetData.current_market_data.profit_loss.absolute)}
+                <br />
+                <small>{formatPercentage(assetData.current_market_data.profit_loss.percentage)}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Секция с графиками */}
+      <div className="row mb-4">
+        {/* График распределения по портфелям */}
+        <div className="col-lg-6 mb-4">
+          <div className="card h-100">
+            <div className="card-header">
+              <h6 className="mb-0">Распределение по портфелям</h6>
+            </div>
+            <div className="card-body">
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={chartData?.portfolioDistribution || []}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percentage }) => `${name} (${percentage?.toFixed(1)}%)`}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {chartData?.portfolioDistribution?.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* График доходности */}
+        <div className="col-lg-6 mb-4">
+          <div className="card h-100">
+            <div className="card-header">
+              <h6 className="mb-0">Доходность по месяцам</h6>
+            </div>
+            <div className="card-body">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData?.performanceData || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis tickFormatter={value => `${value}%`} />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Доходность']} />
+                  <Legend />
+                  <Bar 
+                    dataKey="return" 
+                    name="Доходность" 
+                    fill="#8884d8"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Секция сравнения стоимости */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header">
+              <h6 className="mb-0">Сравнение стоимости</h6>
+            </div>
+            <div className="card-body">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={chartData?.valueComparison || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis tickFormatter={value => formatCurrency(value)} />
+                  <Tooltip formatter={(value) => [formatCurrency(value), 'Стоимость']} />
+                  <Bar 
+                    dataKey="value" 
+                    name="Стоимость"
+                    radius={[4, 4, 0, 0]}
+                  >
+                    {chartData?.valueComparison?.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={
+                          entry.name === 'Прибыль' ? PROFIT_COLORS[0] : 
+                          entry.name === 'Убыток' ? PROFIT_COLORS[1] : 
+                          COLORS[index % COLORS.length]
+                        } 
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* График динамики цены (Area Chart) */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header">
+              <h6 className="mb-0">Динамика стоимости</h6>
+            </div>
+            <div className="card-body">
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart
+                  data={chartData?.performanceData || []}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="month" />
+                  <YAxis tickFormatter={value => `${value}%`} />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Доходность']} />
+                  <Area 
+                    type="monotone" 
+                    dataKey="return" 
+                    stroke="#8884d8" 
+                    fillOpacity={1} 
+                    fill="url(#colorValue)" 
+                    name="Доходность"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Детальная информация */}
+      <div className="row">
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-header">
+              <h6 className="mb-0">Инвестиционная информация</h6>
+            </div>
+            <div className="card-body">
+              <div className="row mb-2">
+                <div className="col-6">
+                  <small className="text-muted">Общая сумма вложений</small>
+                  <div className="fw-bold">{formatCurrency(assetData.asset_info.amount)}</div>
+                </div>
+                <div className="col-6">
+                  <small className="text-muted">В ордерах на покупку</small>
+                  <div className="fw-bold">{formatCurrency(assetData.asset_info.buy_orders)}</div>
+                </div>
+              </div>
+              <div className="row mb-2">
+                <div className="col-6">
+                  <small className="text-muted">Текущая стоимость</small>
+                  <div className="fw-bold">{formatCurrency(assetData.current_market_data.current_value)}</div>
+                </div>
+                <div className="col-6">
+                  <small className="text-muted">Доля в портфеле</small>
+                  <div className="fw-bold">{assetData.portfolio_info.weight_in_portfolio?.toFixed(2)}%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-header">
+              <h6 className="mb-0">Детали распределения</h6>
+            </div>
+            <div className="card-body">
+              {assetData.distribution.portfolios.map((portfolio, index) => (
+                <div key={portfolio.portfolio_id} className="row mb-2">
+                  <div className="col-8">
+                    <div className="fw-bold">{portfolio.portfolio_name}</div>
+                    <small className="text-muted">{portfolio.quantity} шт.</small>
+                  </div>
+                  <div className="col-4 text-end">
+                    <div className="fw-bold">{formatCurrency(portfolio.amount)}</div>
+                    <small className="text-muted">{portfolio.percentage_of_total.toFixed(1)}%</small>
+                  </div>
+                </div>
+              ))}
+              <div className="row mt-3 pt-2 border-top">
+                <div className="col-8">
+                  <strong>Всего:</strong>
+                </div>
+                <div className="col-4 text-end">
+                  <strong>{formatCurrency(assetData.distribution.total_amount_all_portfolios)}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AssetDetail;

@@ -5,7 +5,7 @@ import CloseMinimizeBtns from '/app/src/components/ui/CloseMinimizeBtns';
 import AssetAddModal from '../modals/AssetAdd';
 import PortfolioActionsDropdown from '../PortfolioActionsDropdown'
 
-const PortfolioHeader = ({ portfolio }) => {
+const PortfolioHeader = ({ portfolio, onRefresh }) => {
   const { openModal } = useModalStore();
 
   return (
@@ -28,7 +28,7 @@ const PortfolioHeader = ({ portfolio }) => {
             <Button type="primary"  onClick={() => openModal(AssetAddModal, { portfolio: portfolio })} >
               Добавить актив
             </Button>
-            <PortfolioActionsDropdown portfolio={portfolio} btn='btn' />
+            <PortfolioActionsDropdown portfolio={portfolio} btn='btn' onUpdate={onRefresh} />
           </Space>
 
         </div>

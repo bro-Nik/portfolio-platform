@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from shared.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 
 from app.models import Portfolio, Transaction
-from app.repositories import PortfolioRepository
+from app.repositories import PortfolioRepository, TaggableRepository
 from app.schemas import (
     Context,
     PortfolioAssetCreateRequest,
@@ -20,12 +20,33 @@ from app.services.portfolio_asset import PortfolioAssetService
 class PortfolioService:
     """Сервис для работы с портфелями пользователей."""
 
+    ENTITY_TYPE = 'portfolio'
+    ASSET_ENTITY_TYPE = 'portfolio_asset'
+
     def __init__(self, session: AsyncSession, ctx: Context) -> None:
         self.ctx = ctx
         self.actor = ctx.actor
         self.session = session
         self.repo = PortfolioRepository(session)
         self.asset_service = PortfolioAssetService(session, ctx)
+        self.taggable_repo = TaggableRepository(session)
+
+    async def _load_tags(self, portfolio: Portfolio) -> None:
+        portfolio.tags = await self.taggable_repo.get_tags(self.ENTITY_TYPE, portfolio.id)
+        for asset in portfolio.assets:
+            asset.tags = await self.taggable_repo.get_tags(self.ASSET_ENTITY_TYPE, asset.id)
+
+    async def _bulk_load_tags(self, portfolios: list[Portfolio]) -> None:
+        items: list[tuple[str, int]] = []
+        for p in portfolios:
+            items.append((self.ENTITY_TYPE, p.id))
+            for a in p.assets:
+                items.append((self.ASSET_ENTITY_TYPE, a.id))
+        tags_map = await self.taggable_repo.bulk_get_tags(items)
+        for portfolio in portfolios:
+            portfolio.tags = tags_map.get((self.ENTITY_TYPE, portfolio.id), [])
+            for asset in portfolio.assets:
+                asset.tags = tags_map.get((self.ASSET_ENTITY_TYPE, asset.id), [])
 
     async def get(self, id: int) -> Portfolio:
         """Получить портфель пользователя."""
@@ -37,11 +58,14 @@ class PortfolioService:
         """Получить портфель пользователя с активами."""
         portfolio = await self.repo.get_with_assets(id)
         self._verify(portfolio)
+        await self._load_tags(portfolio)
         return portfolio
 
     async def get_all_with_assets(self) -> list[Portfolio]:
         """Получить все портфели пользователя с активами."""
-        return await self.repo.get_all_by_user_with_assets(self.actor.id)
+        portfolios = await self.repo.get_all_by_user_with_assets(self.actor.id)
+        await self._bulk_load_tags(portfolios)
+        return portfolios
 
     async def create(self, data: PortfolioCreateRequest) -> Portfolio:
         """Создать портфель для пользователя."""

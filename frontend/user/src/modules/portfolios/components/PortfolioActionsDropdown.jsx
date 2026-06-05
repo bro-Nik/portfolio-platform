@@ -5,12 +5,15 @@ import {
   Square2StackIcon,
   TrashIcon,
   ArrowTopRightOnSquareIcon,
+  TagIcon,
 } from '@heroicons/react/16/solid'
 import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
 import PortfolioEditModal from './modals/PortfolioEdit';
 import PortfolioDeleteModal from './modals/PortfolioDelete';
+import TagManagementModal from './modals/TagManagementModal';
+import TagAssignPopover from './TagAssignPopover';
 
-const PortfolioActionsDropdown = ({ portfolio, btn }) => {
+const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
   const { openModal } = useModalStore();
 
   const menuItems = [
@@ -36,6 +39,15 @@ const PortfolioActionsDropdown = ({ portfolio, btn }) => {
       type: 'divider',
     },
     {
+      key: 'tags',
+      icon: <TagIcon />,
+      label: 'Управление тегами',
+      onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
+    },
+    {
+      type: 'divider',
+    },
+    {
       key: 'archive',
       icon: <ArchiveBoxXMarkIcon />,
       label: 'Архивировать',
@@ -50,7 +62,12 @@ const PortfolioActionsDropdown = ({ portfolio, btn }) => {
     },
   ];
 
-  return <ActionsDropdown items={menuItems} btn={btn}/>;
+  return (
+    <div className="d-flex align-items-center gap-1">
+      <TagAssignPopover entityType="portfolio" entityId={portfolio?.id} assignedTags={portfolio?.tags} onUpdate={onUpdate} />
+      <ActionsDropdown items={menuItems} btn={btn}/>
+    </div>
+  );
 };
 
 export default PortfolioActionsDropdown;

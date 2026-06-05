@@ -2,13 +2,13 @@ import WalletHeader from './WalletHeader';
 import WalletStatistic from './WalletStatistic';
 import WalletTable from './WalletTable';
 
-const WalletPage = ({ wallet }) => {
+const WalletPage = ({ wallet, onRefresh }) => {
 
   return (
     <>
-      <WalletHeader wallet={wallet} />
+      <WalletHeader wallet={wallet} onRefresh={onRefresh} />
       <WalletStatistic wallet={wallet} />
-      <WalletTable wallet={wallet} assets={wallet.assets} />
+      <WalletTable wallet={wallet} assets={wallet.assets} onRefresh={onRefresh} />
     </>
   );
 };

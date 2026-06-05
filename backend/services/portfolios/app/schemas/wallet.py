@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
+from .tag import TagResponse
+
 
 class WalletBase(BaseModel):
     """Базовые поля."""
@@ -31,6 +33,7 @@ class WalletResponse(WalletBase):
 
     id: int
     assets: list['WalletAssetResponse'] = []
+    tags: list[TagResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 
