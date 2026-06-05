@@ -70,6 +70,7 @@ class HTTPClient:
 
         """
         start_time = time.time()
+        response = None
         client = await self._get_client()
         url = f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
 

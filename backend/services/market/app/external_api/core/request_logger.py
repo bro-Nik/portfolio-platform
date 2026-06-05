@@ -29,7 +29,7 @@ class RequestLogger:
         self,
         method: str,
         endpoint: str,
-        response: httpx.Response,
+        response: httpx.Response | None,
         params: dict[str, Any] | None,
         response_time: float,
         error: str | None = None,
@@ -43,7 +43,7 @@ class RequestLogger:
             status_code=response.status_code if response else None,
             response_time=response_time,
             was_successful=response.is_success if response else False,
-            error_message=None if response.is_success else response.text[:500] or error,
+            error_message=error if not response else (None if response.is_success else response.text[:500] or error),
         )
         self._logs.append(log)
 
