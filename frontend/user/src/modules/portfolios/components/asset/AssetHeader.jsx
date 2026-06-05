@@ -1,10 +1,11 @@
 import React from 'react';
 import { Space, Button } from 'antd';
-import { formatCurrency } from '/app/src/utils/format';
+import { formatCurrency, getTradingViewUrl } from '/app/src/utils/format';
 import { useModalStore } from '/app/src/stores/modalStore';
 import CloseMinimizeBtns from '/app/src/components/ui/CloseMinimizeBtns';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TransactionEditModal from '/app/src/modules/transaction/modals/TransactionEdit';
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/16/solid'
 
 const AssetHeader = ({ portfolio, asset }) => {
   const { openModal } = useModalStore();
@@ -17,6 +18,9 @@ const AssetHeader = ({ portfolio, asset }) => {
               <h1 className="fs-6 text-muted m-0">
                 {asset.name} 
                 <span className="text-uppercase">({asset.symbol})</span>
+                <a href={getTradingViewUrl(asset.symbol, asset.tickerId)} target="_blank" rel="noopener noreferrer" className="ms-1" onClick={(e) => e.stopPropagation()}>
+                  <ArrowTopRightOnSquareIcon width={14} height={14} />
+                </a>
                 {/* <span class="badge text-bg-light text-muted">#{rank}</span> */}
               </h1>
 

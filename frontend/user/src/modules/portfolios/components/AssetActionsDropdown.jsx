@@ -11,6 +11,7 @@ import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
 import AssetDeleteModal from './modals/AssetDelete';
 import TagManagementModal from './modals/TagManagementModal';
 import TagAssignPopover from './TagAssignPopover';
+import { getTradingViewUrl } from '/app/src/utils/format';
 
 
 const AssetActionsDropdown = ({ portfolio, asset, btn, onUpdate }) => {
@@ -35,6 +36,12 @@ const AssetActionsDropdown = ({ portfolio, asset, btn, onUpdate }) => {
       icon: <ArrowTopRightOnSquareIcon />,
       label: 'Экспортировать',
       disabled: true,
+    },
+    {
+      key: 'tradingview',
+      icon: <ArrowTopRightOnSquareIcon />,
+      label: 'Посмотреть на TradingView',
+      onClick: () => window.open(getTradingViewUrl(asset.symbol, asset.tickerId), '_blank', 'noopener,noreferrer'),
     },
     {
       type: 'divider',

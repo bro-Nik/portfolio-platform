@@ -54,3 +54,10 @@ export const getColorClass = (number) => {
 export const formatNumber = (number, options = {}) => {
   return new Intl.NumberFormat('ru-RU', options).format(number);
 };
+
+export const getTradingViewUrl = (symbol, tickerId) => {
+  if (tickerId?.startsWith('cr-')) {
+    return `https://www.tradingview.com/chart/?symbol=${symbol}USDT`
+  }
+  return `https://www.tradingview.com/chart/?symbol=${symbol}USD`
+};
