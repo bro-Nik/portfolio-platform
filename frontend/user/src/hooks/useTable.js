@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel } from '@tanstack/react-table';
+import { useLocalStorage } from './useLocalStorage';
 
-export const useTable = (data, columns, fallbackData = []) => {
-  const [sorting, setSorting] = useState([]);
+export const useTable = (data, columns, fallbackData = [], storageKey) => {
+  const [sorting, setSorting] = storageKey
+    ? useLocalStorage(storageKey, [])
+    : useState([]);
   const [globalFilter, setGlobalFilter] = useState('');
 
   const table = useReactTable({

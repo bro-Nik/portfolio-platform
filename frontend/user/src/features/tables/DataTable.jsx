@@ -8,9 +8,10 @@ const DataTable = memo(({
   columnsConfig, 
   fallbackData = [], 
   placeholder = "Поиск...",
+  storageKey,
   children 
 }) => {
-  const { table, globalFilter, setGlobalFilter } = useTable(data, columnsConfig, fallbackData);
+  const { table, globalFilter, setGlobalFilter } = useTable(data, columnsConfig, fallbackData, storageKey);
 
   if (!data || !data.length) return <EmptyState />
 

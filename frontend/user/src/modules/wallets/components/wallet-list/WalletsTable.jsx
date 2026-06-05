@@ -20,6 +20,7 @@ const WalletsTable = memo(({ wallets }) => {
       data={wallets}
       columnsConfig={columns}
       placeholder="Поиск по кошелькам..."
+      storageKey="wallets-list-sorting"
     />
   );
 });

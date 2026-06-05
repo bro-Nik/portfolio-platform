@@ -74,6 +74,7 @@ const PortfolioTable = memo(({ portfolio, assets }) => {
       data={filteredAssets}
       columnsConfig={columns}
       placeholder="Поиск по активам..."
+      storageKey="portfolio-table-sorting"
     >
       <div className="d-flex align-items-center gap-3 flex-wrap mt-1">
         {portfolio.comment && (

@@ -75,7 +75,7 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
     getPortfolio, getWallet, openItem
   ]);
 
-  return <DataTable data={transactions} columnsConfig={columns} />;
+  return <DataTable data={transactions} columnsConfig={columns} storageKey="wallet-asset-sorting" />;
 });
 
 export default AssetTable;

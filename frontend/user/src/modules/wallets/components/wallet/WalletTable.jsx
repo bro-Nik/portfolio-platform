@@ -53,6 +53,7 @@ const WalletTable = memo(({ wallet, assets }) => {
       columnsConfig={columns}
       placeholder="Поиск по активам..."
       children={wallet.comment}
+      storageKey="wallet-table-sorting"
     />
   );
 });

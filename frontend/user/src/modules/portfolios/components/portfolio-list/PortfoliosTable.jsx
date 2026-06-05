@@ -30,6 +30,7 @@ const PortfoliosTable = memo(({ portfolios }) => {
       data={portfolios}
       columnsConfig={columns}
       placeholder="Поиск по портфелям..."
+      storageKey="portfolios-list-sorting"
     />
   );
 });
