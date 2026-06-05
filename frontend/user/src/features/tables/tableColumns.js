@@ -23,7 +23,7 @@ export const createNameColumn = (openItem, itemType) => ({
 });
 
 export const createAssetNameColumn = (openItem, itemType, parentId) => ({
-  accessorKey: 'name',
+  accessorFn: (row) => `${row.name} ${row.symbol}`,
   header: 'Актив',
   cell: ({ row }) => (
     <div className="text-average d-flex gap-2 name" onClick={() => openItem(row.original, itemType, parentId)}>
