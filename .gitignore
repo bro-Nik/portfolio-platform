@@ -37,5 +37,5 @@ to_ignore/
 databases/dumps/
 db_backups/
 reports/
-**/market/static/*
+backend/static/
 

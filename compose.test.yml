@@ -1,0 +1,30 @@
+name: portfolios-test
+
+services:
+  test-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    tmpfs: /var/lib/postgresql/data
+
+  test-redis:
+    image: redis:alpine
+    tmpfs: /data
+
+  backend-tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: test
+    environment:
+      DB_URL: postgresql+asyncpg://postgres:@test-db/postgres
+      REDIS_URL: redis://test-redis:6379/0
+    depends_on:
+      test-db:
+        condition: service_started
+      test-redis:
+        condition: service_started
+    tmpfs: /tmp
+    volumes:
+      - ./backend/tests:/app/tests
+    command: pytest tests/ -v --cov=app

@@ -50,9 +50,10 @@ const getAuthHeaders = async () => {
     });
   };
 
-  const del = (url) => {
+  const del = (url, body) => {
     return request(url, {
       method: 'DELETE',
+      body: body ? JSON.stringify(body) : undefined,
     });
   };
 

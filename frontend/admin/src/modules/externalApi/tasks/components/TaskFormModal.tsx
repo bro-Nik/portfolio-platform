@@ -186,11 +186,7 @@ export const TaskFormModal: React.FC = () => {
             },
           ]}
         >
-          <TextArea
-            rows={6}
-            placeholder='{"coin_ids": ["bitcoin", "ethereum"], "currencies": ["usd", "eur"]}'
-            style={{ fontFamily: 'monospace' }}
-          />
+          <TextArea rows={6} style={{ fontFamily: 'monospace' }} />
         </Form.Item>
 
         <Form.Item

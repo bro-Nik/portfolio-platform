@@ -6,11 +6,11 @@ const api = createApi(baseUrl, { convertCase: true, useAuth: true });
 
 export const providersApi = {
   getProviders: (): Promise<Provider[]> => {
-    return api.get('/');
+    return api.get('');
   },
 
   createProvider: (data: CreateProviderData): Promise<Provider> => {
-    return api.post('/', data);
+    return api.post('', data);
   },
 
   updateProvider: (id: number, data: UpdateProviderData): Promise<Provider> => {

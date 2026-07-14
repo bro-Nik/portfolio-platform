@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+.env
+.venv
+venv
+.git
+tests
+reports
+db_backups
+.venv
+alembic/versions

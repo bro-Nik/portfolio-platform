@@ -1,8 +1,0 @@
-import '../../justfile'
-
-service := "auth"
-db := "auth-db"
-
-# Список всех команд
-default:
-    @just --list

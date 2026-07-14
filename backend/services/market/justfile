@@ -1,9 +1,0 @@
-import '../../justfile'
-
-service := "market"
-db := "market-db"
-
-# Список всех команд
-default:
-    @just --list
-

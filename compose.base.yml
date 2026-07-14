@@ -1,32 +1,136 @@
 name: portfolios
 
-include:
-  - path: ./backend/services/portfolios/compose.base.yml
-  - path: ./backend/services/auth/compose.base.yml
-  - path: ./backend/services/market/compose.base.yml
-  - path: ./frontend/user/compose.base.yml
-  - path: ./frontend/admin/compose.base.yml
-
 services:
-  nginx:
-    image: nginx:alpine
-    depends_on:
-      - ui-user
-      - ui-admin
-      - portfolios
-      - auth
-      - market
+  db:
+    image: postgres:16-alpine
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      POSTGRES_USER: portfolios
+      POSTGRES_DB: portfolios
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolios"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
     command: redis-server --appendonly yes --appendfsync everysec
     volumes:
-      - redis_db_data:/root/redis
+      - redis_data:/data
     restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: base
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    env_file:
+      - path: ./.env
+        required: false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: base
+    command: taskiq worker app.modules.market.taskiq_setup:broker app.modules.market.tasks --log-level INFO
+    env_file:
+      - path: ./.env
+        required: false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    profiles:
+      - worker
+
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: base
+    command: taskiq scheduler app.modules.market.taskiq_setup:scheduler --log-level INFO
+    env_file:
+      - path: ./.env
+        required: false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    profiles:
+      - worker
+
+  ui-user:
+    build:
+      context: ./frontend/user
+      dockerfile: ../base.Dockerfile
+      target: development
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+      - FAST_REFRESH=true
+      - REACT_APP_AUTH_SERVICE_URL=/auth
+      - REACT_APP_MARKET_SERVICE_URL=/market
+      - REACT_APP_IMAGE_BASE_URL=/market/static/images/tickers/
+    env_file:
+      - path: ./frontend/user/.env
+        required: false
+      - path: ./.env
+        required: false
+    volumes:
+      - ./frontend/user/src:/app/src
+      - ./frontend/user/public:/app/public
+
+  ui-admin:
+    build:
+      context: ./frontend/admin
+      dockerfile: ../base.Dockerfile
+      target: development
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+      - FAST_REFRESH=true
+      - REACT_APP_AUTH_SERVICE_URL=/auth
+      - REACT_APP_MARKET_SERVICE_URL=/market
+      - REACT_APP_IMAGE_BASE_URL=/market/static/images/tickers/
+    env_file:
+      - path: ./frontend/admin/.env
+        required: false
+      - path: ./.env
+        required: false
+    volumes:
+      - ./frontend/admin/src:/app/src
+      - ./frontend/admin/public:/app/public
+      - /app/node_modules
+
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - ui-user
+      - ui-admin
+      - backend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
 
 networks:
   portfolios-net:
     driver: bridge
 
 volumes:
-  redis_db_data:
+  postgres_data:
+  redis_data:

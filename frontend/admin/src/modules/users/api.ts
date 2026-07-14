@@ -6,7 +6,7 @@ const api = createApi(baseUrl, { convertCase: true, useAuth: true });
 
 export const usersApi = {
   getUsers: (): Promise<User[]> => {
-    return api.get('/');
+    return api.get('');
   },
 
   getUser: (id: number): Promise<User> => {
@@ -14,7 +14,7 @@ export const usersApi = {
   },
 
   createUser: (data: CreateUserData): Promise<User> => {
-    return api.post('/', data);
+    return api.post('', data);
   },
 
   updateUser: (id: number, data: UpdateUserData): Promise<User> => {

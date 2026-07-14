@@ -2,18 +2,22 @@ import { getToken, getRefreshToken, setTokens, decodeToken, isTokenExpired, clea
 import { apiService } from './api.js';
 
 export const authService = () => {
-  const api = apiService(process.env.REACT_APP_AUTH_SERVICE_URL);
+  const setTokensFromResponse = (data) => {
+    const { accessToken, refreshToken } = data;
+    if (!accessToken && !refreshToken) throw new Error('Не получены токены авторизации');
+    if (!accessToken) throw new Error('Нет access токена');
+    if (!refreshToken) throw new Error('Нет refresh токена');
 
-  const getCurrentUser = async () => {
-    const token = await getValidToken();
-    let decodedToken = decodeToken(token);
-    if (!decodedToken) return;
+    setTokens(accessToken, refreshToken);
+  };
 
-    return {
-      id: decodedToken.id,
-      login: decodedToken.login,
-      role: decodedToken.role,
-    }
+  const refreshTokens = async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) throw new Error('Нет refresh токена');
+
+    const data = await api.post('/refresh', { token: refreshToken });
+    setTokensFromResponse(data);
+    return data.accessToken;
   };
 
   const getValidToken = async () => {
@@ -34,13 +38,18 @@ export const authService = () => {
     }
   };
 
-  const setTokensFromResponse = (data) => {
-    const { accessToken, refreshToken } = data;
-    if (!accessToken && !refreshToken) throw new Error('Не получены токены авторизации');
-    if (!accessToken) throw new Error('Нет access токена');
-    if (!refreshToken) throw new Error('Нет refresh токена');
+  const api = apiService(process.env.REACT_APP_AUTH_SERVICE_URL);
 
-    setTokens(accessToken, refreshToken);
+  const getCurrentUser = async () => {
+    const token = await getValidToken();
+    let decodedToken = decodeToken(token);
+    if (!decodedToken) return;
+
+    return {
+      id: decodedToken.id,
+      login: decodedToken.login,
+      role: decodedToken.role,
+    }
   };
 
   const login = async (email, password) => {
@@ -63,22 +72,12 @@ export const authService = () => {
     }
   };
 
-  const refreshTokens = async () => {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) throw new Error('Нет refresh токена');
-
-    const data = await api.post('/refresh', { token: refreshToken });
-    setTokensFromResponse(data);
-    return data.accessToken;
-  };
-
   const logout = async () => {
-    const accessToken = getToken();
     const refreshToken = getRefreshToken();
     clearTokens();
 
     if (refreshToken) {
-      api.post('/logout', { token: refreshToken }, accessToken).catch(() => {});
+      api.post('/logout', { token: refreshToken }).catch(() => {});
     }
   };
 

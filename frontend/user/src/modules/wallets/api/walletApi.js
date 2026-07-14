@@ -5,14 +5,14 @@ const { getValidToken } = authService();
 const api = apiService('/api/wallets', getValidToken);
 
 export const walletApi = {
-  getAllWallets: () => api.get('/'),
+  getAllWallets: () => api.get(''),
   saveWallet: (walletData) => {
     if (walletData.id) {
       // Редактирование
       return api.put(`/${walletData.id}`, walletData);
     } else {
       // Создание
-      return api.post('/', walletData);
+      return api.post('', walletData);
     }
   },
   deleteWallet: (walletId) => api.del(`/${walletId}`),

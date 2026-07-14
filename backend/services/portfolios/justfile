@@ -1,8 +1,0 @@
-import '../../justfile'
-
-service := "portfolios"
-db := "portfolios-db"
-
-# Список всех команд
-default:
-    @just --list

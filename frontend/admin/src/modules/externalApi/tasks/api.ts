@@ -6,11 +6,11 @@ const api = createApi(baseUrl, { convertCase: true, useAuth: true });
 
 export const tasksApi = {
   getTasks: (): Promise<Task[]> => {
-    return api.get('/');
+    return api.get('');
   },
 
   createTask: (data: CreateTaskData): Promise<Task> => {
-    return api.post('/', data);
+    return api.post('', data);
   },
 
   updateTask: (id: number, data: UpdateTaskData): Promise<Task> => {

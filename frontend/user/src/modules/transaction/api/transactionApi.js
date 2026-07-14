@@ -11,7 +11,7 @@ export const transactionApi = {
       return api.put(`/${transactionData.id}`, transactionData, true);
     } else {
       // Создание
-      return api.post('/', transactionData, true);
+      return api.post('', transactionData, true);
     }
   },
   deleteTransaction: (transactionId) => api.del(`/${transactionId}`),

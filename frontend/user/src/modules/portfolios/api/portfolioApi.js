@@ -7,7 +7,7 @@ const api = apiService('/api/portfolios', getValidToken);
 export const portfolioApi = {
   getPortfolios: (ids = null) => {
     const params = ids ? { ids } : {};
-    return api.get('/', { params });
+    return api.get('', { params });
   },
   savePortfolio: (portfolioData) => {
     if (portfolioData.id) {
@@ -15,7 +15,7 @@ export const portfolioApi = {
       return api.put(`/${portfolioData.id}`, portfolioData);
     } else {
       // Создание
-      return api.post('/', portfolioData);
+      return api.post('', portfolioData);
     }
   },
   deletePortfolio: (portfolioId) => api.del(`/${portfolioId}`),
