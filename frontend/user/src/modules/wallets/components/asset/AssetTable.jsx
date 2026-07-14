@@ -3,7 +3,7 @@ import DataTable from '/app/src/features/tables/DataTable';
 import { formatCurrency } from '/app/src/utils/format';
 import { useNavigation } from '/app/src/hooks/useNavigation';
 import { useModalStore } from '/app/src/stores/modalStore';
-import { BriefcaseIcon, WalletIcon } from '@heroicons/react/16/solid'
+import { Folder, Wallet } from 'lucide-react'
 import TransactionEditModal from '/app/src/modules/transaction/modals/TransactionEdit';
 import TransactionActionsDropdown from '/app/src/modules/transaction/components/TransactionActionsDropdown'
 import { useTicker } from '/app/src/hooks/useTicker';
@@ -50,8 +50,8 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
         if (isTradeTransaction(transaction.type) && transaction.portfolioId) {
           const portfolio = getPortfolio(transaction.portfolioId);
           return (
-            <div className="d-flex align-items-center gap-2 cursor-pointer" onClick={() => portfolio && openItem(portfolio, 'portfolio')}>
-              <BriefcaseIcon />{portfolio?.name || 'Портфель удален'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => portfolio && openItem(portfolio, 'portfolio')}>
+              <Folder size={14} />{portfolio?.name || 'Портфель удален'}
             </div>
           );
         }
@@ -59,8 +59,8 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
         if (isTransferTransaction(transaction.type) && relationWalletId) {
           const wallet2 = getWallet(relationWalletId);
           return (
-            <div className="d-flex align-items-center gap-2 cursor-pointer" onClick={() => wallet2 && openItem(wallet2, 'wallet')}>
-              <WalletIcon />{wallet2?.name || 'Кошелек удален'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => wallet2 && openItem(wallet2, 'wallet')}>
+              <Wallet size={14} />{wallet2?.name || 'Кошелек удален'}
             </div>
           );
         }

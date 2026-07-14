@@ -1,10 +1,9 @@
 import React from 'react';
+import { Spin } from 'antd';
 
 const LoadingSpinner = () => (
-  <div className="d-flex justify-content-center align-items-center w-100 h-100">
-    <div className="spinner-border text-primary" role="status">
-      <span className="visually-hidden">Загрузка...</span>
-    </div>
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
+    <Spin size="large" />
   </div>
 );
 

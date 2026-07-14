@@ -1,5 +1,6 @@
 import React from 'react';
 import { flexRender } from '@tanstack/react-table';
+import { Input } from 'antd';
 
 export const Table = ({ 
   table, 
@@ -10,15 +11,14 @@ export const Table = ({
 }) => {
   return (
     <div className="table-wrapper">
-      <div className="table-controls mb-3">
-        <div className="row align-items-center">
-          <div className="col-md-6">
-            <input
-              type="text"
-              className="form-control"
+      <div className="table-controls" style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ flex: '0 0 50%', maxWidth: '50%' }}>
+            <Input
               placeholder={placeholder}
               value={globalFilter ?? ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
+              allowClear
             />
           </div>
           {children}
@@ -26,14 +26,14 @@ export const Table = ({
       </div>
 
       <div className="big-table">
-        <table className="table table-sm align-middle bootstrap-table">
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
-                    style={{ width: header.getSize() }}
+                    style={{ width: header.getSize(), borderBottom: '2px solid #f0f0f0', padding: '8px 12px', textAlign: 'left', fontWeight: 600, fontSize: '14px' }}
                   >
                     {header.isPlaceholder ? null : (
                       <div
@@ -66,7 +66,7 @@ export const Table = ({
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    style={{ width: cell.column.getSize() }}
+                    style={{ width: cell.column.getSize(), borderBottom: '1px solid #f0f0f0', padding: '8px 12px' }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>

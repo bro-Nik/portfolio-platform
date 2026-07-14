@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Space, message } from 'antd';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/16/solid';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useModalStore } from '/app/src/stores/modalStore';
 import { tagApi } from '../../api/tagApi';
 
@@ -88,16 +88,16 @@ const TagManagementModal = () => {
     <Modal title="Управление тегами" open={true} onCancel={closeModal} footer={null} width={500} destroyOnClose centered>
       <Space direction="vertical" style={{ width: '100%' }} size="middle">
         {tags.map(tag => (
-          <div key={tag.id} className="d-flex align-items-center gap-2">
+          <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', backgroundColor: tag.color || '#1890ff' }} />
             <span style={{ flex: 1 }}>{tag.name}</span>
-            <Button type="text" size="small" icon={<PencilIcon width={14} />} onClick={() => startEdit(tag)} />
-            <Button type="text" size="small" danger icon={<TrashIcon width={14} />} onClick={() => handleDelete(tag.id)} />
+            <Button type="text" size="small" icon={<Pencil size={14} />} onClick={() => startEdit(tag)} />
+            <Button type="text" size="small" danger icon={<Trash2 size={14} />} onClick={() => handleDelete(tag.id)} />
           </div>
         ))}
 
         {showForm && (
-          <div className="d-flex flex-column gap-2 p-3" style={{ border: '1px solid #d9d9d9', borderRadius: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, border: '1px solid #d9d9d9', borderRadius: 6 }}>
             <Input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Название тега" />
             <Space size="small">
               {PRESET_COLORS.map(c => (
@@ -119,7 +119,7 @@ const TagManagementModal = () => {
         )}
 
         {!showForm && (
-          <Button type="dashed" block icon={<PlusIcon width={14} />} onClick={() => { setShowForm(true); setEditId(null); setEditName(''); }}>
+          <Button type="dashed" block icon={<Plus size={14} />} onClick={() => { setShowForm(true); setEditId(null); setEditName(''); }}>
             Создать тег
           </Button>
         )}

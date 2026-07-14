@@ -108,7 +108,7 @@ const AppPage = () => {
       <Sidebar />
       
       <div id="wrapper">
-        <div id="content" className="p-5">
+        <div id="content" style={{ padding: 48 }}>
           {renderMainSection()}
           {renderOpenedItems()}
         </div>

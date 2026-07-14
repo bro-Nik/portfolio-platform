@@ -4,6 +4,7 @@ import { ROUTES } from '/app/src/constants/routes';
 import { useToastStore } from '/app/src/stores/toastStore';
 import { authService } from '/app/src/services/auth';
 import { useAuthStore } from '/app/src/stores/authStore';
+import { Button, Input, Spin } from 'antd';
 
 const AuthPage = ({ type }) => {
   const [email, setEmail] = useState('');
@@ -50,45 +51,38 @@ const AuthPage = ({ type }) => {
   const alternativeText = isLogin ? 'Регистрация' : 'Вход';
 
   return (
-    <main className="m-auto">
+    <main style={{ margin: '0 auto' }}>
       <form onSubmit={handleSubmit} style={{width: '330px'}}>
-        <a href={ROUTES.HOME} className="d-flex align-items-center mb-5 justify-content-center link-body-emphasis text-decoration-none">
-          <img className="mb-0 me-2" src="/favicon.png" alt="" width="32" height="32" />
-          <span className="fs-4">Portfolios</span>
+        <a href={ROUTES.HOME} style={{ display: 'flex', alignItems: 'center', marginBottom: 48, justifyContent: 'center', color: '#212529', textDecoration: 'none' }}>
+          <img style={{ marginBottom: 0, marginRight: 8 }} src="/favicon.png" alt="" width="32" height="32" />
+          <span style={{ fontSize: 'calc(1.275rem + .3vw)' }}>Portfolios</span>
         </a>
 
-        <div className="d-flex align-items-center gap-2 mb-3">
-          <h1 className="h3 fw-normal">{title}</h1>
-          <div className="ms-auto d-flex gap-3">
-            <a className="text-decoration-none" href={alternativeLink}>{alternativeText}</a>
-            <a className="text-decoration-none" href={ROUTES.DEMO}>Демо</a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 400 }}>{title}</h1>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
+            <a style={{ textDecoration: 'none' }} href={alternativeLink}>{alternativeText}</a>
+            <a style={{ textDecoration: 'none' }} href={ROUTES.DEMO}>Демо</a>
           </div>
         </div>
 
-        <div className="mb-2">
-          <input id="email" type="email" required placeholder="Email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <div style={{ marginBottom: 8 }}>
+          <Input id="email" type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
 
-        <div className="mb-2">
-          <input type="password" required placeholder="Пароль" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <div style={{ marginBottom: 8 }}>
+          <Input.Password required placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
 
         {!isLogin && (
-          <div className="mb-3">
-            <input type="password" placeholder="Подтверждение пароля" required className="form-control" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          <div style={{ marginBottom: 16 }}>
+            <Input.Password placeholder="Подтверждение пароля" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
           </div>
         )}
 
-        <button type="submit" disabled={loading} className="w-100 btn btn-sm btn-primary" >
-          {loading ? (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-              {submitText}...
-            </div>
-          ) : (
-            submitText
-          )}
-        </button>
+        <Button type="primary" htmlType="submit" disabled={loading} block style={{ marginBottom: 8 }}>
+          {loading ? <Spin size="small" /> : submitText}
+        </Button>
       </form>
     </main>
   );

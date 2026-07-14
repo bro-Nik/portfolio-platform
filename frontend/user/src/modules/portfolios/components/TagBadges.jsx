@@ -10,7 +10,7 @@ const TagBadges = ({ tags = [], size = 'small' }) => {
   const overflow = tags.length - MAX_VISIBLE;
 
   return (
-    <span className="d-inline-flex gap-1 flex-wrap align-items-center" style={{ lineHeight: 1.2 }}>
+    <span style={{ display: 'inline-flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', lineHeight: 1.2 }}>
       {visible.map(tag => (
         <AntTag key={tag.id} color={tag.color || '#1890ff'} style={{ margin: 0, fontSize: size === 'small' ? 10 : 12, lineHeight: '16px' }}>
           {tag.name}

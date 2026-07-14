@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Popover, Checkbox, Space, Button, message } from 'antd';
-import { TagIcon } from '@heroicons/react/16/solid';
+import { Tag } from 'lucide-react';
 import { tagApi } from '../api/tagApi';
 
 const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate }) => {
@@ -55,7 +55,7 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate })
       title="Назначить теги"
       content={
         <div style={{ minWidth: 200 }}>
-          {allTags.length === 0 && <div className="text-muted small">Нет тегов</div>}
+          {allTags.length === 0 && <div style={{ color: 'rgba(0,0,0,0.45)', fontSize: '12px' }}>Нет тегов</div>}
           <Checkbox.Group value={[...selectedIds]}>
             <Space direction="vertical" size="small">
               {allTags.map(tag => (
@@ -74,7 +74,7 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate })
         </div>
       }
     >
-      <Button type="text" size="small" icon={<TagIcon width={14} />} />
+      <Button type="text" size="small" icon={<Tag size={14} />} />
     </Popover>
   );
 };

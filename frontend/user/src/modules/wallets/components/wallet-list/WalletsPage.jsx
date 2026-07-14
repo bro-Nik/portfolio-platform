@@ -14,11 +14,11 @@ const WalletsPage = () => {
     <>
       <WalletsHeader />
 
-      <div className="row xs-mb-3">
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         <WalletsStatistic stats={overallStats} />
       </div>
 
-      <div className="row">
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         <WalletsTable wallets={wallets} />
       </div>
     </>

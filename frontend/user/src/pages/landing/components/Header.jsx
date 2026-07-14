@@ -1,33 +1,39 @@
 import { ROUTES } from '/app/src/constants/routes';
 import { useAuthStore } from '/app/src/stores/authStore';
+import { Select } from 'antd';
 
 const Header = () => {
   const { user, loading, isAuthenticated } = useAuthStore();
 
   return (
-    <header className="d-flex py-3 container">
-      <div className="d-flex align-items-center">
-        <img className="mb-0 me-2" src="/favicon.png" alt="" width="32" height="32" />
-        <span className="fs-4">Portfolios</span>
+    <header style={{ display: 'flex', padding: '16px 0', maxWidth: 1140, margin: '0 auto', width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <img style={{ marginBottom: 0, marginRight: 8 }} src="/favicon.png" alt="" width="32" height="32" />
+        <span style={{ fontSize: 'calc(1.275rem + .3vw)' }}>Portfolios</span>
       </div>
 
-
       {!loading && (
-        <div className="d-flex align-items-center ms-auto gap-3 text-nowrap">
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: 12, whiteSpace: 'nowrap' }}>
           <div>
-            <select className="form-select border-0 fw-medium">
-              <option selected value={'ru'}>RU</option>
-            </select>
+            <Select
+              size="small"
+              variant="borderless"
+              defaultValue="ru"
+              style={{ fontWeight: 500 }}
+              options={[
+                { value: 'ru', label: 'RU' },
+              ]}
+            />
           </div>
 
           {isAuthenticated && (
-            <a className="text-decoration-none text-capitalize fw-medium" href={ROUTES.APP}>{ user?.login }</a>
+            <a style={{ textDecoration: 'none', textTransform: 'capitalize', fontWeight: 500 }} href={ROUTES.APP}>{ user?.login }</a>
           )}
 
           {!isAuthenticated && (
             <>
-              <a href={ROUTES.LOGIN} className="text-decoration-none fw-medium">Вход</a>
-              <a href={ROUTES.DEMO} className="text-decoration-none fw-medium">Демо</a>
+              <a href={ROUTES.LOGIN} style={{ textDecoration: 'none', fontWeight: 500 }}>Вход</a>
+              <a href={ROUTES.DEMO} style={{ textDecoration: 'none', fontWeight: 500 }}>Демо</a>
             </>
           )}
 

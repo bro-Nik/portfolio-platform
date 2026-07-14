@@ -80,6 +80,8 @@ services:
       context: ./frontend/user
       dockerfile: ../base.Dockerfile
       target: development
+      additional_contexts:
+        - shared-context=./frontend/shared
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WDS_SOCKET_PORT=0
@@ -101,6 +103,8 @@ services:
       context: ./frontend/admin
       dockerfile: ../base.Dockerfile
       target: development
+      additional_contexts:
+        - shared-context=./frontend/shared
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WDS_SOCKET_PORT=0

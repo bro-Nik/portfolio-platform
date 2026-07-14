@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Modal, Input, List, Avatar, Spin, Empty, Button, message } from 'antd';
-import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
+import { Search } from 'lucide-react';
 import { useModalStore } from '/app/src/stores/modalStore';
 import { assetApi } from '/app/src/modules/assets/api/assetApi';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
@@ -264,7 +264,7 @@ const AssetAddModal = () => {
           placeholder="Введите тикер или название актива..."
           value={searchValue}
           onChange={(e) => handleSearchChange(e.target.value)}
-          prefix={<SearchOutlined style={{ color: '#ccc' }} />}
+          prefix={<Search size={16} style={{ color: '#ccc' }} />}
           size="large"
           allowClear
         />

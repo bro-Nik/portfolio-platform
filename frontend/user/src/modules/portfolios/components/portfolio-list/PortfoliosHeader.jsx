@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from 'antd';
 import { useModalStore } from '/app/src/stores/modalStore';
 import PortfolioEditModal from '../modals/PortfolioEdit';
 
@@ -6,15 +7,15 @@ const PortfoliosHeader = () => {
   const { openModal } = useModalStore();
 
   return (
-    <div class="mb-5">
-      <div class="row xs-mb-3">
-        <div class="col-auto">
+    <div style={{ marginBottom: 48 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        <div style={{ flex: '0 0 auto' }}>
           <h1>Портфели</h1>
         </div>
-        <div class="col-auto ms-auto">
-          <button className="btn btn-primary" onClick={() => openModal(PortfolioEditModal)} >
+        <div style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
+          <Button type="primary" onClick={() => openModal(PortfolioEditModal)}>
             Добавить портфель
-          </button>
+          </Button>
         </div>
       </div>
     </div>

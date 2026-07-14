@@ -1,13 +1,10 @@
 import { Dropdown, Button } from 'antd';
-import { MoreOutlined } from '@ant-design/icons';
-import { ChevronDownIcon } from '@heroicons/react/16/solid'
+import { MoreHorizontal, ChevronDown } from 'lucide-react';
 
 const ActionsDropdown = ({ items, btn }) => {
-
-  // EllipsisVerticalIcon
   const btns = {
-    'icon': <Button type="text" icon={<MoreOutlined />} />,
-    'btn': <Button type="default" icon={<ChevronDownIcon />}>Еще</Button>,
+    'icon': <Button type="text" icon={<MoreHorizontal size={16} />} />,
+    'btn': <Button type="default" icon={<ChevronDown size={16} />}>Еще</Button>,
   };
 
   const triggerBtn = btn ? btns[btn] : null;

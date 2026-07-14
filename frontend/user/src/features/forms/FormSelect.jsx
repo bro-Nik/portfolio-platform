@@ -1,5 +1,5 @@
 import { Form, Select } from 'antd';
-import { ChevronDownIcon } from '@heroicons/react/16/solid'
+import { ChevronDown } from 'lucide-react'
 
 const FormSelect = ({
   name,
@@ -10,7 +10,6 @@ const FormSelect = ({
   hidden,
   ...props
 }) => {
-
   return (
     <Form.Item 
       name={name}
@@ -21,8 +20,7 @@ const FormSelect = ({
       hidden={hidden}
     >
       <Select
-        suffixIcon={<ChevronDownIcon />}
-        // optionLabelProp="label"
+        suffixIcon={<ChevronDown size={14} />}
         {...props}
       />
     </Form.Item>

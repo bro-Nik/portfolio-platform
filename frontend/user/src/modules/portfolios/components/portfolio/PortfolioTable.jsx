@@ -5,6 +5,7 @@ import { useTicker } from '/app/src/hooks/useTicker';
 import { useLocalStorage } from '/app/src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from '../TagFilter';
+import { Checkbox } from 'antd';
 import {
   createCostColumn,
   createShareColumn,
@@ -66,16 +67,10 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
 
   return (
     <>
-      <div className="d-flex align-items-center gap-3 flex-wrap mb-1">
-        <label className="text-nowrap small mb-0 d-flex align-items-center gap-1 cursor-pointer">
-          <input
-            type="checkbox"
-            className="form-check-input mt-0"
-            checked={hideCheap}
-            onChange={(e) => setHideCheap(e.target.checked)}
-          />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 4 }}>
+        <Checkbox checked={hideCheap} onChange={(e) => setHideCheap(e.target.checked)}>
           Спрятать дешевле $1
-        </label>
+        </Checkbox>
         <TagFilter onChange={setTagFilterIds} />
       </div>
 
@@ -85,9 +80,9 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
       placeholder="Поиск по активам..."
       storageKey="portfolio-table-sorting"
     >
-      <div className="d-flex align-items-center gap-3 flex-wrap mt-1">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
         {portfolio.comment && (
-          <span className="text-muted small">{portfolio.comment}</span>
+          <span style={{ color: 'rgba(0,0,0,0.45)', fontSize: '12px' }}>{portfolio.comment}</span>
         )}
       </div>
     </DataTable>

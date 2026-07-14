@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Card, Row, Col, Progress, Tooltip, Typography, Space } from 'antd';
-import { PieChartOutlined, WalletOutlined } from '@ant-design/icons';
+import { PieChart, Wallet } from 'lucide-react';
 import { formatCurrency, formatPercentage } from '/app/src/utils/format';
 import { useWalletsData } from '/app/src/modules/wallets/hooks/useWalletsData';
 import { usePortfoliosData } from '/app/src/modules/portfolios/hooks/usePortfoliosData';
@@ -203,7 +203,7 @@ const AssetDetail = ({ data }) => {
   };
 
   return (
-    <Row gutter={[24, 24]} className='mb-4'>
+    <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
       <Col xs={24} md={12}>
         <Card 
           bordered={false}
@@ -215,7 +215,7 @@ const AssetDetail = ({ data }) => {
         >
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Space align="center">
-              <PieChartOutlined />
+              <PieChart size={16} />
               <Text>Распределение по портфелям</Text>
             </Space>
 
@@ -235,7 +235,7 @@ const AssetDetail = ({ data }) => {
         >
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Space align="center">
-              <WalletOutlined />
+              <Wallet size={16} />
               <Text>Распределение по кошелькам</Text>
             </Space>
 

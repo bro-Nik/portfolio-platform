@@ -63,9 +63,9 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
       placeholder="Поиск по активам..."
       storageKey="wallet-table-sorting"
     >
-      <div className="d-flex align-items-center gap-3 flex-wrap mt-1">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
         {wallet.comment && (
-          <span className="text-muted small">{wallet.comment}</span>
+          <span style={{ color: 'rgba(0,0,0,0.45)', fontSize: '12px' }}>{wallet.comment}</span>
         )}
         <TagFilter onChange={setTagFilterIds} />
       </div>

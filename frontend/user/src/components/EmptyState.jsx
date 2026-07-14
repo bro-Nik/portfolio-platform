@@ -1,10 +1,9 @@
 import React from 'react';
+import { Empty } from 'antd';
 
 const EmptyState = () => (
-  <div className="col-12">
-    <div className="card-body text-center py-5">
-      <p className="text-muted mb-0">Пока ничего нет...</p>
-    </div>
+  <div style={{ gridColumn: '1 / -1' }}>
+    <Empty description="Пока ничего нет..." />
   </div>
 );
 

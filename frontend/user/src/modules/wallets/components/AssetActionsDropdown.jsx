@@ -1,12 +1,12 @@
 import { useModalStore } from '/app/src/stores/modalStore';
 import {
-  ArchiveBoxXMarkIcon,
-  PencilIcon,
-  Square2StackIcon,
-  TrashIcon,
-  ArrowTopRightOnSquareIcon,
-  TagIcon,
-} from '@heroicons/react/16/solid'
+  Inbox,
+  Pencil,
+  Copy,
+  Trash2,
+  ExternalLink,
+  Tag,
+} from 'lucide-react'
 import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
 import TagManagementModal from '/app/src/modules/portfolios/components/modals/TagManagementModal';
 import TagAssignPopover from '/app/src/modules/portfolios/components/TagAssignPopover';
@@ -18,30 +18,30 @@ const AssetActionsDropdown = ({ wallet, asset, btn, onUpdate }) => {
   const menuItems = [
     {
       key: 'transfer',
-      icon: <PencilIcon />,
+      icon: <Pencil size={16} />,
       label: 'Отправить',
     },
     {
       key: 'edit',
-      icon: <PencilIcon />,
+      icon: <Pencil size={16} />,
       label: 'Редактировать',
       disabled: true,
     },
     {
       key: 'duplicate',
-      icon: <Square2StackIcon />,
+      icon: <Copy size={16} />,
       label: 'Переместить',
       disabled: true,
     },
     {
       key: 'export',
-      icon: <ArrowTopRightOnSquareIcon />,
+      icon: <ExternalLink size={16} />,
       label: 'Экспортировать',
       disabled: true,
     },
     {
       key: 'tradingview',
-      icon: <ArrowTopRightOnSquareIcon />,
+      icon: <ExternalLink size={16} />,
       label: 'Посмотреть на TradingView',
       onClick: () => window.open(getTradingViewUrl(asset.symbol, asset.tickerId), '_blank', 'noopener,noreferrer'),
     },
@@ -50,7 +50,7 @@ const AssetActionsDropdown = ({ wallet, asset, btn, onUpdate }) => {
     },
     {
       key: 'tags',
-      icon: <TagIcon />,
+      icon: <Tag size={16} />,
       label: 'Управление тегами',
       onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
     },
@@ -59,21 +59,20 @@ const AssetActionsDropdown = ({ wallet, asset, btn, onUpdate }) => {
     },
     {
       key: 'archive',
-      icon: <ArchiveBoxXMarkIcon />,
+      icon: <Inbox size={16} />,
       label: 'Архивировать',
       disabled: true,
     },
     {
       key: 'delete',
-      icon: <TrashIcon />,
+      icon: <Trash2 size={16} />,
       label: 'Удалить',
       danger: true,
-      // onClick: () => openModal(AssetDeleteModal, { portfolio, asset }),
     },
   ];
 
   return (
-    <div className="d-flex align-items-center gap-1">
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
       <TagAssignPopover entityType="wallet_asset" entityId={asset?.id} assignedTags={asset?.tags} onUpdate={onUpdate} />
       <ActionsDropdown items={menuItems} btn={btn}/>
     </div>

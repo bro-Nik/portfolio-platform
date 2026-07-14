@@ -1,11 +1,5 @@
 import { useModalStore } from '/app/src/stores/modalStore';
-import {
-  ArchiveBoxXMarkIcon,
-  PencilIcon,
-  Square2StackIcon,
-  TrashIcon,
-  ArrowTopRightOnSquareIcon,
-} from '@heroicons/react/16/solid'
+import { Pencil, Trash2 } from 'lucide-react'
 import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
 import TransactionEditModal from '/app/src/modules/transaction/modals/TransactionEdit';
 import TransactionDeleteModal from '/app/src/modules/transaction/modals/TransactionDelete';
@@ -16,7 +10,7 @@ const TransactionActionsDropdown = ({ portfolio, wallet, asset, transaction, btn
   const menuItems = [
     {
       key: 'edit',
-      icon: <PencilIcon />,
+      icon: <Pencil size={16} />,
       label: 'Редактировать',
       onClick: () => openModal(TransactionEditModal, { tickerId: asset.tickerId, portfolioId: portfolio.id, transaction }),
     },
@@ -25,7 +19,7 @@ const TransactionActionsDropdown = ({ portfolio, wallet, asset, transaction, btn
     },
     {
       key: 'delete',
-      icon: <TrashIcon />,
+      icon: <Trash2 size={16} />,
       label: 'Удалить',
       danger: true,
       onClick: () => openModal(TransactionDeleteModal, { transaction }),

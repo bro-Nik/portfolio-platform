@@ -34,7 +34,7 @@ const WalletsTable = memo(({ wallets }) => {
 
   return (
     <>
-      <div className="mb-1">
+      <div style={{ marginBottom: 4 }}>
         <TagFilter onChange={setTagFilterIds} />
       </div>
       <DataTable 

@@ -8,20 +8,20 @@ const WalletHeader = ({ wallet, onRefresh }) => {
   const { openModal } = useModalStore();
 
   return (
-    <div className="portfolio-header mb-4">
-      <div className="row align-items-center">
-        <div className="col">
-          <div className="d-flex align-items-center">
+    <div className="portfolio-header" style={{ marginBottom: 24 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <div>
-              <h1 className="h3 mb-1">{wallet.name}</h1>
-              <div className="text-muted small">
+              <h1 style={{ fontSize: '1.75rem', marginBottom: 4 }}>{wallet.name}</h1>
+              <div style={{ color: 'rgba(0,0,0,0.45)', fontSize: '12px' }}>
                 <span>Активов: {wallet.assets.length}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="col-auto ms-auto">
+        <div style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
           <Space>
             <WalletActionsDropdown wallet={wallet} btn='btn' onUpdate={onRefresh} />
           </Space>

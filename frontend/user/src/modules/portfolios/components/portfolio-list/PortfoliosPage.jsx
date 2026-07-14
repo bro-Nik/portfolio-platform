@@ -14,11 +14,11 @@ const PortfoliosPage = () => {
     <>
       <PortfoliosHeader />
 
-      <div className="row xs-mb-3">
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         <PortfoliosStatistic stats={overallStats} />
       </div>
 
-      <div className="row">
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         <PortfoliosTable portfolios={portfolios} />
       </div>
     </>

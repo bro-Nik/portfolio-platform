@@ -1,12 +1,12 @@
 import { useModalStore } from '/app/src/stores/modalStore';
 import {
-  ArchiveBoxXMarkIcon,
-  PencilIcon,
-  Square2StackIcon,
-  TrashIcon,
-  ArrowTopRightOnSquareIcon,
-  TagIcon,
-} from '@heroicons/react/16/solid'
+  Inbox,
+  Pencil,
+  Copy,
+  Trash2,
+  ExternalLink,
+  Tag,
+} from 'lucide-react'
 import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
 import PortfolioEditModal from './modals/PortfolioEdit';
 import PortfolioDeleteModal from './modals/PortfolioDelete';
@@ -19,19 +19,19 @@ const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
   const menuItems = [
     {
       key: 'edit',
-      icon: <PencilIcon />,
+      icon: <Pencil size={16} />,
       label: 'Редактировать',
       onClick: () => openModal(PortfolioEditModal, { portfolio: portfolio }),
     },
     {
       key: 'duplicate',
-      icon: <Square2StackIcon />,
+      icon: <Copy size={16} />,
       label: 'Дублировать',
       disabled: true,
     },
     {
       key: 'export',
-      icon: <ArrowTopRightOnSquareIcon />,
+      icon: <ExternalLink size={16} />,
       label: 'Экспортировать',
       disabled: true,
     },
@@ -40,7 +40,7 @@ const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
     },
     {
       key: 'tags',
-      icon: <TagIcon />,
+      icon: <Tag size={16} />,
       label: 'Управление тегами',
       onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
     },
@@ -49,13 +49,13 @@ const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
     },
     {
       key: 'archive',
-      icon: <ArchiveBoxXMarkIcon />,
+      icon: <Inbox size={16} />,
       label: 'Архивировать',
       disabled: true,
     },
     {
       key: 'delete',
-      icon: <TrashIcon />,
+      icon: <Trash2 size={16} />,
       label: 'Удалить',
       danger: true,
       onClick: () => openModal(PortfolioDeleteModal, { portfolio: portfolio }),
@@ -63,7 +63,7 @@ const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
   ];
 
   return (
-    <div className="d-flex align-items-center gap-1">
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
       <TagAssignPopover entityType="portfolio" entityId={portfolio?.id} assignedTags={portfolio?.tags} onUpdate={onUpdate} />
       <ActionsDropdown items={menuItems} btn={btn}/>
     </div>

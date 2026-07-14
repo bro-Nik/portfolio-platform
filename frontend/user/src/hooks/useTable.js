@@ -3,9 +3,7 @@ import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel 
 import { useLocalStorage } from './useLocalStorage';
 
 export const useTable = (data, columns, fallbackData = [], storageKey) => {
-  const [sorting, setSorting] = storageKey
-    ? useLocalStorage(storageKey, [])
-    : useState([]);
+  const [sorting, setSorting] = useLocalStorage(storageKey || '', []);
   const [globalFilter, setGlobalFilter] = useState('');
 
   const table = useReactTable({

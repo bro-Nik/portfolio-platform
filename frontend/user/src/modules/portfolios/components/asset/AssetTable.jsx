@@ -8,7 +8,7 @@ import { useTicker } from '/app/src/hooks/useTicker';
 import { usePortfoliosData } from '/app/src/modules/portfolios/hooks/usePortfoliosData';
 import { useWalletsData } from '/app/src/modules/wallets/hooks/useWalletsData';
 import { useNavigation } from '/app/src/hooks/useNavigation';
-import { BriefcaseIcon, WalletIcon } from '@heroicons/react/16/solid'
+import { Folder, Wallet } from 'lucide-react'
 import { isTradeTransaction, isTransferTransaction } from '/app/src/modules/transaction/utils/type';
 import {
   createActionsColumn,
@@ -50,16 +50,16 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
         if (transaction.portfolio2Id) {
           const portfolio2 = getPortfolio(transaction.portfolio2Id);
           return (
-            <div className="d-flex align-items-center gap-2 cursor-pointer" onClick={() => portfolio2 && openItem(portfolio2, 'portfolio')}>
-              <BriefcaseIcon />{portfolio2?.name || 'Портфель удален'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => portfolio2 && openItem(portfolio2, 'portfolio')}>
+              <Folder size={14} />{portfolio2?.name || 'Портфель удален'}
             </div>
           );
         }
         if (transaction.walletId) {
           const wallet = getWallet(transaction.walletId);
           return (
-            <div className="d-flex align-items-center gap-2 cursor-pointer" onClick={() => wallet && openItem(wallet, 'wallet')}>
-              <WalletIcon />{wallet?.name || 'Кошелек удален'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => wallet && openItem(wallet, 'wallet')}>
+              <Wallet size={14} />{wallet?.name || 'Кошелек удален'}
             </div>
           );
         }

@@ -4,8 +4,7 @@ import { useNavigation } from '/app/src/hooks/useNavigation';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '/app/src/services/auth';
 import { Dropdown, Space, Avatar, Menu, Select } from 'antd';
-import { UserOutlined, SettingOutlined, LogoutOutlined, BellOutlined, DownOutlined } from '@ant-design/icons';
-import { UserCircleIcon, ChevronDownIcon, UserIcon } from '@heroicons/react/16/solid'
+import { User, Settings, LogOut, Bell, ChevronDown, Briefcase, Wallet, Star, X } from 'lucide-react';
 import '../styles/Sidebar.scss';
 
 const Sidebar = () => {
@@ -15,9 +14,9 @@ const Sidebar = () => {
   const { logout } = authService();
 
   const menuItems = [
-    { id: 'portfolios', label: 'Портфели', icon: <i className="bi bi-briefcase me-2" /> },
-    { id: 'wallets', label: 'Кошельки', icon: <i className="bi bi-wallet me-2" /> },
-    { id: 'wishlist', label: 'Избранное', icon: <i className="bi bi-star me-2" /> },
+    { id: 'portfolios', label: 'Портфели', icon: <Briefcase size={16} style={{ marginRight: 8 }} /> },
+    { id: 'wallets', label: 'Кошельки', icon: <Wallet size={16} style={{ marginRight: 8 }} /> },
+    { id: 'wishlist', label: 'Избранное', icon: <Star size={16} style={{ marginRight: 8 }} /> },
   ];
 
   const handleLogout = async () => {
@@ -84,7 +83,7 @@ const Sidebar = () => {
             className='item section-parent'
             onClick={() => window.location.href = '/admin/'}
           >
-            <i className="bi bi-gear me-2" />
+            <Settings size={16} style={{ marginRight: 8 }} />
             Админ
           </button>
         )}
@@ -109,19 +108,19 @@ const SidebarItem = ({ item, onClick, onClose, activeSection, isParent = false }
         {item.name}
       </button>
       <button className="item-close" onClick={onClose} title="Закрыть" >
-        <i className="bi bi-x" />
+        <X size={14} />
       </button>
     </div>
   );
 };
 
 const LocaleSelectors = () => (
-  <div className="d-flex align-items-center justify-content-between">
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
     <Select
       size="small"
       variant="borderless"
       defaultValue="ru"
-      suffixIcon=<ChevronDownIcon />
+      suffixIcon={<ChevronDown size={14} />}
       options={[
         { value: 'ru', label: 'RU' },
         { value: 'en', label: 'EN' },
@@ -131,7 +130,7 @@ const LocaleSelectors = () => (
       size="small"
       variant="borderless"
       defaultValue="USD"
-      suffixIcon=<ChevronDownIcon />
+      suffixIcon={<ChevronDown size={14} />}
       options={[
         { value: 'USD', label: 'USD' },
         { value: 'EUR', label: 'EUR' },
@@ -145,13 +144,13 @@ const UserDropdown = ({ user, logout }) => {
   const menuItems = [
     {
       key: 'profile',
-      icon: <UserOutlined />,
+      icon: <User size={16} />,
       label: 'Профиль',
       onClick: () => console.log('Профиль')
     },
     {
       key: 'settings',
-      icon: <SettingOutlined />,
+      icon: <Settings size={16} />,
       label: 'Настройки',
       disabled: true,
       onClick: () => console.log('Настройки')
@@ -161,7 +160,7 @@ const UserDropdown = ({ user, logout }) => {
     },
     {
       key: 'logout',
-      icon: <LogoutOutlined />,
+      icon: <LogOut size={16} />,
       label: 'Выход',
       danger: true,
       onClick: logout
@@ -175,15 +174,14 @@ const UserDropdown = ({ user, logout }) => {
       placement="topRight"
       arrow
     >
-      <Space className="text-secondary" style={{ cursor: 'pointer' }}>
+      <Space style={{ color: 'rgba(0,0,0,0.45)', cursor: 'pointer' }}>
         <Avatar 
           size="small" 
-          // icon={<UserCircleIcon />}
-          icon={<UserIcon />}
+          icon={<User size={16} />}
         />
-        <span className="user-login text-truncate" style={{ maxWidth: '120px' }}>
+        <span className="user-login" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {user?.login || 'Гость'}
-          <ChevronDownIcon />
+          <ChevronDown size={12} />
         </span>
       </Space>
     </Dropdown>
@@ -194,10 +192,10 @@ const SidebarHeader = () => (
   <>
     <div className="header-box">
       <a href="/" className="home-link link-body-emphasis">
-        <img className="me-2" src="/favicon.png" alt="Логотип" width="32" height="32" />
-        <span className="fs-4">Portfolios</span>
+        <img style={{ marginRight: 8 }} src="/favicon.png" alt="Логотип" width="32" height="32" />
+        <span style={{ fontSize: 'calc(1.275rem + .3vw)' }}>Portfolios</span>
       </a>
-      <BellOutlined style={{ color: '#6c757d', cursor: 'pointer' }} />
+      <Bell size={16} style={{ color: '#6b7280', cursor: 'pointer' }} />
     </div>
     <hr />
   </>

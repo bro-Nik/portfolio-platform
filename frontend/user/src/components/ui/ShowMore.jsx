@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Button } from 'antd';
-import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
+import { Plus, Minus } from 'lucide-react';
 
 const ShowMore = ({ content, show = false }) => {
 
@@ -11,7 +11,7 @@ const ShowMore = ({ content, show = false }) => {
     <>
     <Button 
       type="link" 
-      icon={showMore ? <MinusOutlined /> : <PlusOutlined />}
+      icon={showMore ? <Minus size={14} /> : <Plus size={14} />}
       onClick={toggleShowMore}
       style={{ padding: 0, height: 'auto' }}
     >
