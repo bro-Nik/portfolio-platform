@@ -5,23 +5,17 @@ import { Input } from 'antd';
 import { createCostColumn, createShareColumn, createBuyOrdersColumn, createNameColumn, createActionsColumn } from 'src/features/tables/tableColumns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
 import TagFilter from 'src/modules/portfolios/components/TagFilter';
-import { walletApi } from '../../api/walletApi';
-import { useDataStore } from 'src/stores/dataStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 const WalletsTable = memo(({ wallets }) => {
   const { openItem } = useNavigation();
-  const setWallets = useDataStore(state => state.setWallets);
+  const queryClient = useQueryClient();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
 
   const handleRefresh = useCallback(async () => {
-    try {
-      const data = await walletApi.getAllWallets();
-      setWallets(data.wallets || []);
-    } catch (error) {
-      console.warn('Ошибка обновления кошельков:', error);
-    }
-  }, [setWallets]);
+    queryClient.invalidateQueries({ queryKey: ['wallets'] });
+  }, [queryClient]);
 
   const filtered = useMemo(() => {
     let result = wallets;

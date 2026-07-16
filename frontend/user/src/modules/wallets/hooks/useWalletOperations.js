@@ -1,31 +1,23 @@
 import { useState } from 'react';
 import { walletService } from '../services/walletService'
 import { useNavigation } from 'src/hooks/useNavigation';
-import { useDataStore } from 'src/stores/dataStore';
-import { walletApi } from '../api/walletApi';
+import { useWalletMutations } from 'src/hooks/queries/useWalletMutations';
 
 export const useWalletOperations = () => {
   const [loading, setLoading] = useState(false);
 
-  const addWalletToStore = useDataStore(state => state.addWallet);
-  const updateWalletInStore = useDataStore(state => state.updateWallet);
-  const deleteWalletFromStore = useDataStore(state => state.deleteWallet);
   const { closeItem } = useNavigation();
+  const mutations = useWalletMutations();
 
   const editWallet = async (wallet) => {
     const validation = walletService.validateEdit(wallet);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
-    
+
     setLoading(true);
     try {
-      const data = await walletApi.saveWallet(wallet);
-      if (wallet.id) {
-        updateWalletInStore(wallet.id, data);
-      } else {
-        addWalletToStore(data);
-      }
+      const data = await mutations.editWallet.mutateAsync(wallet);
       return { success: true, data };
     } catch (error) {
       return { success: false, error: error.message };
@@ -33,17 +25,16 @@ export const useWalletOperations = () => {
       setLoading(false);
     }
   };
-  
+
   const deleteWallet = async (wallet) => {
     const validation = walletService.validateDelete(wallet);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
-    
+
     setLoading(true);
     try {
-      await walletApi.deleteWallet(wallet.id);
-      deleteWalletFromStore(wallet.id);
+      await mutations.deleteWallet.mutateAsync(wallet);
       closeItem(wallet.id, 'wallet');
       return { success: true };
     } catch (error) {
@@ -52,6 +43,6 @@ export const useWalletOperations = () => {
       setLoading(false);
     }
   };
-  
+
   return { editWallet, deleteWallet, loading };
 };

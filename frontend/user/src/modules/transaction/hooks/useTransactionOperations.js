@@ -1,25 +1,21 @@
 import { useState } from 'react';
-import { useDataStore } from 'src/stores/dataStore';
 import { transactionService } from 'src/modules/transaction/services/transactionService'
-import { transactionApi } from 'src/modules/transaction/api/transactionApi';
+import { useTransactionMutations } from 'src/hooks/queries/useTransactionMutations';
 
 export const useTransactionOperations = () => {
   const [loading, setLoading] = useState(false);
 
-  const updatePortfolioAssets = useDataStore(state => state.updatePortfolioAssets);
-  const updateWalletAssets = useDataStore(state => state.updateWalletAssets);
+  const mutations = useTransactionMutations();
 
   const editTransaction = async (oldTransaction, newTransaction) => {
     const validation = transactionService.validateEdit(newTransaction);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
-    
+
     setLoading(true);
     try {
-      const data = await transactionApi.saveTransaction(newTransaction);
-      if (data.portfolioAssets) updatePortfolioAssets(data.portfolioAssets);
-      if (data.walletAssets) updateWalletAssets(data.walletAssets);
+      const data = await mutations.saveTransaction.mutateAsync(newTransaction);
       return { success: true, data };
     } catch (error) {
       return { success: false, error: error.message };
@@ -33,12 +29,10 @@ export const useTransactionOperations = () => {
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
-    
+
     setLoading(true);
     try {
-      const data = await transactionApi.deleteTransaction(transaction.id);
-      if (data.portfolioAssets) updatePortfolioAssets(data.portfolioAssets);
-      if (data.walletAssets) updateWalletAssets(data.walletAssets);
+      const data = await mutations.deleteTransaction.mutateAsync(transaction);
       return { success: true, data };
     } catch (error) {
       return { success: false, error: error.message };
@@ -46,8 +40,8 @@ export const useTransactionOperations = () => {
       setLoading(false);
     }
   };
-  
-  return { 
+
+  return {
     editTransaction,
     deleteTransaction,
     loading

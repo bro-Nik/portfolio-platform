@@ -1,54 +1,42 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { portfolioApi } from '../api/portfolioApi';
-import { useDataStore } from 'src/stores/dataStore';
+import { useEffect, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { usePortfoliosQuery } from 'src/hooks/queries/usePortfoliosQuery';
+import { useTickerIds, extractTickerIds } from 'src/hooks/queries/TickerContext';
+import { useAssetPricesQuery } from 'src/hooks/queries/TickerContext';
 
 export const usePortfoliosData = () => {
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+  const { addTickerIds } = useTickerIds();
 
-  const portfolios = useDataStore(state => state.portfolios);
-  const prices = useDataStore(state => state.assetPrices);
-  const setPortfolios = useDataStore(state => state.setPortfolios);
-
-  // Отслеживание первоначальной загрузки
-  const initialLoadRef = useRef(false);
+  const { data, isLoading } = usePortfoliosQuery();
+  const rawPortfolios = data?.portfolios || [];
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      initialLoadRef.current = true;
-      setLoading(true);
-      try {
-        const data = await portfolioApi.getPortfolios();
-        setPortfolios(data.portfolios || []);
-      } catch (error) {
-        console.warn('Ошибка загрузки портфелей:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (rawPortfolios.length > 0) {
+      const ids = extractTickerIds(rawPortfolios);
+      if (ids.length > 0) addTickerIds(ids);
+    }
+  }, [rawPortfolios, addTickerIds]);
 
-    // Загружаем только один раз
-    if (portfolios.length === 0 && !initialLoadRef.current) fetchInitialData();
-  }, [portfolios.length, setPortfolios]);
+  const { data: pricesData } = useAssetPricesQuery();
+  const prices = useMemo(() => pricesData?.prices || {}, [pricesData]);
 
-  // Расчет статистики
   const { portfoliosWithStats, overallStats } = useMemo(() => {
-    if (portfolios === null || portfolios.length === 0) return { portfoliosWithStats: [], overallStats: {} };
+    if (!rawPortfolios || rawPortfolios.length === 0) return { portfoliosWithStats: [], overallStats: {} };
 
     let totalCostNow = 0;
     let totalInvested = 0;
     let totalBuyOrders = 0;
     let totalProfit = 0;
     let totalCapitalDeployed = 0;
-    
-    // Расчет статистики для каждого портфеля
-    const portfoliosWithStats = portfolios.map(portfolio => {
+
+    const portfoliosWithStats = rawPortfolios.map(portfolio => {
       let costNow = 0;
       let invested = 0;
       let buyOrders = 0;
       let profit = 0;
       let capitalDeployed = 0;
 
-      // Расчет статистики для каждого актива
       const assetsWithStats = portfolio.assets?.map(asset => {
         const assetQuantity = Number(asset.quantity) || 0;
         const assetAmount = Number(asset.amount) || 0;
@@ -112,32 +100,19 @@ export const usePortfoliosData = () => {
         totalCapitalDeployed,
       }
     };
-  }, [portfolios, prices]);
+  }, [rawPortfolios, prices]);
 
-  const getPortfolio = (id) => portfolios?.find(p => p.id === id);
+  const getPortfolio = (id) => rawPortfolios?.find(p => p.id === id);
   const getPortfolioAsset = (portfolio, id) => portfolio.assets?.find(a => a.id === id);
 
-  const refresh = async () => {
-    setLoading(true);
-    try {
-      const data = await portfolioApi.getPortfolios();
-      setPortfolios(data.portfolios || []);
-    } catch (error) {
-      console.warn('Ошибка обновления портфелей:', error);
-    } finally {
-      setLoading(false);
-    }
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['portfolios'] });
   };
 
   return {
-    // Данные с расчетами
     portfolios: portfoliosWithStats,
     overallStats,
-
-    // Состояние
-    loading,
-
-    // Методы
+    loading: isLoading,
     getPortfolio,
     getPortfolioAsset,
     refresh,

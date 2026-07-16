@@ -1,31 +1,23 @@
 import { useState } from 'react';
 import { portfolioService } from '../services/portfolioService'
 import { useNavigation } from 'src/hooks/useNavigation';
-import { portfolioApi } from '../api/portfolioApi';
-import { useDataStore } from 'src/stores/dataStore';
+import { usePortfolioMutations } from 'src/hooks/queries/usePortfolioMutations';
 
 export const usePortfolioOperations = () => {
   const [loading, setLoading] = useState(false);
 
   const { closeItem } = useNavigation();
-  const addPortfolioToStore = useDataStore(state => state.addPortfolio);
-  const updatePortfolioInStore = useDataStore(state => state.updatePortfolio);
-  const deletePortfolioFromStore = useDataStore(state => state.deletePortfolio);
+  const mutations = usePortfolioMutations();
 
   const editPortfolio = async (portfolio) => {
     const validation = portfolioService.validateEdit(portfolio);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
-    
+
     setLoading(true);
     try {
-      const data = await portfolioApi.savePortfolio(portfolio);
-      if (portfolio.id) {
-        updatePortfolioInStore(data);
-      } else {
-        addPortfolioToStore(data);
-      }
+      const data = await mutations.editPortfolio.mutateAsync(portfolio);
       return { success: true, data };
     } catch (error) {
       return { success: false, error: error.message };
@@ -33,17 +25,16 @@ export const usePortfolioOperations = () => {
       setLoading(false);
     }
   };
-  
+
   const deletePortfolio = async (portfolio) => {
     const validation = portfolioService.validateDelete(portfolio);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
-    
+
     setLoading(true);
     try {
-      await portfolioApi.deletePortfolio(portfolio.id);
-      deletePortfolioFromStore(portfolio.id);
+      await mutations.deletePortfolio.mutateAsync(portfolio);
       closeItem(portfolio.id, 'portfolio');
       return { success: true };
     } catch (error) {
@@ -58,29 +49,10 @@ export const usePortfolioOperations = () => {
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
-    
-    setLoading(true);
-    try {
-      const data = await portfolioApi.addAssetToPortfolio(portfolio.id, asset.id);
-      updatePortfolioInStore(data);
-      return { success: true, data };
-    } catch (error) {
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
-  }; 
 
-  const deleteAsset = async (portfolio, asset) => {
-    const validation = portfolioService.validateDeleteAsset(portfolio, asset);
-    if (!validation.isValid) {
-      return { success: false, error: validation.error };
-    }
-    
     setLoading(true);
     try {
-      const data = await portfolioApi.delAssetFromPortfolio(portfolio.id, asset.id);
-      updatePortfolioInStore(data);
+      const data = await mutations.addAsset.mutateAsync({ portfolio, asset });
       return { success: true, data };
     } catch (error) {
       return { success: false, error: error.message };
@@ -88,8 +60,25 @@ export const usePortfolioOperations = () => {
       setLoading(false);
     }
   };
-  
-  return { 
+
+  const deleteAsset = async (portfolio, asset) => {
+    const validation = portfolioService.validateDeleteAsset(portfolio, asset);
+    if (!validation.isValid) {
+      return { success: false, error: validation.error };
+    }
+
+    setLoading(true);
+    try {
+      const data = await mutations.deleteAsset.mutateAsync({ portfolio, asset });
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
     editPortfolio,
     deletePortfolio,
     addAsset,

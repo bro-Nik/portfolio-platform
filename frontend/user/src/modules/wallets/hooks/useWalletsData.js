@@ -1,48 +1,40 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useDataStore } from 'src/stores/dataStore';
-import { walletApi } from '../api/walletApi';
+import { useEffect, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useWalletsQuery } from 'src/hooks/queries/useWalletsQuery';
+import { useTickerIds, extractTickerIds } from 'src/hooks/queries/TickerContext';
+import { useAssetPricesQuery } from 'src/hooks/queries/TickerContext';
 
 export const useWalletsData = () => {
-  // Берем данные из единого store
-  const wallets = useDataStore(state => state.wallets);
-  const prices = useDataStore(state => state.assetPrices);
-  const setWallets = useDataStore(state => state.setWallets);
+  const queryClient = useQueryClient();
+  const { addTickerIds } = useTickerIds();
 
-  // Отслеживание первоначальной загрузки
-  const initialLoadRef = useRef(false);
-
-  const getWallet = (walletId) => {
-    return wallets?.find(wallet => wallet.id === walletId) || null;
-  };
+  const { data, isLoading } = useWalletsQuery();
+  const rawWallets = data?.wallets || [];
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      initialLoadRef.current = true;
-      try {
-        const data = await walletApi.getAllWallets();
-        setWallets(data.wallets || []);
-      } catch (error) {
-        console.warn('Ошибка загрузки кошельков:', error);
-      }
-    };
+    if (rawWallets.length > 0) {
+      const ids = extractTickerIds(rawWallets);
+      if (ids.length > 0) addTickerIds(ids);
+    }
+  }, [rawWallets, addTickerIds]);
 
-    // Загружаем только один раз
-    if (wallets.length === 0 && !initialLoadRef.current) fetchInitialData();
-  }, [setWallets, wallets.length]);
+  const { data: pricesData } = useAssetPricesQuery();
+  const prices = useMemo(() => pricesData?.prices || {}, [pricesData]);
 
-  // Расчет статистики
+  const getWallet = (walletId) => {
+    return rawWallets?.find(wallet => wallet.id === walletId) || null;
+  };
+
   const { walletsWithStats, overallStats } = useMemo(() => {
-    if (wallets === null || wallets.length === 0) return { walletsWithStats: [], overallStats: {} };
+    if (!rawWallets || rawWallets.length === 0) return { walletsWithStats: [], overallStats: {} };
 
     let totalCostNow = 0;
     let totalBuyOrders = 0;
-    
-    // Расчет статистики для каждого кошелька
-    const walletsWithStats = wallets.map(wallet => {
+
+    const walletsWithStats = rawWallets.map(wallet => {
       let costNow = 0;
       let buyOrders = 0;
 
-      // Расчет статистики для каждого актива
       const assetsWithStats = wallet.assets?.map(asset => {
         const assetQuantity = Number(asset.quantity) || 0;
         const assetBuyOrders = Number(asset.buyOrders) || 0;
@@ -83,21 +75,16 @@ export const useWalletsData = () => {
         totalBuyOrders
       }
     };
-  }, [wallets, prices]);
+  }, [rawWallets, prices]);
 
-  const refresh = async () => {
-    try {
-      const data = await walletApi.getAllWallets();
-      setWallets(data.wallets || []);
-    } catch (error) {
-      console.warn('Ошибка обновления кошельков:', error);
-    }
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['wallets'] });
   };
 
   return {
     wallets: walletsWithStats,
     overallStats,
-    loading: wallets === null,
+    loading: isLoading,
     getWallet,
     refresh,
   };

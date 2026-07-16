@@ -13,23 +13,17 @@ import {
 } from 'src/features/tables/tableColumns';
 import PortfolioActionsDropdown from '../PortfolioActionsDropdown'
 import TagFilter from '../TagFilter';
-import { portfolioApi } from '../../api/portfolioApi';
-import { useDataStore } from 'src/stores/dataStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 const PortfoliosTable = memo(({ portfolios }) => {
   const { openItem } = useNavigation();
-  const setPortfolios = useDataStore(state => state.setPortfolios);
+  const queryClient = useQueryClient();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
 
   const handleRefresh = useCallback(async () => {
-    try {
-      const data = await portfolioApi.getPortfolios();
-      setPortfolios(data.portfolios || []);
-    } catch (error) {
-      console.warn('Ошибка обновления портфелей:', error);
-    }
-  }, [setPortfolios]);
+    queryClient.invalidateQueries({ queryKey: ['portfolios'] });
+  }, [queryClient]);
 
   const filtered = useMemo(() => {
     let result = portfolios;
