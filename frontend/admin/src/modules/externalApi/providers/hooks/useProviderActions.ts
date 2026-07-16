@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { providersApi } from '../api';
-import { CreateProviderData, UpdateProviderData } from '/app/src/types/provider';
-import { errorNotification, successNotification } from '/app/src/utils';
+import { CreateProviderData, UpdateProviderData } from '../../../../types/provider';
+import { errorNotification, successNotification } from '../../../../utils';
 
 export const useProviderActions = () => {
   const queryClient = useQueryClient();

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Space, Button } from 'antd';
 import { ExternalLink } from 'lucide-react';
-import { formatCurrency, getTradingViewUrl } from '/app/src/utils/format';
-import { useModalStore } from '/app/src/stores/modalStore';
-import CloseMinimizeBtns from '/app/src/components/ui/CloseMinimizeBtns';
+import { formatCurrency, getTradingViewUrl } from 'src/utils/format';
+import { useModalStore } from '@portfolio/shared';
+import CloseMinimizeBtns from 'src/components/ui/CloseMinimizeBtns';
 import AssetActionsDropdown from '../AssetActionsDropdown';
-import TransactionEditModal from '/app/src/modules/transaction/modals/TransactionEdit';
+import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 
 const AssetHeader = ({ portfolio, asset }) => {
   const { openModal } = useModalStore();

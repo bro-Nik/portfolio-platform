@@ -1,0 +1,17 @@
+{
+  "name": "portfolios-frontend",
+  "private": true,
+  "scripts": {
+    "dev:user": "pnpm --filter @portfolio/user dev",
+    "dev:admin": "pnpm --filter @portfolio/admin dev",
+    "build:user": "pnpm --filter @portfolio/user build",
+    "build:admin": "pnpm --filter @portfolio/admin build",
+    "build:shared": "pnpm --filter @portfolio/shared build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  },
+  "packageManager": "pnpm@11.13.1"
+}

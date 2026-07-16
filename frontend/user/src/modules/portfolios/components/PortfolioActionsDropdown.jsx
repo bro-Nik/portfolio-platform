@@ -1,4 +1,4 @@
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import {
   Inbox,
   Pencil,
@@ -7,7 +7,7 @@ import {
   ExternalLink,
   Tag,
 } from 'lucide-react'
-import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
+import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import PortfolioEditModal from './modals/PortfolioEdit';
 import PortfolioDeleteModal from './modals/PortfolioDelete';
 import TagManagementModal from './modals/TagManagementModal';

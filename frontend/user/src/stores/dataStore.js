@@ -1,9 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { apiService } from '/app/src/services/api';
-import { authService } from '/app/src/services/auth';
+import { createApi } from '@portfolio/shared';
 
-const { getValidToken } = authService();
+const marketApi = createApi('/market/api/tickers', { useAuth: true });
 
 export const useDataStore = create(
   devtools(
@@ -108,15 +107,11 @@ export const useDataStore = create(
         if (ids.length === 0) return;
         
         try {
-          const api = apiService('/market/api/tickers', getValidToken);
-          const result = await api.post('/prices', ids);
-          
-          if (result.success) {
-            set(state => ({
-              assetPrices: { ...state.assetPrices, ...result.data.prices },
-              lastPriceUpdate: new Date().toISOString()
-            }));
-          }
+          const data = await marketApi.post('/prices', ids);
+          set(state => ({
+            assetPrices: { ...state.assetPrices, ...data.prices },
+            lastPriceUpdate: new Date().toISOString()
+          }));
         } catch (err) {
           console.warn('Ошибка загрузки цен:', err);
         }
@@ -128,14 +123,10 @@ export const useDataStore = create(
         if (ids.length === 0) return;
         
         try {
-          const api = apiService('/market/api/tickers', getValidToken);
-          const result = await api.post('/info', ids);
-          
-          if (result.success) {
-            set(state => ({
-              assetInfo: { ...state.assetInfo, ...result.data.info },
-            }));
-          }
+          const data = await marketApi.post('/info', ids);
+          set(state => ({
+            assetInfo: { ...state.assetInfo, ...data.info },
+          }));
         } catch (err) {
           console.warn('Ошибка загрузки информации:', err);
         }

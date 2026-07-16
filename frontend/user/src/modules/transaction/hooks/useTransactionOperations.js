@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useDataStore } from '/app/src/stores/dataStore';
-import { transactionService } from '/app/src/modules/transaction/services/transactionService'
-import { transactionApi } from '/app/src/modules/transaction/api/transactionApi';
+import { useDataStore } from 'src/stores/dataStore';
+import { transactionService } from 'src/modules/transaction/services/transactionService'
+import { transactionApi } from 'src/modules/transaction/api/transactionApi';
 
 export const useTransactionOperations = () => {
   const [loading, setLoading] = useState(false);
@@ -10,55 +10,41 @@ export const useTransactionOperations = () => {
   const updateWalletAssets = useDataStore(state => state.updateWalletAssets);
 
   const editTransaction = async (oldTransaction, newTransaction) => {
-    // Валидация бизнес-правилами
     const validation = transactionService.validateEdit(newTransaction);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
     
     setLoading(true);
-
-    // Вызов API
-    const result = await transactionApi.saveTransaction(newTransaction);
-
-    // Редактирование
-    if (result.success) {
-
-      // Обновление активов портфелей
-      if (result.data.portfolioAssets) updatePortfolioAssets(result.data.portfolioAssets);
-
-      // Обновление активов кошельков
-      if (result.data.walletAssets) updateWalletAssets(result.data.walletAssets);
+    try {
+      const data = await transactionApi.saveTransaction(newTransaction);
+      if (data.portfolioAssets) updatePortfolioAssets(data.portfolioAssets);
+      if (data.walletAssets) updateWalletAssets(data.walletAssets);
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
-    return result;
   };
 
   const deleteTransaction = async (transaction) => {
-    // Валидация бизнес-правилами
     const validation = transactionService.validateDelete(transaction);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
     
     setLoading(true);
-
-    // Вызов API
-    const result = await transactionApi.deleteTransaction(transaction.id);
-
-    // Редактирование
-    if (result.success) {
-
-      // Обновление активов портфелей
-      if (result.data.portfolioAssets) updatePortfolioAssets(result.data.portfolioAssets);
-
-      // Обновление активов кошельков
-      if (result.data.walletAssets) updateWalletAssets(result.data.walletAssets);
+    try {
+      const data = await transactionApi.deleteTransaction(transaction.id);
+      if (data.portfolioAssets) updatePortfolioAssets(data.portfolioAssets);
+      if (data.walletAssets) updateWalletAssets(data.walletAssets);
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
-    return result;
   };
   
   return { 

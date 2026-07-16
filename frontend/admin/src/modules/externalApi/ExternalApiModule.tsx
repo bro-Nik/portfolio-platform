@@ -1,6 +1,6 @@
 import React from 'react';
 import { ApiOutlined, TeamOutlined } from '@ant-design/icons';
-import { SubTabItem } from '/app/src/utils/headerContext';
+import { SubTabItem } from '../../utils/headerContext';
 import { useSubTabs } from '../../hooks/useSubTabs';
 import { ProvidersModule } from './providers/ProvidersModule';
 import { TasksModule } from './tasks/TasksModule';

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../api';
-import { CreateTaskData, UpdateTaskData } from '/app/src/types/task';
-import { errorNotification, successNotification } from '/app/src/utils';
+import { CreateTaskData, UpdateTaskData } from '../../../../types/task';
+import { errorNotification, successNotification } from '../../../../utils';
 
 export const useTaskActions = () => {
   const queryClient = useQueryClient();

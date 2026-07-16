@@ -1,11 +1,11 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import DataTable from '/app/src/features/tables/DataTable';
-import { useNavigation } from '/app/src/hooks/useNavigation';
-import { createCostColumn, createShareColumn, createBuyOrdersColumn, createNameColumn, createActionsColumn } from '/app/src/features/tables/tableColumns';
+import DataTable from 'src/features/tables/DataTable';
+import { useNavigation } from 'src/hooks/useNavigation';
+import { createCostColumn, createShareColumn, createBuyOrdersColumn, createNameColumn, createActionsColumn } from 'src/features/tables/tableColumns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
-import TagFilter from '/app/src/modules/portfolios/components/TagFilter';
+import TagFilter from 'src/modules/portfolios/components/TagFilter';
 import { walletApi } from '../../api/walletApi';
-import { useDataStore } from '/app/src/stores/dataStore';
+import { useDataStore } from 'src/stores/dataStore';
 
 const WalletsTable = memo(({ wallets }) => {
   const { openItem } = useNavigation();
@@ -13,8 +13,12 @@ const WalletsTable = memo(({ wallets }) => {
   const [tagFilterIds, setTagFilterIds] = useState([]);
 
   const handleRefresh = useCallback(async () => {
-    const result = await walletApi.getAllWallets();
-    if (result.success) setWallets(result.data.wallets || []);
+    try {
+      const data = await walletApi.getAllWallets();
+      setWallets(data.wallets || []);
+    } catch (error) {
+      console.warn('Ошибка обновления кошельков:', error);
+    }
   }, [setWallets]);
 
   const filtered = useMemo(() => {

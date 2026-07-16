@@ -4,8 +4,8 @@ import { LockOutlined, UnlockOutlined, DeleteOutlined, EyeOutlined, EditOutlined
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { getUserRoleTag, getUserAvatar, getUserStatusTag } from '../utils';
-import { formatRelativeTime, formatTimeSum } from '/app/src/utils/date';
-import { User } from '/app/src/types/user';
+import { formatRelativeTime, formatTimeSum } from '../../../utils/date';
+import { User } from '../../../types/user';
 import { useUserModals } from '../hooks/useUserModals';
 import { useUserActions } from '../hooks/useUserActions';
 

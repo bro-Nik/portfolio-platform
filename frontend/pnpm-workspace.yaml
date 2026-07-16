@@ -1,0 +1,8 @@
+packages:
+  - 'shared'
+  - 'user'
+  - 'admin'
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - 'core-js'
+  - 'core-js-pure'

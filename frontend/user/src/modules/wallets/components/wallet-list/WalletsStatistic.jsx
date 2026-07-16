@@ -1,6 +1,6 @@
 import React from 'react';
-import { formatCurrency, formatPercentage } from '/app/src/utils/format';
-import StatisticCards from '/app/src/features/statistics/StatisticCards';
+import { formatCurrency, formatPercentage } from 'src/utils/format';
+import StatisticCards from 'src/features/statistics/StatisticCards';
 
 export const WalletsStatistic = ({ stats }) => {
   const statCards = [

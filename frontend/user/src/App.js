@@ -6,7 +6,7 @@ import LandingPage from './pages/landing/LandingPage';
 import AuthPage from './pages/auth/AuthPage';
 import AppPage from './pages/app/AppPage';
 import { ROUTES } from './constants/routes';
-import { useAuthStore } from '/app/src/stores/authStore';
+import { useAuthStore } from '@portfolio/shared';
 import theme from './theme';
 
 function App() {

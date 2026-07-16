@@ -1,8 +1,8 @@
 import React from 'react';
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import { Modal, message } from 'antd';
-import BaseTransactionForm from '/app/src/modules/transaction/components/TransactionEdit/BaseTransactionForm';
-import { useTransactionOperations } from '/app/src/modules/transaction/hooks/useTransactionOperations';
+import BaseTransactionForm from 'src/modules/transaction/components/TransactionEdit/BaseTransactionForm';
+import { useTransactionOperations } from 'src/modules/transaction/hooks/useTransactionOperations';
 
 const TransactionEditModal = () => {
   const { modalProps, closeModal } = useModalStore();

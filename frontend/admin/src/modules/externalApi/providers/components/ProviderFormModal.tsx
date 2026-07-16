@@ -1,10 +1,10 @@
 import { ApiOutlined, KeyOutlined } from '@ant-design/icons';
-import { useModalStore } from '@shared';
+import { useModalStore } from '@portfolio/shared';
 import { Button, Col, Divider, Form, Input, InputNumber, Modal, Row, Select, Space, Switch } from 'antd';
 import { useEffect } from 'react';
 import { useProviderActions } from '../hooks/useProviderActions';
 import { useProvidersWithMethods } from '../hooks/useProviders';
-import { Provider, ProviderFormData } from '/app/src/types/provider';
+import { Provider, ProviderFormData } from '../../../../types/provider';
 
 interface ProviderFormModalProps { provider?: Provider }
 

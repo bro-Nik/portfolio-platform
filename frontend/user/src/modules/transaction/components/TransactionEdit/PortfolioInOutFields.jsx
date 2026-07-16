@@ -1,8 +1,8 @@
 import React from 'react';
 import { Form } from 'antd';
-import FormSelect from '/app/src/features/forms/FormSelect';
-import FormQuantityInput from '/app/src/features/forms/FormQuantityInput';
-import { getTransactionTypeInfo } from '/app/src/modules/transaction/utils/type';
+import FormSelect from 'src/features/forms/FormSelect';
+import FormQuantityInput from 'src/features/forms/FormQuantityInput';
+import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
 
 const PortfolioInOutFields = ({
   getWallets,

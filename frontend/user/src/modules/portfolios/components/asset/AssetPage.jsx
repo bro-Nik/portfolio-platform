@@ -1,6 +1,6 @@
 import React from 'react';
-import LoadingSpinner from '/app/src/components/ui/LoadingSpinner';
-import { useAssetData } from '/app/src/modules/portfolios/hooks/useAssetData';
+import LoadingSpinner from 'src/components/ui/LoadingSpinner';
+import { useAssetData } from 'src/modules/portfolios/hooks/useAssetData';
 import AssetHeader from './AssetHeader';
 import AssetStatistic from './AssetStatistic';
 import AssetDetails from './AssetDetails';

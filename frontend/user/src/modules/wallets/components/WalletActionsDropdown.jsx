@@ -1,4 +1,4 @@
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import {
   Inbox,
   Pencil,
@@ -7,11 +7,11 @@ import {
   ExternalLink,
   Tag,
 } from 'lucide-react'
-import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
+import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import WalletEditModal from './modals/WalletEdit';
 import WalletDeleteModal from './modals/WalletDelete';
-import TagManagementModal from '/app/src/modules/portfolios/components/modals/TagManagementModal';
-import TagAssignPopover from '/app/src/modules/portfolios/components/TagAssignPopover';
+import TagManagementModal from 'src/modules/portfolios/components/modals/TagManagementModal';
+import TagAssignPopover from 'src/modules/portfolios/components/TagAssignPopover';
 
 const WalletActionsDropdown = ({ wallet, btn, onUpdate }) => {
   const { openModal } = useModalStore();

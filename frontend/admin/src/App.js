@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useAuthStore } from '@shared';
-import AdminPage from '/app/src/AdminPage';
+import { useAuthStore } from '@portfolio/shared';
+import AdminPage from './AdminPage';
 
 function App() {
   const { initializeAuth, isAuthenticated, loading } = useAuthStore();

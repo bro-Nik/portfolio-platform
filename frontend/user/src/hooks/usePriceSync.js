@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useAssetsStore } from '/app/src/stores/assetsStore';
+import { useAssetsStore } from 'src/stores/assetsStore';
 
 export const usePriceSync = () => {
   const { uniqueAssets, fetchAssetPrices } = useAssetsStore();

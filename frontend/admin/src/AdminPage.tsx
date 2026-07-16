@@ -11,10 +11,10 @@ import {
   ApiOutlined,
   TeamOutlined
 } from '@ant-design/icons';
-import { useAuthStore, useModalStore, authService } from '@shared';
-import { ExternalApiModule } from '/app/src/modules/externalApi/ExternalApiModule';
-import { UsersModule } from '/app/src/modules/users/UsersModule';
-import { HeaderContext, useHeaderExtra, SubTabsBar } from '/app/src/utils/headerContext';
+import { useAuthStore, useModalStore, authService } from '@portfolio/shared';
+import { ExternalApiModule } from './modules/externalApi/ExternalApiModule';
+import { UsersModule } from './modules/users/UsersModule';
+import { HeaderContext, useHeaderExtra, SubTabsBar } from './utils/headerContext';
 
 type MenuKey = 'api-services' | 'users';
 
@@ -28,7 +28,7 @@ const ModalContainer = (): React.ReactElement | null => {
 };
 
 export { useHeaderExtra, SubTabsBar };
-export type { SubTabItem } from '/app/src/utils/headerContext';
+export type { SubTabItem } from './utils/headerContext';
 
 const AdminPage = () => {
   const [collapsed, setCollapsed] = useState(false);

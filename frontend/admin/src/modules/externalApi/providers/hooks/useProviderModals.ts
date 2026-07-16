@@ -1,8 +1,8 @@
-import { useModalStore } from '@shared';
+import { useModalStore } from '@portfolio/shared';
 import { ProviderDelModal } from '../components/ProviderDelModal';
 import { ProviderDetailsModal } from '../components/ProviderDetailsModal';
 import { ProviderFormModal } from '../components/ProviderFormModal';
-import { Provider } from '/app/src/types/provider';
+import { Provider } from '../../../../types/provider';
 
 export const useProviderModals = () => {
   const { openModal } = useModalStore();

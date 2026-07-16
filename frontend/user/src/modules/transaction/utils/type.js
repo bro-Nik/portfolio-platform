@@ -1,4 +1,4 @@
-import { TYPE_OPPOSITE_MAP, TYPE_NAME_MAP } from '/app/src/modules/transaction/constants/transactionTypes';
+import { TYPE_OPPOSITE_MAP, TYPE_NAME_MAP } from 'src/modules/transaction/constants/transactionTypes';
 
 export const isOutgoingTransaction = (type) => 
     ['Sell', 'Output', 'TransferOut'].includes(type);

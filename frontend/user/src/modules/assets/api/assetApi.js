@@ -1,8 +1,6 @@
-import { apiService } from '/app/src/services/api';
-import { authService } from '/app/src/services/auth';
+import { createApi } from '@portfolio/shared';
 
-const { getValidToken } = authService();
-const api = apiService('/market/api/tickers', getValidToken);
+const api = createApi('/market/api/tickers', { useAuth: true });
 
 export const assetApi = {
   getTickersByMarket: (market, search, page) => {

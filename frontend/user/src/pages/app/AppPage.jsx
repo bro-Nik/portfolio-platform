@@ -1,19 +1,19 @@
 import React, { Suspense } from 'react';
 import Sidebar from './components/Sidebar';
-import { useNavigation } from '/app/src/hooks/useNavigation';
-import { useAuthStore } from '/app/src/stores/authStore';
-// import { usePriceSync } from '/app/src/hooks/usePriceSync';
+import { useNavigation } from 'src/hooks/useNavigation';
+import { useAuthStore, useModalStore } from '@portfolio/shared';
+// import { usePriceSync } from 'src/hooks/usePriceSync';
 import './styles/App.css';
-import PortfoliosPage from '/app/src/modules/portfolios/components/portfolio-list/PortfoliosPage'
-import PortfolioPage from '/app/src/modules/portfolios/components/portfolio/PortfolioPage';
-import PortfolioAssetPage from '/app/src/modules/portfolios/components/asset/AssetPage';
-import WalletsPage from '/app/src/modules/wallets/components/wallet-list/WalletsPage'
-import WalletPage from '/app/src/modules/wallets/components/wallet/WalletPage';
-import WalletAssetPage from '/app/src/modules/wallets/components/asset/AssetPage';
+import PortfoliosPage from 'src/modules/portfolios/components/portfolio-list/PortfoliosPage'
+import PortfolioPage from 'src/modules/portfolios/components/portfolio/PortfolioPage';
+import PortfolioAssetPage from 'src/modules/portfolios/components/asset/AssetPage';
+import WalletsPage from 'src/modules/wallets/components/wallet-list/WalletsPage'
+import WalletPage from 'src/modules/wallets/components/wallet/WalletPage';
+import WalletAssetPage from 'src/modules/wallets/components/asset/AssetPage';
 import WishlistPage from './WishlistPage'
-import { useModalStore } from '/app/src/stores/modalStore';
-import { usePortfoliosData } from '/app/src/modules/portfolios/hooks/usePortfoliosData';
-import { useWalletsData } from '/app/src/modules/wallets/hooks/useWalletsData';
+
+import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
+import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 
 const ModalContainer = () => {
   const { currentModal: ModalComponent, modalProps } = useModalStore();

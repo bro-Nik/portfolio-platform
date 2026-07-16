@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useDataStore } from '/app/src/stores/dataStore';
+import { useDataStore } from 'src/stores/dataStore';
 import { walletApi } from '../api/walletApi';
 
 export const useWalletsData = () => {
@@ -18,8 +18,12 @@ export const useWalletsData = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       initialLoadRef.current = true;
-      const result = await walletApi.getAllWallets();
-      if (result.success) setWallets(result.data.wallets || []);
+      try {
+        const data = await walletApi.getAllWallets();
+        setWallets(data.wallets || []);
+      } catch (error) {
+        console.warn('Ошибка загрузки кошельков:', error);
+      }
     };
 
     // Загружаем только один раз
@@ -82,8 +86,12 @@ export const useWalletsData = () => {
   }, [wallets, prices]);
 
   const refresh = async () => {
-    const result = await walletApi.getAllWallets();
-    if (result.success) setWallets(result.data.wallets || []);
+    try {
+      const data = await walletApi.getAllWallets();
+      setWallets(data.wallets || []);
+    } catch (error) {
+      console.warn('Ошибка обновления кошельков:', error);
+    }
   };
 
   return {

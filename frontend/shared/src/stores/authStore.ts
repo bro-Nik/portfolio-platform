@@ -2,7 +2,24 @@ import { create } from 'zustand';
 import { authService } from '../services/auth.js';
 import { clearTokens } from '../services/token.js';
 
-export const useAuthStore = create((set, get) => ({
+interface User {
+  id: string;
+  login: string;
+  role: string;
+}
+
+interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  isInitialized: boolean;
+  initializeAuth: () => Promise<void>;
+  login: (userData: User | null) => void;
+  logout: () => void;
+  isAdmin: () => boolean;
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   loading: true,
@@ -16,17 +33,17 @@ export const useAuthStore = create((set, get) => ({
       loading: true,
       isInitialized: true,
     });
-    
+
     try {
       const { getCurrentUser } = authService();
       const userData = await getCurrentUser();
-      
+
       set({
-        user: userData,
+        user: userData ?? null,
         isAuthenticated: !!userData,
         loading: false,
       });
-    } catch (error) {
+    } catch {
       set({
         user: null,
         isAuthenticated: false,
@@ -35,7 +52,7 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  login: async (userData) => {
+  login: (userData: User | null) => {
     set({
       user: userData,
       isAuthenticated: !!userData,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, message } from 'antd';
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import { useWalletOperations } from '../../hooks/useWalletOperations';
 
 const WalletDeleteModal = () => {

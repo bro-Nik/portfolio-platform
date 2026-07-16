@@ -1,8 +1,6 @@
-import { apiService } from '/app/src/services/api';
-import { authService } from '/app/src/services/auth';
+import { createApi } from '@portfolio/shared';
 
-const { getValidToken } = authService();
-const api = apiService('/api/tags', getValidToken);
+const api = createApi('/api/tags', { useAuth: true });
 
 export const tagApi = {
   getTags: () => api.get(''),

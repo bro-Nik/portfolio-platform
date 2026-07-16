@@ -1,8 +1,14 @@
 import { getToken, getRefreshToken, setTokens, decodeToken, isTokenExpired, clearTokens } from './token.js';
 import { apiService } from './api.js';
 
+declare const process: {
+  env: {
+    REACT_APP_AUTH_SERVICE_URL?: string;
+  };
+};
+
 export const authService = () => {
-  const setTokensFromResponse = (data) => {
+  const setTokensFromResponse = (data: { accessToken?: string; refreshToken?: string }) => {
     const { accessToken, refreshToken } = data;
     if (!accessToken && !refreshToken) throw new Error('Не получены токены авторизации');
     if (!accessToken) throw new Error('Нет access токена');
@@ -11,21 +17,21 @@ export const authService = () => {
     setTokens(accessToken, refreshToken);
   };
 
-  const refreshTokens = async () => {
+  const refreshTokens = async (): Promise<string> => {
     const refreshToken = getRefreshToken();
     if (!refreshToken) throw new Error('Нет refresh токена');
 
-    const data = await api.post('/refresh', { token: refreshToken });
+    const data = await api.post('/refresh', { token: refreshToken }) as { accessToken: string };
     setTokensFromResponse(data);
     return data.accessToken;
   };
 
-  const getValidToken = async () => {
+  const getValidToken = async (): Promise<string | undefined> => {
     let token = getToken();
     let decodedToken = decodeToken(token);
     if (!decodedToken) return;
 
-    if (!isTokenExpired(decodedToken)) return token;
+    if (!isTokenExpired(decodedToken)) return token ?? undefined;
 
     try {
       token = await refreshTokens();
@@ -40,39 +46,39 @@ export const authService = () => {
 
   const api = apiService(process.env.REACT_APP_AUTH_SERVICE_URL);
 
-  const getCurrentUser = async () => {
+  const getCurrentUser = async (): Promise<{ id: string; login: string; role: string } | undefined> => {
     const token = await getValidToken();
-    let decodedToken = decodeToken(token);
+    const decodedToken = decodeToken(token ?? null);
     if (!decodedToken) return;
 
     return {
       id: decodedToken.id,
-      login: decodedToken.login,
-      role: decodedToken.role,
-    }
+      login: decodedToken.login ?? '',
+      role: decodedToken.role ?? '',
+    };
   };
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; data?: unknown; error?: string }> => {
     try {
       const data = await api.post('/login', { email, password });
-      setTokensFromResponse(data);
+      setTokensFromResponse(data as { accessToken?: string; refreshToken?: string });
       return { success: true, data };
     } catch (error) {
-      return { success: false, error: error?.message || 'Ошибка входа' };
+      return { success: false, error: (error as Error)?.message || 'Ошибка входа' };
     }
   };
 
-  const register = async (email, password) => {
+  const register = async (email: string, password: string): Promise<{ success: boolean; data?: unknown; error?: string }> => {
     try {
       const data = await api.post('/register', { email, password });
-      setTokensFromResponse(data);
+      setTokensFromResponse(data as { accessToken?: string; refreshToken?: string });
       return { success: true, data };
     } catch (error) {
-      return { success: false, error: error?.message || 'Ошибка регистрации' };
+      return { success: false, error: (error as Error)?.message || 'Ошибка регистрации' };
     }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     const refreshToken = getRefreshToken();
     clearTokens();
 
@@ -86,6 +92,8 @@ export const authService = () => {
     register,
     logout,
     getCurrentUser,
-    getValidToken
+    getValidToken,
   };
 };
+
+export type AuthService = ReturnType<typeof authService>;

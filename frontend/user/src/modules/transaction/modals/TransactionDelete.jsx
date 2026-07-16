@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, message } from 'antd';
-import { useModalStore } from '/app/src/stores/modalStore';
-import { useTransactionOperations } from '/app/src/modules/transaction/hooks/useTransactionOperations';
+import { useModalStore } from '@portfolio/shared';
+import { useTransactionOperations } from 'src/modules/transaction/hooks/useTransactionOperations';
 
 const TransactionDeleteModal = () => {
   const { modalProps, closeModal } = useModalStore();

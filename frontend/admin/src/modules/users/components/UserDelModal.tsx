@@ -1,7 +1,7 @@
 import { Modal } from 'antd';
-import { useModalStore } from '@shared';
+import { useModalStore } from '@portfolio/shared';
 import { useUserActions } from '../hooks/useUserActions';
-import { User } from '/app/src/types/user';
+import { User } from '../../../types/user';
 
 interface UserDelModalProps { user: User }
 

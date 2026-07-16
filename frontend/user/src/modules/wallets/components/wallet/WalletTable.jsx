@@ -1,9 +1,9 @@
 import React, { memo, useMemo, useState } from 'react';
-import DataTable from '/app/src/features/tables/DataTable';
-import { useNavigation } from '/app/src/hooks/useNavigation';
-import { useTicker } from '/app/src/hooks/useTicker';
+import DataTable from 'src/features/tables/DataTable';
+import { useNavigation } from 'src/hooks/useNavigation';
+import { useTicker } from 'src/hooks/useTicker';
 import AssetActionsDropdown from '../AssetActionsDropdown';
-import TagFilter from '/app/src/modules/portfolios/components/TagFilter';
+import TagFilter from 'src/modules/portfolios/components/TagFilter';
 import {
   createCostColumn,
   createShareColumn,
@@ -15,7 +15,7 @@ import {
   createQuantityColumn,
   createAveragePriceColumn,
   createActionsColumn
-} from '/app/src/features/tables/tableColumns';
+} from 'src/features/tables/tableColumns';
 
 const WalletTable = memo(({ wallet, assets, onRefresh }) => {
   const { openItem } = useNavigation();

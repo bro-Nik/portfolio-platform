@@ -8,8 +8,12 @@ const TagFilter = ({ onChange }) => {
 
   useEffect(() => {
     const load = async () => {
-      const result = await tagApi.getTags();
-      if (result.success) setAllTags(result.data);
+      try {
+        const data = await tagApi.getTags();
+        setAllTags(data);
+      } catch (error) {
+        console.warn('Ошибка загрузки тегов:', error);
+      }
     };
     load();
   }, []);

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Form, Button, InputNumber, Space, Segmented } from 'antd';
 import { useTransactionCalculations } from './hooks/useTransactionCalculations';
-import FormCheckbox from '/app/src/features/forms/FormCheckbox';
-import FormSelect from '/app/src/features/forms/FormSelect';
-import FormQuantityInput from '/app/src/features/forms/FormQuantityInput';
-import FormSumInput from '/app/src/features/forms/FormSumInput';
-import { getTransactionTypeInfo } from '/app/src/modules/transaction/utils/type';
+import FormCheckbox from 'src/features/forms/FormCheckbox';
+import FormSelect from 'src/features/forms/FormSelect';
+import FormQuantityInput from 'src/features/forms/FormQuantityInput';
+import FormSumInput from 'src/features/forms/FormSumInput';
+import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
 
 const PortfolioTradeFields = ({
   transaction,

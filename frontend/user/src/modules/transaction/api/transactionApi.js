@@ -1,17 +1,13 @@
-import { apiService } from '/app/src/services/api';
-import { authService } from '/app/src/services/auth';
+import { createApi } from '@portfolio/shared';
 
-const { getValidToken } = authService();
-const api = apiService('/api/transactions', getValidToken);
+const api = createApi('/api/transactions', { useAuth: true, convertCase: true });
 
 export const transactionApi = {
   saveTransaction: (transactionData) => {
     if (transactionData.id) {
-      // Редактирование
-      return api.put(`/${transactionData.id}`, transactionData, true);
+      return api.put(`/${transactionData.id}`, transactionData);
     } else {
-      // Создание
-      return api.post('', transactionData, true);
+      return api.post('', transactionData);
     }
   },
   deleteTransaction: (transactionId) => api.del(`/${transactionId}`),

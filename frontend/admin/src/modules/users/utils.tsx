@@ -1,7 +1,7 @@
 import { Tag, Space } from 'antd';
 import { UserAddOutlined } from '@ant-design/icons';
 import { roles, avatars, statuses } from './constants';
-import { User } from '/app/src/types/user';
+import { User } from '../../types/user';
 
 export const getUserRoleTag = (role: string): React.ReactElement => {
   const roleData = roles.find(r => r.value === role);

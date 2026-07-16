@@ -16,10 +16,12 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate })
   }, [open]);
 
   const loadTags = async () => {
-    const result = await tagApi.getTags();
-    if (result.success) {
-      setAllTags(result.data);
-      setSelectedIds(new Set(result.data.filter(t => assignedTags.some(at => at.id === t.id)).map(t => t.id)));
+    try {
+      const data = await tagApi.getTags();
+      setAllTags(data);
+      setSelectedIds(new Set(data.filter(t => assignedTags.some(at => at.id === t.id)).map(t => t.id)));
+    } catch (error) {
+      console.warn('Ошибка загрузки тегов:', error);
     }
   };
 
@@ -34,15 +36,16 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate })
     }
     setSelectedIds(newSet);
 
-    const result = checked
-      ? await tagApi.attachTag(tagId, entityType, entityId)
-      : await tagApi.detachTag(tagId, entityType, entityId);
-
-    if (!result.success) {
-      setSelectedIds(prev);
-      message.error(result.error);
-    } else {
+    try {
+      if (checked) {
+        await tagApi.attachTag(tagId, entityType, entityId);
+      } else {
+        await tagApi.detachTag(tagId, entityType, entityId);
+      }
       onUpdate?.();
+    } catch (error) {
+      setSelectedIds(prev);
+      message.error(error.message);
     }
     setLoading(false);
   };

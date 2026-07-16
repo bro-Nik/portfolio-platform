@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Space } from 'antd';
-import { useModalStore } from '/app/src/stores/modalStore';
-import CloseMinimizeBtns from '/app/src/components/ui/CloseMinimizeBtns';
+import { useModalStore } from '@portfolio/shared';
+import CloseMinimizeBtns from 'src/components/ui/CloseMinimizeBtns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
 
 const WalletHeader = ({ wallet, onRefresh }) => {

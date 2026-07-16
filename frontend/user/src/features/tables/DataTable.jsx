@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import { Table, Input } from 'antd';
-import { useLocalStorage } from '/app/src/hooks/useLocalStorage';
-import EmptyState from '/app/src/components/EmptyState';
+import { useLocalStorage } from 'src/hooks/useLocalStorage';
+import EmptyState from 'src/components/EmptyState';
 
 const DataTable = memo(({
   data,

@@ -1,5 +1,5 @@
-import { createApi } from '@shared';
-import { CreateTaskData, Task, UpdateTaskData } from '/app/src/types/task';
+import { createApi } from '@portfolio/shared';
+import { CreateTaskData, Task, UpdateTaskData } from '../../../types/task';
 
 const baseUrl = `${process.env.REACT_APP_MARKET_SERVICE_URL}/admin/tasks`;
 const api = createApi(baseUrl, { convertCase: true, useAuth: true });

@@ -1,7 +1,7 @@
 import { Modal } from 'antd';
-import { useModalStore } from '@shared';
+import { useModalStore } from '@portfolio/shared';
 import { useProviderActions } from '../hooks/useProviderActions';
-import { Provider } from '/app/src/types/provider';
+import { Provider } from '../../../../types/provider';
 
 interface ProviderDelModalProps { provider: Provider }
 

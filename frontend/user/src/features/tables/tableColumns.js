@@ -1,12 +1,12 @@
-import { formatCurrency, formatPercentage, formatProfit, getColorClass } from '/app/src/utils/format';
+import { formatCurrency, formatPercentage, formatProfit, getColorClass } from 'src/utils/format';
 import {
   getTransactionTypeColor,
   getAdjustedTransactionType,
   getTransactionTypeLabel,
   isTradeTransaction,
   isOutgoingTransaction,
-} from '/app/src/modules/transaction/utils/type';
-import TagBadges from '/app/src/modules/portfolios/components/TagBadges';
+} from 'src/modules/transaction/utils/type';
+import TagBadges from 'src/modules/portfolios/components/TagBadges';
 
 const DEFAULT_VALUE = '-';
 

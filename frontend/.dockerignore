@@ -1,0 +1,14 @@
+.env
+.git/
+.gitkeep
+.vscode/
+.idea/
+*.swp
+*~
+node_modules
+**/node_modules
+**/build
+**/.turbo
+**/.cache
+**/__pycache__
+**/.DS_Store

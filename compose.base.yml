@@ -77,11 +77,9 @@ services:
 
   ui-user:
     build:
-      context: ./frontend/user
-      dockerfile: ../base.Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
       target: development
-      additional_contexts:
-        - shared-context=./frontend/shared
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WDS_SOCKET_PORT=0
@@ -94,17 +92,19 @@ services:
         required: false
       - path: ./.env
         required: false
+    working_dir: /app/user
+    command: pnpm run start
     volumes:
-      - ./frontend/user/src:/app/src
-      - ./frontend/user/public:/app/public
+      - ./frontend/user/src:/app/user/src
+      - ./frontend/user/public:/app/user/public
+      - ./frontend/shared/src:/app/shared/src
+      - ./frontend/shared/dist:/app/shared/dist
 
   ui-admin:
     build:
-      context: ./frontend/admin
-      dockerfile: ../base.Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
       target: development
-      additional_contexts:
-        - shared-context=./frontend/shared
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WDS_SOCKET_PORT=0
@@ -117,10 +117,13 @@ services:
         required: false
       - path: ./.env
         required: false
+    working_dir: /app/admin
+    command: pnpm run start
     volumes:
-      - ./frontend/admin/src:/app/src
-      - ./frontend/admin/public:/app/public
-      - /app/node_modules
+      - ./frontend/admin/src:/app/admin/src
+      - ./frontend/admin/public:/app/admin/public
+      - ./frontend/shared/src:/app/shared/src
+      - ./frontend/shared/dist:/app/shared/dist
 
   nginx:
     image: nginx:alpine

@@ -1,8 +1,8 @@
 import React, { memo, useMemo, useState } from 'react';
-import DataTable from '/app/src/features/tables/DataTable';
-import { useNavigation } from '/app/src/hooks/useNavigation';
-import { useTicker } from '/app/src/hooks/useTicker';
-import { useLocalStorage } from '/app/src/hooks/useLocalStorage';
+import DataTable from 'src/features/tables/DataTable';
+import { useNavigation } from 'src/hooks/useNavigation';
+import { useTicker } from 'src/hooks/useTicker';
+import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from '../TagFilter';
 import { Checkbox } from 'antd';
@@ -16,7 +16,7 @@ import {
   createQuantityColumn,
   createAveragePriceColumn,
   createActionsColumn
-} from '/app/src/features/tables/tableColumns';
+} from 'src/features/tables/tableColumns';
 
 const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const { openItem } = useNavigation();

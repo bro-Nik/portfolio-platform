@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { ROUTES } from '/app/src/constants/routes';
-import { useToastStore } from '/app/src/stores/toastStore';
-import { authService } from '/app/src/services/auth';
-import { useAuthStore } from '/app/src/stores/authStore';
+import { authService, useAuthStore } from '@portfolio/shared';
+import { ROUTES } from 'src/constants/routes';
+import { useToastStore } from 'src/stores/toastStore';
 import { Button, Input, Spin } from 'antd';
 
 const AuthPage = ({ type }) => {

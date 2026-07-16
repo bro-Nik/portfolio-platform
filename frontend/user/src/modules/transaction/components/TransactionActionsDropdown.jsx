@@ -1,8 +1,8 @@
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import { Pencil, Trash2 } from 'lucide-react'
-import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
-import TransactionEditModal from '/app/src/modules/transaction/modals/TransactionEdit';
-import TransactionDeleteModal from '/app/src/modules/transaction/modals/TransactionDelete';
+import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
+import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
+import TransactionDeleteModal from 'src/modules/transaction/modals/TransactionDelete';
 
 const TransactionActionsDropdown = ({ portfolio, wallet, asset, transaction, btn }) => {
   const { openModal } = useModalStore();

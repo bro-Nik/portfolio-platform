@@ -1,6 +1,6 @@
 import React from 'react';
-import LoadingSpinner from '/app/src/components/ui/LoadingSpinner';
-import { usePortfoliosData } from '/app/src/modules/portfolios/hooks/usePortfoliosData';
+import LoadingSpinner from 'src/components/ui/LoadingSpinner';
+import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import PortfoliosHeader from './PortfoliosHeader';
 import PortfoliosStatistic from './PortfoliosStatistic';
 import PortfoliosTable from './PortfoliosTable';

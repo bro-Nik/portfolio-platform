@@ -1,8 +1,8 @@
-import { useModalStore } from '@shared';
+import { useModalStore } from '@portfolio/shared';
 import { TaskDelModal } from '../components/TaskDelModal';
 import { TaskDetailsModal } from '../components/TaskDetailsModal';
 import { TaskFormModal } from '../components/TaskFormModal';
-import { Task } from '/app/src/types/task';
+import { Task } from '../../../../types/task';
 
 export const useTaskModals = () => {
   const { openModal } = useModalStore();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Row, Col, Badge, Statistic } from 'antd';
 import { TeamOutlined, CheckCircleOutlined, CrownOutlined, StarOutlined } from '@ant-design/icons';
-import { UserStats } from '/app/src/types/user';
+import { UserStats } from '../../../types/user';
 
 interface UserStatsCardsProps {
   quickStats: UserStats;

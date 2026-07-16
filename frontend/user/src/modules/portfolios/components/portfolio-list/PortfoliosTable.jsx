@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import DataTable from '/app/src/features/tables/DataTable';
-import { useNavigation } from '/app/src/hooks/useNavigation';
+import DataTable from 'src/features/tables/DataTable';
+import { useNavigation } from 'src/hooks/useNavigation';
 import {
   createCostColumn,
   createShareColumn,
@@ -9,11 +9,11 @@ import {
   createProfitColumn,
   createInvestedColumn,
   createNameColumn
-} from '/app/src/features/tables/tableColumns';
+} from 'src/features/tables/tableColumns';
 import PortfolioActionsDropdown from '../PortfolioActionsDropdown'
 import TagFilter from '../TagFilter';
 import { portfolioApi } from '../../api/portfolioApi';
-import { useDataStore } from '/app/src/stores/dataStore';
+import { useDataStore } from 'src/stores/dataStore';
 
 const PortfoliosTable = memo(({ portfolios }) => {
   const { openItem } = useNavigation();
@@ -21,8 +21,12 @@ const PortfoliosTable = memo(({ portfolios }) => {
   const [tagFilterIds, setTagFilterIds] = useState([]);
 
   const handleRefresh = useCallback(async () => {
-    const result = await portfolioApi.getPortfolios();
-    if (result.success) setPortfolios(result.data.portfolios || []);
+    try {
+      const data = await portfolioApi.getPortfolios();
+      setPortfolios(data.portfolios || []);
+    } catch (error) {
+      console.warn('Ошибка обновления портфелей:', error);
+    }
   }, [setPortfolios]);
 
   const filtered = useMemo(() => {

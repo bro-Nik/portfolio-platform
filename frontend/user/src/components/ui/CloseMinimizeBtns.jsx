@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Minus } from 'lucide-react';
-import { useNavigation } from '/app/src/hooks/useNavigation';
+import { useNavigation } from 'src/hooks/useNavigation';
 
 const CloseMinimizeBtns = ({ id, type, parentId }) => {
   const { closeItem, minimizeItem } = useNavigation();

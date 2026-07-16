@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, message } from 'antd';
-import { useModalStore } from '/app/src/stores/modalStore';
-import { usePortfolioOperations } from '/app/src/modules/portfolios/hooks/usePortfolioOperations';
+import { useModalStore } from '@portfolio/shared';
+import { usePortfolioOperations } from 'src/modules/portfolios/hooks/usePortfolioOperations';
 
 const AssetDeleteModal = () => {
   const { modalProps, closeModal } = useModalStore();

@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { useDataStore } from '/app/src/stores/dataStore';
-import { useTicker } from '/app/src/hooks/useTicker';
-import { useWalletsData } from '/app/src/modules/wallets/hooks/useWalletsData';
-import { usePortfoliosData } from '/app/src/modules/portfolios/hooks/usePortfoliosData';
-import { isCounterTransactionFn } from '/app/src/modules/transaction/utils/type';
+import { useDataStore } from 'src/stores/dataStore';
+import { useTicker } from 'src/hooks/useTicker';
+import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
+import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
+import { isCounterTransactionFn } from 'src/modules/transaction/utils/type';
 
 export const useTransactionData = ({ tickerId, walletId, portfolioId, transaction, transactionType, form }) => {
   const portfolios = useDataStore(state => state.portfolios);

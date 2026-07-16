@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import WalletEditModal from '../modals/WalletEdit';
 
 const WalletsHeader = () => {

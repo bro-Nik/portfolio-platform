@@ -1,6 +1,6 @@
 import React from 'react';
-import { formatCurrency, formatPercentage, formatProfit, getColorClass } from '/app/src/utils/format';
-import StatisticCards from '/app/src/features/statistics/StatisticCards';
+import { formatCurrency, formatPercentage, formatProfit, getColorClass } from 'src/utils/format';
+import StatisticCards from 'src/features/statistics/StatisticCards';
 
 const AssetStatistic = ({ portfolio, asset }) => {
 

@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Select, Space, message } from 'antd';
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
-import FormComment from '/app/src/features/forms/FormComment';
-import FormActionBtns from '/app/src/features/forms/FormActionBtns';
-import FormSelect from '/app/src/features/forms/FormSelect';
-import ShowMore from '/app/src/components/ui/ShowMore';
+import FormComment from 'src/features/forms/FormComment';
+import FormActionBtns from 'src/features/forms/FormActionBtns';
+import FormSelect from 'src/features/forms/FormSelect';
+import ShowMore from 'src/components/ui/ShowMore';
 
 const PortfolioEditModal = () => {
   const { modalProps, closeModal } = useModalStore();

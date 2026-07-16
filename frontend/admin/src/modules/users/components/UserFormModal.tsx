@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { Modal, Form, Input, Select, Space, Button } from 'antd';
 import { roles, statuses } from '../constants';
-import { useModalStore } from '@shared';
+import { useModalStore } from '@portfolio/shared';
 import { useUserActions } from '../hooks/useUserActions';
-import { User, UserFormData } from '/app/src/types/user';
+import { User, UserFormData } from '../../../types/user';
 
 interface UserFormModalProps { user?: User }
 

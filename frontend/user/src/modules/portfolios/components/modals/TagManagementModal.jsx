@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Space, message } from 'antd';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import { tagApi } from '../../api/tagApi';
 
 const PRESET_COLORS = [
@@ -21,9 +21,11 @@ const TagManagementModal = () => {
   const [showForm, setShowForm] = useState(false);
 
   const loadTags = async () => {
-    const result = await tagApi.getTags();
-    if (result.success) {
-      setTags(result.data);
+    try {
+      const data = await tagApi.getTags();
+      setTags(data);
+    } catch (error) {
+      console.warn('Ошибка загрузки тегов:', error);
     }
   };
 
@@ -34,15 +36,15 @@ const TagManagementModal = () => {
   const handleCreate = async () => {
     if (!editName.trim()) return;
     setLoading(true);
-    const result = await tagApi.createTag(editName.trim(), editColor);
-    if (result.success) {
+    try {
+      await tagApi.createTag(editName.trim(), editColor);
       message.success('Тег создан');
       setEditName('');
       setShowForm(false);
       await loadTags();
       onTagsChange?.();
-    } else {
-      message.error(result.error);
+    } catch (error) {
+      message.error(error.message);
     }
     setLoading(false);
   };
@@ -50,29 +52,29 @@ const TagManagementModal = () => {
   const handleUpdate = async () => {
     if (!editName.trim()) return;
     setLoading(true);
-    const result = await tagApi.updateTag(editId, { name: editName.trim(), color: editColor });
-    if (result.success) {
+    try {
+      await tagApi.updateTag(editId, { name: editName.trim(), color: editColor });
       message.success('Тег обновлён');
       setEditId(null);
       setEditName('');
       setShowForm(false);
       await loadTags();
       onTagsChange?.();
-    } else {
-      message.error(result.error);
+    } catch (error) {
+      message.error(error.message);
     }
     setLoading(false);
   };
 
   const handleDelete = async (tagId) => {
     setLoading(true);
-    const result = await tagApi.deleteTag(tagId);
-    if (result.success) {
+    try {
+      await tagApi.deleteTag(tagId);
       message.success('Тег удалён');
       await loadTags();
       onTagsChange?.();
-    } else {
-      message.error(result.error);
+    } catch (error) {
+      message.error(error.message);
     }
     setLoading(false);
   };

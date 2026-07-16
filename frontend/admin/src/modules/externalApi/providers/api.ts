@@ -1,5 +1,5 @@
-import { createApi } from '@shared';
-import { CreateProviderData, Provider, ProviderLog, ProviderPreset, ProviderStats, ProviderWithMethods, UpdateProviderData } from '/app/src/types/provider';
+import { createApi } from '@portfolio/shared';
+import { CreateProviderData, Provider, ProviderLog, ProviderPreset, ProviderStats, ProviderWithMethods, UpdateProviderData } from '../../../types/provider';
 
 const baseUrl = `${process.env.REACT_APP_MARKET_SERVICE_URL}/admin/providers`;
 const api = createApi(baseUrl, { convertCase: true, useAuth: true });

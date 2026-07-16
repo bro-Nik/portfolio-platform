@@ -1,18 +1,18 @@
 import React from 'react';
 import { Form } from 'antd';
-import { PORTFOLIO_TYPES, WALLET_TYPES } from '/app/src/modules/transaction/constants/transactionTypes';
+import { PORTFOLIO_TYPES, WALLET_TYPES } from 'src/modules/transaction/constants/transactionTypes';
 import { useTransactionForm } from './hooks/useTransactionForm';
 import { useTransactionData } from './hooks/useTransactionData';
-import FormComment from '/app/src/features/forms/FormComment';
-import FormDate from '/app/src/features/forms/FormDate';
-import FormRadioGroup from '/app/src/features/forms/FormRadioGroup';
-import FormActionBtns from '/app/src/features/forms/FormActionBtns';
+import FormComment from 'src/features/forms/FormComment';
+import FormDate from 'src/features/forms/FormDate';
+import FormRadioGroup from 'src/features/forms/FormRadioGroup';
+import FormActionBtns from 'src/features/forms/FormActionBtns';
 import PortfolioTradeFields from './PortfolioTradeFields';
 import PortfolioTransferFields from './PortfolioTransferFields';
 import PortfolioInOutFields from './PortfolioInOutFields';
 import WalletTransferFields from './WalletTransferFields';
-import ShowMore from '/app/src/components/ui/ShowMore';
-import { getTransactionTypeInfo } from '/app/src/modules/transaction/utils/type';
+import ShowMore from 'src/components/ui/ShowMore';
+import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
 
 const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onCancel, onSubmit, loading }) => {
 

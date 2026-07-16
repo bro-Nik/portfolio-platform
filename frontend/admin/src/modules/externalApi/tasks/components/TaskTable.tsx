@@ -4,8 +4,8 @@ import { ScheduleOutlined, ApiOutlined, DeleteOutlined, MoreOutlined, EditOutlin
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { schedulePresets } from '../constants';
-import { formatRelativeTime } from '/app/src/utils/date';
-import { Task } from '/app/src/types/task';
+import { formatRelativeTime } from '../../../../utils/date';
+import { Task } from '../../../../types/task';
 import { useTaskModals } from '../hooks/useTaskModals';
 import { getTaskTypeTag, getStatusBadge } from '../utils';
 

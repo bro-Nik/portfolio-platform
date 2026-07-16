@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { portfolioApi } from '../api/portfolioApi';
-import { useDataStore } from '/app/src/stores/dataStore';
+import { useDataStore } from 'src/stores/dataStore';
 
 export const usePortfoliosData = () => {
   const [loading, setLoading] = useState(false);
@@ -16,9 +16,14 @@ export const usePortfoliosData = () => {
     const fetchInitialData = async () => {
       initialLoadRef.current = true;
       setLoading(true);
-      const result = await portfolioApi.getPortfolios();
-      if (result.success) setPortfolios(result.data.portfolios || []);
-      setLoading(false);
+      try {
+        const data = await portfolioApi.getPortfolios();
+        setPortfolios(data.portfolios || []);
+      } catch (error) {
+        console.warn('Ошибка загрузки портфелей:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     // Загружаем только один раз
@@ -114,9 +119,14 @@ export const usePortfoliosData = () => {
 
   const refresh = async () => {
     setLoading(true);
-    const result = await portfolioApi.getPortfolios();
-    if (result.success) setPortfolios(result.data.portfolios || []);
-    setLoading(false);
+    try {
+      const data = await portfolioApi.getPortfolios();
+      setPortfolios(data.portfolios || []);
+    } catch (error) {
+      console.warn('Ошибка обновления портфелей:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {

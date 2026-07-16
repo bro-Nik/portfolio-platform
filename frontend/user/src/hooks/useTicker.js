@@ -1,4 +1,4 @@
-import { useDataStore } from '/app/src/stores/dataStore';
+import { useDataStore } from 'src/stores/dataStore';
 
 export const useTicker = () => {
   const tickers = useDataStore(state => state.assetInfo);

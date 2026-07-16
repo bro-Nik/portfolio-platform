@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { Card, Row, Col, Progress, Tooltip, Typography, Space } from 'antd';
 import { PieChart, Wallet } from 'lucide-react';
-import { formatCurrency, formatPercentage } from '/app/src/utils/format';
-import { useWalletsData } from '/app/src/modules/wallets/hooks/useWalletsData';
-import { usePortfoliosData } from '/app/src/modules/portfolios/hooks/usePortfoliosData';
+import { formatCurrency, formatPercentage } from 'src/utils/format';
+import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
+import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 
 const { Text } = Typography;
 

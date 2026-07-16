@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { portfolioService } from '../services/portfolioService'
-import { useNavigation } from '/app/src/hooks/useNavigation';
+import { useNavigation } from 'src/hooks/useNavigation';
 import { portfolioApi } from '../api/portfolioApi';
-import { useDataStore } from '/app/src/stores/dataStore';
+import { useDataStore } from 'src/stores/dataStore';
 
 export const usePortfolioOperations = () => {
   const [loading, setLoading] = useState(false);
@@ -13,91 +13,80 @@ export const usePortfolioOperations = () => {
   const deletePortfolioFromStore = useDataStore(state => state.deletePortfolio);
 
   const editPortfolio = async (portfolio) => {
-    // Валидация бизнес-правилами
     const validation = portfolioService.validateEdit(portfolio);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
     
     setLoading(true);
-
-    // Вызов API
-    const result = await portfolioApi.savePortfolio(portfolio);
-
-    if (result.success) {
+    try {
+      const data = await portfolioApi.savePortfolio(portfolio);
       if (portfolio.id) {
-        // Редактирование
-        updatePortfolioInStore(result.data);
+        updatePortfolioInStore(data);
       } else {
-        // Создание
-        addPortfolioToStore(result.data);
+        addPortfolioToStore(data);
       }
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
-    return result;
   };
   
   const deletePortfolio = async (portfolio) => {
-    // Валидация бизнес-правилами
     const validation = portfolioService.validateDelete(portfolio);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
     
     setLoading(true);
-
-    // Вызов API
-    const result = await portfolioApi.deletePortfolio(portfolio.id);
-    
-    if (result.success) {
+    try {
+      await portfolioApi.deletePortfolio(portfolio.id);
       deletePortfolioFromStore(portfolio.id);
-      // Обновление состояния навигации
-      closeItem(portfolio.id, 'portfolio')
+      closeItem(portfolio.id, 'portfolio');
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
-    return result;
   };
 
   const addAsset = async (portfolio, asset) => {
-    // Валидация бизнес-правилами
     const validation = portfolioService.validateAddAsset(portfolio, asset);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
     
     setLoading(true);
-
-    // Вызов API
-    const result = await portfolioApi.addAssetToPortfolio(portfolio.id, asset.id);
-
-    if (result.success) {
-      updatePortfolioInStore(result.data);
+    try {
+      const data = await portfolioApi.addAssetToPortfolio(portfolio.id, asset.id);
+      updatePortfolioInStore(data);
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
-    return result;
   }; 
 
   const deleteAsset = async (portfolio, asset) => {
-    // Валидация бизнес-правилами
     const validation = portfolioService.validateDeleteAsset(portfolio, asset);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
     
     setLoading(true);
-
-    // Вызов API
-    const result = await portfolioApi.delAssetFromPortfolio(portfolio.id, asset.id);
-      
-    if (result.success) {
-      updatePortfolioInStore(result.data);
+    try {
+      const data = await portfolioApi.delAssetFromPortfolio(portfolio.id, asset.id);
+      updatePortfolioInStore(data);
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
-      
-    setLoading(false);
-    return result;
   };
   
   return { 

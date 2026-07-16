@@ -1,15 +1,15 @@
 import React, { memo, useMemo, useCallback } from 'react';
-import DataTable from '/app/src/features/tables/DataTable';
-import { formatCurrency } from '/app/src/utils/format';
-import { useNavigation } from '/app/src/hooks/useNavigation';
-import { useModalStore } from '/app/src/stores/modalStore';
+import DataTable from 'src/features/tables/DataTable';
+import { formatCurrency } from 'src/utils/format';
+import { useNavigation } from 'src/hooks/useNavigation';
+import { useModalStore } from '@portfolio/shared';
 import { Folder, Wallet } from 'lucide-react'
-import TransactionEditModal from '/app/src/modules/transaction/modals/TransactionEdit';
-import TransactionActionsDropdown from '/app/src/modules/transaction/components/TransactionActionsDropdown'
-import { useTicker } from '/app/src/hooks/useTicker';
-import { usePortfoliosData } from '/app/src/modules/portfolios/hooks/usePortfoliosData';
-import { useWalletsData } from '/app/src/modules/wallets/hooks/useWalletsData';
-import { isTradeTransaction, isTransferTransaction } from '/app/src/modules/transaction/utils/type';
+import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
+import TransactionActionsDropdown from 'src/modules/transaction/components/TransactionActionsDropdown'
+import { useTicker } from 'src/hooks/useTicker';
+import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
+import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
+import { isTradeTransaction, isTransferTransaction } from 'src/modules/transaction/utils/type';
 import {
   createActionsColumn,
   createTransactionLinkColumn,
@@ -17,7 +17,7 @@ import {
   createTransactionQuantityColumn,
   createTransactionSumColumn,
   createCommentColumn,
-} from '/app/src/features/tables/tableColumns';
+} from 'src/features/tables/tableColumns';
 
 const AssetTable = memo(({ wallet, asset, transactions }) => {
   const { openModal } = useModalStore();

@@ -1,8 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Modal, Input, List, Avatar, Spin, Empty, Button, message } from 'antd';
 import { Search } from 'lucide-react';
-import { useModalStore } from '/app/src/stores/modalStore';
-import { assetApi } from '/app/src/modules/assets/api/assetApi';
+import { useModalStore } from '@portfolio/shared';
+import { assetApi } from 'src/modules/assets/api/assetApi';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
 
 const AssetAddModal = () => {
@@ -30,9 +30,8 @@ const AssetAddModal = () => {
     async (search, page, append = false) => {
       setLoading(true);
 
-      const result = await assetApi.getTickersByMarket(portfolio.market, search, page);
-      if (result.success) {
-        const { data, has_more } = result.data;
+      try {
+        const { data, has_more } = await assetApi.getTickersByMarket(portfolio.market, search, page);
         if (append) {
           setTickers(prev => [...prev, ...data]);
         } else {
@@ -44,6 +43,8 @@ const AssetAddModal = () => {
           }
         }
         setHasMore(has_more);
+      } catch (error) {
+        console.warn('Ошибка загрузки тикеров:', error);
       }
         
       setLoading(false);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useHeaderExtra, SubTabsBar, SubTabItem } from '/app/src/utils/headerContext';
+import { useHeaderExtra, SubTabsBar, SubTabItem } from '../utils/headerContext';
 
 interface UseSubTabsOptions<T extends string> {
   tabs: SubTabItem[];

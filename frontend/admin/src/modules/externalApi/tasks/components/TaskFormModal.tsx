@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { Modal, Form, Input, Switch, Select, Space, Button } from 'antd';
 import { schedulePresets } from '../constants';
 import { formatDescription } from '../utils';
-import { useModalStore } from '@shared';
+import { useModalStore } from '@portfolio/shared';
 import { useTaskActions } from '../hooks/useTaskActions';
-import { Task, TaskFormData } from '/app/src/types/task';
+import { Task, TaskFormData } from '../../../../types/task';
 import { useProvidersWithMethods } from '../../providers/hooks/useProviders';
 
 interface TaskFormModalProps { task?: Task }

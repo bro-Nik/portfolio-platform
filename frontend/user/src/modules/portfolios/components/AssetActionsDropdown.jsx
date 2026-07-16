@@ -1,4 +1,4 @@
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import {
   Inbox,
   Pencil,
@@ -7,11 +7,11 @@ import {
   ExternalLink,
   Tag,
 } from 'lucide-react'
-import ActionsDropdown from '/app/src/features/dropdowns/ActionsDropdown';
+import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import AssetDeleteModal from './modals/AssetDelete';
 import TagManagementModal from './modals/TagManagementModal';
 import TagAssignPopover from './TagAssignPopover';
-import { getTradingViewUrl } from '/app/src/utils/format';
+import { getTradingViewUrl } from 'src/utils/format';
 
 
 const AssetActionsDropdown = ({ portfolio, asset, btn, onUpdate }) => {

@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Button, Space, message } from 'antd';
-import { useModalStore } from '/app/src/stores/modalStore';
+import { useModalStore } from '@portfolio/shared';
 import { useWalletOperations } from '../../hooks/useWalletOperations';
-import ShowMore from '/app/src/components/ui/ShowMore';
-import FormComment from '/app/src/features/forms/FormComment';
-import FormActionBtns from '/app/src/features/forms/FormActionBtns';
+import ShowMore from 'src/components/ui/ShowMore';
+import FormComment from 'src/features/forms/FormComment';
+import FormActionBtns from 'src/features/forms/FormActionBtns';
 
 const WalletEditModal = () => {
   const { modalProps, closeModal } = useModalStore();

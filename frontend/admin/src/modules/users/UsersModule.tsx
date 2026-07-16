@@ -7,7 +7,7 @@ import { UserFilterPanel } from './components/UserFilterPanel';
 import { UserStatsCards } from './components/UserStatsCards';
 import { useUsers } from './hooks/useUsers';
 import { useUserModals } from './hooks/useUserModals';
-import { UserFilters } from '/app/src/types/user';
+import { UserFilters } from '../../types/user';
 import { QueryError } from '../../components/QueryError';
 
 export const UsersModule: React.FC = () => {

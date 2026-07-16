@@ -1,5 +1,5 @@
-import { createApi } from '@shared';
-import { CreateUserData, UpdateUserData, User } from '/app/src/types/user';
+import { createApi } from '@portfolio/shared';
+import { CreateUserData, UpdateUserData, User } from '../../types/user';
 
 const baseUrl = `${process.env.REACT_APP_AUTH_SERVICE_URL}/admin/users`;
 const api = createApi(baseUrl, { convertCase: true, useAuth: true });

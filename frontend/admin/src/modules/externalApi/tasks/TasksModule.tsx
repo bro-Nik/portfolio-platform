@@ -6,7 +6,7 @@ import { TaskFilterPanel, TaskFilters } from './components/TaskFilterPanel';
 import { TaskStatsCards } from './components/TaskStatsCards';
 import { useTasks } from './hooks/useTasks';
 import { useTaskModals } from './hooks/useTaskModals';
-import { QueryError } from '/app/src/components/QueryError';
+import { QueryError } from '../../../components/QueryError';
 
 export const TasksModule: React.FC = () => {
   const { data: tasks = [], isLoading, error } = useTasks();

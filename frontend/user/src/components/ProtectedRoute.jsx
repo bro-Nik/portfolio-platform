@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useAuthStore } from '/app/src/stores/authStore';
+import { useAuthStore } from '@portfolio/shared';
 import { ROUTES } from '../constants/routes';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 

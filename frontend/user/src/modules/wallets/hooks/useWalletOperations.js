@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { walletService } from '../services/walletService'
-import { useNavigation } from '/app/src/hooks/useNavigation';
-import { useDataStore } from '/app/src/stores/dataStore';
+import { useNavigation } from 'src/hooks/useNavigation';
+import { useDataStore } from 'src/stores/dataStore';
 import { walletApi } from '../api/walletApi';
 
 export const useWalletOperations = () => {
@@ -13,51 +13,44 @@ export const useWalletOperations = () => {
   const { closeItem } = useNavigation();
 
   const editWallet = async (wallet) => {
-    // Валидация бизнес-правилами
     const validation = walletService.validateEdit(wallet);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
     
     setLoading(true);
-
-    // Вызов API
-    const result = await walletApi.saveWallet(wallet);
-
-    // Редактирование
-    if (result.success && wallet.id) {
-      updateWalletInStore(wallet.id, result.data);
+    try {
+      const data = await walletApi.saveWallet(wallet);
+      if (wallet.id) {
+        updateWalletInStore(wallet.id, data);
+      } else {
+        addWalletToStore(data);
+      }
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
-    
-    // Создание
-    if (result.success && !wallet.id) {
-      addWalletToStore(result.data);
-    }
-    
-    setLoading(false);
-    return result;
   };
   
   const deleteWallet = async (wallet) => {
-    // Валидация бизнес-правилами
     const validation = walletService.validateDelete(wallet);
     if (!validation.isValid) {
       return { success: false, error: validation.error };
     }
     
     setLoading(true);
-
-    // Вызов API
-    const result = await walletApi.deleteWallet(wallet.id);
-    
-    if (result.success) {
+    try {
+      await walletApi.deleteWallet(wallet.id);
       deleteWalletFromStore(wallet.id);
-      // Обновление состояния навигации
-      closeItem(wallet.id, 'wallet')
+      closeItem(wallet.id, 'wallet');
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
-    return result;
   };
   
   return { editWallet, deleteWallet, loading };

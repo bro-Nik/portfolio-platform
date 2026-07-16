@@ -12,9 +12,9 @@ import {
 import { getStatusTag } from '../utils';
 import { providersApi } from '../api';
 import { useQuery } from '@tanstack/react-query';
-import { useModalStore } from '@shared';
-import { LoadingSpinner } from '/app/src/components/LoadingSpinner';
-import { Provider } from '/app/src/types/provider';
+import { useModalStore } from '@portfolio/shared';
+import { LoadingSpinner } from '../../../../components/LoadingSpinner';
+import { Provider } from '../../../../types/provider';
 import { useProviderActions } from '../hooks/useProviderActions';
 
 interface ProviderDetailsModalProps { provider: Provider }
@@ -134,12 +134,14 @@ const ProviderStatsTab: React.FC<ProviderStatsTabProps> = ({ providerId }) => {
 
       <Card title="Использование лимитов" size="small">
         <Space vertical style={{ width: '100%' }}>
-          {Object.entries(stats.utilizationPercent || {}).map(([key, percent]) => (
+          {Object.entries(stats.utilizationPercent || {}).map(([key, percent]) => {
+            const p = percent as number;
+            return (
             <div key={key}>
               <span>{key.charAt(0).toUpperCase() + key.slice(1)}:</span>
               <Progress 
-                percent={Math.round(percent)}
-                status={percent > 80 ? 'exception' : 'normal'}
+                percent={Math.round(p)}
+                status={p > 80 ? 'exception' : 'normal'}
                 format={() => {
                   const counter = stats[`${key}Counter`];
                   const limit = stats[`${key}Limit`];
@@ -147,7 +149,8 @@ const ProviderStatsTab: React.FC<ProviderStatsTabProps> = ({ providerId }) => {
                 }}
               />
             </div>
-          ))}
+          );
+          })}
         </Space>
       </Card>
 

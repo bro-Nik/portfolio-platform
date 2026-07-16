@@ -11,11 +11,11 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getUserRoleTag, getUserAvatar, getUserStatusTag } from '../utils';
-import { formatRelativeTime, formatTimeSum } from '/app/src/utils/date';
-import { useModalStore } from '@shared';
+import { formatRelativeTime, formatTimeSum } from '../../../utils/date';
+import { useModalStore } from '@portfolio/shared';
 import { useUserActions } from '../hooks/useUserActions';
 import { useUserModals } from '../hooks/useUserModals';
-import { User } from '/app/src/types/user';
+import { User } from '../../../types/user';
 
 interface UserDetailsModalProps { user: User }
 

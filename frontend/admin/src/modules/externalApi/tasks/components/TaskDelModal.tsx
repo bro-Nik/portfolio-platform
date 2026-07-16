@@ -1,7 +1,7 @@
 import { Modal } from 'antd';
-import { useModalStore } from '@shared';
+import { useModalStore } from '@portfolio/shared';
 import { useTaskActions } from '../hooks/useTaskActions';
-import { Task } from '/app/src/types/task';
+import { Task } from '../../../../types/task';
 
 interface TaskDelModalProps { task: Task }
 

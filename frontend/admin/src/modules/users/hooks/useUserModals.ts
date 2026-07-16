@@ -1,8 +1,8 @@
-import { useModalStore } from '@shared';
+import { useModalStore } from '@portfolio/shared';
 import { UserDelModal } from '../components/UserDelModal';
 import { UserDetailsModal } from '../components/UserDetailsModal';
 import { UserFormModal } from '../components/UserFormModal';
-import { User } from '/app/src/types/user';
+import { User } from '../../../types/user';
 
 export const useUserModals = () => {
   const { openModal } = useModalStore();

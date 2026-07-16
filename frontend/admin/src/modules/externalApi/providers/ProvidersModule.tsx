@@ -6,7 +6,7 @@ import { ProviderFilterPanel, ProviderFilters } from './components/ProviderFilte
 import { ProviderStatsCards } from './components/ProviderStatsCards';
 import { useProviders } from './hooks/useProviders';
 import { useProviderModals } from './hooks/useProviderModals';
-import { QueryError } from '/app/src/components/QueryError';
+import { QueryError } from '../../../components/QueryError';
 
 export const ProvidersModule: React.FC = () => {
   const { data: providers = [], isLoading, error } = useProviders();

@@ -1,5 +1,5 @@
-import { ROUTES } from '/app/src/constants/routes';
-import { useAuthStore } from '/app/src/stores/authStore';
+import { ROUTES } from 'src/constants/routes';
+import { useAuthStore } from '@portfolio/shared';
 import { Select } from 'antd';
 
 const Header = () => {

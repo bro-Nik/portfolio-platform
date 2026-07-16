@@ -1,8 +1,7 @@
 import React from 'react';
-import { useAuthStore } from '/app/src/stores/authStore';
-import { useNavigation } from '/app/src/hooks/useNavigation';
+import { useAuthStore, authService } from '@portfolio/shared';
+import { useNavigation } from 'src/hooks/useNavigation';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '/app/src/services/auth';
 import { Dropdown, Space, Avatar, Menu, Select } from 'antd';
 import { User, Settings, LogOut, Bell, ChevronDown, Briefcase, Wallet, Star, X } from 'lucide-react';
 import '../styles/Sidebar.scss';
@@ -20,14 +19,8 @@ const Sidebar = () => {
   ];
 
   const handleLogout = async () => {
-    const result = await logout();
-    
-    if (result.success) {
-      authLogout();
-    } else {
-      console.log(result.error);
-    }
-    
+    await logout();
+    authLogout();
   };
 
   const renderItemGroup = (items, section) => {

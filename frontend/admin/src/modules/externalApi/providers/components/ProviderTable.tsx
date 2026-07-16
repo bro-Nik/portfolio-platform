@@ -3,7 +3,7 @@ import { ApiOutlined, EditOutlined, DeleteOutlined, MoreOutlined, ReloadOutlined
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { getStatusTag, getUtilizationColor } from '../utils';
-import { Provider } from '/app/src/types/provider';
+import { Provider } from '../../../../types/provider';
 import { useProviderModals } from '../hooks/useProviderModals';
 import { useProviderActions } from '../hooks/useProviderActions';
 

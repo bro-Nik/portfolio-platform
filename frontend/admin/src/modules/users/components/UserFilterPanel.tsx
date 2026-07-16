@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Row, Col, Input, Select, Space, Button } from 'antd';
 import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import { statuses, roles } from '../constants';
-import { UserFilters } from '/app/src/types/user';
+import { UserFilters } from '../../../types/user';
 
 interface UserFilterPanelProps {
   filters: UserFilters;
