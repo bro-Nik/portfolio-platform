@@ -113,7 +113,6 @@ const LocaleSelectors = () => (
       size="small"
       variant="borderless"
       defaultValue="ru"
-      suffixIcon={<ChevronDown size={14} />}
       options={[
         { value: 'ru', label: 'RU' },
         { value: 'en', label: 'EN' },
@@ -123,7 +122,6 @@ const LocaleSelectors = () => (
       size="small"
       variant="borderless"
       defaultValue="USD"
-      suffixIcon={<ChevronDown size={14} />}
       options={[
         { value: 'USD', label: 'USD' },
         { value: 'EUR', label: 'EUR' },

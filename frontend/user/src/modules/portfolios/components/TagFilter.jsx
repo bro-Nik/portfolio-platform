@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Select, Space } from 'antd';
-import { ChevronDown } from 'lucide-react';
 import { tagApi } from '../api/tagApi';
 
 const TagFilter = ({ onChange }) => {
@@ -30,7 +29,6 @@ const TagFilter = ({ onChange }) => {
     <Select
       mode="multiple"
       placeholder="Теги"
-      suffixIcon={<ChevronDown size={14} />}
       value={selectedIds}
       onChange={handleChange}
       allowClear

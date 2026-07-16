@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
+import { ChevronDown } from 'lucide-react';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/landing/LandingPage';
 import AuthPage from './pages/auth/AuthPage';
@@ -18,7 +19,7 @@ function App() {
   }, [initializeAuth]);
 
   return (
-    <ConfigProvider theme={theme}>
+    <ConfigProvider theme={theme} select={{ suffixIcon: <ChevronDown size={14} /> }}>
       <Router>
         <Routes>
           <Route path={ROUTES.HOME} element={<LandingPage />} />

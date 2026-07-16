@@ -48,7 +48,7 @@ const AuthPage = ({ type }) => {
   const alternativeText = isLogin ? 'Регистрация' : 'Вход';
 
   return (
-    <main style={{ margin: '0 auto' }}>
+    <main style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', width: '100%' }}>
       <form onSubmit={handleSubmit} style={{width: '330px'}}>
         <a href={ROUTES.HOME} style={{ display: 'flex', alignItems: 'center', marginBottom: 48, justifyContent: 'center', color: '#212529', textDecoration: 'none' }}>
           <img style={{ marginBottom: 0, marginRight: 8 }} src="/favicon.png" alt="" width="32" height="32" />
@@ -59,7 +59,6 @@ const AuthPage = ({ type }) => {
           <h1 style={{ fontSize: '1.75rem', fontWeight: 400 }}>{title}</h1>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
             <a style={{ textDecoration: 'none' }} href={alternativeLink}>{alternativeText}</a>
-            <a style={{ textDecoration: 'none' }} href={ROUTES.DEMO}>Демо</a>
           </div>
         </div>
 

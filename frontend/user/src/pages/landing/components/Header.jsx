@@ -6,7 +6,7 @@ const Header = () => {
   const { user, loading, isAuthenticated } = useAuthStore();
 
   return (
-    <header style={{ display: 'flex', padding: '16px 0', maxWidth: 1140, margin: '0 auto', width: '100%' }}>
+    <header style={{ display: 'flex', padding: '16px', maxWidth: 1140, margin: '0 auto', width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <img style={{ marginBottom: 0, marginRight: 8 }} src="/favicon.png" alt="" width="32" height="32" />
         <span style={{ fontSize: 'calc(1.275rem + .3vw)' }}>Portfolios</span>
@@ -33,7 +33,6 @@ const Header = () => {
           {!isAuthenticated && (
             <>
               <a href={ROUTES.LOGIN} style={{ textDecoration: 'none', fontWeight: 500 }}>Вход</a>
-              <a href={ROUTES.DEMO} style={{ textDecoration: 'none', fontWeight: 500 }}>Демо</a>
             </>
           )}
 
