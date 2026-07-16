@@ -18,9 +18,7 @@ const WalletsPage = () => {
         <WalletsStatistic stats={overallStats} />
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        <WalletsTable wallets={wallets} />
-      </div>
+      <WalletsTable wallets={wallets} />
     </>
   );
 };

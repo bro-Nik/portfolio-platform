@@ -16,25 +16,27 @@ const smallTextStyle = { fontSize: '12px' };
 export const createNameColumn = (openItem, itemType) => ({
   dataIndex: 'name',
   title: 'Название',
+  fixed: 'left',
   render: (_, record) => (
     <div style={{ display: 'grid' }} onClick={() => openItem(record, itemType)}>
-      <span>{record.name}</span>
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }} title={record.name}>{record.name}</span>
       <span style={{ ...mutedStyle, ...smallTextStyle, textTransform: 'capitalize' }}>{record.market}</span>
       <span style={{ ...mutedStyle, ...smallTextStyle }}>{record.assets?.length || 0} активов</span>
       <TagBadges tags={record.tags} />
     </div>
   ),
-  width: 300,
+  maxWidth: 300,
   sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
 });
 
 export const createAssetNameColumn = (openItem, itemType, parentId) => ({
   key: 'name',
   title: 'Актив',
+  fixed: 'left',
   render: (_, record) => (
     <div style={{ display: 'flex', gap: 8 }} onClick={() => openItem(record, itemType, parentId)}>
-      <img className="img-asset-min" loading="lazy" src={record.image} />
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <img className="img-asset-min" loading="lazy" src={record.image} style={{ cursor: 'pointer' }} />
+      <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
         <span>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={record.name}>{record.name}</span>
           <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4 }}>{record.symbol}</span>
@@ -43,7 +45,7 @@ export const createAssetNameColumn = (openItem, itemType, parentId) => ({
       </div>
     </div>
   ),
-  width: 300,
+  maxWidth: 300,
   sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
 });
 

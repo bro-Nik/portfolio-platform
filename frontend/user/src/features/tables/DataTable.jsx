@@ -69,6 +69,7 @@ const DataTable = memo(({
         rowKey={(record) => record.id ?? record.key ?? Math.random()}
         size="small"
         showSorterTooltip={false}
+        scroll={{ x: 'max-content' }}
       />
     </div>
   );

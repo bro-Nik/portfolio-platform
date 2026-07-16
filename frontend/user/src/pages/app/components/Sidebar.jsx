@@ -3,7 +3,7 @@ import { useAuthStore, authService } from '@portfolio/shared';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown, Space, Avatar, Menu, Select } from 'antd';
-import { User, Settings, LogOut, Bell, ChevronDown, Briefcase, Wallet, Star, X } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, Briefcase, Wallet, Star, X } from 'lucide-react';
 import '../styles/Sidebar.scss';
 
 const Sidebar = () => {
@@ -188,7 +188,6 @@ const SidebarHeader = () => (
         <img style={{ marginRight: 8 }} src="/favicon.png" alt="Логотип" width="32" height="32" />
         <span style={{ fontSize: 'calc(1.275rem + .3vw)' }}>Portfolios</span>
       </a>
-      <Bell size={16} style={{ color: '#6b7280', cursor: 'pointer' }} />
     </div>
     <hr />
   </>

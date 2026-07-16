@@ -18,9 +18,7 @@ const PortfoliosPage = () => {
         <PortfoliosStatistic stats={overallStats} />
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        <PortfoliosTable portfolios={portfolios} />
-      </div>
+      <PortfoliosTable portfolios={portfolios} />
     </>
   );
 };

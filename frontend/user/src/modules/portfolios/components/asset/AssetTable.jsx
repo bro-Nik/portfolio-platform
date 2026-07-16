@@ -8,7 +8,7 @@ import { useTicker } from 'src/hooks/useTicker';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { Folder, Wallet } from 'lucide-react'
+import { Briefcase, Wallet } from 'lucide-react'
 import { isTradeTransaction, isTransferTransaction } from 'src/modules/transaction/utils/type';
 import {
   createActionsColumn,
@@ -51,7 +51,7 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
           const portfolio2 = getPortfolio(record.portfolio2Id);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => portfolio2 && openItem(portfolio2, 'portfolio')}>
-              <Folder size={14} />{portfolio2?.name || 'Портфель удален'}
+              <Briefcase size={14} />{portfolio2?.name || 'Портфель удален'}
             </div>
           );
         }
