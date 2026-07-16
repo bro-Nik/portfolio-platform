@@ -42,7 +42,7 @@ export const UserTable: React.FC<UserTableProps> = ({ data, loading }) => {
                 <strong>{record.email.split('@')[0]}</strong>
               </Button>
             </div>
-            <div style={{ fontSize: '12px', color: '#666' }}>{record.email}</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-admin-secondary)' }}>{record.email}</div>
           </div>
         </Space>
       ),

@@ -91,7 +91,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
 
       {portfolio.comment && (
         <div style={{ marginBottom: 12 }}>
-          <span style={{ color: 'rgba(0,0,0,0.45)', fontSize: '12px' }}>{portfolio.comment}</span>
+          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{portfolio.comment}</span>
         </div>
       )}
 

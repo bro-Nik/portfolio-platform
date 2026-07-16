@@ -46,7 +46,7 @@ const parseInlineFormat = (text: string): React.ReactNode[] => {
         parts.push(remaining.slice(0, codeMatch.index));
       }
       parts.push(
-        <code key={keyIndex++} style={{ background: '#f0f0f0', padding: '2px 4px', borderRadius: '3px' }}>
+        <code key={keyIndex++} style={{ background: 'var(--code-bg)', padding: '2px 4px', borderRadius: '3px' }}>
           {codeMatch[1]}
         </code>,
       );

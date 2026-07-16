@@ -1,9 +1,9 @@
 import React from 'react';
-import { useAuthStore, authService } from '@portfolio/shared';
+import { useAuthStore, authService, useThemeStore } from '@portfolio/shared';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useNavigate } from 'react-router-dom';
-import { Dropdown, Space, Avatar, Menu, Select } from 'antd';
-import { User, Settings, LogOut, ChevronDown, Briefcase, Wallet, Star, X } from 'lucide-react';
+import { Dropdown, Space, Avatar, Menu, Select, Button } from 'antd';
+import { User, Settings, LogOut, ChevronDown, Briefcase, Wallet, Star, X, Sun, Moon } from 'lucide-react';
 import '../styles/Sidebar.scss';
 
 const Sidebar = () => {
@@ -165,7 +165,7 @@ const UserDropdown = ({ user, logout }) => {
       placement="topRight"
       arrow
     >
-      <Space style={{ color: 'rgba(0,0,0,0.45)', cursor: 'pointer' }}>
+      <Space style={{ color: 'var(--text-muted)', cursor: 'pointer' }}>
         <Avatar 
           size="small" 
           icon={<User size={16} />}
@@ -173,22 +173,34 @@ const UserDropdown = ({ user, logout }) => {
         <span className="user-login" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {user?.login || 'Гость'}
         </span>
-        <ChevronDown size={14} style={{ color: 'rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center' }} />
+        <ChevronDown size={14} style={{ color: 'var(--text-muted-icon)', display: 'flex', alignItems: 'center' }} />
       </Space>
     </Dropdown>
   );
 };
 
-const SidebarHeader = () => (
-  <>
-    <div className="header-box">
-      <a href="/" className="home-link link-body-emphasis">
-        <img style={{ marginRight: 8 }} src="/favicon.png" alt="Логотип" width="32" height="32" />
-        <span style={{ fontSize: 'calc(1.275rem + .3vw)' }}>Portfolios</span>
-      </a>
-    </div>
-    <hr />
-  </>
-);
+const SidebarHeader = () => {
+  const { theme, toggleTheme } = useThemeStore();
+
+  return (
+    <>
+      <div className="header-box">
+        <a href="/" className="home-link link-body-emphasis">
+          <img style={{ marginRight: 8 }} src="/favicon.png" alt="Логотип" width="32" height="32" />
+          <span style={{ fontSize: 'calc(1.275rem + .3vw)' }}>Portfolios</span>
+        </a>
+        <Button
+          type="text"
+          size="small"
+          icon={theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+          style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}
+        />
+      </div>
+      <hr />
+    </>
+  );
+};
 
 export default Sidebar;

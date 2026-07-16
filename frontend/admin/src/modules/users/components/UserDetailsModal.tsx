@@ -93,7 +93,7 @@ export const UserDetailsModal: React.FC = () => {
                       {formatRelativeTime(login.lastActivityAt)}
                     </Tag>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#666' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-admin-secondary)' }}>
                     {login.ipAddress} • {login.browser}/{login.os}
                   </div>
                 </Space>

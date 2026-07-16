@@ -199,7 +199,7 @@ const ProviderLogsTab: React.FC<ProviderLogsTabProps> = ({ providerId }) => {
               </Tag>
             </div>
             <div>
-              <span style={{ fontSize: '12px', color: '#666' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-admin-secondary)' }}>
                 {new Date(log.createdAt).toLocaleString()}
               </span>
               <Tag style={{ marginLeft: '8px', fontSize: '12px' }}>

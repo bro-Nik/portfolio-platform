@@ -10,7 +10,7 @@ import TagBadges from 'src/modules/portfolios/components/TagBadges';
 
 const DEFAULT_VALUE = '-';
 
-const mutedStyle = { color: 'rgba(0,0,0,0.45)' };
+const mutedStyle = { color: 'var(--text-muted)' };
 const smallTextStyle = { fontSize: '12px' };
 
 export const createNameColumn = (openItem, itemType) => ({

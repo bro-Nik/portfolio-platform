@@ -15,7 +15,7 @@ const PortfolioHeader = ({ portfolio, onRefresh }) => {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div>
               <h1 style={{ fontSize: '1.75rem', marginBottom: 4 }}>{portfolio.name}</h1>
-              <div style={{ color: 'rgba(0,0,0,0.45)', fontSize: '12px' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
                 <span style={{ marginRight: 12 }}>Рынок: {portfolio.market}</span>
                 <span>Активов: {portfolio.assets.length}</span>
               </div>

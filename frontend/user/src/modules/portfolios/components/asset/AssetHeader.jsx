@@ -15,7 +15,7 @@ const AssetHeader = ({ portfolio, asset }) => {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div>
-              <h1 style={{ fontSize: '1rem', color: 'rgba(0,0,0,0.45)', margin: 0 }}>
+              <h1 style={{ fontSize: '1rem', color: 'var(--text-muted)', margin: 0 }}>
                 {asset.name} 
                 <span style={{ textTransform: 'uppercase' }}>({asset.symbol})</span>
                 <a href={getTradingViewUrl(asset.symbol, asset.tickerId)} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 4 }} onClick={(e) => e.stopPropagation()}>
@@ -28,7 +28,7 @@ const AssetHeader = ({ portfolio, asset }) => {
                 <span style={{ fontSize: '2.5rem', fontWeight: 600 }}>{formatCurrency(asset.price)}</span>
               </div>
 
-              <div style={{ color: 'rgba(0,0,0,0.45)', fontSize: '12px' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
                 <span style={{ marginRight: 12 }}>Портфель: {portfolio.name}</span>
                 <span style={{ textTransform: 'capitalize' }}>Рынок: {portfolio.market}</span>
               </div>

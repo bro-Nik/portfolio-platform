@@ -9,34 +9,56 @@ import LandingPage from './pages/landing/LandingPage';
 import AuthPage from './pages/auth/AuthPage';
 import AppPage from './pages/app/AppPage';
 import { ROUTES } from './constants/routes';
-import { useAuthStore } from '@portfolio/shared';
+import { useAuthStore, useThemeStore } from '@portfolio/shared';
 import { queryClient } from './queryClient';
 import { TickerIdsProvider } from './hooks/queries/TickerContext';
-import theme from './theme';
+import { lightTheme, darkTheme } from './theme';
 
 function App() {
   const { initializeAuth } = useAuthStore();
+  const { theme } = useThemeStore();
 
-  // Инициализация авторизации
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
 
+  const currentTheme = theme === 'dark' ? darkTheme : lightTheme;
+
   return (
     <QueryClientProvider client={queryClient}>
-      <ConfigProvider theme={theme} select={{ suffixIcon: <ChevronDown size={14} /> }}>
+      <ConfigProvider select={{ suffixIcon: <ChevronDown size={14} /> }}>
         <Router>
           <Routes>
             <Route path={ROUTES.HOME} element={<LandingPage />} />
-            <Route path={ROUTES.LOGIN} element={<AuthPage type={'login'} />} />
-            <Route path={ROUTES.REGISTER} element={<AuthPage type={'register'} />} />
-            <Route path={ROUTES.APP} element={<ProtectedRoute><TickerIdsProvider><AppPage /></TickerIdsProvider></ProtectedRoute>} />
+            <Route path={ROUTES.LOGIN} element={<AuthPage type="login" />} />
+            <Route path={ROUTES.REGISTER} element={<AuthPage type="register" />} />
+            <Route path={ROUTES.APP} element={
+              <ConfigProvider theme={currentTheme}>
+                <ProtectedRoute>
+                  <ThemeSetter />
+                  <TickerIdsProvider>
+                    <AppPage />
+                  </TickerIdsProvider>
+                </ProtectedRoute>
+              </ConfigProvider>
+            } />
           </Routes>
         </Router>
       </ConfigProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
+}
+
+function ThemeSetter() {
+  const { theme } = useThemeStore();
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    return () => document.documentElement.removeAttribute('data-theme');
+  }, [theme]);
+
+  return null;
 }
 
 export default App;

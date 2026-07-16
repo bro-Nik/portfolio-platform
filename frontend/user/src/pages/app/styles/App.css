@@ -17,18 +17,21 @@
   top: 17px;
   transform: translateX(-100%);
   transition: all 300ms ease;
-  background: #fff;
+  background: var(--ant-color-bg-container, #fff);
   border-top-left-radius: 19px;
   border-bottom-left-radius: 19px;
   justify-content: center;
   align-items: center;
-  /* box-shadow: -5px 1px 10px -5px rgba(0, 0, 0, 0.3), inset 3px 0 5px -3px rgba(0, 0, 0, 0.2); */
   box-shadow: inset -6px 0 8px -10px rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.3) -5px 0px 22px -5px;
   padding: 0 .5rem;
 }
 
 .close-minimize-btns div {
   padding: .4rem;
+}
+
+[data-theme="dark"] .close-minimize-btns {
+  background: #242a3d !important;
 }
 
 .close-minimize-btns svg {
@@ -44,7 +47,7 @@ svg {
 }
 
 tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: var(--ant-table-row-hover-bg, #f8f9fa);
 }
 
 .ant-table-wrapper td.ant-table-column-sort {
@@ -103,11 +106,11 @@ hr {
 }
 
 .link-body-emphasis {
-  color: RGBA(0, 0, 0, 1) !important;
+  color: var(--text-color, RGBA(0, 0, 0, 1)) !important;
 }
 
 .link-body-emphasis:focus, .link-body-emphasis:hover {
-  color: RGBA(0, 0, 0, .75) !important;
+  color: var(--text-secondary, RGBA(0, 0, 0, .75)) !important;
 }
 
 .me-2 {

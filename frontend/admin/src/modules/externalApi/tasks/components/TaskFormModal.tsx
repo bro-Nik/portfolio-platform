@@ -149,7 +149,7 @@ export const TaskFormModal: React.FC = () => {
             borderRadius: '6px',
             borderLeft: '3px solid #1890ff',
           }}>
-            <div style={{ fontSize: '13px', color: '#333' }}>
+            <div style={{ fontSize: '13px', color: 'var(--text-admin-method)' }}>
               {formatDescription(selectedMethod.description)}
             </div>
           </div>

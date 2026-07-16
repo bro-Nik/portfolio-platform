@@ -63,7 +63,7 @@ export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) =
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: '11px', color: '#666', minWidth: 32, flexShrink: 0 }}>День:</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-admin-secondary)', minWidth: 32, flexShrink: 0 }}>День:</span>
               <Progress
                 percent={Math.round(dayPercent)}
                 size="small"
@@ -72,7 +72,7 @@ export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) =
               />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: '11px', color: '#666', minWidth: 32, flexShrink: 0 }}>Мес:</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-admin-secondary)', minWidth: 32, flexShrink: 0 }}>Мес:</span>
               <Progress
                 percent={Math.round(monthPercent)}
                 size="small"

@@ -128,25 +128,6 @@ const AssetAddModal = () => {
     >
       <div
         className="ticker-item"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          background: '#F8FAFD',
-          borderRadius: 8,
-          padding: '8px',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          gap: '12px',
-          width: '100%',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#EDF2FF';
-          e.currentTarget.style.transform = 'translateY(-1px)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = '#F8FAFD';
-          e.currentTarget.style.transform = 'translateY(0)';
-        }}
         onClick={() => handleSelect(ticker)}
       >
         {/* Иконка */}
@@ -186,7 +167,7 @@ const AssetAddModal = () => {
             <span style={{ 
               fontSize: '14px', 
               fontWeight: 500,
-              color: '#1A1D1F',
+              color: 'var(--text-primary)',
               lineHeight: 1.4,
             }}>
               {ticker.name}
@@ -196,7 +177,7 @@ const AssetAddModal = () => {
               <span style={{ 
                 fontSize: '11px',
                 fontWeight: 600,
-                color: '#6F767E',
+                color: 'var(--text-secondary)',
                 backgroundColor: 'rgba(111, 118, 126, 0.1)',
                 padding: '2px 6px',
                 borderRadius: 4,
@@ -211,7 +192,7 @@ const AssetAddModal = () => {
           {/* Нижняя строка: символ */}
           <div style={{ 
             fontSize: '13px',
-            color: '#6F767E',
+            color: 'var(--text-secondary)',
             lineHeight: 1.3,
             textTransform: 'uppercase',
           }}>
@@ -227,7 +208,7 @@ const AssetAddModal = () => {
           <div style={{ 
             fontSize: '14px',
             fontWeight: 600,
-            color: '#1A1D1F',
+            color: 'var(--text-primary)',
             lineHeight: 1.4,
           }}>
             ${ticker.price.toLocaleString(undefined, {
@@ -237,7 +218,7 @@ const AssetAddModal = () => {
           </div>
           <div style={{ 
             fontSize: '12px',
-            color: '#6F767E',
+            color: 'var(--text-secondary)',
             lineHeight: 1.3,
           }}>
             {ticker.market}
@@ -265,7 +246,7 @@ const AssetAddModal = () => {
           placeholder="Введите тикер или название актива..."
           value={searchValue}
           onChange={(e) => handleSearchChange(e.target.value)}
-          prefix={<Search size={16} style={{ color: '#ccc' }} />}
+          prefix={<Search size={16} style={{ color: 'var(--text-muted-icon)' }} />}
           size="large"
           allowClear
         />

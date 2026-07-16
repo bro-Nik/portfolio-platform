@@ -208,10 +208,7 @@ const AssetDetail = ({ data }) => {
         <Card 
           bordered={false}
           bodyStyle={{ padding: 24 }}
-          style={{ 
-            backgroundColor: '#fafafa',
-            borderRadius: 12 
-          }}
+          style={{ borderRadius: 12 }}
         >
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Space align="center">
@@ -228,10 +225,7 @@ const AssetDetail = ({ data }) => {
         <Card 
           bordered={false}
           bodyStyle={{ padding: 24 }}
-          style={{ 
-            backgroundColor: '#fafafa',
-            borderRadius: 12 
-          }}
+          style={{ borderRadius: 12 }}
         >
           <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Space align="center">

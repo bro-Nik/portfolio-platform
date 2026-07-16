@@ -9,9 +9,11 @@ import {
   BellOutlined,
   LogoutOutlined,
   ApiOutlined,
-  TeamOutlined
+  TeamOutlined,
+  SunOutlined,
+  MoonOutlined
 } from '@ant-design/icons';
-import { useAuthStore, useModalStore, authService } from '@portfolio/shared';
+import { useAuthStore, useModalStore, authService, useThemeStore } from '@portfolio/shared';
 import { ExternalApiModule } from './modules/externalApi/ExternalApiModule';
 import { UsersModule } from './modules/users/UsersModule';
 import { HeaderContext, useHeaderExtra, SubTabsBar } from './utils/headerContext';
@@ -36,6 +38,7 @@ const AdminPage = () => {
   const [headerExtra, setHeaderExtra] = useState<React.ReactNode>(null);
   const { user, logout: storeLogout } = useAuthStore();
   const { logout } = authService();
+  const { theme, toggleTheme } = useThemeStore();
 
   const setPage = (key: MenuKey): void => {
     setSelectedMenu(key);
@@ -75,15 +78,15 @@ const AdminPage = () => {
 
   return (
     <HeaderContext.Provider value={{ setHeaderExtra }}>
-      <Layout style={{ minHeight: '100vh' }}>
+      <Layout className="admin-layout">
         <Sider
           collapsible
           collapsed={collapsed}
           onCollapse={setCollapsed}
-          theme="light"
+          theme={theme === 'dark' ? 'dark' : 'light'}
           width={250}
         >
-          <div style={{ padding: '16px', textAlign: 'center', borderBottom: '1px solid #f0f0f0' }}>
+          <div className="admin-sider-header">
             <Space orientation="vertical" size="small">
               <Avatar size={collapsed ? 32 : 48} src="/favicon.png" shape="square" />
               {!collapsed && (
@@ -96,7 +99,7 @@ const AdminPage = () => {
           </div>
 
           <Menu
-            theme="light"
+            theme={theme === 'dark' ? 'dark' : 'light'}
             mode="inline"
             selectedKeys={[selectedMenu]}
             items={sidebarMenu}
@@ -106,14 +109,7 @@ const AdminPage = () => {
         </Sider>
 
         <Layout>
-          <Header style={{
-            padding: '0 24px',
-            background: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 1px 4px rgba(0, 21, 41, 0.08)'
-          }}>
+          <Header className="admin-header">
             <Space align="center">
               <Button
                 type="text"
@@ -126,6 +122,12 @@ const AdminPage = () => {
 
             <Space size="large">
               <Button type="text" icon={<BellOutlined />} shape="circle" />
+              <Button
+                type="text"
+                icon={theme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+                onClick={toggleTheme}
+                title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+              />
               <Dropdown menu={{ items: userMenu }} placement="bottomRight">
                 <Space style={{ cursor: 'pointer' }}>
                   <Avatar icon={<UserOutlined />} />
@@ -135,13 +137,7 @@ const AdminPage = () => {
             </Space>
           </Header>
 
-          <Content style={{
-            margin: '16px',
-            padding: 24,
-            background: '#fff',
-            borderRadius: '8px',
-            minHeight: 280
-          }}>
+          <Content className="admin-content">
             {renderContent()}
           </Content>
         </Layout>
