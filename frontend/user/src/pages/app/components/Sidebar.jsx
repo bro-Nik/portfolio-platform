@@ -174,8 +174,8 @@ const UserDropdown = ({ user, logout }) => {
         />
         <span className="user-login" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {user?.login || 'Гость'}
-          <ChevronDown size={12} />
         </span>
+        <ChevronDown size={14} style={{ color: 'rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center' }} />
       </Space>
     </Dropdown>
   );

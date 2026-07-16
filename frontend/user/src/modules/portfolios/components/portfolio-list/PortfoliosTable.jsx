@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
+import { Input } from 'antd';
 import {
   createCostColumn,
   createShareColumn,
@@ -19,6 +20,7 @@ const PortfoliosTable = memo(({ portfolios }) => {
   const { openItem } = useNavigation();
   const setPortfolios = useDataStore(state => state.setPortfolios);
   const [tagFilterIds, setTagFilterIds] = useState([]);
+  const [search, setSearch] = useState('');
 
   const handleRefresh = useCallback(async () => {
     try {
@@ -30,11 +32,20 @@ const PortfoliosTable = memo(({ portfolios }) => {
   }, [setPortfolios]);
 
   const filtered = useMemo(() => {
-    if (tagFilterIds.length === 0) return portfolios;
-    return portfolios.filter(p =>
-      p.tags?.some(t => tagFilterIds.includes(t.id))
-    );
-  }, [portfolios, tagFilterIds]);
+    let result = portfolios;
+    if (tagFilterIds.length > 0) {
+      result = result.filter(p =>
+        p.tags?.some(t => tagFilterIds.includes(t.id))
+      );
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(p =>
+        p.name && p.name.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [portfolios, tagFilterIds, search]);
 
   const columns = useMemo(() => [
     createNameColumn(openItem, 'portfolio'),
@@ -48,13 +59,19 @@ const PortfoliosTable = memo(({ portfolios }) => {
 
   return (
     <>
-      <div style={{ marginBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <Input
+          placeholder="Поиск..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          allowClear
+          style={{ width: 160 }}
+        />
         <TagFilter onChange={setTagFilterIds} />
       </div>
-      <DataTable 
+      <DataTable
         data={filtered}
         columnsConfig={columns}
-        placeholder="Поиск по портфелям..."
         storageKey="portfolios-list-sorting"
       />
     </>

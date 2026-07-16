@@ -50,8 +50,8 @@ const PortfolioEditModal = () => {
 
   const markets = [
     {value: 'crypto', label: 'Крипто'},
-    {value: 'stocks', label: 'Акции'},
-    {value: 'forex', label: 'Форекс'},
+    {value: 'stocks',  label: 'Акции',  disabled: true},
+    {value: 'currency', label: 'Валюта', disabled: true},
   ];
 
   return (
@@ -68,7 +68,7 @@ const PortfolioEditModal = () => {
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        requiredMark="optional"
+        requiredMark={false}
         size="middle"
       >
         <Space direction="vertical" style={{ width: '100%' }} size="middle">

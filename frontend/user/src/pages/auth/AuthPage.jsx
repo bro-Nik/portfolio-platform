@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { authService, useAuthStore } from '@portfolio/shared';
 import { ROUTES } from 'src/constants/routes';
-import { useToastStore } from 'src/stores/toastStore';
-import { Button, Input, Spin } from 'antd';
+import { Button, Input, Spin, notification } from 'antd';
 
 const AuthPage = ({ type }) => {
   const [email, setEmail] = useState('');
@@ -11,7 +10,6 @@ const AuthPage = ({ type }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { addToast, clearToasts } = useToastStore();
   const { login, register, getCurrentUser } = authService();
   const { isAuthenticated, loading: authLoading, login: authLogin } = useAuthStore();
   const isLogin = type === 'login';
@@ -23,11 +21,11 @@ const AuthPage = ({ type }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    clearToasts();
+    notification.destroy();
 
     // Валидация для регистрации
     if (!isLogin && password !== confirmPassword) {
-      addToast('Пароли не совпадают', 'warning');
+      notification.warning({ message: 'Пароли не совпадают', placement: 'topRight', duration: 5 });
       setLoading(false);
       return;
     }
@@ -38,7 +36,7 @@ const AuthPage = ({ type }) => {
     if (result.success) {
       authLogin(await getCurrentUser());
     } else {
-      addToast(result.error, 'error');
+      notification.error({ message: result.error, placement: 'topRight', duration: 0 });
     }
     
     setLoading(false);

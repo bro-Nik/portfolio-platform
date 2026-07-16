@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
+import { Input } from 'antd';
 import { createCostColumn, createShareColumn, createBuyOrdersColumn, createNameColumn, createActionsColumn } from 'src/features/tables/tableColumns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
 import TagFilter from 'src/modules/portfolios/components/TagFilter';
@@ -11,6 +12,7 @@ const WalletsTable = memo(({ wallets }) => {
   const { openItem } = useNavigation();
   const setWallets = useDataStore(state => state.setWallets);
   const [tagFilterIds, setTagFilterIds] = useState([]);
+  const [search, setSearch] = useState('');
 
   const handleRefresh = useCallback(async () => {
     try {
@@ -22,11 +24,20 @@ const WalletsTable = memo(({ wallets }) => {
   }, [setWallets]);
 
   const filtered = useMemo(() => {
-    if (tagFilterIds.length === 0) return wallets;
-    return wallets.filter(w =>
-      w.tags?.some(t => tagFilterIds.includes(t.id))
-    );
-  }, [wallets, tagFilterIds]);
+    let result = wallets;
+    if (tagFilterIds.length > 0) {
+      result = result.filter(w =>
+        w.tags?.some(t => tagFilterIds.includes(t.id))
+      );
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(w =>
+        w.name && w.name.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [wallets, tagFilterIds, search]);
 
   const columns = useMemo(() => [
     createNameColumn(openItem, 'wallet'),
@@ -38,13 +49,19 @@ const WalletsTable = memo(({ wallets }) => {
 
   return (
     <>
-      <div style={{ marginBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <Input
+          placeholder="Поиск..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          allowClear
+          style={{ width: 160 }}
+        />
         <TagFilter onChange={setTagFilterIds} />
       </div>
-      <DataTable 
+      <DataTable
         data={filtered}
         columnsConfig={columns}
-        placeholder="Поиск по кошелькам..."
         storageKey="wallets-list-sorting"
       />
     </>

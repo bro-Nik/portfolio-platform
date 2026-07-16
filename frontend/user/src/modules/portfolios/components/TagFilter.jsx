@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Select, Space } from 'antd';
+import { ChevronDown } from 'lucide-react';
 import { tagApi } from '../api/tagApi';
 
 const TagFilter = ({ onChange }) => {
@@ -28,12 +29,12 @@ const TagFilter = ({ onChange }) => {
   return (
     <Select
       mode="multiple"
-      size="small"
-      placeholder="Фильтр по тегам"
+      placeholder="Теги"
+      suffixIcon={<ChevronDown size={14} />}
       value={selectedIds}
       onChange={handleChange}
       allowClear
-      style={{ minWidth: 180, maxWidth: 300 }}
+      style={{ minWidth: 150 }}
       options={allTags.map(tag => ({
         value: tag.id,
         label: (

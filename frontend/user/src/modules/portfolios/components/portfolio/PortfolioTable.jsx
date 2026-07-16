@@ -5,7 +5,7 @@ import { useTicker } from 'src/hooks/useTicker';
 import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from '../TagFilter';
-import { Checkbox } from 'antd';
+import { Checkbox, Input } from 'antd';
 import {
   createCostColumn,
   createShareColumn,
@@ -24,6 +24,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
 
   const [hideCheap, setHideCheap] = useLocalStorage('portfolio-hide-cheap', false);
   const [tagFilterIds, setTagFilterIds] = useState([]);
+  const [search, setSearch] = useState('');
 
   // Подготавливаем данные для таблицы
   const preparedAssets = useMemo(() => {
@@ -50,8 +51,15 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         asset.tags?.some(t => tagFilterIds.includes(t.id))
       );
     }
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(asset =>
+        (asset.name && asset.name.toLowerCase().includes(q)) ||
+        (asset.symbol && asset.symbol.toLowerCase().includes(q))
+      );
+    }
     return result;
-  }, [preparedAssets, hideCheap, tagFilterIds]);
+  }, [preparedAssets, hideCheap, tagFilterIds, search]);
 
   const columns = useMemo(() => [
     createAssetNameColumn(openItem, 'portfolio_asset', portfolio.id),
@@ -67,25 +75,31 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+        <Input
+          placeholder="Поиск..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          allowClear
+          style={{ width: 160 }}
+        />
+        <TagFilter onChange={setTagFilterIds} />
         <Checkbox checked={hideCheap} onChange={(e) => setHideCheap(e.target.checked)}>
           Спрятать дешевле $1
         </Checkbox>
-        <TagFilter onChange={setTagFilterIds} />
       </div>
 
-    <DataTable 
-      data={filteredAssets}
-      columnsConfig={columns}
-      placeholder="Поиск по активам..."
-      storageKey="portfolio-table-sorting"
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
-        {portfolio.comment && (
+      {portfolio.comment && (
+        <div style={{ marginBottom: 12 }}>
           <span style={{ color: 'rgba(0,0,0,0.45)', fontSize: '12px' }}>{portfolio.comment}</span>
-        )}
-      </div>
-    </DataTable>
+        </div>
+      )}
+
+      <DataTable
+        data={filteredAssets}
+        columnsConfig={columns}
+        storageKey="portfolio-table-sorting"
+      />
     </>
   );
 });
