@@ -44,19 +44,19 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
     createTransactionSumColumn(getTickerSymbol, isCounterTransaction),
     createTransactionQuantityColumn(getTickerSymbol, isCounterTransaction),
     {
-      id: 'relation',
-      header: 'Связь',
-      cell: ({ row: { original: transaction } }) => {
-        if (transaction.portfolio2Id) {
-          const portfolio2 = getPortfolio(transaction.portfolio2Id);
+      key: 'relation',
+      title: 'Связь',
+      render: (_, record) => {
+        if (record.portfolio2Id) {
+          const portfolio2 = getPortfolio(record.portfolio2Id);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => portfolio2 && openItem(portfolio2, 'portfolio')}>
               <Folder size={14} />{portfolio2?.name || 'Портфель удален'}
             </div>
           );
         }
-        if (transaction.walletId) {
-          const wallet = getWallet(transaction.walletId);
+        if (record.walletId) {
+          const wallet = getWallet(record.walletId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => wallet && openItem(wallet, 'wallet')}>
               <Wallet size={14} />{wallet?.name || 'Кошелек удален'}
@@ -65,7 +65,7 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
         }
         return '-';
       },
-      size: 120,
+      width: 120,
     },
     createCommentColumn(),
     createActionsColumn(({ row }) => <TransactionActionsDropdown portfolio={portfolio} asset={asset} transaction={row.original} btn='icon' />),

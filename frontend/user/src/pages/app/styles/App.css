@@ -47,6 +47,35 @@ tbody tr:hover {
   background-color: #f8f9fa;
 }
 
+.ant-table-wrapper td.ant-table-column-sort {
+  background: transparent;
+}
+
+.ant-table-wrapper .ant-table-thead th.ant-table-column-sort {
+  background: var(--ant-table-header-bg);
+}
+
+.ant-table-column-sorter .ant-table-column-sorter-up,
+.ant-table-column-sorter .ant-table-column-sorter-down {
+  opacity: 0;
+  transition: opacity .15s;
+}
+
+.ant-table-column-sorter .ant-table-column-sorter-up.active,
+.ant-table-column-sorter .ant-table-column-sorter-down.active {
+  opacity: 1;
+}
+
+th:hover .ant-table-column-sorter .ant-table-column-sorter-up,
+th:hover .ant-table-column-sorter .ant-table-column-sorter-down {
+  opacity: .5;
+}
+
+th:hover .ant-table-column-sorter .ant-table-column-sorter-up.active,
+th:hover .ant-table-column-sorter .ant-table-column-sorter-down.active {
+  opacity: 1;
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;
