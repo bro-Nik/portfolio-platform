@@ -1,29 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Popover, Checkbox, Space, Button, message } from 'antd';
 import { Tag } from 'lucide-react';
-import { tagApi } from '../api/tagApi';
+import { useTagsQuery } from '../../../hooks/queries/useTagsQuery';
+import { useTagMutations } from '../../../hooks/queries/useTagMutations';
 
 const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate }) => {
   const [open, setOpen] = useState(false);
-  const [allTags, setAllTags] = useState([]);
+  const { data: allTags = [] } = useTagsQuery();
+  const { attachTag, detachTag } = useTagMutations();
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      loadTags();
+    if (allTags.length > 0) {
+      setSelectedIds(new Set(allTags.filter(t => assignedTags.some(at => at.id === t.id)).map(t => t.id)));
     }
-  }, [open]);
-
-  const loadTags = async () => {
-    try {
-      const data = await tagApi.getTags();
-      setAllTags(data);
-      setSelectedIds(new Set(data.filter(t => assignedTags.some(at => at.id === t.id)).map(t => t.id)));
-    } catch (error) {
-      console.warn('Ошибка загрузки тегов:', error);
-    }
-  };
+  }, [allTags, assignedTags]);
 
   const handleToggle = async (tagId, checked) => {
     setLoading(true);
@@ -36,12 +28,9 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate })
     }
     setSelectedIds(newSet);
 
+    const mutation = checked ? attachTag : detachTag;
     try {
-      if (checked) {
-        await tagApi.attachTag(tagId, entityType, entityId);
-      } else {
-        await tagApi.detachTag(tagId, entityType, entityId);
-      }
+      await mutation.mutateAsync({ tagId, entityType, entityId });
       onUpdate?.();
     } catch (error) {
       setSelectedIds(prev);

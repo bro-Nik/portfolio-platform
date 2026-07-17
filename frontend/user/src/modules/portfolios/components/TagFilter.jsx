@@ -1,22 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Select, Space } from 'antd';
-import { tagApi } from '../api/tagApi';
+import React, { useState } from 'react';
+import { Select } from 'antd';
+import { useTagsQuery } from '../../../hooks/queries/useTagsQuery';
 
 const TagFilter = ({ onChange }) => {
-  const [allTags, setAllTags] = useState([]);
+  const { data: allTags = [] } = useTagsQuery();
   const [selectedIds, setSelectedIds] = useState([]);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await tagApi.getTags();
-        setAllTags(data);
-      } catch (error) {
-        console.warn('Ошибка загрузки тегов:', error);
-      }
-    };
-    load();
-  }, []);
 
   const handleChange = (values) => {
     setSelectedIds(values);

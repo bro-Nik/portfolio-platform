@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal, Input, Button, Space, message } from 'antd';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useModalStore } from '@portfolio/shared';
-import { tagApi } from '../../api/tagApi';
+import { useTagsQuery } from '../../../../hooks/queries/useTagsQuery';
+import { useTagMutations } from '../../../../hooks/queries/useTagMutations';
 
 const PRESET_COLORS = [
   '#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1',
@@ -13,35 +14,22 @@ const TagManagementModal = () => {
   const { modalProps, closeModal } = useModalStore();
   const { onTagsChange } = modalProps;
 
-  const [tags, setTags] = useState([]);
+  const { data: tags = [] } = useTagsQuery();
+  const { createTag, updateTag, deleteTag } = useTagMutations();
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState('');
   const [editColor, setEditColor] = useState(PRESET_COLORS[0]);
   const [showForm, setShowForm] = useState(false);
 
-  const loadTags = async () => {
-    try {
-      const data = await tagApi.getTags();
-      setTags(data);
-    } catch (error) {
-      console.warn('Ошибка загрузки тегов:', error);
-    }
-  };
-
-  useEffect(() => {
-    loadTags();
-  }, []);
-
   const handleCreate = async () => {
     if (!editName.trim()) return;
     setLoading(true);
     try {
-      await tagApi.createTag(editName.trim(), editColor);
+      await createTag.mutateAsync({ name: editName.trim(), color: editColor });
       message.success('Тег создан');
       setEditName('');
       setShowForm(false);
-      await loadTags();
       onTagsChange?.();
     } catch (error) {
       message.error(error.message);
@@ -53,12 +41,11 @@ const TagManagementModal = () => {
     if (!editName.trim()) return;
     setLoading(true);
     try {
-      await tagApi.updateTag(editId, { name: editName.trim(), color: editColor });
+      await updateTag.mutateAsync({ tagId: editId, data: { name: editName.trim(), color: editColor } });
       message.success('Тег обновлён');
       setEditId(null);
       setEditName('');
       setShowForm(false);
-      await loadTags();
       onTagsChange?.();
     } catch (error) {
       message.error(error.message);
@@ -69,9 +56,8 @@ const TagManagementModal = () => {
   const handleDelete = async (tagId) => {
     setLoading(true);
     try {
-      await tagApi.deleteTag(tagId);
+      await deleteTag.mutateAsync(tagId);
       message.success('Тег удалён');
-      await loadTags();
       onTagsChange?.();
     } catch (error) {
       message.error(error.message);
