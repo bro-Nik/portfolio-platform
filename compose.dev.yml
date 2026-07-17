@@ -11,6 +11,7 @@ services:
     volumes:
       - ./backend/app:/app/app
       - ./backend/app/alembic.ini:/app/alembic.ini
+      - ./backend/app/alembic/:/app/alembic/
 
   worker:
     volumes:
@@ -19,6 +20,12 @@ services:
   scheduler:
     volumes:
       - ./backend/app:/app/app
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
   nginx:
     ports: ["8081:80"]

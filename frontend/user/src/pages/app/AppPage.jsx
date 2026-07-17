@@ -10,6 +10,7 @@ import WalletsPage from 'src/modules/wallets/components/wallet-list/WalletsPage'
 import WalletPage from 'src/modules/wallets/components/wallet/WalletPage';
 import WalletAssetPage from 'src/modules/wallets/components/asset/AssetPage';
 import WishlistPage from './WishlistPage'
+import SettingsPage from 'src/pages/settings/SettingsPage'
 
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
@@ -28,6 +29,7 @@ const AppPage = () => {
     'portfolios': PortfoliosPage,
     'wallets': WalletsPage,
     'wishlist': WishlistPage,
+    'settings': SettingsPage,
   }
 
   // Рендер основных разделов

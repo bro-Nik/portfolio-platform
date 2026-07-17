@@ -17,7 +17,8 @@ class RefreshToken(Base):
         ForeignKey('users.id', ondelete='CASCADE'),
         nullable=False,
     )
-    token: Mapped[str] = mapped_column(String(512), unique=True, nullable=False, index=True)
+    token: Mapped[str | None] = mapped_column(String(512), nullable=True, index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     expires_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
     user: Mapped['User'] = relationship('User', back_populates='refresh_tokens')
@@ -36,6 +37,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole, create_constraint=True, validate_strings=True),
         nullable=False,

@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
+from app.common.exceptions import AuthenticationError, BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 from app.common.schemas import Context
 
 from app.modules.auth.models import User
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.schemas import (
-    UserCreate, UserCreateRequest, UserUpdate, UserUpdateRequest, UserRole,
+    EmailChangeRequest, PasswordChangeRequest, UserCreate, UserCreateRequest, UserUpdate, UserUpdateRequest, UserRole,
 )
 from app.modules.auth.security import SecurityService
 
@@ -55,6 +55,21 @@ class UserService:
 
     async def update_activity(self, user_id: int) -> None:
         await self.repo.update_activity(user_id)
+
+    async def change_password(self, user_id: int, data: PasswordChangeRequest) -> None:
+        user = await self.get(user_id)
+        if not self.security.verify_password(data.current_password, user.password_hash):
+            raise AuthenticationError('Неверный текущий пароль')
+        password_hash = self.security.get_password_hash(data.new_password)
+        await self.repo.update(user_id, {'password_hash': password_hash})
+
+    async def change_email(self, user_id: int, data: EmailChangeRequest) -> str:
+        user = await self.get(user_id)
+        if not self.security.verify_password(data.current_password, user.password_hash):
+            raise AuthenticationError('Неверный текущий пароль')
+        if await self.repo.exists_by(User.email == data.new_email):
+            raise ConflictError(f'Пользователь с email {data.new_email} уже существует')
+        return self.security.create_email_verification_token(user_id, new_email=data.new_email)
 
     async def _validate_create_data(self, data: UserCreateRequest) -> None:
         if self.ctx.actor_optional and data.role.priority >= self.ctx.actor.role.priority:

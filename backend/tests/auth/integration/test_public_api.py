@@ -24,6 +24,7 @@ class TestPublicAPI:
         user = await repo.get_by_email('newuser@example.com')
         assert user is not None
         assert user.email == 'newuser@example.com'
+        assert user.is_verified is False
 
         token_repo = TokenRepository(db_session)
         tokens = await token_repo.get_all(RefreshToken.user_id == user.id)

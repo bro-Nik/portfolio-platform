@@ -1,5 +1,6 @@
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
+from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
@@ -12,6 +13,7 @@ from app.main import app
 
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.schemas import UserCreate
+from app.modules.auth.tasks import send_verification_email
 
 import app.modules.auth.models  # noqa: F401
 
@@ -48,6 +50,12 @@ async def db_session(test_engine):
             await session.rollback()
 
 
+@pytest.fixture(autouse=True)
+def mock_taskiq():
+    with patch.object(send_verification_email, 'kiq', AsyncMock()):
+        yield
+
+
 @pytest.fixture
 async def client(db_session):
     app.dependency_overrides[get_session] = lambda: db_session
@@ -70,5 +78,6 @@ async def test_user(db_session: AsyncSession):
         password_hash='$2b$12$Yn8dj.X/x2KcyS1twOGkteMqauO4dlECs/zFTzkH5tABpPbMFnFQS',
         role='user',
         status='active',
+        is_verified=True,
     )
     return await user_repo.create(data.model_dump())

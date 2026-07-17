@@ -39,6 +39,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: UserRole
     status: str
+    is_verified: bool = False
     created_at: datetime | None = None
     last_active_at: datetime | None = None
     total_active_time: int = Field(0, description='Total time on site in seconds')
@@ -55,6 +56,16 @@ class UserResponse(BaseModel):
         return time_diff.total_seconds() < settings.jwt_access_token_expire_minutes * 60
 
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class EmailChangeRequest(BaseModel):
+    current_password: str
+    new_email: EmailStr
+
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
@@ -65,11 +76,21 @@ class UserRegister(BaseModel):
     password: str
 
 
+class RegisterResponse(BaseModel):
+    message: str
+
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr | None = None
+    password: str | None = None
+
+
 class UserCreate(BaseModel):
     email: EmailStr
     password_hash: str
     role: UserRole = UserRole.USER
     status: str = 'active'
+    is_verified: bool = False
 
 
 class UserUpdate(BaseModel):

@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
+from app.common.exceptions import AuthenticationError, BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.schemas import UserRole
@@ -291,3 +291,39 @@ class TestUserService:
         await service.update_activity(user_id)
 
         service.repo.update_activity.assert_called_once_with(user_id)
+
+    async def test_change_password_success(self, service, mock, data):
+        user = mock(id=user_id, password_hash='old_hashed')
+        change_data = data(current_password='oldpass', new_password='newpass')
+
+        with (
+            patch.object(service.repo, 'get', return_value=user),
+            patch.object(service.security, 'verify_password', return_value=True),
+            patch.object(service.security, 'get_password_hash', return_value='new_hashed'),
+            patch.object(service.repo, 'update'),
+        ):
+            await service.change_password(user_id, change_data)
+
+            service.security.verify_password.assert_called_once_with('oldpass', 'old_hashed')
+            service.security.get_password_hash.assert_called_once_with('newpass')
+            service.repo.update.assert_called_once_with(user_id, {'password_hash': 'new_hashed'})
+
+    async def test_change_password_wrong_current(self, service, mock, data):
+        user = mock(id=user_id, password_hash='old_hashed')
+        change_data = data(current_password='wrongpass', new_password='newpass')
+
+        with (
+            patch.object(service.repo, 'get', return_value=user),
+            patch.object(service.security, 'verify_password', return_value=False),
+            pytest.raises(AuthenticationError, match='Неверный текущий пароль'),
+        ):
+            await service.change_password(user_id, change_data)
+
+    async def test_change_password_user_not_found(self, service, data):
+        change_data = data(current_password='oldpass', new_password='newpass')
+
+        with (
+            patch.object(service.repo, 'get', return_value=None),
+            pytest.raises(NotFoundError, match='не найден'),
+        ):
+            await service.change_password(999, change_data)

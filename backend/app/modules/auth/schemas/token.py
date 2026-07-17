@@ -9,14 +9,18 @@ class TokensResponse(BaseModel):
 
 class RefreshTokenCreate(BaseModel):
     user_id: int
-    token: str
+    token_hash: str
     expires_at: int
 
 
 class RefreshTokenUpdate(BaseModel):
-    token: str
+    token_hash: str
     expires_at: int
 
 
 class RefreshTokenRequest(BaseModel):
+    token: str
+
+
+class VerifyEmailRequest(BaseModel):
     token: str

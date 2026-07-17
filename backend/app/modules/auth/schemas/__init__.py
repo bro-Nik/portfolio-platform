@@ -1,8 +1,12 @@
 from app.common.schemas import AuthUser, UserRole, Context
 
 from .session import LoginSessionCreate, LoginSessionResponse, LoginSessionUpdate
-from .token import RefreshTokenCreate, RefreshTokenRequest, RefreshTokenUpdate, TokensResponse
+from .token import RefreshTokenCreate, RefreshTokenRequest, RefreshTokenUpdate, TokensResponse, VerifyEmailRequest
 from .user import (
+    EmailChangeRequest,
+    PasswordChangeRequest,
+    RegisterResponse,
+    ResendVerificationRequest,
     UserCreate,
     UserCreateRequest,
     UserLogin,
@@ -18,10 +22,15 @@ __all__ = [
     'LoginSessionCreate',
     'LoginSessionResponse',
     'LoginSessionUpdate',
+    'EmailChangeRequest',
+    'PasswordChangeRequest',
+    'RegisterResponse',
+    'ResendVerificationRequest',
     'RefreshTokenCreate',
     'RefreshTokenRequest',
     'RefreshTokenUpdate',
     'TokensResponse',
+    'VerifyEmailRequest',
     'UserCreate',
     'UserCreateRequest',
     'UserLogin',

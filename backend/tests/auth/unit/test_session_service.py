@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from unittest.mock import patch
 
+from fastapi import HTTPException
 from freezegun import freeze_time
 import pytest
 
@@ -67,3 +68,48 @@ class TestSessionService:
 
             service.repo.get_by_token_id.assert_called_once_with(999)
             service.repo.update.assert_not_called()
+
+    async def test_get_user_sessions(self, service):
+        sessions = ['session1', 'session2']
+
+        with patch.object(service.repo, 'get_all_by_user_id', return_value=sessions):
+            result = await service.get_user_sessions(user_id)
+
+            service.repo.get_all_by_user_id.assert_called_once_with(user_id)
+            assert result == sessions
+
+    async def test_delete_session_success(self, service, mock):
+        session_id = 10
+        db_session = mock(id=session_id, user_id=user_id, refresh_token_id=100)
+
+        with (
+            patch.object(service.repo, 'get', return_value=db_session),
+            patch.object(service.token_repo, 'delete'),
+            patch.object(service.repo, 'delete'),
+        ):
+            await service.delete_session(session_id, user_id)
+
+            service.repo.get.assert_called_once_with(session_id)
+            service.token_repo.delete.assert_called_once_with(100)
+            service.repo.delete.assert_called_once_with(session_id)
+
+    async def test_delete_session_not_found(self, service):
+        with (
+            patch.object(service.repo, 'get', return_value=None),
+            pytest.raises(HTTPException) as exc,
+        ):
+            await service.delete_session(999, user_id)
+
+            assert exc.value.status_code == 404
+
+    async def test_delete_session_wrong_user(self, service, mock):
+        session_id = 10
+        db_session = mock(id=session_id, user_id=999, refresh_token_id=100)
+
+        with (
+            patch.object(service.repo, 'get', return_value=db_session),
+            pytest.raises(HTTPException) as exc,
+        ):
+            await service.delete_session(session_id, user_id)
+
+            assert exc.value.status_code == 404

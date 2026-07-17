@@ -21,3 +21,4 @@ class AuthUser(BaseModel):
     id: int
     role: UserRole = UserRole.USER
     email: EmailStr | None = None
+    is_verified: bool = False

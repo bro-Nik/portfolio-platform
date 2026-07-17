@@ -4,6 +4,8 @@ interface TokenPayload {
   id: string;
   login?: string;
   role?: string;
+  email?: string;
+  is_verified?: boolean;
   exp: number;
   [key: string]: unknown;
 }

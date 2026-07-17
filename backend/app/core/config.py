@@ -23,6 +23,15 @@ class Settings(BaseSettings):
     rate_limit_auth: str = '10/minute'
     rate_limit_public: str = '10/minute'
 
+    smtp_host: str = ''
+    smtp_port: int = 587
+    smtp_user: str = ''
+    smtp_password: str = ''
+    smtp_from_email: str = 'noreply@portfolios.app'
+
+    frontend_url: str = 'http://localhost:3000'
+    email_verification_token_expire_hours: int = 48
+
     model_config = SettingsConfigDict(
         env_file='.env',
         env_file_encoding='utf-8',

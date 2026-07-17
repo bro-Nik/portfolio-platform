@@ -17,7 +17,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 FROM base AS worker
 USER appuser
-CMD ["taskiq", "worker", "app.modules.market.taskiq_setup:broker", "app.modules.market.tasks"]
+CMD ["taskiq", "worker", "app.modules.market.taskiq_setup:broker", "app.modules.market.tasks", "app.modules.auth.tasks"]
 
 FROM base AS test
 COPY requirements-test.txt ./

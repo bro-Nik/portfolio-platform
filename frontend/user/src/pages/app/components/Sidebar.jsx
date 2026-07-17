@@ -1,13 +1,11 @@
 import React from 'react';
 import { useAuthStore, authService, useThemeStore } from '@portfolio/shared';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { useNavigate } from 'react-router-dom';
-import { Dropdown, Space, Avatar, Menu, Select, Button } from 'antd';
+import { Dropdown, Space, Avatar, Select, Button } from 'antd';
 import { User, Settings, LogOut, ChevronDown, Briefcase, Wallet, Star, X, Sun, Moon } from 'lucide-react';
 import '../styles/Sidebar.scss';
 
 const Sidebar = () => {
-  const navigate = useNavigate();
   const { activeSection, setActiveSection, openedItems, openItem, closeItem } = useNavigation();
   const { user, logout: authLogout, isAdmin } = useAuthStore();
   const { logout } = authService();
@@ -132,19 +130,13 @@ const LocaleSelectors = () => (
 );
 
 const UserDropdown = ({ user, logout }) => {
+  const { setActiveSection } = useNavigation();
   const menuItems = [
-    {
-      key: 'profile',
-      icon: <User size={16} />,
-      label: 'Профиль',
-      onClick: () => console.log('Профиль')
-    },
     {
       key: 'settings',
       icon: <Settings size={16} />,
-      label: 'Настройки',
-      disabled: true,
-      onClick: () => console.log('Настройки')
+      label: 'Профиль',
+      onClick: () => setActiveSection('settings')
     },
     {
       type: 'divider',

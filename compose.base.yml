@@ -46,7 +46,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: base
-    command: taskiq worker app.modules.market.taskiq_setup:broker app.modules.market.tasks --log-level INFO
+    command: taskiq worker app.modules.market.taskiq_setup:broker app.modules.market.tasks app.modules.auth.tasks --log-level INFO
     env_file:
       - path: ./.env
         required: false

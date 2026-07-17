@@ -4,9 +4,16 @@ from app.common.exceptions import handle_errors
 from app.core.rate_limit import limiter
 
 from app.core import settings
-from app.modules.auth.dependencies import AuthServiceDep, require_user
+from app.modules.auth.dependencies import AuthServiceDep, SessionServiceDep, UserServiceDep, require_user
 from app.common.schemas import AuthUser
-from app.modules.auth.schemas import RefreshTokenRequest, TokensResponse, UserLogin, UserRegister
+from app.common.dependencies import CurrentUserOrNone
+from app.modules.auth.schemas import (
+    EmailChangeRequest, LoginSessionResponse, PasswordChangeRequest, RefreshTokenRequest,
+    RegisterResponse, ResendVerificationRequest, TokensResponse, UserLogin, UserRegister,
+    VerifyEmailRequest,
+)
+from app.modules.auth.services.auth import RegisterTaskData
+from app.modules.auth.tasks import send_verification_email
 from typing import Annotated
 
 
@@ -25,6 +32,7 @@ async def register(
     result = await auth.register(data)
     bg_tasks.add_task(auth.session_service.create, result.refresh_token_id, result.user_id)
     bg_tasks.add_task(auth.user_service.update_activity, result.user_id)
+    await send_verification_email.kiq(result.email, result.verification_token)
     return result.tokens
 
 
@@ -43,6 +51,35 @@ async def login(
     return result.tokens
 
 
+@router.post('/verify-email')
+@limiter.limit(settings.rate_limit_public)
+@handle_errors('Ошибка подтверждения email')
+async def verify_email(
+    data: VerifyEmailRequest,
+    request: Request,
+    auth: AuthServiceDep,
+) -> RegisterResponse:
+    return await auth.verify_email(data.token)
+
+
+@router.post('/resend-verification')
+@limiter.limit(settings.rate_limit_public)
+@handle_errors('Ошибка повторной отправки')
+async def resend_verification(
+    data: ResendVerificationRequest,
+    request: Request,
+    auth: AuthServiceDep,
+    current_user: CurrentUserOrNone = None,
+) -> RegisterResponse:
+    email = current_user.email if current_user else data.email
+    if not email:
+        return RegisterResponse(message='Email не указан')
+    result = await auth.resend_verification(email)
+    if isinstance(result, RegisterTaskData):
+        await send_verification_email.kiq(result.email, result.token)
+    return result if isinstance(result, RegisterResponse) else RegisterResponse(message=result.message)
+
+
 @router.post('/refresh')
 @limiter.limit(settings.rate_limit_public)
 @handle_errors('Ошибка обновления токена')
@@ -56,6 +93,31 @@ async def refresh_tokens(
     bg_tasks.add_task(auth.session_service.update, result.refresh_token_id)
     bg_tasks.add_task(auth.user_service.update_activity, result.user_id)
     return result.tokens
+
+
+@router.put('/password', status_code=204)
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка смены пароля')
+async def change_password(
+    data: PasswordChangeRequest,
+    request: Request,
+    user_service: UserServiceDep,
+    current_user: Annotated[AuthUser, require_user],
+) -> None:
+    await user_service.change_password(current_user.id, data)
+
+
+@router.put('/email', status_code=204)
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка смены email')
+async def change_email(
+    data: EmailChangeRequest,
+    request: Request,
+    user_service: UserServiceDep,
+    current_user: Annotated[AuthUser, require_user],
+) -> None:
+    token = await user_service.change_email(current_user.id, data)
+    await send_verification_email.kiq(data.new_email, token)
 
 
 @router.post('/logout', status_code=204)
@@ -78,3 +140,26 @@ async def logout_all(
     _: Annotated[AuthUser, require_user],
 ) -> None:
     await auth.logout_all()
+
+
+@router.get('/sessions')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка получения сессий')
+async def get_sessions(
+    request: Request,
+    session_service: SessionServiceDep,
+    current_user: Annotated[AuthUser, require_user],
+) -> list[LoginSessionResponse]:
+    return await session_service.get_user_sessions(current_user.id)
+
+
+@router.delete('/sessions/{session_id}', status_code=204)
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка удаления сессии')
+async def delete_session(
+    request: Request,
+    session_id: int,
+    session_service: SessionServiceDep,
+    current_user: Annotated[AuthUser, require_user],
+) -> None:
+    await session_service.delete_session(session_id, current_user.id)
