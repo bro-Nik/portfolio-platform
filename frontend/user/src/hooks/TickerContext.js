@@ -38,8 +38,8 @@ export const useAssetPricesQuery = () => {
     queryKey: ['assetPrices', tickerIds],
     queryFn: () => marketApi.post('/prices', tickerIds),
     enabled: tickerIds.length > 0,
-    refetchInterval: 30000,
-    staleTime: 30000,
+    refetchInterval: 12 * 60 * 60 * 1000,
+    staleTime: 12 * 60 * 60 * 1000,
   });
 };
 

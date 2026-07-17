@@ -18,7 +18,7 @@ export const useWalletsData = () => {
     }
   }, [rawWallets, addTickerIds]);
 
-  const { data: pricesData } = useAssetPricesQuery();
+  const { data: pricesData, isLoading: pricesLoading } = useAssetPricesQuery();
   const prices = useMemo(() => pricesData?.prices || {}, [pricesData]);
 
   const getWallet = (walletId) => {
@@ -84,7 +84,7 @@ export const useWalletsData = () => {
   return {
     wallets: walletsWithStats,
     overallStats,
-    loading: isLoading,
+    loading: isLoading || pricesLoading,
     getWallet,
     refresh,
   };

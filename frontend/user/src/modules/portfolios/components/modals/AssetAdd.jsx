@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Modal, Input, List, Avatar, Spin, Empty, Button, message } from 'antd';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { Modal, Input, List, Avatar, Spin, Empty, Button, message, Tooltip } from 'antd';
 import { Search } from 'lucide-react';
 import { useModalStore } from '@portfolio/shared';
 import { assetApi } from 'src/modules/assets/api/assetApi';
@@ -9,6 +9,11 @@ const AssetAddModal = () => {
   const { modalProps, closeModal } = useModalStore();
   const { portfolio } = modalProps;
   const { addAsset, loading: addLoading } = usePortfolioOperations();
+
+  const existingTickerIds = useMemo(
+    () => new Set(portfolio.assets?.map(a => a.tickerId) || []),
+    [portfolio.assets]
+  );
 
   const [loading, setLoading] = useState(false);
   const [tickers, setTickers] = useState([]);
@@ -97,6 +102,7 @@ const AssetAddModal = () => {
 
   // Обработчик выбора актива
   const handleSelect = async (ticker: Ticker) => {
+    if (existingTickerIds.has(ticker.id)) return;
     const result = await addAsset(portfolio, ticker);
 
     if (result.success) {
@@ -117,7 +123,10 @@ const AssetAddModal = () => {
     closeModal();
   };
 
-  const renderTickerItem = (ticker: Ticker) => (
+  const renderTickerItem = (ticker: Ticker) => {
+    const isDisabled = existingTickerIds.has(ticker.id);
+
+    return (
     <List.Item
       key={ticker.id}
       style={{ 
@@ -126,9 +135,11 @@ const AssetAddModal = () => {
         border: 'none',
       }}
     >
+      <Tooltip title={isDisabled ? 'Актив уже добавлен в портфель' : ''}>
       <div
         className="ticker-item"
-        onClick={() => handleSelect(ticker)}
+        onClick={() => !isDisabled && handleSelect(ticker)}
+        style={isDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
       >
         {/* Иконка */}
         <div style={{ flexShrink: 0 }}>
@@ -225,8 +236,10 @@ const AssetAddModal = () => {
           </div>
         </div>
       </div>
+      </Tooltip>
     </List.Item>
-  );
+    );
+  };
 
   return (
     <Modal

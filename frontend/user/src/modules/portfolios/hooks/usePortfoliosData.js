@@ -18,7 +18,7 @@ export const usePortfoliosData = () => {
     }
   }, [rawPortfolios, addTickerIds]);
 
-  const { data: pricesData } = useAssetPricesQuery();
+  const { data: pricesData, isLoading: pricesLoading } = useAssetPricesQuery();
   const prices = useMemo(() => pricesData?.prices || {}, [pricesData]);
 
   const { portfoliosWithStats, overallStats } = useMemo(() => {
@@ -112,7 +112,7 @@ export const usePortfoliosData = () => {
   return {
     portfolios: portfoliosWithStats,
     overallStats,
-    loading: isLoading,
+    loading: isLoading || pricesLoading,
     getPortfolio,
     getPortfolioAsset,
     refresh,

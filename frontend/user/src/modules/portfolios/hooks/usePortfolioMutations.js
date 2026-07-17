@@ -22,13 +22,78 @@ export const usePortfolioMutations = () => {
   const addAsset = useMutation({
     mutationFn: ({ portfolio, asset }) =>
       portfolioApi.addAssetToPortfolio(portfolio.id, asset.id),
-    onSuccess: () => invalidate(),
+
+    onMutate: async ({ portfolio, asset }) => {
+      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      const previous = queryClient.getQueryData(['portfolios']);
+
+      queryClient.setQueryData(['portfolios'], (old) => {
+        if (!old?.portfolios) return old;
+        return {
+          ...old,
+          portfolios: old.portfolios.map(p => {
+            if (p.id !== portfolio.id) return p;
+            const tempAsset = {
+              id: `optimistic-${Date.now()}`,
+              tickerId: asset.id,
+              portfolioId: portfolio.id,
+              quantity: 0,
+              amount: 0,
+              buyOrders: 0,
+              sellOrders: 0,
+              realizedProfit: 0,
+              totalInvested: 0,
+              tags: [],
+            };
+            return { ...p, assets: [...p.assets, tempAsset] };
+          }),
+        };
+      });
+
+      return { previous };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['portfolios'], context.previous);
+      }
+    },
+
+    onSettled: () => invalidate(),
   });
 
   const deleteAsset = useMutation({
     mutationFn: ({ portfolio, asset }) =>
       portfolioApi.delAssetFromPortfolio(portfolio.id, asset.id),
-    onSuccess: () => invalidate(),
+
+    onMutate: async ({ portfolio, asset }) => {
+      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      const previous = queryClient.getQueryData(['portfolios']);
+
+      queryClient.setQueryData(['portfolios'], (old) => {
+        if (!old?.portfolios) return old;
+        return {
+          ...old,
+          portfolios: old.portfolios.map(p => {
+            if (p.id !== portfolio.id) return p;
+            return {
+              ...p,
+              assets: p.assets.filter(a => a.id !== asset.id),
+            };
+          }),
+        };
+      });
+
+      return { previous };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['portfolios'], context.previous);
+      }
+    },
+
+    onSettled: () => invalidate(),
   });
 
   return { editPortfolio, deletePortfolio, addAsset, deleteAsset };

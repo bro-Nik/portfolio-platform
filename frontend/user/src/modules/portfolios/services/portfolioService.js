@@ -19,10 +19,10 @@ export const portfolioService = {
       return { isValid: false, error: 'Актив не указан' };
     }
 
-    // ToDo Дополнительные проверки:
-    // - есть ли право у пользователя
-    // - не превышен лимит активов в портфеле
-    // - не добавлен ли уже этот актив
+    const isDuplicate = portfolio.assets?.some(a => a.tickerId === asset.id);
+    if (isDuplicate) {
+      return { isValid: false, error: 'Этот актив уже добавлен в портфель' };
+    }
 
     return { isValid: true };
   },
