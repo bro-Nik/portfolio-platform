@@ -27,7 +27,7 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     let free = asset?.quantity || 0;
     if (transaction
         && (asset.tickerId === transaction.tickerId || asset.tickerId === transaction.ticker2Id)
-        && (portfolio.id === transaction.portflioId || portfolio.id === transaction.portfolio2Id)
+        && (portfolio.id === transaction.portfolioId || portfolio.id === transaction.portfolio2Id)
     ) free += +transaction.quantity * getTransactionQuantityDirection(transaction);
     return free;
   }, [transaction]);

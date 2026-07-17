@@ -31,7 +31,7 @@ const AssetAddModal = () => {
       setLoading(true);
 
       try {
-        const { data, has_more } = await assetApi.getTickersByMarket(portfolio.market, search, page);
+        const { data, hasMore } = await assetApi.getTickersByMarket(portfolio.market, search, page);
         if (append) {
           setTickers(prev => [...prev, ...data]);
         } else {
@@ -42,7 +42,7 @@ const AssetAddModal = () => {
             listRef.current.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }
-        setHasMore(has_more);
+        setHasMore(hasMore);
       } catch (error) {
         console.warn('Ошибка загрузки тикеров:', error);
       }
@@ -173,7 +173,7 @@ const AssetAddModal = () => {
               {ticker.name}
             </span>
             
-            {ticker.market_cap_rank && (
+            {ticker.marketCapRank && (
               <span style={{ 
                 fontSize: '11px',
                 fontWeight: 600,
@@ -184,7 +184,7 @@ const AssetAddModal = () => {
                 lineHeight: 1,
                 whiteSpace: 'nowrap',
               }}>
-                #{ticker.market_cap_rank}
+                #{ticker.marketCapRank}
               </span>
             )}
           </div>
