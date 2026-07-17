@@ -41,7 +41,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         symbol: ticker?.symbol,
       };
     });
-  }, [assets, portfolio.costNow]);
+  }, [assets, portfolio.costNow, getTicker]);
 
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;

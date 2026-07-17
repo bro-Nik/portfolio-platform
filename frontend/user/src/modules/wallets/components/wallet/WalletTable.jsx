@@ -39,7 +39,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
         symbol: ticker?.symbol,
       };
     });
-  }, [assets, wallet.costNow]);
+  }, [assets, wallet.costNow, getTicker]);
 
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;
