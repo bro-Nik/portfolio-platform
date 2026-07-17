@@ -31,6 +31,7 @@ class Settings(BaseSettings):
 
     frontend_url: str = 'http://localhost:3000'
     email_verification_token_expire_hours: int = 48
+    password_reset_token_expire_minutes: int = 60
 
     model_config = SettingsConfigDict(
         env_file='.env',

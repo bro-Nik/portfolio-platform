@@ -145,6 +145,24 @@ export const authService = () => {
     }
   };
 
+  const forgotPassword = async (email: string): Promise<{ success: boolean; message?: string; error?: string }> => {
+    try {
+      const data = await api.post('/forgot-password', { email }) as { message?: string };
+      return { success: true, message: data?.message };
+    } catch (error) {
+      return { success: false, error: (error as Error)?.message || 'Ошибка восстановления пароля' };
+    }
+  };
+
+  const resetPassword = async (token: string, password: string): Promise<{ success: boolean; message?: string; error?: string }> => {
+    try {
+      const data = await api.post('/reset-password', { token, password }) as { message?: string };
+      return { success: true, message: data?.message };
+    } catch (error) {
+      return { success: false, error: (error as Error)?.message || 'Ошибка сброса пароля' };
+    }
+  };
+
   const changeEmail = async (currentPassword: string, newEmail: string): Promise<{ success: boolean; error?: string }> => {
     try {
       await authApi.put('/email', { currentPassword, newEmail });
@@ -160,6 +178,8 @@ export const authService = () => {
     logout,
     verifyEmail,
     resendVerification,
+    forgotPassword,
+    resetPassword,
     changePassword,
     changeEmail,
     getSessions,

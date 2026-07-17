@@ -50,6 +50,8 @@ class User(Base):
     last_active_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     total_active_time: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     status: Mapped[str] = mapped_column(String(50), default='active', nullable=False)
+    reset_password_token_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    reset_password_token_expires_at: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
 
     refresh_tokens: Mapped[list['RefreshToken']] = relationship(
         'RefreshToken',

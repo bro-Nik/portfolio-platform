@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from datetime import UTC, datetime
+
 from app.common.exceptions import AuthenticationError, BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 from app.common.schemas import Context
-
+from app.core import settings
 from app.modules.auth.models import User
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.schemas import (
@@ -70,6 +72,39 @@ class UserService:
         if await self.repo.exists_by(User.email == data.new_email):
             raise ConflictError(f'Пользователь с email {data.new_email} уже существует')
         return self.security.create_email_verification_token(user_id, new_email=data.new_email)
+
+    async def forgot_password(self, email: str) -> str | None:
+        user = await self.repo.get_by_email(email)
+        if not user:
+            return None
+        token = self.security.create_password_reset_token(user.id)
+        token_hash = self.security.hash_token(token)
+        expires_at = int(datetime.now(UTC).timestamp()) + settings.password_reset_token_expire_minutes * 60
+        await self.repo.update(user.id, {
+            'reset_password_token_hash': token_hash,
+            'reset_password_token_expires_at': expires_at,
+        })
+        return token
+
+    async def reset_password(self, token: str, new_password: str) -> int:
+        user_id = self.security.verify_password_reset_token(token)
+        user = await self.repo.get(user_id)
+        if not user:
+            raise AuthenticationError('Пользователь не найден')
+        if not user.reset_password_token_hash or not user.reset_password_token_expires_at:
+            raise AuthenticationError('Сброс пароля не был запрошен')
+        token_hash = self.security.hash_token(token)
+        if user.reset_password_token_hash != token_hash:
+            raise AuthenticationError('Невалидный токен сброса пароля')
+        if datetime.now(UTC).timestamp() > user.reset_password_token_expires_at:
+            raise AuthenticationError('Срок действия токена истёк')
+        password_hash = self.security.get_password_hash(new_password)
+        await self.repo.update(user_id, {
+            'password_hash': password_hash,
+            'reset_password_token_hash': None,
+            'reset_password_token_expires_at': None,
+        })
+        return user_id
 
     async def _validate_create_data(self, data: UserCreateRequest) -> None:
         if self.ctx.actor_optional and data.role.priority >= self.ctx.actor.role.priority:

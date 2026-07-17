@@ -85,6 +85,15 @@ class ResendVerificationRequest(BaseModel):
     password: str | None = None
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str
+
+
 class UserCreate(BaseModel):
     email: EmailStr
     password_hash: str

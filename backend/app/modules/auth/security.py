@@ -110,3 +110,23 @@ class SecurityService:
     def _get_email_verification_token_expiry(cls) -> int:
         delta = timedelta(hours=settings.email_verification_token_expire_hours)
         return int((datetime.now(UTC) + delta).timestamp())
+
+    @classmethod
+    def create_password_reset_token(cls, user_id: int) -> str:
+        return cls._jwt_encode({
+            'id': str(user_id),
+            'type': 'password_reset',
+            'exp': cls._get_password_reset_token_expiry(),
+        })
+
+    @classmethod
+    def verify_password_reset_token(cls, token: str) -> int:
+        payload = cls.verify_token(token)
+        if payload.get('type') != 'password_reset' or not payload.get('id'):
+            raise AuthenticationError('Невалидный токен сброса пароля')
+        return int(payload['id'])
+
+    @classmethod
+    def _get_password_reset_token_expiry(cls) -> int:
+        delta = timedelta(minutes=settings.password_reset_token_expire_minutes)
+        return int((datetime.now(UTC) + delta).timestamp())

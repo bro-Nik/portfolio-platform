@@ -8,12 +8,12 @@ from app.modules.auth.dependencies import AuthServiceDep, SessionServiceDep, Use
 from app.common.schemas import AuthUser
 from app.common.dependencies import CurrentUserOrNone
 from app.modules.auth.schemas import (
-    EmailChangeRequest, LoginSessionResponse, PasswordChangeRequest, RefreshTokenRequest,
-    RegisterResponse, ResendVerificationRequest, TokensResponse, UserLogin, UserRegister,
-    VerifyEmailRequest,
+    EmailChangeRequest, ForgotPasswordRequest, LoginSessionResponse, PasswordChangeRequest,
+    RefreshTokenRequest, RegisterResponse, ResetPasswordRequest, ResendVerificationRequest,
+    TokensResponse, UserLogin, UserRegister,
 )
 from app.modules.auth.services.auth import RegisterTaskData
-from app.modules.auth.tasks import send_verification_email
+from app.modules.auth.tasks import send_password_reset_email, send_verification_email
 from typing import Annotated
 
 
@@ -55,7 +55,7 @@ async def login(
 @limiter.limit(settings.rate_limit_public)
 @handle_errors('Ошибка подтверждения email')
 async def verify_email(
-    data: VerifyEmailRequest,
+    data: RefreshTokenRequest,
     request: Request,
     auth: AuthServiceDep,
 ) -> RegisterResponse:
@@ -93,6 +93,33 @@ async def refresh_tokens(
     bg_tasks.add_task(auth.session_service.update, result.refresh_token_id)
     bg_tasks.add_task(auth.user_service.update_activity, result.user_id)
     return result.tokens
+
+
+@router.post('/forgot-password')
+@limiter.limit(settings.rate_limit_public)
+@handle_errors('Ошибка восстановления пароля')
+async def forgot_password(
+    data: ForgotPasswordRequest,
+    request: Request,
+    user_service: UserServiceDep,
+) -> RegisterResponse:
+    token = await user_service.forgot_password(data.email)
+    if token:
+        await send_password_reset_email.kiq(data.email, token)
+    return RegisterResponse(message='Если email зарегистрирован, мы отправили ссылку для сброса пароля')
+
+
+@router.post('/reset-password')
+@limiter.limit(settings.rate_limit_public)
+@handle_errors('Ошибка сброса пароля')
+async def reset_password(
+    data: ResetPasswordRequest,
+    request: Request,
+    auth: AuthServiceDep,
+) -> RegisterResponse:
+    user_id = await auth.user_service.reset_password(data.token, data.password)
+    await auth.logout_all(user_id)
+    return RegisterResponse(message='Пароль успешно сброшен')
 
 
 @router.put('/password', status_code=204)

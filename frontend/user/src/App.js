@@ -7,6 +7,8 @@ import { ChevronDown } from 'lucide-react';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/landing/LandingPage';
 import AuthPage from './pages/auth/AuthPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import AppPage from './pages/app/AppPage';
 import { ROUTES } from './constants/routes';
 import { useAuthStore, useThemeStore } from '@portfolio/shared';
@@ -32,6 +34,8 @@ function App() {
             <Route path={ROUTES.HOME} element={<LandingPage />} />
             <Route path={ROUTES.LOGIN} element={<AuthPage type="login" />} />
             <Route path={ROUTES.REGISTER} element={<AuthPage type="register" />} />
+            <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
+            <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
             <Route path={ROUTES.APP} element={
               <ConfigProvider theme={currentTheme}>
                 <ProtectedRoute>

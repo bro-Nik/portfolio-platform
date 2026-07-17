@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, useSearchParams, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService, useAuthStore } from '@portfolio/shared';
 import { ROUTES } from 'src/constants/routes';
 import { Alert, Button, Input, Spin, notification } from 'antd';
@@ -91,7 +91,13 @@ const AuthPage = ({ type }) => {
 
         {!isLogin && (
           <div style={{ marginBottom: 16 }}>
-            <Input.Password placeholder="Подтверждение пароля" required value={confirmPassword} onChange={(e) => { setVerifyStatus(null); setConfirmPassword(e.target.value); }} />
+            <Input.Password placeholder="Подтверждение пароля" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          </div>
+        )}
+
+        {isLogin && (
+          <div style={{ marginBottom: 16, textAlign: 'right' }}>
+            <a href={ROUTES.FORGOT_PASSWORD} style={{ fontSize: 13, textDecoration: 'none' }}>Забыли пароль?</a>
           </div>
         )}
 
