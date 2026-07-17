@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { createApi } from '@portfolio/shared';
 
@@ -41,27 +41,6 @@ export const useAssetPricesQuery = () => {
     refetchInterval: 12 * 60 * 60 * 1000,
     staleTime: 12 * 60 * 60 * 1000,
   });
-};
-
-export const useAssetInfoQuery = () => {
-  const { tickerIds } = useTickerIds();
-
-  return useQuery({
-    queryKey: ['assetInfo', tickerIds],
-    queryFn: () => marketApi.post('/info', tickerIds),
-    enabled: tickerIds.length > 0,
-    staleTime: 3600000,
-  });
-};
-
-export const useTickerQueries = () => {
-  const pricesQuery = useAssetPricesQuery();
-  const infoQuery = useAssetInfoQuery();
-
-  const prices = useMemo(() => pricesQuery.data?.prices || {}, [pricesQuery.data]);
-  const info = useMemo(() => infoQuery.data?.info || {}, [infoQuery.data]);
-
-  return { prices, info, pricesLoading: pricesQuery.isLoading, infoLoading: infoQuery.isLoading };
 };
 
 export const extractTickerIds = (data) => {

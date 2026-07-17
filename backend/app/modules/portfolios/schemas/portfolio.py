@@ -53,6 +53,9 @@ class PortfolioAssetResponse(PortfolioAssetBase):
     total_invested: Decimal
     buy_orders: Decimal
     tags: list[TagResponse] = []
+    name: str | None = None
+    symbol: str | None = None
+    image: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 

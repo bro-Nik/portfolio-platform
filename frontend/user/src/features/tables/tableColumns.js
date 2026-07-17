@@ -149,7 +149,7 @@ export const createActionsColumn = (renderElement) => ({
   width: 100,
 });
 
-export const createTransactionLinkColumn = (getTicker, isCounterTransaction, onClick) => ({
+export const createTransactionLinkColumn = (isCounterTransaction, onClick) => ({
   key: 'transactionLink',
   title: 'Тип',
   render: (_, record) => {
@@ -157,7 +157,7 @@ export const createTransactionLinkColumn = (getTicker, isCounterTransaction, onC
     return (
       <div onClick={() => onClick(record)}>
         <span className={colorClassName}>
-          {getTransactionTypeLabel(record, isCounterTransaction, getTicker)}
+          {getTransactionTypeLabel(record, isCounterTransaction)}
           {record.order ? ' (Ордер)' : ''}
         </span>
         <br />
@@ -169,7 +169,7 @@ export const createTransactionLinkColumn = (getTicker, isCounterTransaction, onC
   sorter: (a, b) => (a.date || '').localeCompare(b.date || ''),
 });
 
-export const createTransactionPriceColumn = (getTicker) => ({
+export const createTransactionPriceColumn = () => ({
   dataIndex: 'price',
   title: 'Цена',
   render: (_, record) => {
@@ -178,7 +178,7 @@ export const createTransactionPriceColumn = (getTicker) => ({
       {formatCurrency(record.priceUsd)}
       <br />
       <span style={{ ...smallTextStyle, ...mutedStyle }}>
-        {formatCurrency(record.price, getTicker(record.ticker2Id))}
+        {formatCurrency(record.price, record.ticker2Symbol)}
       </span>
       </>
     );
@@ -187,7 +187,7 @@ export const createTransactionPriceColumn = (getTicker) => ({
   width: 200,
 });
 
-export const createTransactionSumColumn = (getTicker, isCounterTransaction) => ({
+export const createTransactionSumColumn = (isCounterTransaction) => ({
   dataIndex: 'quantity2',
   title: 'Сумма',
   render: (_, record) => {
@@ -197,7 +197,7 @@ export const createTransactionSumColumn = (getTicker, isCounterTransaction) => (
       {formatCurrency(record.priceUsd * record.quantity)}
       <br />
       <span style={{ ...smallTextStyle, ...(!isCounterTransaction(record) ? mutedStyle : { color: getTransactionTypeColor(getAdjustedTransactionType(record, isCounterTransaction)) }) }}>
-        {isOutgoingTransaction(record.type) ? '+' : '-'}{formatCurrency(record.quantity2, getTicker(record.ticker2Id))}
+        {isOutgoingTransaction(record.type) ? '+' : '-'}{formatCurrency(record.quantity2, record.ticker2Symbol)}
       </span>
       </>
     );
@@ -206,14 +206,14 @@ export const createTransactionSumColumn = (getTicker, isCounterTransaction) => (
   width: 200,
 });
 
-export const createTransactionQuantityColumn = (getTicker, isCounterTransaction) => ({
+export const createTransactionQuantityColumn = (isCounterTransaction) => ({
   dataIndex: 'quantity',
   title: 'Количество',
   render: (_, record) => {
     const adjustedType = getAdjustedTransactionType(record, isCounterTransaction);
     return (
       <span className={isCounterTransaction(record) && isTradeTransaction(record) ? '' : getTransactionTypeColor(adjustedType)}>
-        {isOutgoingTransaction(adjustedType) ? '-' : '+'}{record.quantity} {getTicker(record.tickerId)}
+        {isOutgoingTransaction(adjustedType) ? '-' : '+'}{record.quantity} {record.tickerSymbol}
       </span>
     );
   },

@@ -1,7 +1,6 @@
 import React, { memo, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { useTicker } from 'src/hooks/useTicker';
 import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from '../TagFilter';
@@ -20,7 +19,6 @@ import {
 
 const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const { openItem } = useNavigation();
-  const { getTicker } = useTicker();
 
   const [hideCheap, setHideCheap] = useLocalStorage('portfolio-hide-cheap', false);
   const [tagFilterIds, setTagFilterIds] = useState([]);
@@ -31,17 +29,13 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
     if (!assets) return [];
 
     return assets.map(asset => {
-      const ticker = getTicker(asset.tickerId);
-
       return {
         ...asset,
         share: portfolio.costNow > 0 ? (asset.costNow / portfolio.costNow) * 100 : 0,
-        image: ticker?.image,
-        name: ticker?.name,
-        symbol: ticker?.symbol,
+        symbol: asset.symbol?.toUpperCase(),
       };
     });
-  }, [assets, portfolio.costNow, getTicker]);
+  }, [assets, portfolio.costNow]);
 
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;

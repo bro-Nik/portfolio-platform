@@ -17,7 +17,7 @@ export const getAdjustedTransactionType = (transaction, isCounterTransaction) =>
   return isCounterTransaction(transaction) ? TYPE_OPPOSITE_MAP[transaction.type] : transaction.type;
 };
 
-export const getTransactionTypeLabel = (transaction, isCounterTransaction, getTicker) => {
+export const getTransactionTypeLabel = (transaction, isCounterTransaction) => {
   let label = '';
   if (isTradeTransaction(transaction.type)) {
     label = TYPE_NAME_MAP[transaction.type];
@@ -28,7 +28,7 @@ export const getTransactionTypeLabel = (transaction, isCounterTransaction, getTi
   }
 
   if (isCounterTransaction(transaction) && isTradeTransaction(transaction.type)) {
-    label += ' ' + getTicker(transaction.tickerId);
+    label += ' ' + transaction.tickerSymbol;
   }
   return label;
 };

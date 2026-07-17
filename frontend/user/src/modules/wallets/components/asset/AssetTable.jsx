@@ -1,12 +1,10 @@
 import React, { memo, useMemo, useCallback } from 'react';
 import DataTable from 'src/features/tables/DataTable';
-import { formatCurrency } from 'src/utils/format';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useModalStore } from '@portfolio/shared';
 import { Folder, Wallet } from 'lucide-react'
 import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 import TransactionActionsDropdown from 'src/modules/transaction/components/TransactionActionsDropdown'
-import { useTicker } from 'src/hooks/useTicker';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { isTradeTransaction, isTransferTransaction } from 'src/modules/transaction/utils/type';
@@ -22,7 +20,6 @@ import {
 const AssetTable = memo(({ wallet, asset, transactions }) => {
   const { openModal } = useModalStore();
   const { openItem } = useNavigation();
-  const { getTickerSymbol } = useTicker();
   const { getPortfolio } = usePortfoliosData();
   const { getWallet } = useWalletsData();
 
@@ -39,10 +36,10 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
   }, [openModal, asset, wallet.id]);
 
   const columns = useMemo(() => [
-    createTransactionLinkColumn(getTickerSymbol, isCounterTransaction, handleTransactionClick),
-    createTransactionPriceColumn(getTickerSymbol),
-    createTransactionSumColumn(getTickerSymbol, isCounterTransaction),
-    createTransactionQuantityColumn(getTickerSymbol, isCounterTransaction),
+    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick),
+    createTransactionPriceColumn(),
+    createTransactionSumColumn(isCounterTransaction),
+    createTransactionQuantityColumn(isCounterTransaction),
     {
       key: 'relation',
       title: 'Связь',
@@ -71,7 +68,7 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
     createCommentColumn(),
     createActionsColumn(({ row }) => <TransactionActionsDropdown transaction={row.original} btn='icon' />),
   ], [
-    getTickerSymbol, isCounterTransaction, handleTransactionClick, 
+    isCounterTransaction, handleTransactionClick,
     getPortfolio, getWallet, openItem
   ]);
 

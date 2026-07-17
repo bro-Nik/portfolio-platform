@@ -1,7 +1,6 @@
 import React, { memo, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { useTicker } from 'src/hooks/useTicker';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from 'src/modules/portfolios/components/TagFilter';
 import { Input } from 'antd';
@@ -20,7 +19,6 @@ import {
 
 const WalletTable = memo(({ wallet, assets, onRefresh }) => {
   const { openItem } = useNavigation();
-  const { getTicker } = useTicker();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
 
@@ -29,17 +27,13 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
     if (!assets) return [];
 
     return assets.map(asset => {
-      const ticker = getTicker(asset.tickerId);
-
       return {
         ...asset,
         share: wallet.costNow > 0 ? (asset.costNow / wallet.costNow) * 100 : 0,
-        image: ticker?.image,
-        name: ticker?.name,
-        symbol: ticker?.symbol,
+        symbol: asset.symbol?.toUpperCase(),
       };
     });
-  }, [assets, wallet.costNow, getTicker]);
+  }, [assets, wallet.costNow]);
 
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;

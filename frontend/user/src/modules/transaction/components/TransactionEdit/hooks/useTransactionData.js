@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { usePortfoliosQuery } from 'src/modules/portfolios/hooks/usePortfoliosQuery';
 import { useWalletsQuery } from 'src/modules/wallets/hooks/useWalletsQuery';
-import { useTicker } from 'src/hooks/useTicker';
+import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import { isCounterTransactionFn } from 'src/modules/transaction/utils/type';
@@ -14,13 +14,35 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
 
   const { getWallet } = useWalletsData();
   const { getPortfolio } = usePortfoliosData();
-  const { getTicker, getTickerSymbol } = useTicker();
+  const { data: pricesData } = useAssetPricesQuery();
+  const prices = useMemo(() => pricesData?.prices || {}, [pricesData]);
 
   const isCounterTransaction = isCounterTransactionFn({ tickerId, walletId, portfolioId, transaction });
 
-  const baseTicker = getTicker(transaction?.tickerId || tickerId);
+  const baseId = transaction?.tickerId || tickerId;
 
-  const [quoteTicker, setQuoteTicker] = useState(getTicker(transaction?.ticker2Id));
+  const symbolMap = useMemo(() => {
+    const map = {};
+    portfolios.forEach(p => p.assets?.forEach(a => { map[a.tickerId] = a.symbol; }));
+    wallets.forEach(w => w.assets?.forEach(a => { map[a.tickerId] = a.symbol; }));
+    return map;
+  }, [portfolios, wallets]);
+
+  const baseTicker = useMemo(() => ({
+    id: baseId,
+    symbol: (transaction?.tickerSymbol || symbolMap[baseId])?.toUpperCase(),
+    price: prices[baseId] || 0,
+  }), [baseId, transaction?.tickerSymbol, symbolMap, prices]);
+
+  const [quoteTicker, setQuoteTicker] = useState(() => {
+    if (!transaction?.ticker2Id) return null;
+    const symbol = transaction?.ticker2Symbol || symbolMap[transaction.ticker2Id];
+    return {
+      id: transaction.ticker2Id,
+      symbol: symbol?.toUpperCase(),
+      price: prices[transaction.ticker2Id] || 0,
+    };
+  });
 
   const calculatePortfolioAssetAvailableBalance = useCallback((asset, portfolio) => {
     if (!asset) return 0;
@@ -54,7 +76,7 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     const asset = portfolio?.assets?.find(a => a.tickerId === tickerId);
     if (asset) return calculatePortfolioAssetAvailableBalance(asset, portfolio);
     return 0;
-  }, [calculatePortfolioAssetAvailableBalance, baseTicker?.id]);
+  }, [calculatePortfolioAssetAvailableBalance]);
 
   const prepareSelectedWallet = useCallback((walletId) => {
     const wallet = walletId && getWallet(walletId);
@@ -62,15 +84,15 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
 
     return {
       ...wallet,
-      baseAssetFree: getWalletAvailableBalanceByTicker(wallet, baseTicker?.id),
+      baseAssetFree: getWalletAvailableBalanceByTicker(wallet, baseId),
       quoteAssetFree: getWalletAvailableBalanceByTicker(wallet, quoteTicker?.id),
-      assets: wallet.assets.filter(a => a.tickerId !== baseTicker?.id).map(a => ({
+      assets: wallet.assets.filter(a => a.tickerId !== baseId).map(a => ({
         ...a,
         free: calculateWalletAssetAvailableBalance(a, wallet),
-        symbol: getTickerSymbol(a.tickerId)
+        symbol: a.symbol?.toUpperCase(),
       }))
     };
-  }, [getWallet, getTickerSymbol, getWalletAvailableBalanceByTicker, calculateWalletAssetAvailableBalance, baseTicker?.id]);
+  }, [getWallet, getWalletAvailableBalanceByTicker, calculateWalletAssetAvailableBalance, baseId, quoteTicker?.id]);
 
   const prepareSelectedPortfolio = useCallback((portfolioId) => {
     const portfolio = portfolioId && getPortfolio(portfolioId);
@@ -78,9 +100,9 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
 
     return {
       ...portfolio,
-      baseAssetFree: getPortfolioAvailableBalanceByTicker(portfolio, baseTicker?.id),
+      baseAssetFree: getPortfolioAvailableBalanceByTicker(portfolio, baseId),
     };
-  }, [getPortfolio, getPortfolioAvailableBalanceByTicker]);
+  }, [getPortfolio, getPortfolioAvailableBalanceByTicker, baseId]);
 
   const [transactionWallet, setTransactionWallet] = useState(() => {
     return prepareSelectedWallet(transaction ? transaction?.walletId : walletId)
@@ -115,18 +137,24 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
   }, [prepareSelectedWallet]);
 
   const handleQuoteTickerChange = useCallback((tickerId) => {
-    const newQuoteTicker = getTicker(tickerId);
+    const asset = transactionWallet?.assets?.find(a => a.tickerId === tickerId);
+    const price = prices[tickerId] || 0;
+    const newQuoteTicker = {
+      id: tickerId,
+      symbol: asset?.symbol?.toUpperCase(),
+      price,
+    };
     setQuoteTicker(newQuoteTicker);
 
     const wallet = {
       ...transactionWallet,
-      quoteAssetFree: getWalletAvailableBalanceByTicker(transactionWallet, newQuoteTicker?.id),
+      quoteAssetFree: getWalletAvailableBalanceByTicker(transactionWallet, tickerId),
     };
     setTransactionWallet(wallet);
 
-    const price = newQuoteTicker?.price !== 0 ? baseTicker?.price / newQuoteTicker?.price : 0;
-    form.setFieldValue('price', price || '');
-  }, [getTicker, baseTicker?.price, form]);
+    const newPrice = price !== 0 ? baseTicker.price / price : 0;
+    form.setFieldValue('price', newPrice || '');
+  }, [transactionWallet, prices, getWalletAvailableBalanceByTicker, baseTicker.price, form]);
 
   return {
     portfolios,

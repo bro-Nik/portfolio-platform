@@ -5,7 +5,9 @@ from app.core.rate_limit import limiter
 
 from app.core import settings
 from app.modules.portfolios.dependencies import (
-    WalletServiceDep, WalletAssetServiceDep, require_user,
+    TransactionReadQueryDep, WalletAssetServiceDep, WalletReadQueryDep,
+    WalletServiceDep,
+    require_user,
 )
 from app.modules.portfolios.schemas import (
     TransactionResponse, WalletCreateRequest, WalletDeleteResponse,
@@ -21,9 +23,9 @@ router = APIRouter(dependencies=[require_user])
 @handle_errors('Ошибка получения кошельков')
 async def get_user_wallets(
     request: Request,
-    wallet_service: WalletServiceDep,
+    query: WalletReadQueryDep,
 ) -> WalletListResponse:
-    wallets = await wallet_service.get_all_with_assets()
+    wallets = await query.get_all_with_assets()
     return WalletListResponse(wallets=wallets)
 
 
@@ -33,9 +35,9 @@ async def get_user_wallets(
 async def get_user_wallet(
     request: Request,
     wallet_id: int,
-    wallet_service: WalletServiceDep,
+    query: WalletReadQueryDep,
 ) -> WalletResponse:
-    return await wallet_service.get_with_assets(wallet_id)
+    return await query.get_with_assets(wallet_id)
 
 
 @router.post('/wallets', status_code=201)
@@ -45,9 +47,10 @@ async def create_wallet(
     request: Request,
     data: WalletCreateRequest,
     wallet_service: WalletServiceDep,
+    query: WalletReadQueryDep,
 ) -> WalletResponse:
     wallet = await wallet_service.create(data)
-    return await wallet_service.get_with_assets(wallet.id)
+    return await query.get_with_assets(wallet.id)
 
 
 @router.put('/wallets/{wallet_id}')
@@ -58,9 +61,10 @@ async def update_wallet(
     wallet_id: int,
     data: WalletUpdateRequest,
     wallet_service: WalletServiceDep,
+    query: WalletReadQueryDep,
 ) -> WalletResponse:
     wallet = await wallet_service.update(wallet_id, data)
-    return await wallet_service.get_with_assets(wallet.id)
+    return await query.get_with_assets(wallet.id)
 
 
 @router.delete('/wallets/{wallet_id}')
@@ -81,9 +85,9 @@ async def delete_wallet(
 async def get_wallet_asset_transactions(
     request: Request,
     asset_id: int,
-    asset_service: WalletAssetServiceDep,
+    query: TransactionReadQueryDep,
 ) -> list[TransactionResponse]:
-    return await asset_service.get_transactions(asset_id)
+    return await query.get_wallet_asset_transactions(asset_id)
 
 
 @router.get('/wallets/assets/{asset_id}/distribution')

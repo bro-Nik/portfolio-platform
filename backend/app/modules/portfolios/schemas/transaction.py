@@ -26,6 +26,8 @@ class TransactionBase(BaseModel):
 
 class TransactionResponse(TransactionBase):
     id: int
+    ticker_symbol: str | None = None
+    ticker2_symbol: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 

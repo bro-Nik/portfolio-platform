@@ -1,10 +1,8 @@
 import React, { memo, useMemo, useCallback } from 'react';
 import DataTable from 'src/features/tables/DataTable';
-import { formatCurrency } from 'src/utils/format';
 import TransactionActionsDropdown from 'src/modules/transaction/components/TransactionActionsDropdown'
 import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 import { useModalStore } from '@portfolio/shared';
-import { useTicker } from 'src/hooks/useTicker';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { useNavigation } from 'src/hooks/useNavigation';
@@ -22,7 +20,6 @@ import {
 const AssetTable = memo(({ portfolio, asset, transactions }) => {
   const { openModal } = useModalStore();
   const { openItem } = useNavigation();
-  const { getTickerSymbol } = useTicker();
   const { getPortfolio } = usePortfoliosData();
   const { getWallet } = useWalletsData();
 
@@ -39,10 +36,10 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
   }, [openModal, asset, portfolio.id]);
 
   const columns = useMemo(() => [
-    createTransactionLinkColumn(getTickerSymbol, isCounterTransaction, handleTransactionClick),
-    createTransactionPriceColumn(getTickerSymbol),
-    createTransactionSumColumn(getTickerSymbol, isCounterTransaction),
-    createTransactionQuantityColumn(getTickerSymbol, isCounterTransaction),
+    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick),
+    createTransactionPriceColumn(),
+    createTransactionSumColumn(isCounterTransaction),
+    createTransactionQuantityColumn(isCounterTransaction),
     {
       key: 'relation',
       title: 'Связь',
@@ -70,7 +67,7 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
     createCommentColumn(),
     createActionsColumn(({ row }) => <TransactionActionsDropdown portfolio={portfolio} asset={asset} transaction={row.original} btn='icon' />),
   ], [
-    getTickerSymbol, isCounterTransaction, handleTransactionClick, 
+    isCounterTransaction, handleTransactionClick,
     getPortfolio, getWallet, openItem
   ]);
 
