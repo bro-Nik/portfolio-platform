@@ -3,6 +3,8 @@ FROM node:22-alpine AS base
 RUN npm install -g pnpm@11.13.1
 WORKDIR /app
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 # Copy workspace config files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 
@@ -12,8 +14,7 @@ COPY user/package.json ./user/
 COPY admin/package.json ./admin/
 
 RUN pnpm install --frozen-lockfile --ignore-scripts
-
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN chown -R appuser:appgroup .
 
 FROM base AS development
 COPY --chown=appuser:appgroup . .
