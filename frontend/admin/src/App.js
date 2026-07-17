@@ -3,7 +3,7 @@ import { useAuthStore } from '@portfolio/shared';
 import AdminPage from './AdminPage';
 
 function App() {
-  const { initializeAuth, isAuthenticated, loading } = useAuthStore();
+  const { initializeAuth, isAuthenticated, isAdmin, loading } = useAuthStore();
 
   // Инициализация авторизации
   useEffect(() => {
@@ -13,6 +13,7 @@ function App() {
   if (loading) return '';
 
   if (!isAuthenticated) window.location.href = '/login';
+  if (!isAdmin()) window.location.href = '/portfolios';
 
   return <AdminPage />;
 }
