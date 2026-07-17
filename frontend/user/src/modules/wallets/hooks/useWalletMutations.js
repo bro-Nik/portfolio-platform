@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { walletApi } from '../../modules/wallets/api/walletApi';
+import { walletApi } from '../api/walletApi';
 
 export const useWalletMutations = () => {
   const queryClient = useQueryClient();

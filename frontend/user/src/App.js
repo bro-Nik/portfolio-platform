@@ -11,7 +11,7 @@ import AppPage from './pages/app/AppPage';
 import { ROUTES } from './constants/routes';
 import { useAuthStore, useThemeStore } from '@portfolio/shared';
 import { queryClient } from './queryClient';
-import { TickerIdsProvider } from './hooks/queries/TickerContext';
+import { TickerIdsProvider } from './hooks/TickerContext';
 import { lightTheme, darkTheme } from './theme';
 
 function App() {

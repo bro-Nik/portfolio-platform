@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { portfolioService } from '../services/portfolioService'
 import { useNavigation } from 'src/hooks/useNavigation';
-import { usePortfolioMutations } from 'src/hooks/queries/usePortfolioMutations';
+import { usePortfolioMutations } from './usePortfolioMutations';
 
 export const usePortfolioOperations = () => {
   const [loading, setLoading] = useState(false);

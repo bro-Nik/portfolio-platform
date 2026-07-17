@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { transactionService } from 'src/modules/transaction/services/transactionService'
-import { useTransactionMutations } from 'src/hooks/queries/useTransactionMutations';
+import { useTransactionMutations } from './useTransactionMutations';
 
 export const useTransactionOperations = () => {
   const [loading, setLoading] = useState(false);

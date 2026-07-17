@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal, Input, Button, Space, message } from 'antd';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useModalStore } from '@portfolio/shared';
-import { useTagsQuery } from '../../../../hooks/queries/useTagsQuery';
-import { useTagMutations } from '../../../../hooks/queries/useTagMutations';
+import { useTagsQuery } from '../../hooks/useTagsQuery';
+import { useTagMutations } from '../../hooks/useTagMutations';
 
 const PRESET_COLORS = [
   '#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1',

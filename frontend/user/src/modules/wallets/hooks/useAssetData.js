@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useWalletAssetTransactionsQuery } from 'src/hooks/queries/useWalletAssetQuery';
-import { useTickerQueries } from 'src/hooks/queries/TickerContext';
+import { useWalletAssetTransactionsQuery } from './useWalletAssetQuery';
+import { useTickerQueries } from 'src/hooks/TickerContext';
 import { sortTransactions } from 'src/modules/assets/utils/assetUtils'
 
 export const useAssetData = (wallet, asset) => {

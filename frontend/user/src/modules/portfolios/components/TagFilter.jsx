@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Select } from 'antd';
-import { useTagsQuery } from '../../../hooks/queries/useTagsQuery';
+import { useTagsQuery } from '../hooks/useTagsQuery';
 
 const TagFilter = ({ onChange }) => {
   const { data: allTags = [] } = useTagsQuery();

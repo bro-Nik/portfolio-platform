@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { usePortfoliosQuery } from 'src/hooks/queries/usePortfoliosQuery';
-import { useTickerIds, extractTickerIds } from 'src/hooks/queries/TickerContext';
-import { useAssetPricesQuery } from 'src/hooks/queries/TickerContext';
+import { usePortfoliosQuery } from './usePortfoliosQuery';
+import { useTickerIds, extractTickerIds } from 'src/hooks/TickerContext';
+import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 
 export const usePortfoliosData = () => {
   const queryClient = useQueryClient();

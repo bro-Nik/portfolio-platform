@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useAssetPricesQuery, useAssetInfoQuery } from './queries/TickerContext';
+import { useAssetPricesQuery, useAssetInfoQuery } from './TickerContext';
 
 export const useTicker = () => {
   const { data: pricesData } = useAssetPricesQuery();

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { portfolioApi } from '../../modules/portfolios/api/portfolioApi';
+import { portfolioApi } from '../api/portfolioApi';
 
 export const usePortfolioAssetTransactionsQuery = (assetId, options = {}) => {
   return useQuery({

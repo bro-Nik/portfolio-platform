@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useWalletsQuery } from 'src/hooks/queries/useWalletsQuery';
-import { useTickerIds, extractTickerIds } from 'src/hooks/queries/TickerContext';
-import { useAssetPricesQuery } from 'src/hooks/queries/TickerContext';
+import { useWalletsQuery } from './useWalletsQuery';
+import { useTickerIds, extractTickerIds } from 'src/hooks/TickerContext';
+import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 
 export const useWalletsData = () => {
   const queryClient = useQueryClient();

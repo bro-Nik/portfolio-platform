@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { usePortfoliosQuery } from 'src/hooks/queries/usePortfoliosQuery';
-import { useWalletsQuery } from 'src/hooks/queries/useWalletsQuery';
+import { usePortfoliosQuery } from 'src/modules/portfolios/hooks/usePortfoliosQuery';
+import { useWalletsQuery } from 'src/modules/wallets/hooks/useWalletsQuery';
 import { useTicker } from 'src/hooks/useTicker';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';

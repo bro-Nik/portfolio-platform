@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { tagApi } from '../../modules/portfolios/api/tagApi';
+import { tagApi } from '../api/tagApi';
 
 export const useTagsQuery = () => {
   return useQuery({

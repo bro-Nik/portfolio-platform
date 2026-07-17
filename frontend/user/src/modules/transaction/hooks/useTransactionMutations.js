@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { transactionApi } from '../../modules/transaction/api/transactionApi';
+import { transactionApi } from '../api/transactionApi';
 
 export const useTransactionMutations = () => {
   const queryClient = useQueryClient();

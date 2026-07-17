@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { walletService } from '../services/walletService'
 import { useNavigation } from 'src/hooks/useNavigation';
-import { useWalletMutations } from 'src/hooks/queries/useWalletMutations';
+import { useWalletMutations } from './useWalletMutations';
 
 export const useWalletOperations = () => {
   const [loading, setLoading] = useState(false);
