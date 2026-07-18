@@ -327,3 +327,64 @@ class TestUserService:
             pytest.raises(NotFoundError, match='не найден'),
         ):
             await service.change_password(999, change_data)
+
+    async def test_forgot_password_success(self, service, mock):
+        email = 'test@example.com'
+        user = mock(id=1, email=email)
+        reset_token = 'password.reset.token'
+
+        with (
+            patch.object(service.repo, 'get_by_email', return_value=user),
+            patch.object(service.security, 'create_password_reset_token', return_value=reset_token),
+        ):
+            result = await service.forgot_password(email)
+
+            service.repo.get_by_email.assert_called_once_with(email)
+            service.security.create_password_reset_token.assert_called_once_with(user.id)
+            assert result == reset_token
+
+    async def test_forgot_password_user_not_found(self, service):
+        with (
+            patch.object(service.repo, 'get_by_email', return_value=None),
+        ):
+            result = await service.forgot_password('unknown@example.com')
+
+            assert result is None
+
+    async def test_reset_password_success(self, service, mock):
+        token = 'valid.reset.token'
+        new_password = 'newSecurePass123'
+        user = mock(id=user_id)
+
+        with (
+            patch.object(service.security, 'verify_password_reset_token', return_value=user_id),
+            patch.object(service.repo, 'get', return_value=user),
+            patch.object(service.security, 'get_password_hash', return_value='new_hashed'),
+            patch.object(service.repo, 'update'),
+        ):
+            result = await service.reset_password(token, new_password)
+
+            service.security.verify_password_reset_token.assert_called_once_with(token)
+            service.repo.get.assert_called_once_with(user_id)
+            service.security.get_password_hash.assert_called_once_with(new_password)
+            service.repo.update.assert_called_once_with(user_id, {'password_hash': 'new_hashed'})
+            assert result == user_id
+
+    async def test_reset_password_invalid_token(self, service):
+        token = 'invalid.token'
+
+        with (
+            patch.object(service.security, 'verify_password_reset_token', side_effect=AuthenticationError('Невалидный токен сброса пароля')),
+            pytest.raises(AuthenticationError, match='Невалидный токен сброса пароля'),
+        ):
+            await service.reset_password(token, 'newpass')
+
+    async def test_reset_password_user_not_found(self, service):
+        token = 'valid.token'
+
+        with (
+            patch.object(service.security, 'verify_password_reset_token', return_value=999),
+            patch.object(service.repo, 'get', return_value=None),
+            pytest.raises(AuthenticationError, match='Пользователь не найден'),
+        ):
+            await service.reset_password(token, 'newpass')

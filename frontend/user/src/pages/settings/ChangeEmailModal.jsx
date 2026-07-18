@@ -1,23 +1,19 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Button, message } from 'antd';
-import { authService, useAuthStore } from '@portfolio/shared';
+import { authService } from '@portfolio/shared';
 
 const ChangeEmailModal = ({ open, onClose }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { changeEmail } = authService();
-  const { user, login } = useAuthStore();
 
   const handleSubmit = async (values) => {
     setLoading(true);
     const result = await changeEmail(values.password, values.newEmail);
     setLoading(false);
     if (result.success) {
-      message.success('Email успешно изменён. Подтвердите новый адрес.');
+      message.success('Письмо с подтверждением отправлено на новый адрес');
       form.resetFields();
-      if (user) {
-        login({ ...user, email: values.newEmail, isVerified: false });
-      }
       onClose();
     } else {
       message.error(result.error || 'Ошибка смены email');

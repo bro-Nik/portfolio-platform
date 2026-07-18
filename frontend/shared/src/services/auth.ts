@@ -94,6 +94,11 @@ export const authService = () => {
   const verifyEmail = async (token: string): Promise<{ success: boolean; data?: unknown; error?: string }> => {
     try {
       const data = await api.post('/verify-email', { token });
+      try {
+        await refreshTokens();
+      } catch {
+        // пользователь может быть не залогинен — не страшно
+      }
       return { success: true, data };
     } catch (error) {
       return { success: false, error: (error as Error)?.message || 'Ошибка подтверждения email' };

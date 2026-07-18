@@ -13,7 +13,11 @@ from app.modules.auth.schemas import (
     TokensResponse, UserLogin, UserRegister,
 )
 from app.modules.auth.services.auth import RegisterTaskData
-from app.modules.auth.tasks import send_password_reset_email, send_verification_email
+from app.modules.auth.tasks import (
+    send_password_reset_confirmation_email,
+    send_password_reset_email,
+    send_verification_email,
+)
 from typing import Annotated
 
 
@@ -118,7 +122,9 @@ async def reset_password(
     auth: AuthServiceDep,
 ) -> RegisterResponse:
     user_id = await auth.user_service.reset_password(data.token, data.password)
+    user = await auth.user_service.get_for_auth(id=user_id)
     await auth.logout_all(user_id)
+    await send_password_reset_confirmation_email.kiq(user.email)
     return RegisterResponse(message='Пароль успешно сброшен')
 
 

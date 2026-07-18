@@ -24,6 +24,9 @@ const AuthPage = ({ type }) => {
     setVerifyStatus('loading');
     verifyEmail(token).then((result) => {
       setVerifyStatus(result.success ? 'success' : 'error');
+      if (result.success) {
+        getCurrentUser().then(u => u && authLogin(u));
+      }
       navigate({ pathname: window.location.pathname }, { replace: true });
     });
   }, []);
