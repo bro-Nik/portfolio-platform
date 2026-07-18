@@ -1,6 +1,6 @@
 import { createApi } from '@portfolio/shared';
 
-const api = createApi('/api/transactions', { useAuth: true, convertCase: true });
+const api = createApi('/api/transactions', { useAuth: true });
 
 export const transactionApi = {
   saveTransaction: (transactionData) => {

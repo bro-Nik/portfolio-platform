@@ -62,7 +62,7 @@ const parseErrorMessage = (data: Record<string, unknown> | null): string => {
   return 'Ошибка запроса';
 };
 
-export const apiService = (baseUrl = '', getToken?: TokenProvider, convertCase = false) => {
+export const apiService = (baseUrl = '', getToken?: TokenProvider) => {
   const client: AxiosInstance = axios.create({
     baseURL: baseUrl,
     headers: { 'Content-Type': 'application/json' },
@@ -99,13 +99,11 @@ export const apiService = (baseUrl = '', getToken?: TokenProvider, convertCase =
     client.get(url, config).then((r) => r.data as T);
 
   const post = <T = any>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> => {
-    const data = convertCase ? camelToSnake(body) : body;
-    return client.post(url, data, config).then((r) => r.data as T);
+    return client.post(url, camelToSnake(body), config).then((r) => r.data as T);
   };
 
   const put = <T = any>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> => {
-    const data = convertCase ? camelToSnake(body) : body;
-    return client.put(url, data, config).then((r) => r.data as T);
+    return client.put(url, camelToSnake(body), config).then((r) => r.data as T);
   };
 
   const del = <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> =>

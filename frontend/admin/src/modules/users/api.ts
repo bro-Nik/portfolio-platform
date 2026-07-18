@@ -2,7 +2,7 @@ import { createApi } from '@portfolio/shared';
 import { CreateUserData, UpdateUserData, User } from '../../types/user';
 
 const baseUrl = `${process.env.REACT_APP_AUTH_SERVICE_URL}/admin/users`;
-const api = createApi(baseUrl, { convertCase: true, useAuth: true });
+const api = createApi(baseUrl, { useAuth: true });
 
 export const usersApi = {
   getUsers: (): Promise<User[]> => {
