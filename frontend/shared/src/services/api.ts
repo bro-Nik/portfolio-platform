@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import { clearTokens } from './token.js';
 
 type TokenProvider = (() => Promise<string | undefined>) | null;
 
@@ -62,7 +63,7 @@ const parseErrorMessage = (data: Record<string, unknown> | null): string => {
   return 'Ошибка запроса';
 };
 
-export const apiService = (baseUrl = '', getToken?: TokenProvider) => {
+export const apiService = (baseUrl = '', getToken?: TokenProvider, refreshProvider?: () => Promise<string | undefined>) => {
   const client: AxiosInstance = axios.create({
     baseURL: baseUrl,
     headers: { 'Content-Type': 'application/json' },
@@ -78,12 +79,37 @@ export const apiService = (baseUrl = '', getToken?: TokenProvider) => {
     return config;
   });
 
+  let refreshPromise: Promise<string | undefined> | null = null;
+
   client.interceptors.response.use(
     (response) => {
       response.data = snakeToCamel(response.data);
       return response;
     },
-    (error) => {
+    async (error) => {
+      if (error.response?.status === 401 && refreshProvider && !error.config._retry) {
+        const originalRequest = error.config;
+        originalRequest._retry = true;
+
+        if (!refreshPromise) {
+          refreshPromise = refreshProvider()
+            .catch(() => undefined as string | undefined)
+            .finally(() => {
+              refreshPromise = null;
+            });
+        }
+
+        const newToken = await refreshPromise;
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return client(originalRequest);
+        }
+
+        clearTokens();
+        window.location.href = '/login';
+        throw new Error('Сессия истекла');
+      }
+
       if (error.response) {
         const data = snakeToCamel(error.response.data) as Record<string, unknown> | null;
         const message = parseErrorMessage(data);

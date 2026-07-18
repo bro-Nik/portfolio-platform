@@ -192,6 +192,7 @@ export const authService = () => {
     logoutAll,
     getCurrentUser,
     getValidToken,
+    refreshTokens,
   };
 };
 
