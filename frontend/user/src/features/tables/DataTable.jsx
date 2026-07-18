@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import { Table } from 'antd';
 import { useLocalStorage } from 'src/hooks/useLocalStorage';
-import EmptyState from 'src/components/EmptyState';
 
 const DataTable = memo(({
   data,
@@ -11,8 +10,6 @@ const DataTable = memo(({
 }) => {
   const sourceData = data ?? fallbackData;
   const [sortState, setSortState] = useLocalStorage(storageKey || '', null);
-
-  if (!sourceData.length) return <EmptyState />;
 
   const columns = columnsConfig.map(col => {
     const isSorted = sortState && sortState.field === col.dataIndex;

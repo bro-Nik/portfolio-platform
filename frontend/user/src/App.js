@@ -37,7 +37,7 @@ function App() {
             <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
             <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
             <Route path={ROUTES.APP} element={
-              <ConfigProvider theme={currentTheme}>
+              <ConfigProvider theme={currentTheme} renderEmpty={() => <div style={{ padding: '24px 0', color: 'var(--ant-color-text-tertiary)' }}>Нет данных</div>}>
                 <ProtectedRoute>
                   <ThemeSetter />
                   <TickerIdsProvider>
