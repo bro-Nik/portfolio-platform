@@ -32,6 +32,7 @@ $sidebar-bg: #f8f9fa;
     background: 0;
     color: inherit;
     text-align: left;
+    cursor: pointer;
   }
 
   & .menu {
@@ -44,7 +45,6 @@ $sidebar-bg: #f8f9fa;
       transition: color .15s ease-in-out, background-color .15s ease-in-out;
       display: flex;
       align-items: center;
-      cursor: pointer;
       padding: 6px 12px;
 
       &:hover {

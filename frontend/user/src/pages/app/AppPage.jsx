@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { memo, Suspense } from 'react';
 import Sidebar from './components/Sidebar';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useAuthStore, useModalStore } from '@portfolio/shared';
@@ -55,23 +55,21 @@ const AppPage = () => {
       const portfolioData = allPortfolios?.find(p => p.id === portfolio.id);
       if (!portfolioData) return;
 
-      // Портфель
-      if (activeSection === `portfolio-${portfolio.id}`) {
-        renderItems.push(
-          <PortfolioPage key={`portfolio-${portfolio.id}`} portfolio={portfolioData} onRefresh={refreshPortfolios} />
-        );
-      }
+      renderItems.push(
+        <div key={`portfolio-${portfolio.id}`} style={{ display: activeSection === `portfolio-${portfolio.id}` ? '' : 'none' }}>
+          <PortfolioPage portfolio={portfolioData} onRefresh={refreshPortfolios} />
+        </div>
+      );
       
-      // Активы портфеля
       portfolio.openedAssets.forEach(asset => {
         const assetData = portfolioData.assets.find(a => a.id === asset.id);
         if (!assetData) return;
 
-        if (activeSection === `portfolio_asset-${asset.id}`) {
-          renderItems.push(
-            <PortfolioAssetPage key={`asset-${asset.id}`} portfolio={portfolioData} asset={assetData} />
-          );
-        }
+        renderItems.push(
+          <div key={`portfolio_asset-${asset.id}`} style={{ display: activeSection === `portfolio_asset-${asset.id}` ? '' : 'none' }}>
+            <PortfolioAssetPage portfolio={portfolioData} asset={assetData} />
+          </div>
+        );
       });
     });
 
@@ -80,23 +78,21 @@ const AppPage = () => {
       const walletData = allWallets?.find(w => w.id === wallet.id);
       if (!walletData) return;
 
-      // Кошелек
-      if (activeSection === `wallet-${wallet.id}`) {
-        renderItems.push(
-          <WalletPage key={`wallet-${wallet.id}`} wallet={walletData} onRefresh={refreshWallets} />
-        );
-      }
+      renderItems.push(
+        <div key={`wallet-${wallet.id}`} style={{ display: activeSection === `wallet-${wallet.id}` ? '' : 'none' }}>
+          <WalletPage wallet={walletData} onRefresh={refreshWallets} />
+        </div>
+      );
       
-      // Активы кошелька
       wallet.openedAssets.forEach(asset => {
         const assetData = walletData.assets.find(a => a.id === asset.id);
         if (!assetData) return;
 
-        if (activeSection === `wallet_asset-${asset.id}`) {
-          renderItems.push(
-            <WalletAssetPage key={`asset-${asset.id}`} wallet={walletData} asset={assetData} />
-          );
-        }
+        renderItems.push(
+          <div key={`wallet_asset-${asset.id}`} style={{ display: activeSection === `wallet_asset-${asset.id}` ? '' : 'none' }}>
+            <WalletAssetPage wallet={walletData} asset={assetData} />
+          </div>
+        );
       });
     });
     

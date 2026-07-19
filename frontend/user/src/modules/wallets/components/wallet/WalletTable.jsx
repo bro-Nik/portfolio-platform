@@ -4,19 +4,13 @@ import { useNavigation } from 'src/hooks/useNavigation';
 import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from 'src/modules/portfolios/components/TagFilter';
+import TagBadges from 'src/modules/portfolios/components/TagBadges';
 import { Alert, Input, Checkbox } from 'antd';
-import {
-  createCostColumn,
-  createShareColumn,
-  createBuyOrdersColumn,
-  createSellOrdersColumn,
-  createProfitColumn,
-  createInvestedColumn,
-  createAssetNameColumn,
-  createQuantityColumn,
-  createAveragePriceColumn,
-  createActionsColumn
-} from 'src/features/tables/tableColumns';
+import { formatCurrency, formatProfit, formatPercentage, getColorClass } from 'src/utils/format';
+
+const DEFAULT_VALUE = '-';
+const mutedStyle = { color: 'var(--text-muted)' };
+const smallTextStyle = { fontSize: '12px' };
 
 const WalletTable = memo(({ wallet, assets, onRefresh }) => {
   const { openItem } = useNavigation();
@@ -24,15 +18,39 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
   const [search, setSearch] = useState('');
   const [showArchived, setShowArchived] = useLocalStorage('wallet-archive', false);
 
-  // Подготавливаем данные для таблицы
   const preparedAssets = useMemo(() => {
     if (!assets) return [];
 
     return assets.map(asset => {
+      const assetQuantity = Number(asset.quantity) || 0;
+      const assetAmount = Number(asset.amount) || 0;
+      const assetRealizedProfit = Number(asset.realizedProfit) || 0;
+      const assetTotalInvested = Number(asset.totalInvested) || 0;
+      const assetBuyOrders = Number(asset.buyOrders) || 0;
+      const assetSellOrders = Number(asset.sellOrders) || 0;
+      const assetAveragePrice = assetQuantity > 0 ? assetAmount / assetQuantity : 0;
+      const share = wallet.costNow > 0 ? (asset.costNow / wallet.costNow) * 100 : 0;
+      const symbol = asset.symbol?.toUpperCase();
+
       return {
         ...asset,
-        share: wallet.costNow > 0 ? (asset.costNow / wallet.costNow) * 100 : 0,
-        symbol: asset.symbol?.toUpperCase(),
+        share,
+        symbol,
+        averagePrice: assetAveragePrice,
+        invested: Math.max(0, assetAmount),
+        totalInvested: assetTotalInvested || Math.max(0, assetAmount),
+        realizedProfit: assetRealizedProfit,
+        buyOrders: assetBuyOrders,
+        sellOrders: assetSellOrders,
+        _quantity: assetQuantity > 0 ? `${assetQuantity}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
+        _avgPrice: formatCurrency(assetAveragePrice),
+        _cost: formatCurrency(asset.costNow),
+        _invested: formatCurrency(Math.max(0, assetAmount)),
+        _profit: formatProfit(asset.profit ?? asset.costNow - assetAmount + assetRealizedProfit, Math.max(0, assetAmount), assetTotalInvested),
+        _share: formatPercentage(share),
+        _buyOrders: formatCurrency(assetBuyOrders || 0),
+        _sellOrders: formatCurrency(assetSellOrders || 0),
+        _hide: !assetQuantity,
       };
     });
   }, [assets, wallet.costNow]);
@@ -61,13 +79,91 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
   const showingArchivedFallback = !showArchived && preparedAssets.length > 0 && preparedAssets.every(a => a.isArchived);
 
   const columns = useMemo(() => [
-    createAssetNameColumn(openItem, 'wallet_asset', wallet.id),
-    createQuantityColumn((a) => a.symbol, (a) => !a.quantity),
-    createCostColumn((a) => !a.quantity),
-    createShareColumn((a) => !a.quantity),
-    createBuyOrdersColumn((a) => !a.quantity && !a.buyOrders),
-    createSellOrdersColumn((a) => !a.quantity && !a.sellOrders),
-    createActionsColumn(({ row }) => <AssetActionsDropdown wallet={wallet} asset={row.original} btn='icon' onUpdate={onRefresh} />),
+    {
+      key: 'name',
+      title: 'Актив',
+      fixed: 'left',
+      render: (_, record) => (
+        <div style={{ display: 'flex', gap: 8 }} onClick={() => openItem(record, 'wallet_asset', wallet.id)}>
+          <img className="img-asset-min" loading="lazy" src={record.image} style={{ cursor: 'pointer' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+            <span style={{ display: 'flex', alignItems: 'flex-start' }}>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }} title={record.name}>{record.name}</span>
+              <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4, flexShrink: 0 }}>{record.symbol}</span>
+              {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 4, marginTop: 1 }}>Архивный</span>}
+            </span>
+            <TagBadges tags={record.tags} />
+          </div>
+        </div>
+      ),
+      maxWidth: 300,
+      sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
+    },
+    {
+      dataIndex: '_quantity',
+      title: 'Количество',
+      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      width: 200,
+      sorter: (a, b) => a.quantity - b.quantity,
+    },
+    {
+      dataIndex: '_avgPrice',
+      title: 'Средняя цена',
+      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      width: 200,
+      sorter: (a, b) => a.averagePrice - b.averagePrice,
+    },
+    {
+      dataIndex: '_cost',
+      title: 'Стоимость',
+      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      width: 200,
+      sorter: (a, b) => a.costNow - b.costNow,
+    },
+    {
+      dataIndex: '_invested',
+      title: 'Вложено',
+      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      width: 120,
+      sorter: (a, b) => a.invested - b.invested,
+    },
+    {
+      key: 'profit',
+      title: 'Прибыль',
+      render: (_, record) => {
+        if (record._hide) return DEFAULT_VALUE;
+        return <span className={getColorClass(record.profit)}>{record._profit}</span>;
+      },
+      width: 120,
+      sorter: (a, b) => a.profit - b.profit,
+    },
+    {
+      dataIndex: '_share',
+      title: 'Доля',
+      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      width: 120,
+      sorter: (a, b) => a.share - b.share,
+    },
+    {
+      dataIndex: '_buyOrders',
+      title: 'В ордерах на покупку',
+      render: (value, record) => (record._hide && !record.buyOrders) ? DEFAULT_VALUE : value,
+      width: 120,
+      sorter: (a, b) => (a.buyOrders || 0) - (b.buyOrders || 0),
+    },
+    {
+      dataIndex: '_sellOrders',
+      title: 'В ордерах на продажу',
+      render: (value, record) => (record._hide && !record.sellOrders) ? DEFAULT_VALUE : value,
+      width: 120,
+      sorter: (a, b) => (a.sellOrders || 0) - (b.sellOrders || 0),
+    },
+    {
+      key: 'actions',
+      title: '',
+      width: 100,
+      render: (_, record) => <AssetActionsDropdown wallet={wallet} asset={record} btn='icon' onUpdate={onRefresh} />,
+    },
   ], [openItem, wallet, onRefresh]);
 
   return (

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useModalStore } from '@portfolio/shared';
 import EmptyState from 'src/components/EmptyState';
 import AssetAddModal from 'src/modules/portfolios/components/modals/AssetAdd';
@@ -6,7 +7,7 @@ import PortfolioStatistic from './PortfolioStatistic';
 import PortfolioHeader from './PortfolioHeader';
 import { Coins } from 'lucide-react';
 
-const PortfolioPage = ({ portfolio, onRefresh }) => {
+const PortfolioPage = memo(({ portfolio, onRefresh }) => {
   const { openModal } = useModalStore();
 
   if (!portfolio.assets?.length) {
@@ -30,6 +31,6 @@ const PortfolioPage = ({ portfolio, onRefresh }) => {
       <PortfolioTable portfolio={portfolio} assets={portfolio.assets} onRefresh={onRefresh} />
     </>
   );
-};
+});
 
 export default PortfolioPage;

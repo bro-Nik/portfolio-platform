@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import EmptyState from 'src/components/EmptyState';
 import WalletHeader from './WalletHeader';
 import WalletStatistic from './WalletStatistic';
 import WalletTable from './WalletTable';
 import { Coins } from 'lucide-react';
 
-const WalletPage = ({ wallet, onRefresh }) => {
+const WalletPage = memo(({ wallet, onRefresh }) => {
 
   if (!wallet.assets?.length) {
     return (
@@ -26,6 +27,6 @@ const WalletPage = ({ wallet, onRefresh }) => {
       <WalletTable wallet={wallet} assets={wallet.assets} onRefresh={onRefresh} />
     </>
   );
-};
+});
 
 export default WalletPage;
