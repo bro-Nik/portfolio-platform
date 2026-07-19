@@ -1,13 +1,13 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { Input } from 'antd';
+import { Alert, Checkbox, Input } from 'antd';
 import { createCostColumn, createShareColumn, createBuyOrdersColumn, createNameColumn, createActionsColumn } from 'src/features/tables/tableColumns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
 import TagFilter from 'src/modules/portfolios/components/TagFilter';
 import { useQueryClient } from '@tanstack/react-query';
 
-const WalletsTable = memo(({ wallets }) => {
+const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArchivedFallback }) => {
   const { openItem } = useNavigation();
   const queryClient = useQueryClient();
   const [tagFilterIds, setTagFilterIds] = useState([]);
@@ -52,11 +52,25 @@ const WalletsTable = memo(({ wallets }) => {
           style={{ width: 160 }}
         />
         <TagFilter onChange={setTagFilterIds} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Checkbox checked={showArchived} onChange={(e) => onToggleArchived(e.target.checked)}>
+            Показывать архивные
+          </Checkbox>
+        </div>
       </div>
+      {showingArchivedFallback && (
+        <Alert
+          message="Нет активных кошельков — показаны архивные"
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
       <DataTable
         data={filtered}
         columnsConfig={columns}
         storageKey="wallets-list-sorting"
+        rowClassName={(record) => record.isArchived ? 'archived-row' : ''}
       />
     </>
   );

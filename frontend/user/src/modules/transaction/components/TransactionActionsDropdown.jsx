@@ -6,13 +6,15 @@ import TransactionDeleteModal from 'src/modules/transaction/modals/TransactionDe
 
 const TransactionActionsDropdown = ({ portfolio, wallet, asset, transaction, btn }) => {
   const { openModal } = useModalStore();
+  const isArchived = asset?.isArchived || portfolio?.isArchived || wallet?.isArchived;
 
   const menuItems = [
     {
       key: 'edit',
       icon: <Pencil size={16} />,
       label: 'Редактировать',
-      onClick: () => openModal(TransactionEditModal, { tickerId: asset.tickerId, portfolioId: portfolio.id, transaction }),
+      disabled: isArchived,
+      onClick: () => openModal(TransactionEditModal, { tickerId: asset.tickerId, portfolioId: portfolio?.id, walletId: wallet?.id, transaction }),
     },
     {
       type: 'divider',

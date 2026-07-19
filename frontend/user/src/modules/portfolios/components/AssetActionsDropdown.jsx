@@ -1,6 +1,8 @@
 import { useModalStore } from '@portfolio/shared';
+import { Tooltip } from 'antd';
 import {
   Inbox,
+  Undo2,
   Pencil,
   Copy,
   Trash2,
@@ -12,11 +14,21 @@ import AssetDeleteModal from './modals/AssetDelete';
 import TagManagementModal from './modals/TagManagementModal';
 import TagAssignPopover from './TagAssignPopover';
 import { getTradingViewUrl } from 'src/utils/format';
+import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
 
 
 const AssetActionsDropdown = ({ portfolio, asset, btn, onUpdate }) => {
   const { openModal } = useModalStore();
+  const { archiveAsset, unarchiveAsset } = usePortfolioMutations();
   const entityType = portfolio ? 'portfolio_asset' : 'wallet_asset';
+
+  const handleArchive = async () => {
+    await archiveAsset.mutateAsync({ portfolioId: portfolio.id, assetId: asset.id });
+  };
+
+  const handleUnarchive = async () => {
+    await unarchiveAsset.mutateAsync({ portfolioId: portfolio.id, assetId: asset.id });
+  };
 
   const menuItems = [
     {
@@ -55,17 +67,26 @@ const AssetActionsDropdown = ({ portfolio, asset, btn, onUpdate }) => {
     {
       type: 'divider',
     },
-    {
-      key: 'archive',
-      icon: <Inbox size={16} />,
-      label: 'Архивировать',
-      disabled: true,
-    },
+    ...(asset.isArchived
+      ? [{
+          key: 'unarchive',
+          icon: <Undo2 size={16} />,
+          label: 'Разархивировать',
+          onClick: handleUnarchive,
+        }]
+      : [{
+          key: 'archive',
+          icon: <Inbox size={16} />,
+          label: 'Архивировать',
+          onClick: handleArchive,
+        }]
+    ),
     {
       key: 'delete',
       icon: <Trash2 size={16} />,
-      label: 'Удалить',
+      label: asset.hasTransactions ? <Tooltip title="Нельзя удалить — есть транзакции"><span>Удалить</span></Tooltip> : 'Удалить',
       danger: true,
+      disabled: asset.hasTransactions,
       onClick: () => openModal(AssetDeleteModal, { portfolio, asset }),
     },
   ];

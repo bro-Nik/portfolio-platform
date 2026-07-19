@@ -5,7 +5,7 @@ from app.common.exceptions import ConflictError, NotFoundError, PermissionDenied
 
 from app.modules.portfolios.models import Portfolio, Transaction
 from app.modules.portfolios.repositories import (
-    PortfolioRepository, TaggableRepository,
+    PortfolioRepository, TaggableRepository, TransactionRepository,
 )
 from app.modules.portfolios.schemas import (
     PortfolioAssetCreateRequest,
@@ -26,6 +26,7 @@ class PortfolioService:
         self.repo = PortfolioRepository(session)
         self.asset_service = PortfolioAssetService(ctx, session)
         self.taggable_repo = TaggableRepository(session)
+        self.transaction_repo = TransactionRepository(session)
 
     async def _load_tags(self, portfolio: Portfolio) -> None:
         portfolio.tags = await self.taggable_repo.get_tags(self.ENTITY_TYPE, portfolio.id)
@@ -46,12 +47,12 @@ class PortfolioService:
 
     async def get(self, id: int) -> Portfolio:
         portfolio = await self.repo.get(id)
-        self._verify(portfolio, 'Portfolio')
+        self._verify(portfolio)
         return portfolio
 
     async def get_with_assets(self, id: int) -> Portfolio:
         portfolio = await self.repo.get_with_assets(id)
-        self._verify(portfolio, 'Portfolio')
+        self._verify(portfolio)
         await self._load_tags(portfolio)
         return portfolio
 
@@ -68,21 +69,47 @@ class PortfolioService:
 
     async def update(self, id: int, data: PortfolioUpdateRequest) -> Portfolio:
         portfolio = await self.get(id)
+        if portfolio.is_archived:
+            raise ConflictError('Нельзя редактировать архивный портфель')
         if data.name != portfolio.name:
             await self._validate_unique_name(data.name)
         return await self.repo.update(id, PortfolioUpdate(**data.model_dump()).model_dump())
 
     async def delete(self, id: int) -> None:
-        await self.get(id)
+        portfolio = await self.get(id)
+        has_txns = await self.transaction_repo.exists_for_portfolio(id)
+        if has_txns:
+            raise ConflictError('Нельзя удалить портфель с транзакциями')
         await self.repo.delete(id)
 
-    async def add_asset(self, id: int, data: PortfolioAssetCreateRequest) -> None:
+    async def archive(self, id: int) -> None:
+        portfolio = await self.get_with_assets(id)
+        await self.repo.update(id, {'is_archived': True})
+        for asset in portfolio.assets:
+            if not asset.is_archived:
+                await self.asset_service.archive(asset.id)
+
+    async def unarchive(self, id: int) -> None:
         await self.get(id)
+        await self.repo.update(id, {'is_archived': False})
+
+    async def add_asset(self, id: int, data: PortfolioAssetCreateRequest) -> None:
+        portfolio = await self.get(id)
+        if portfolio.is_archived:
+            raise ConflictError('Нельзя добавлять активы в архивный портфель')
         await self.asset_service.create(data)
 
     async def delete_asset(self, id: int, asset_id: int) -> None:
         await self.get(id)
         await self.asset_service.delete(asset_id)
+
+    async def archive_asset(self, id: int, asset_id: int) -> None:
+        await self.get(id)
+        await self.asset_service.archive(asset_id)
+
+    async def unarchive_asset(self, id: int, asset_id: int) -> None:
+        await self.get(id)
+        await self.asset_service.unarchive(asset_id)
 
     async def handle_transaction(self, t: Transaction, *, cancel: bool = False) -> None:
         if not t.portfolio_id:
@@ -93,8 +120,8 @@ class PortfolioService:
         if await self.repo.exists_by_name_and_user(name, self.actor.id):
             raise ConflictError('Портфель с таким именем уже существует')
 
-    def _verify(self, obj, name: str) -> None:
+    def _verify(self, obj) -> None:
         if not obj:
-            raise NotFoundError(f'{name} не найден')
+            raise NotFoundError('Портфель не найден')
         if obj.user_id != self.actor.id:
-            raise PermissionDeniedError('Недостаточно прав для получения портфеля')
+            raise PermissionDeniedError('Недостаточно прав')

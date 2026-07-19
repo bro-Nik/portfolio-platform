@@ -38,8 +38,19 @@ class PortfolioAssetService:
         return asset
 
     async def delete(self, id: int) -> bool:
-        await self.get(id)
+        asset = await self.get(id)
+        has_txns = await self.transaction_repo.exists_for_portfolio_ticker(asset.portfolio_id, asset.ticker_id)
+        if has_txns:
+            raise ConflictError('Нельзя удалить актив с транзакциями')
         return bool(await self.repo.delete(id))
+
+    async def archive(self, id: int) -> None:
+        await self.get(id)
+        await self.repo.update(id, {'is_archived': True})
+
+    async def unarchive(self, id: int) -> None:
+        await self.get(id)
+        await self.repo.update(id, {'is_archived': False})
 
     async def handle_transaction(self, t: Transaction, *, cancel: bool = False) -> None:
         direction = t.get_direction(cancel)

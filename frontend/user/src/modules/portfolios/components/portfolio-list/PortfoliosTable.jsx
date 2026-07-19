@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { Input } from 'antd';
+import { Alert, Checkbox, Input } from 'antd';
 import {
   createCostColumn,
   createShareColumn,
@@ -15,7 +15,7 @@ import PortfolioActionsDropdown from '../PortfolioActionsDropdown'
 import TagFilter from '../TagFilter';
 import { useQueryClient } from '@tanstack/react-query';
 
-const PortfoliosTable = memo(({ portfolios }) => {
+const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, showingArchivedFallback }) => {
   const { openItem } = useNavigation();
   const queryClient = useQueryClient();
   const [tagFilterIds, setTagFilterIds] = useState([]);
@@ -62,11 +62,25 @@ const PortfoliosTable = memo(({ portfolios }) => {
           style={{ width: 160 }}
         />
         <TagFilter onChange={setTagFilterIds} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Checkbox checked={showArchived} onChange={(e) => onToggleArchived(e.target.checked)}>
+            Показывать архивные
+          </Checkbox>
+        </div>
       </div>
+      {showingArchivedFallback && (
+        <Alert
+          message="Нет активных портфелей — показаны архивные"
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
       <DataTable
         data={filtered}
         columnsConfig={columns}
         storageKey="portfolios-list-sorting"
+        rowClassName={(record) => record.isArchived ? 'archived-row' : ''}
       />
     </>
   );

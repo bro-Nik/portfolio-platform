@@ -52,6 +52,8 @@ class PortfolioAssetResponse(PortfolioAssetBase):
     realized_profit: Decimal
     total_invested: Decimal
     buy_orders: Decimal
+    is_archived: bool
+    has_transactions: bool = False
     tags: list[TagResponse] = []
     name: str | None = None
     symbol: str | None = None
@@ -62,6 +64,8 @@ class PortfolioAssetResponse(PortfolioAssetBase):
 class PortfolioResponse(PortfolioBase):
     id: int
     market: str
+    is_archived: bool
+    has_transactions: bool = False
     assets: list[PortfolioAssetResponse] = []
     tags: list[TagResponse] = []
     model_config = ConfigDict(from_attributes=True)

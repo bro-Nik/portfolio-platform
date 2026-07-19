@@ -1,6 +1,8 @@
 import { useModalStore } from '@portfolio/shared';
+import { Tooltip } from 'antd';
 import {
   Inbox,
+  Undo2,
   Pencil,
   Copy,
   Trash2,
@@ -12,15 +14,26 @@ import PortfolioEditModal from './modals/PortfolioEdit';
 import PortfolioDeleteModal from './modals/PortfolioDelete';
 import TagManagementModal from './modals/TagManagementModal';
 import TagAssignPopover from './TagAssignPopover';
+import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
 
 const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
   const { openModal } = useModalStore();
+  const { archivePortfolio, unarchivePortfolio } = usePortfolioMutations();
+
+  const handleArchive = async () => {
+    await archivePortfolio.mutateAsync(portfolio.id);
+  };
+
+  const handleUnarchive = async () => {
+    await unarchivePortfolio.mutateAsync(portfolio.id);
+  };
 
   const menuItems = [
     {
       key: 'edit',
       icon: <Pencil size={16} />,
       label: 'Редактировать',
+      disabled: portfolio.isArchived,
       onClick: () => openModal(PortfolioEditModal, { portfolio: portfolio }),
     },
     {
@@ -47,17 +60,26 @@ const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
     {
       type: 'divider',
     },
-    {
-      key: 'archive',
-      icon: <Inbox size={16} />,
-      label: 'Архивировать',
-      disabled: true,
-    },
+    ...(portfolio.isArchived
+      ? [{
+          key: 'unarchive',
+          icon: <Undo2 size={16} />,
+          label: 'Разархивировать',
+          onClick: handleUnarchive,
+        }]
+      : [{
+          key: 'archive',
+          icon: <Inbox size={16} />,
+          label: 'Архивировать',
+          onClick: handleArchive,
+        }]
+    ),
     {
       key: 'delete',
       icon: <Trash2 size={16} />,
-      label: 'Удалить',
+      label: portfolio.hasTransactions ? <Tooltip title="Нельзя удалить — есть транзакции"><span>Удалить</span></Tooltip> : 'Удалить',
       danger: true,
+      disabled: portfolio.hasTransactions,
       onClick: () => openModal(PortfolioDeleteModal, { portfolio: portfolio }),
     },
   ];

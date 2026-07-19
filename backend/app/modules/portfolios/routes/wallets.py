@@ -79,6 +79,72 @@ async def delete_wallet(
     return WalletDeleteResponse(wallet_id=wallet_id)
 
 
+@router.post('/wallets/{wallet_id}/archive')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка архивации кошелька')
+async def archive_wallet(
+    request: Request,
+    wallet_id: int,
+    wallet_service: WalletServiceDep,
+) -> WalletDeleteResponse:
+    await wallet_service.archive(wallet_id)
+    return WalletDeleteResponse(wallet_id=wallet_id)
+
+
+@router.post('/wallets/{wallet_id}/unarchive')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка разархивации кошелька')
+async def unarchive_wallet(
+    request: Request,
+    wallet_id: int,
+    wallet_service: WalletServiceDep,
+) -> WalletDeleteResponse:
+    await wallet_service.unarchive(wallet_id)
+    return WalletDeleteResponse(wallet_id=wallet_id)
+
+
+@router.delete('/wallets/{wallet_id}/assets/{asset_id}')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка удаления актива кошелька')
+async def delete_wallet_asset(
+    request: Request,
+    wallet_id: int,
+    asset_id: int,
+    wallet_service: WalletServiceDep,
+    query: WalletReadQueryDep,
+) -> WalletResponse:
+    await wallet_service.delete_asset(wallet_id, asset_id)
+    return await query.get_with_assets(wallet_id)
+
+
+@router.post('/wallets/{wallet_id}/assets/{asset_id}/archive')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка архивации актива кошелька')
+async def archive_wallet_asset(
+    request: Request,
+    wallet_id: int,
+    asset_id: int,
+    wallet_service: WalletServiceDep,
+    query: WalletReadQueryDep,
+) -> WalletResponse:
+    await wallet_service.archive_asset(wallet_id, asset_id)
+    return await query.get_with_assets(wallet_id)
+
+
+@router.post('/wallets/{wallet_id}/assets/{asset_id}/unarchive')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка разархивации актива кошелька')
+async def unarchive_wallet_asset(
+    request: Request,
+    wallet_id: int,
+    asset_id: int,
+    wallet_service: WalletServiceDep,
+    query: WalletReadQueryDep,
+) -> WalletResponse:
+    await wallet_service.unarchive_asset(wallet_id, asset_id)
+    return await query.get_with_assets(wallet_id)
+
+
 @router.get('/wallets/assets/{asset_id}/transactions')
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка получения транзакций актива кошелька')

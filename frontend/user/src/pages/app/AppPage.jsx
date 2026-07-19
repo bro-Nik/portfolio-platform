@@ -22,8 +22,8 @@ const ModalContainer = () => {
 
 const AppPage = () => {
   const { activeSection, openedItems } = useNavigation();
-  const { portfolios, refresh: refreshPortfolios } = usePortfoliosData();
-  const { wallets, refresh: refreshWallets } = useWalletsData();
+  const { allPortfolios, refresh: refreshPortfolios } = usePortfoliosData();
+  const { allWallets, refresh: refreshWallets } = useWalletsData();
 
   const mainSections = {
     'portfolios': PortfoliosPage,
@@ -52,7 +52,7 @@ const AppPage = () => {
     
     // Рендер портфелей и их активов
     openedItems.portfolios.forEach(portfolio => {
-      const portfolioData = portfolios?.find(p => p.id === portfolio.id);
+      const portfolioData = allPortfolios?.find(p => p.id === portfolio.id);
       if (!portfolioData) return;
 
       // Портфель
@@ -77,7 +77,7 @@ const AppPage = () => {
 
     // Рендер кошельков и их активов
     openedItems.wallets.forEach(wallet => {
-      const walletData = wallets?.find(w => w.id === wallet.id);
+      const walletData = allWallets?.find(w => w.id === wallet.id);
       if (!walletData) return;
 
       // Кошелек

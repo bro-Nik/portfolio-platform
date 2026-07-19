@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import { useModalStore } from '@portfolio/shared';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import LoadingSpinner from 'src/components/ui/LoadingSpinner';
@@ -10,12 +11,13 @@ import WalletsTable from './WalletsTable';
 import { Wallet } from 'lucide-react';
 
 const WalletsPage = () => {
-  const { wallets, overallStats, loading } = useWalletsData();
+  const [showArchived, setShowArchived] = useLocalStorage('wallets-show-archived', false);
+  const { wallets, allWallets, overallStats, loading, showingArchivedFallback } = useWalletsData(showArchived);
   const { openModal } = useModalStore();
 
   if (loading) return <LoadingSpinner />;
 
-  if (!wallets.length) {
+  if (!allWallets.length) {
     return (
       <>
         <WalletsHeader />
@@ -35,7 +37,7 @@ const WalletsPage = () => {
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         <WalletsStatistic stats={overallStats} />
       </div>
-      <WalletsTable wallets={wallets} />
+      <WalletsTable wallets={wallets} showArchived={showArchived} onToggleArchived={setShowArchived} showingArchivedFallback={showingArchivedFallback} />
     </>
   );
 };

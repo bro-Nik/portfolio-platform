@@ -24,7 +24,7 @@ const PortfolioAssetPage = ({ portfolio, asset }) => {
           icon={ArrowLeftRight}
           title="В активе пока нет транзакций"
           description="Добавьте первую транзакцию, чтобы начать отслеживать движение средств"
-          action={{ text: 'Добавить транзакцию', onClick: () => openModal(TransactionEditModal, { tickerId: assetData.tickerId, portfolioId: portfolio.id }) }}
+          action={!assetData.isArchived ? { text: 'Добавить транзакцию', onClick: () => openModal(TransactionEditModal, { tickerId: assetData.tickerId, portfolioId: portfolio.id }) } : undefined}
         />
       </div>
     );

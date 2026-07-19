@@ -4,7 +4,7 @@ import { useNavigation } from 'src/hooks/useNavigation';
 import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from '../TagFilter';
-import { Checkbox, Input } from 'antd';
+import { Alert, Checkbox, Input } from 'antd';
 import {
   createCostColumn,
   createShareColumn,
@@ -21,6 +21,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const { openItem } = useNavigation();
 
   const [hideCheap, setHideCheap] = useLocalStorage('portfolio-hide-cheap', false);
+  const [showArchived, setShowArchived] = useLocalStorage('portfolio-archive', false);
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
 
@@ -40,6 +41,10 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;
     if (hideCheap) result = result.filter(asset => asset.costNow >= 1);
+    if (!showArchived) {
+      const active = result.filter(asset => !asset.isArchived);
+      if (active.length > 0) result = active;
+    }
     if (tagFilterIds.length > 0) {
       result = result.filter(asset =>
         asset.tags?.some(t => tagFilterIds.includes(t.id))
@@ -53,7 +58,9 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
       );
     }
     return result;
-  }, [preparedAssets, hideCheap, tagFilterIds, search]);
+  }, [preparedAssets, hideCheap, showArchived, tagFilterIds, search]);
+
+  const showingArchivedFallback = !showArchived && preparedAssets.length > 0 && preparedAssets.every(a => a.isArchived);
 
   const columns = useMemo(() => [
     createAssetNameColumn(openItem, 'portfolio_asset', portfolio.id),
@@ -81,7 +88,19 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         <Checkbox checked={hideCheap} onChange={(e) => setHideCheap(e.target.checked)}>
           Спрятать дешевле $1
         </Checkbox>
+        <Checkbox checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)}>
+          Показывать архивные
+        </Checkbox>
       </div>
+
+      {showingArchivedFallback && (
+        <Alert
+          message="Нет активных активов — показаны архивные"
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
 
       {portfolio.comment && (
         <div style={{ marginBottom: 12 }}>
@@ -93,6 +112,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         data={filteredAssets}
         columnsConfig={columns}
         storageKey="portfolio-table-sorting"
+        rowClassName={(record) => record.isArchived ? 'archived-row' : ''}
       />
     </>
   );

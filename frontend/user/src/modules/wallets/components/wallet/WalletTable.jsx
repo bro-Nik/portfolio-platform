@@ -1,9 +1,10 @@
 import React, { memo, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
+import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from 'src/modules/portfolios/components/TagFilter';
-import { Input } from 'antd';
+import { Alert, Input, Checkbox } from 'antd';
 import {
   createCostColumn,
   createShareColumn,
@@ -21,6 +22,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
   const { openItem } = useNavigation();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
+  const [showArchived, setShowArchived] = useLocalStorage('wallet-archive', false);
 
   // Подготавливаем данные для таблицы
   const preparedAssets = useMemo(() => {
@@ -37,6 +39,10 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
 
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;
+    if (!showArchived) {
+      const active = result.filter(asset => !asset.isArchived);
+      if (active.length > 0) result = active;
+    }
     if (tagFilterIds.length > 0) {
       result = result.filter(asset =>
         asset.tags?.some(t => tagFilterIds.includes(t.id))
@@ -50,7 +56,9 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
       );
     }
     return result;
-  }, [preparedAssets, tagFilterIds, search]);
+  }, [preparedAssets, showArchived, tagFilterIds, search]);
+
+  const showingArchivedFallback = !showArchived && preparedAssets.length > 0 && preparedAssets.every(a => a.isArchived);
 
   const columns = useMemo(() => [
     createAssetNameColumn(openItem, 'wallet_asset', wallet.id),
@@ -73,7 +81,19 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
           style={{ width: 160 }}
         />
         <TagFilter onChange={setTagFilterIds} />
+        <Checkbox checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)}>
+          Показывать архивные
+        </Checkbox>
       </div>
+
+      {showingArchivedFallback && (
+        <Alert
+          message="Нет активных активов — показаны архивные"
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
 
       {wallet.comment && (
         <div style={{ marginBottom: 12 }}>
@@ -85,6 +105,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
         data={filteredAssets}
         columnsConfig={columns}
         storageKey="wallet-table-sorting"
+        rowClassName={(record) => record.isArchived ? 'archived-row' : ''}
       />
     </>
   );

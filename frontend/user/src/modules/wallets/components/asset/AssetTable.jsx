@@ -32,11 +32,12 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
   }, [asset.tickerId, wallet.id]);
 
   const handleTransactionClick = useCallback((transaction) => {
+    if (asset.isArchived) return;
     openModal(TransactionEditModal, { tickerId: asset.tickerId, walletId: wallet.id, transaction });
   }, [openModal, asset, wallet.id]);
 
   const columns = useMemo(() => [
-    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick),
+    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick, asset.isArchived),
     createTransactionPriceColumn(),
     createTransactionSumColumn(isCounterTransaction),
     createTransactionQuantityColumn(isCounterTransaction),
@@ -66,7 +67,7 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
       width: 120,
     },
     createCommentColumn(),
-    createActionsColumn(({ row }) => <TransactionActionsDropdown transaction={row.original} btn='icon' />),
+    createActionsColumn(({ row }) => <TransactionActionsDropdown wallet={wallet} asset={asset} transaction={row.original} btn='icon' />),
   ], [
     isCounterTransaction, handleTransactionClick,
     getPortfolio, getWallet, openItem

@@ -4,7 +4,7 @@ from app.common.exceptions import ConflictError, NotFoundError, PermissionDenied
 
 from app.modules.portfolios.models import Wallet, Transaction
 from app.modules.portfolios.repositories import (
-    WalletRepository, TaggableRepository,
+    TransactionRepository, WalletRepository, TaggableRepository,
 )
 from app.modules.portfolios.schemas import (
     WalletCreate, WalletCreateRequest, WalletUpdate, WalletUpdateRequest,
@@ -24,6 +24,7 @@ class WalletService:
         self.repo = WalletRepository(session)
         self.asset_service = WalletAssetService(ctx, session)
         self.taggable_repo = TaggableRepository(session)
+        self.transaction_repo = TransactionRepository(session)
 
     async def _bulk_load_tags(self, wallets: list[Wallet]) -> None:
         items = []
@@ -60,13 +61,42 @@ class WalletService:
 
     async def update(self, id: int, data: WalletUpdateRequest) -> Wallet:
         wallet = await self.get(id)
+        if wallet.is_archived:
+            raise ConflictError('Нельзя редактировать архивный кошелёк')
         if data.name != wallet.name:
             await self._validate_unique_name(data.name)
         return await self.repo.update(id, WalletUpdate(**data.model_dump()).model_dump())
 
     async def delete(self, id: int) -> None:
-        await self.get(id)
+        wallet = await self.get(id)
+        has_txns = await self.transaction_repo.exists_for_wallet(id)
+        if has_txns:
+            raise ConflictError('Нельзя удалить кошелёк с транзакциями')
         await self.repo.delete(id)
+
+    async def archive(self, id: int) -> None:
+        wallet = await self.repo.get_with_assets(id)
+        self._verify(wallet)
+        await self.repo.update(id, {'is_archived': True})
+        for asset in wallet.assets:
+            if not asset.is_archived:
+                await self.asset_service.archive(asset.id)
+
+    async def unarchive(self, id: int) -> None:
+        await self.get(id)
+        await self.repo.update(id, {'is_archived': False})
+
+    async def delete_asset(self, wallet_id: int, asset_id: int) -> None:
+        await self.get(wallet_id)
+        await self.asset_service.delete(asset_id)
+
+    async def archive_asset(self, wallet_id: int, asset_id: int) -> None:
+        await self.get(wallet_id)
+        await self.asset_service.archive(asset_id)
+
+    async def unarchive_asset(self, wallet_id: int, asset_id: int) -> None:
+        await self.get(wallet_id)
+        await self.asset_service.unarchive(asset_id)
 
     async def handle_transaction(self, t: Transaction, *, cancel: bool = False) -> None:
         if not t.wallet_id:

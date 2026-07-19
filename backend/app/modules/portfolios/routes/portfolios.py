@@ -80,6 +80,30 @@ async def delete_portfolio(
     return PortfolioDeleteResponse(portfolio_id=portfolio_id)
 
 
+@router.post('/portfolios/{portfolio_id}/archive')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка архивации портфеля')
+async def archive_portfolio(
+    request: Request,
+    portfolio_id: int,
+    portfolio_service: PortfolioServiceDep,
+) -> PortfolioDeleteResponse:
+    await portfolio_service.archive(portfolio_id)
+    return PortfolioDeleteResponse(portfolio_id=portfolio_id)
+
+
+@router.post('/portfolios/{portfolio_id}/unarchive')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка разархивации портфеля')
+async def unarchive_portfolio(
+    request: Request,
+    portfolio_id: int,
+    portfolio_service: PortfolioServiceDep,
+) -> PortfolioDeleteResponse:
+    await portfolio_service.unarchive(portfolio_id)
+    return PortfolioDeleteResponse(portfolio_id=portfolio_id)
+
+
 @router.post('/portfolios/{portfolio_id}/assets', status_code=201)
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка добавления актива')
@@ -105,6 +129,34 @@ async def delete_asset_from_portfolio(
     query: PortfolioReadQueryDep,
 ) -> PortfolioResponse:
     await portfolio_service.delete_asset(portfolio_id, asset_id)
+    return await query.get_with_assets(portfolio_id)
+
+
+@router.post('/portfolios/{portfolio_id}/assets/{asset_id}/archive')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка архивации актива')
+async def archive_asset_in_portfolio(
+    request: Request,
+    portfolio_id: int,
+    asset_id: int,
+    portfolio_service: PortfolioServiceDep,
+    query: PortfolioReadQueryDep,
+) -> PortfolioResponse:
+    await portfolio_service.archive_asset(portfolio_id, asset_id)
+    return await query.get_with_assets(portfolio_id)
+
+
+@router.post('/portfolios/{portfolio_id}/assets/{asset_id}/unarchive')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка разархивации актива')
+async def unarchive_asset_in_portfolio(
+    request: Request,
+    portfolio_id: int,
+    asset_id: int,
+    portfolio_service: PortfolioServiceDep,
+    query: PortfolioReadQueryDep,
+) -> PortfolioResponse:
+    await portfolio_service.unarchive_asset(portfolio_id, asset_id)
     return await query.get_with_assets(portfolio_id)
 
 

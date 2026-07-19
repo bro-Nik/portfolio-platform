@@ -3,7 +3,7 @@ import asyncio
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.exceptions import NotFoundError, PermissionDeniedError
+from app.common.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 
 from app.modules.portfolios.models import WalletAsset, Transaction
 from app.modules.portfolios.repositories import (
@@ -26,6 +26,21 @@ class WalletAssetService:
         asset = await self.repo.get(id)
         self._verify(asset)
         return asset
+
+    async def delete(self, id: int) -> bool:
+        asset = await self.get(id)
+        has_txns = await self.transaction_repo.exists_for_wallet_ticker(asset.wallet_id, asset.ticker_id)
+        if has_txns:
+            raise ConflictError('Нельзя удалить актив с транзакциями')
+        return bool(await self.repo.delete(id))
+
+    async def archive(self, id: int) -> None:
+        await self.get(id)
+        await self.repo.update(id, {'is_archived': True})
+
+    async def unarchive(self, id: int) -> None:
+        await self.get(id)
+        await self.repo.update(id, {'is_archived': False})
 
     async def handle_transaction(self, t: Transaction, *, cancel: bool = False) -> None:
         direction = t.get_direction(cancel)

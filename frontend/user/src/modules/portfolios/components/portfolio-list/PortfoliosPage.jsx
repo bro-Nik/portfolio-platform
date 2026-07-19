@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import { useModalStore } from '@portfolio/shared';
 import LoadingSpinner from 'src/components/ui/LoadingSpinner';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
@@ -10,12 +11,13 @@ import PortfoliosTable from './PortfoliosTable';
 import { Briefcase } from 'lucide-react';
 
 const PortfoliosPage = () => {
-  const { portfolios, overallStats, loading } = usePortfoliosData();
+  const [showArchived, setShowArchived] = useLocalStorage('portfolios-show-archived', false);
+  const { portfolios, allPortfolios, overallStats, loading, showingArchivedFallback } = usePortfoliosData(showArchived);
   const { openModal } = useModalStore();
 
   if (loading) return <LoadingSpinner />;
 
-  if (!portfolios.length) {
+  if (!allPortfolios.length) {
     return (
       <>
         <PortfoliosHeader />
@@ -35,7 +37,7 @@ const PortfoliosPage = () => {
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         <PortfoliosStatistic stats={overallStats} />
       </div>
-      <PortfoliosTable portfolios={portfolios} />
+      <PortfoliosTable portfolios={portfolios} showArchived={showArchived} onToggleArchived={setShowArchived} showingArchivedFallback={showingArchivedFallback} />
     </>
   );
 };

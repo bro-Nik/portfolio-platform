@@ -4,7 +4,7 @@ import { usePortfoliosQuery } from './usePortfoliosQuery';
 import { useTickerIds, extractTickerIds } from 'src/hooks/TickerContext';
 import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 
-export const usePortfoliosData = () => {
+export const usePortfoliosData = (showArchived = false) => {
   const queryClient = useQueryClient();
   const { addTickerIds } = useTickerIds();
 
@@ -102,6 +102,14 @@ export const usePortfoliosData = () => {
     };
   }, [rawPortfolios, prices]);
 
+  const filteredPortfolios = useMemo(() => {
+    if (showArchived) return portfoliosWithStats;
+    const active = portfoliosWithStats.filter(p => !p.isArchived);
+    return active.length > 0 ? active : portfoliosWithStats.filter(p => p.isArchived);
+  }, [portfoliosWithStats, showArchived]);
+
+  const showingArchivedFallback = !showArchived && portfoliosWithStats.length > 0 && portfoliosWithStats.every(p => p.isArchived);
+
   const getPortfolio = (id) => rawPortfolios?.find(p => p.id === id);
   const getPortfolioAsset = (portfolio, id) => portfolio.assets?.find(a => a.id === id);
 
@@ -110,9 +118,11 @@ export const usePortfoliosData = () => {
   };
 
   return {
-    portfolios: portfoliosWithStats,
+    portfolios: filteredPortfolios,
+    allPortfolios: portfoliosWithStats,
     overallStats,
     loading: isLoading || pricesLoading,
+    showingArchivedFallback,
     getPortfolio,
     getPortfolioAsset,
     refresh,

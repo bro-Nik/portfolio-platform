@@ -7,6 +7,7 @@ const DataTable = memo(({
   columnsConfig,
   fallbackData = [],
   storageKey,
+  rowClassName,
 }) => {
   const sourceData = data ?? fallbackData;
   const [sortState, setSortState] = useLocalStorage(storageKey || '', null);
@@ -42,6 +43,7 @@ const DataTable = memo(({
         size="small"
         showSorterTooltip={false}
         scroll={{ x: 'max-content' }}
+        rowClassName={rowClassName}
       />
     </div>
   );

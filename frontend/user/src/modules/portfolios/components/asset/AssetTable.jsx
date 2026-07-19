@@ -32,11 +32,12 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
   }, [asset.tickerId, portfolio.id]);
 
   const handleTransactionClick = useCallback((transaction) => {
+    if (asset.isArchived) return;
     openModal(TransactionEditModal, { tickerId: asset.tickerId, portfolioId: portfolio.id, transaction });
   }, [openModal, asset, portfolio.id]);
 
   const columns = useMemo(() => [
-    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick),
+    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick, asset.isArchived),
     createTransactionPriceColumn(),
     createTransactionSumColumn(isCounterTransaction),
     createTransactionQuantityColumn(isCounterTransaction),

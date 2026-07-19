@@ -19,7 +19,12 @@ export const createNameColumn = (openItem, itemType) => ({
   fixed: 'left',
   render: (_, record) => (
     <div style={{ display: 'grid' }} onClick={() => openItem(record, itemType)}>
-      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }} title={record.name}>{record.name}</span>
+      <span style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }} title={record.name}>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }}>
+          {record.name}
+        </span>
+        {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginTop: 1, marginLeft: 4 }}>Архивный</span>}
+      </span>
       <span style={{ ...mutedStyle, ...smallTextStyle, textTransform: 'capitalize' }}>{record.market}</span>
       <span style={{ ...mutedStyle, ...smallTextStyle }}>{record.assets?.length || 0} активов</span>
       <TagBadges tags={record.tags} />
@@ -37,9 +42,10 @@ export const createAssetNameColumn = (openItem, itemType, parentId) => ({
     <div style={{ display: 'flex', gap: 8 }} onClick={() => openItem(record, itemType, parentId)}>
       <img className="img-asset-min" loading="lazy" src={record.image} style={{ cursor: 'pointer' }} />
       <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
-        <span>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={record.name}>{record.name}</span>
-          <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4 }}>{record.symbol}</span>
+        <span style={{ display: 'flex', alignItems: 'flex-start' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }} title={record.name}>{record.name}</span>
+          <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4, flexShrink: 0 }}>{record.symbol}</span>
+          {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 4, marginTop: 1 }}>Архивный</span>}
         </span>
         <TagBadges tags={record.tags} />
       </div>
@@ -149,13 +155,13 @@ export const createActionsColumn = (renderElement) => ({
   width: 100,
 });
 
-export const createTransactionLinkColumn = (isCounterTransaction, onClick) => ({
+export const createTransactionLinkColumn = (isCounterTransaction, onClick, disabled) => ({
   key: 'transactionLink',
   title: 'Тип',
   render: (_, record) => {
     const colorClassName = getTransactionTypeColor(getAdjustedTransactionType(record, isCounterTransaction));
     return (
-      <div onClick={() => onClick(record)}>
+      <div onClick={() => !disabled && onClick(record)} style={{ cursor: disabled ? 'default' : 'pointer' }}>
         <span className={colorClassName}>
           {getTransactionTypeLabel(record, isCounterTransaction)}
           {record.order ? ' (Ордер)' : ''}

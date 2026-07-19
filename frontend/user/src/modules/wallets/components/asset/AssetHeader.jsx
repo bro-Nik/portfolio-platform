@@ -37,7 +37,7 @@ const AssetHeader = ({ wallet, asset }) => {
 
         <div style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
           <Space>
-            <Button type="primary"  onClick={() => openModal(TransactionEditModal, { tickerId: asset.tickerId, walletId: wallet.id })} >
+            <Button type="primary" disabled={asset.isArchived} onClick={() => openModal(TransactionEditModal, { tickerId: asset.tickerId, walletId: wallet.id })} >
               Отправить
             </Button>
             <AssetActionsDropdown wallet={wallet} asset={asset} btn='btn' />

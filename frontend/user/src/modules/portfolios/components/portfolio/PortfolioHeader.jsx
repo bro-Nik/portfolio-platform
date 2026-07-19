@@ -25,7 +25,7 @@ const PortfolioHeader = ({ portfolio, onRefresh }) => {
 
         <div style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
           <Space>
-            <Button type="primary"  onClick={() => openModal(AssetAddModal, { portfolio: portfolio })} >
+            <Button type="primary" disabled={portfolio.isArchived} onClick={() => openModal(AssetAddModal, { portfolio: portfolio })} >
               Добавить актив
             </Button>
             <PortfolioActionsDropdown portfolio={portfolio} btn='btn' onUpdate={onRefresh} />

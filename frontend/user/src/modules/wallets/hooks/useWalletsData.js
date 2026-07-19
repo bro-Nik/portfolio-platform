@@ -4,7 +4,7 @@ import { useWalletsQuery } from './useWalletsQuery';
 import { useTickerIds, extractTickerIds } from 'src/hooks/TickerContext';
 import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 
-export const useWalletsData = () => {
+export const useWalletsData = (showArchived = false) => {
   const queryClient = useQueryClient();
   const { addTickerIds } = useTickerIds();
 
@@ -77,14 +77,24 @@ export const useWalletsData = () => {
     };
   }, [rawWallets, prices]);
 
+  const filteredWallets = useMemo(() => {
+    if (showArchived) return walletsWithStats;
+    const active = walletsWithStats.filter(w => !w.isArchived);
+    return active.length > 0 ? active : walletsWithStats.filter(w => w.isArchived);
+  }, [walletsWithStats, showArchived]);
+
+  const showingArchivedFallback = !showArchived && walletsWithStats.length > 0 && walletsWithStats.every(w => w.isArchived);
+
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['wallets'] });
   };
 
   return {
-    wallets: walletsWithStats,
+    wallets: filteredWallets,
+    allWallets: walletsWithStats,
     overallStats,
     loading: isLoading || pricesLoading,
+    showingArchivedFallback,
     getWallet,
     refresh,
   };

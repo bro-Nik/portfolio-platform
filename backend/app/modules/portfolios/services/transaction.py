@@ -2,7 +2,7 @@ import asyncio
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.exceptions import BusinessRuleError, NotFoundError, PermissionDeniedError
+from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 
 from app.modules.portfolios.models import Transaction
 from app.modules.portfolios.repositories import TransactionRepository
@@ -35,6 +35,7 @@ class TransactionService:
 
     async def create(self, data: TransactionCreateRequest) -> Transaction:
         self._validate_required(data)
+        await self._ensure_not_archived(data)
         t = await self.repo.create(TransactionCreate(**data.model_dump(exclude_unset=True), user_id=self.actor.id).model_dump())
         await self.session.flush()
         await self._notify_services(t)
@@ -43,6 +44,7 @@ class TransactionService:
     async def update(self, id: int, data: TransactionUpdateRequest) -> tuple[Transaction, Transaction]:
         self._validate_required(data)
         old = await self.get(id)
+        await self._ensure_not_archived(old)
         await self._notify_services(old, cancel=True)
         updated = await self.repo.update(old.id, TransactionUpdate(**data.model_dump(exclude_unset=True)).model_dump())
         await self._notify_services(updated)
@@ -60,6 +62,19 @@ class TransactionService:
             self.wallet_asset_service.get_affected(*transactions),
         )
         return TransactionResponseWithAssets(transaction=transactions[0], portfolio_assets=pa, wallet_assets=wa)
+
+    async def _ensure_not_archived(self, obj) -> None:
+        portfolio_ids = {obj.portfolio_id, obj.portfolio2_id} - {None}
+        for pid in portfolio_ids:
+            portfolio = await self.portfolio_service.get(pid)
+            if portfolio.is_archived:
+                raise ConflictError('Нельзя создавать/изменять/удалять транзакции в архивном портфеле')
+
+        wallet_ids = {obj.wallet_id, obj.wallet2_id} - {None}
+        for wid in wallet_ids:
+            wallet = await self.wallet_service.get(wid)
+            if wallet.is_archived:
+                raise ConflictError('Нельзя создавать/изменять/удалять транзакции в архивном кошельке')
 
     async def _notify_services(self, t: Transaction, *, cancel: bool = False) -> None:
         await self.portfolio_service.handle_transaction(t, cancel=cancel)

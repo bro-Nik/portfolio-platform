@@ -17,7 +17,7 @@ const PortfolioPage = ({ portfolio, onRefresh }) => {
           icon={Coins}
           title="В портфеле пока нет активов"
           description="Добавьте первый актив, чтобы начать отслеживать инвестиции"
-          action={{ text: 'Добавить актив', onClick: () => openModal(AssetAddModal, { portfolio }) }}
+          action={!portfolio.isArchived ? { text: 'Добавить актив', onClick: () => openModal(AssetAddModal, { portfolio }) } : undefined}
         />
       </>
     );

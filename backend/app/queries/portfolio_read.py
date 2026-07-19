@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.common.schemas import Context
 from app.modules.market.repositories.ticker import TickerRepository
 from app.modules.portfolios.models import Portfolio
+from app.modules.portfolios.repositories import TransactionRepository
 from app.modules.portfolios.services.portfolio import PortfolioService
 
 IMAGES_URL = '/market/static/images/tickers'
@@ -14,6 +15,7 @@ class PortfolioReadQuery:
         self.ctx = ctx
         self.service = PortfolioService(session, ctx)
         self.ticker_repo = TickerRepository(session)
+        self.transaction_repo = TransactionRepository(session)
 
     async def _enrich(self, portfolios: list[Portfolio]) -> None:
         all_assets = [a for p in portfolios for a in p.assets]
@@ -29,12 +31,33 @@ class PortfolioReadQuery:
                 asset.symbol = t.symbol
                 asset.image = f'{IMAGES_URL}/{t.market}/24/{t.image}' if t.image else None
 
+    async def _add_has_transactions(self, portfolios: list[Portfolio]) -> None:
+        portfolio_ids = [p.id for p in portfolios]
+        portfolio_txn_ids = await self.transaction_repo.portfolios_with_transactions(portfolio_ids)
+        for p in portfolios:
+            p.has_transactions = p.id in portfolio_txn_ids
+
+        all_assets = [a for p in portfolios for a in p.assets]
+        portfolio_per_asset = {a.id: p.id for p in portfolios for a in p.assets}
+        assets_by_portfolio: dict[int, list] = {}
+        for a in all_assets:
+            pid = portfolio_per_asset[a.id]
+            assets_by_portfolio.setdefault(pid, []).append(a)
+
+        for pid, assets in assets_by_portfolio.items():
+            ticker_ids = list(set(a.ticker_id for a in assets))
+            txn_tickers = await self.transaction_repo.portfolio_tickers_with_transactions(pid, ticker_ids)
+            for a in assets:
+                a.has_transactions = a.ticker_id in txn_tickers
+
     async def get_with_assets(self, id: int) -> Portfolio:
         portfolio = await self.service.get_with_assets(id)
         await self._enrich([portfolio])
+        await self._add_has_transactions([portfolio])
         return portfolio
 
     async def get_all_with_assets(self) -> list[Portfolio]:
         portfolios = await self.service.get_all_with_assets()
         await self._enrich(portfolios)
+        await self._add_has_transactions(portfolios)
         return portfolios

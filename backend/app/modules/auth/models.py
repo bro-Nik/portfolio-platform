@@ -60,6 +60,21 @@ class User(Base):
         back_populates='user',
         cascade='all, delete-orphan',
     )
+    portfolios: Mapped[list['Portfolio']] = relationship(
+        'Portfolio',
+        back_populates='user',
+        cascade='all, delete-orphan',
+    )
+    wallets: Mapped[list['Wallet']] = relationship(
+        'Wallet',
+        back_populates='user',
+        cascade='all, delete-orphan',
+    )
+    tags: Mapped[list['Tag']] = relationship(
+        'Tag',
+        back_populates='user',
+        cascade='all, delete-orphan',
+    )
 
 
 class LoginSession(Base):

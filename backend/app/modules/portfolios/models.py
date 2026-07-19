@@ -14,9 +14,11 @@ class Portfolio(Base):
     name: Mapped[str] = mapped_column(String(100))
     market: Mapped[str] = mapped_column(String(32))
     comment: Mapped[str | None] = mapped_column(String(1024))
-    user_id: Mapped[int] = mapped_column(Integer, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    assets: Mapped[list['PortfolioAsset']] = relationship(back_populates='portfolio')
+    assets: Mapped[list['PortfolioAsset']] = relationship(back_populates='portfolio', cascade='all, delete-orphan')
+    user: Mapped['User'] = relationship(back_populates='portfolios')
 
 
 class PortfolioAsset(Base):
@@ -24,7 +26,7 @@ class PortfolioAsset(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     ticker_id: Mapped[str] = mapped_column(String(256))
-    portfolio_id: Mapped[int] = mapped_column(Integer, ForeignKey('portfolio.id'))
+    portfolio_id: Mapped[int] = mapped_column(ForeignKey('portfolio.id', ondelete='CASCADE'))
     quantity: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     buy_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     sell_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
@@ -33,7 +35,8 @@ class PortfolioAsset(Base):
     total_invested: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     percent: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     comment: Mapped[str | None] = mapped_column(String(1024))
-    user_id: Mapped[int] = mapped_column(Integer)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
     portfolio: Mapped['Portfolio'] = relationship(back_populates='assets')
 
@@ -51,12 +54,12 @@ class Transaction(Base):
     price_usd: Mapped[Decimal | None] = mapped_column(Numeric)
     type: Mapped[str] = mapped_column(String(24))
     comment: Mapped[str | None] = mapped_column(String(1024))
-    wallet_id: Mapped[int | None] = mapped_column(Integer)
-    wallet2_id: Mapped[int | None] = mapped_column(Integer)
-    portfolio_id: Mapped[int | None] = mapped_column(Integer)
-    portfolio2_id: Mapped[int | None] = mapped_column(Integer)
+    wallet_id: Mapped[int | None] = mapped_column(ForeignKey('wallet.id'))
+    wallet2_id: Mapped[int | None] = mapped_column(ForeignKey('wallet.id'))
+    portfolio_id: Mapped[int | None] = mapped_column(ForeignKey('portfolio.id'))
+    portfolio2_id: Mapped[int | None] = mapped_column(ForeignKey('portfolio.id'))
     order: Mapped[bool | None] = mapped_column(Boolean)
-    user_id: Mapped[int] = mapped_column(Integer)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
 
     def get_direction(self, cancel: bool = False) -> int:
         positive_types = {'Buy', 'Input', 'TransferIn', 'Earning'}
@@ -70,9 +73,11 @@ class Wallet(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
     comment: Mapped[str | None] = mapped_column(String(1024))
-    user_id: Mapped[int] = mapped_column(Integer, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    assets: Mapped[list['WalletAsset']] = relationship(back_populates='wallet')
+    assets: Mapped[list['WalletAsset']] = relationship(back_populates='wallet', cascade='all, delete-orphan')
+    user: Mapped['User'] = relationship(back_populates='wallets')
 
 
 class Tag(Base):
@@ -81,7 +86,9 @@ class Tag(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     color: Mapped[str | None] = mapped_column(String(7))
-    user_id: Mapped[int] = mapped_column(Integer, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
+
+    user: Mapped['User'] = relationship(back_populates='tags')
 
 
 class Taggable(Base):
@@ -98,10 +105,11 @@ class WalletAsset(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     ticker_id: Mapped[str] = mapped_column(String(256))
-    wallet_id: Mapped[int] = mapped_column(ForeignKey('wallet.id'))
+    wallet_id: Mapped[int] = mapped_column(ForeignKey('wallet.id', ondelete='CASCADE'))
     quantity: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     buy_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     sell_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
-    user_id: Mapped[int] = mapped_column(Integer)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
     wallet: Mapped['Wallet'] = relationship(back_populates='assets')

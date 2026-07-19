@@ -74,9 +74,8 @@ th:hover .ant-table-column-sorter .ant-table-column-sorter-down {
   opacity: .5;
 }
 
-th:hover .ant-table-column-sorter .ant-table-column-sorter-up.active,
-th:hover .ant-table-column-sorter .ant-table-column-sorter-down.active {
-  opacity: 1;
+.archived-row {
+  opacity: 0.55;
 }
 
 @keyframes slideDown {

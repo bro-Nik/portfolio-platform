@@ -16,7 +16,29 @@ export const usePortfolioMutations = () => {
 
   const deletePortfolio = useMutation({
     mutationFn: (portfolio) => portfolioApi.deletePortfolio(portfolio.id),
-    onSuccess: () => invalidate(),
+
+    onMutate: async (portfolio) => {
+      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      const previous = queryClient.getQueryData(['portfolios']);
+
+      queryClient.setQueryData(['portfolios'], (old) => {
+        if (!old?.portfolios) return old;
+        return {
+          ...old,
+          portfolios: old.portfolios.filter(p => p.id !== portfolio.id),
+        };
+      });
+
+      return { previous };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['portfolios'], context.previous);
+      }
+    },
+
+    onSettled: () => invalidate(),
   });
 
   const addAsset = useMutation({
@@ -96,5 +118,133 @@ export const usePortfolioMutations = () => {
     onSettled: () => invalidate(),
   });
 
-  return { editPortfolio, deletePortfolio, addAsset, deleteAsset };
+  const archivePortfolio = useMutation({
+    mutationFn: (portfolioId) => portfolioApi.archivePortfolio(portfolioId),
+
+    onMutate: async (portfolioId) => {
+      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      const previous = queryClient.getQueryData(['portfolios']);
+
+      queryClient.setQueryData(['portfolios'], (old) => {
+        if (!old?.portfolios) return old;
+        return {
+          ...old,
+          portfolios: old.portfolios.map(p =>
+            p.id === portfolioId ? { ...p, isArchived: true } : p
+          ),
+        };
+      });
+
+      return { previous };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['portfolios'], context.previous);
+      }
+    },
+
+    onSettled: () => invalidate(),
+  });
+
+  const unarchivePortfolio = useMutation({
+    mutationFn: (portfolioId) => portfolioApi.unarchivePortfolio(portfolioId),
+
+    onMutate: async (portfolioId) => {
+      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      const previous = queryClient.getQueryData(['portfolios']);
+
+      queryClient.setQueryData(['portfolios'], (old) => {
+        if (!old?.portfolios) return old;
+        return {
+          ...old,
+          portfolios: old.portfolios.map(p =>
+            p.id === portfolioId ? { ...p, isArchived: false } : p
+          ),
+        };
+      });
+
+      return { previous };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['portfolios'], context.previous);
+      }
+    },
+
+    onSettled: () => invalidate(),
+  });
+
+  const archiveAsset = useMutation({
+    mutationFn: ({ portfolioId, assetId }) => portfolioApi.archiveAsset(portfolioId, assetId),
+
+    onMutate: async ({ portfolioId, assetId }) => {
+      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      const previous = queryClient.getQueryData(['portfolios']);
+
+      queryClient.setQueryData(['portfolios'], (old) => {
+        if (!old?.portfolios) return old;
+        return {
+          ...old,
+          portfolios: old.portfolios.map(p => {
+            if (p.id !== portfolioId) return p;
+            return {
+              ...p,
+              assets: p.assets.map(a =>
+                a.id === assetId ? { ...a, isArchived: true } : a
+              ),
+            };
+          }),
+        };
+      });
+
+      return { previous };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['portfolios'], context.previous);
+      }
+    },
+
+    onSettled: () => invalidate(),
+  });
+
+  const unarchiveAsset = useMutation({
+    mutationFn: ({ portfolioId, assetId }) => portfolioApi.unarchiveAsset(portfolioId, assetId),
+
+    onMutate: async ({ portfolioId, assetId }) => {
+      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      const previous = queryClient.getQueryData(['portfolios']);
+
+      queryClient.setQueryData(['portfolios'], (old) => {
+        if (!old?.portfolios) return old;
+        return {
+          ...old,
+          portfolios: old.portfolios.map(p => {
+            if (p.id !== portfolioId) return p;
+            return {
+              ...p,
+              assets: p.assets.map(a =>
+                a.id === assetId ? { ...a, isArchived: false } : a
+              ),
+            };
+          }),
+        };
+      });
+
+      return { previous };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['portfolios'], context.previous);
+      }
+    },
+
+    onSettled: () => invalidate(),
+  });
+
+  return { editPortfolio, deletePortfolio, addAsset, deleteAsset, archivePortfolio, unarchivePortfolio, archiveAsset, unarchiveAsset };
 };

@@ -43,6 +43,8 @@ class WalletAssetResponse(WalletAssetBase):
     id: int
     quantity: Decimal
     buy_orders: Decimal
+    is_archived: bool
+    has_transactions: bool = False
     tags: list[TagResponse] = []
     name: str | None = None
     symbol: str | None = None
@@ -52,6 +54,8 @@ class WalletAssetResponse(WalletAssetBase):
 
 class WalletResponse(WalletBase):
     id: int
+    is_archived: bool
+    has_transactions: bool = False
     assets: list[WalletAssetResponse] = []
     tags: list[TagResponse] = []
     model_config = ConfigDict(from_attributes=True)
