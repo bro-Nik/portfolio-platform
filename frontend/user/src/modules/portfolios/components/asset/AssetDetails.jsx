@@ -90,28 +90,45 @@ const AssetDetail = ({ data }) => {
   const SegmentedProgress = ({ segments, totalAmount }) => {
     if (!segments.length) {
       return (
-        <div style={{ position: 'relative', cursor: 'pointer' }}>
-          
-          {/* Отображаем сегменты */}
-          <div style={{ 
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            height: 12,
-            borderRadius: 8,
-            overflow: 'hidden',
-            display: 'flex'
-          }}>
-            <div
-              style={{
-                width: '100%',
-                backgroundColor: '#ababab',
-                opacity: '0.5'
-              }}
-            />
+        <Tooltip
+          title={
+            <div style={{ maxWidth: 300 }}>
+              <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                Всего: {formatCurrency(0)}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                Актива нигде нет
+              </Text>
+            </div>
+          }
+          color="white"
+          overlayStyle={{
+            maxWidth: 350,
+            boxShadow: '0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05)'
+          }}
+          placement="top"
+        >
+          <div style={{ position: 'relative', cursor: 'pointer' }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 12,
+              borderRadius: 8,
+              overflow: 'hidden',
+              display: 'flex'
+            }}>
+              <div
+                style={{
+                  width: '100%',
+                  backgroundColor: '#ababab',
+                  opacity: '0.5'
+                }}
+              />
+            </div>
           </div>
-        </div>
+        </Tooltip>
       );
     }
 
