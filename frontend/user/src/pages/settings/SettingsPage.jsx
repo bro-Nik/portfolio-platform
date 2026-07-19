@@ -5,6 +5,7 @@ import { authService, useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
 import ChangePasswordModal from './ChangePasswordModal';
 import ChangeEmailModal from './ChangeEmailModal';
+import DeleteAccountModal from './DeleteAccountModal';
 import './SettingsPage.scss';
 
 const { Text } = Typography;
@@ -31,6 +32,7 @@ const SettingsPage = () => {
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const navigate = useNavigate();
   const { user, logout: storeLogout } = useAuthStore();
@@ -257,8 +259,30 @@ const SettingsPage = () => {
         )}
       </Card>
 
+      <Card style={{ marginTop: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
+              Удаление аккаунта
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+              Безвозвратное удаление всех ваших данных
+            </div>
+          </div>
+          <Button
+            danger
+            type="primary"
+            icon={<Trash2 size={14} />}
+            onClick={() => setDeleteModalOpen(true)}
+          >
+            Удалить аккаунт
+          </Button>
+        </div>
+      </Card>
+
       <ChangePasswordModal open={passwordModalOpen} onClose={() => setPasswordModalOpen(false)} />
       <ChangeEmailModal open={emailModalOpen} onClose={() => setEmailModalOpen(false)} />
+      <DeleteAccountModal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} />
     </div>
   );
 };

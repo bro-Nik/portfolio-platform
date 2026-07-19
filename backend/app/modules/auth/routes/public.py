@@ -8,9 +8,9 @@ from app.modules.auth.dependencies import AuthServiceDep, SessionServiceDep, Use
 from app.common.schemas import AuthUser
 from app.common.dependencies import CurrentUserOrNone
 from app.modules.auth.schemas import (
-    EmailChangeRequest, ForgotPasswordRequest, LoginSessionResponse, PasswordChangeRequest,
-    RefreshTokenRequest, RegisterResponse, ResetPasswordRequest, ResendVerificationRequest,
-    TokensResponse, UserLogin, UserRegister,
+    DeleteAccountRequest, EmailChangeRequest, ForgotPasswordRequest, LoginSessionResponse,
+    PasswordChangeRequest, RefreshTokenRequest, RegisterResponse, ResetPasswordRequest,
+    ResendVerificationRequest, TokensResponse, UserLogin, UserRegister,
 )
 from app.modules.auth.services.auth import RegisterTaskData
 from app.modules.auth.tasks import (
@@ -196,3 +196,17 @@ async def delete_session(
     current_user: Annotated[AuthUser, require_user],
 ) -> None:
     await session_service.delete_session(session_id, current_user.id)
+
+
+@router.delete('/account', status_code=204)
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка удаления аккаунта')
+async def delete_account(
+    data: DeleteAccountRequest,
+    request: Request,
+    user_service: UserServiceDep,
+    auth: AuthServiceDep,
+    current_user: Annotated[AuthUser, require_user],
+) -> None:
+    await user_service.delete_account(current_user.id, data)
+    await auth.logout_all(current_user.id)

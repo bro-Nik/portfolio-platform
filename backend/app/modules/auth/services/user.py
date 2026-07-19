@@ -5,7 +5,8 @@ from app.common.schemas import Context
 from app.modules.auth.models import User
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.schemas import (
-    EmailChangeRequest, PasswordChangeRequest, UserCreate, UserCreateRequest, UserUpdate, UserUpdateRequest, UserRole,
+    DeleteAccountRequest, EmailChangeRequest, PasswordChangeRequest, UserCreate,
+    UserCreateRequest, UserUpdate, UserUpdateRequest, UserRole,
 )
 from app.modules.auth.security import SecurityService
 
@@ -69,6 +70,12 @@ class UserService:
         if await self.repo.exists_by(User.email == data.new_email):
             raise ConflictError(f'Пользователь с email {data.new_email} уже существует')
         return self.security.create_email_verification_token(user_id, new_email=data.new_email)
+
+    async def delete_account(self, user_id: int, data: DeleteAccountRequest) -> None:
+        user = await self.get(user_id)
+        if not self.security.verify_password(data.current_password, user.password_hash):
+            raise AuthenticationError('Неверный пароль')
+        await self.repo.delete(user_id)
 
     async def forgot_password(self, email: str) -> str | None:
         user = await self.repo.get_by_email(email)

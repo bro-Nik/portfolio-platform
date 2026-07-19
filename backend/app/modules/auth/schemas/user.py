@@ -85,6 +85,10 @@ class ResendVerificationRequest(BaseModel):
     password: str | None = None
 
 
+class DeleteAccountRequest(BaseModel):
+    current_password: str
+
+
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 

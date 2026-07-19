@@ -177,6 +177,15 @@ export const authService = () => {
     }
   };
 
+  const deleteAccount = async (currentPassword: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      await authApi.del('/account', { currentPassword });
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: (error as Error)?.message || 'Ошибка удаления аккаунта' };
+    }
+  };
+
   return {
     login,
     register,
@@ -190,6 +199,7 @@ export const authService = () => {
     getSessions,
     deleteSession,
     logoutAll,
+    deleteAccount,
     getCurrentUser,
     getValidToken,
     refreshTokens,

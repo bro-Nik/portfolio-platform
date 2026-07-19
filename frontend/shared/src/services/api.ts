@@ -132,8 +132,10 @@ export const apiService = (baseUrl = '', getToken?: TokenProvider, refreshProvid
     return client.put(url, camelToSnake(body), config).then((r) => r.data as T);
   };
 
-  const del = <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> =>
-    client.delete(url, config).then((r) => r.data as T);
+  const del = <T = any>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> => {
+    const mergedConfig: AxiosRequestConfig = { ...config, data: body ? camelToSnake(body) : config?.data };
+    return client.delete(url, mergedConfig).then((r) => r.data as T);
+  };
 
   return { get, post, put, del };
 };

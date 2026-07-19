@@ -3,6 +3,7 @@ from app.common.schemas import AuthUser, UserRole, Context
 from .session import LoginSessionCreate, LoginSessionResponse, LoginSessionUpdate
 from .token import RefreshTokenCreate, RefreshTokenRequest, RefreshTokenUpdate, TokensResponse
 from .user import (
+    DeleteAccountRequest,
     EmailChangeRequest,
     ForgotPasswordRequest,
     PasswordChangeRequest,
@@ -24,6 +25,7 @@ __all__ = [
     'LoginSessionCreate',
     'LoginSessionResponse',
     'LoginSessionUpdate',
+    'DeleteAccountRequest',
     'EmailChangeRequest',
     'ForgotPasswordRequest',
     'PasswordChangeRequest',
