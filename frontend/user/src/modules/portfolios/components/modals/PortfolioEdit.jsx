@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, Space, message } from 'antd';
+import { Modal, Form, Input, Select, Space } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
 import FormComment from 'src/features/forms/FormComment';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
 import FormSelect from 'src/features/forms/FormSelect';
 import ShowMore from 'src/components/ui/ShowMore';
+import { successToast, errorToast } from 'src/utils/notifications';
 
 const PortfolioEditModal = () => {
   const { modalProps, closeModal } = useModalStore();
@@ -35,10 +36,10 @@ const PortfolioEditModal = () => {
     const result = await editPortfolio(submitData);
 
     if (result.success) {
-      message.success(portfolio ? 'Портфель обновлен' : 'Портфель создан');
+      successToast(portfolio ? 'Портфель обновлен' : 'Портфель создан');
       closeModal();
     } else {
-      message.error(result.error || 'Произошла ошибка');
+      errorToast(result.error || 'Произошла ошибка');
       console.log(result.error || 'Произошла ошибка')
     }
   };

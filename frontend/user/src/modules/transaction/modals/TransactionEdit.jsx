@@ -1,8 +1,9 @@
 import React from 'react';
 import { useModalStore } from '@portfolio/shared';
-import { Modal, message } from 'antd';
+import { Modal } from 'antd';
 import BaseTransactionForm from 'src/modules/transaction/components/TransactionEdit/BaseTransactionForm';
 import { useTransactionOperations } from 'src/modules/transaction/hooks/useTransactionOperations';
+import { successToast, errorToast } from 'src/utils/notifications';
 
 const TransactionEditModal = () => {
   const { modalProps, closeModal } = useModalStore();
@@ -14,10 +15,10 @@ const TransactionEditModal = () => {
     const result = await editTransaction(transaction, submitData);
 
     if (result.success) {
-      message.success(transaction ? 'Транзакция обновлена' : 'Транзакция добавлена');
+      successToast(transaction ? 'Транзакция обновлена' : 'Транзакция добавлена');
       closeModal();
     } else {
-      message.error(result.error || 'Произошла ошибка');
+      errorToast(result.error || 'Произошла ошибка');
     }
   };
 

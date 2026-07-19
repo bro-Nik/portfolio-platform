@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Modal, Input, Button, Space, message } from 'antd';
+import { Modal, Input, Button, Space } from 'antd';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useModalStore } from '@portfolio/shared';
 import { useTagsQuery } from '../../hooks/useTagsQuery';
 import { useTagMutations } from '../../hooks/useTagMutations';
+import { successToast, errorToast } from 'src/utils/notifications';
 
 const PRESET_COLORS = [
   '#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1',
@@ -27,12 +28,12 @@ const TagManagementModal = () => {
     setLoading(true);
     try {
       await createTag.mutateAsync({ name: editName.trim(), color: editColor });
-      message.success('Тег создан');
+      successToast('Тег создан');
       setEditName('');
       setShowForm(false);
       onTagsChange?.();
     } catch (error) {
-      message.error(error.message);
+      errorToast(error);
     }
     setLoading(false);
   };
@@ -42,13 +43,13 @@ const TagManagementModal = () => {
     setLoading(true);
     try {
       await updateTag.mutateAsync({ tagId: editId, data: { name: editName.trim(), color: editColor } });
-      message.success('Тег обновлён');
+      successToast('Тег обновлён');
       setEditId(null);
       setEditName('');
       setShowForm(false);
       onTagsChange?.();
     } catch (error) {
-      message.error(error.message);
+      errorToast(error);
     }
     setLoading(false);
   };
@@ -57,10 +58,10 @@ const TagManagementModal = () => {
     setLoading(true);
     try {
       await deleteTag.mutateAsync(tagId);
-      message.success('Тег удалён');
+      successToast('Тег удалён');
       onTagsChange?.();
     } catch (error) {
-      message.error(error.message);
+      errorToast(error);
     }
     setLoading(false);
   };

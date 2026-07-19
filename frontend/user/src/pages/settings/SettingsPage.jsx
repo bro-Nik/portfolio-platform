@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Tag, Space, Modal, message, Typography, Avatar, Spin } from 'antd';
+import { Button, Card, Tag, Space, Modal, Typography, Avatar, Spin } from 'antd';
 import { AlertTriangle, Monitor, Smartphone, Tablet, Globe, Trash2, LogOut, KeyRound, Mail, ShieldCheck, Smartphone as DeviceIcon } from 'lucide-react';
 import { authService, useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useProfileQuery } from './useProfileQuery';
+import { successToast, errorToast } from 'src/utils/notifications';
 import ChangePasswordModal from './ChangePasswordModal';
 import ChangeEmailModal from './ChangeEmailModal';
 import DeleteAccountModal from './DeleteAccountModal';
@@ -62,9 +63,9 @@ const SettingsPage = () => {
     const result = await resendVerification();
     setResendLoading(false);
     if (result.success) {
-      message.success(result.message || 'Письмо отправлено');
+      successToast(result.message || 'Письмо отправлено');
     } else {
-      message.error(result.error || 'Ошибка отправки');
+      errorToast(result.error || 'Ошибка отправки');
     }
   };
 
@@ -78,10 +79,10 @@ const SettingsPage = () => {
       onOk: async () => {
         const result = await deleteSession(sessionId);
         if (result.success) {
-          message.success('Сессия завершена');
+          successToast('Сессия завершена');
           loadSessions();
         } else {
-          message.error(result.error || 'Ошибка удаления сессии');
+          errorToast(result.error || 'Ошибка удаления сессии');
         }
       },
     });
@@ -100,7 +101,7 @@ const SettingsPage = () => {
           storeLogout();
           navigate('/login');
         } else {
-          message.error(result.error || 'Ошибка выхода');
+          errorToast(result.error || 'Ошибка выхода');
         }
       },
     });

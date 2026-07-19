@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Button, message } from 'antd';
+import { Modal, Form, Input, Button } from 'antd';
 import { authService } from '@portfolio/shared';
+import { successToast, errorToast } from 'src/utils/notifications';
 
 const ChangeEmailModal = ({ open, onClose }) => {
   const [form] = Form.useForm();
@@ -12,11 +13,11 @@ const ChangeEmailModal = ({ open, onClose }) => {
     const result = await changeEmail(values.password, values.newEmail);
     setLoading(false);
     if (result.success) {
-      message.success('Письмо с подтверждением отправлено на новый адрес');
+      successToast('Письмо с подтверждением отправлено на новый адрес');
       form.resetFields();
       onClose();
     } else {
-      message.error(result.error || 'Ошибка смены email');
+      errorToast(result.error || 'Ошибка смены email');
     }
   };
 

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Modal, message } from 'antd';
+import { Modal } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { useTransactionOperations } from 'src/modules/transaction/hooks/useTransactionOperations';
+import { successToast, errorToast } from 'src/utils/notifications';
 
 const TransactionDeleteModal = () => {
   const { modalProps, closeModal } = useModalStore();
@@ -12,9 +13,9 @@ const TransactionDeleteModal = () => {
     const result = await deleteTransaction(transaction);
 
     if (result.success) {
-      message.success('Транзакция удалена');
+      successToast('Транзакция удалена');
     } else {
-      message.error(result.error);
+      errorToast(result.error);
     }
     closeModal();
   };

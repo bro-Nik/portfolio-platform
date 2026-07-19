@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Button, Space, message } from 'antd';
+import { Modal, Form, Input, Button, Space } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { useWalletOperations } from '../../hooks/useWalletOperations';
 import ShowMore from 'src/components/ui/ShowMore';
 import FormComment from 'src/features/forms/FormComment';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
+import { successToast, errorToast } from 'src/utils/notifications';
 
 const WalletEditModal = () => {
   const { modalProps, closeModal } = useModalStore();
@@ -33,10 +34,10 @@ const WalletEditModal = () => {
     const result = await editWallet(submitData);
     
     if (result.success) {
-      message.success(wallet ? 'Кошелек обновлен' : 'Кошелек создан');
+      successToast(wallet ? 'Кошелек обновлен' : 'Кошелек создан');
       closeModal();
     } else {
-      message.error(result.error || 'Произошла ошибка');
+      errorToast(result.error || 'Произошла ошибка');
       console.log(result.error || 'Произошла ошибка')
     }
   };

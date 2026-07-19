@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authService } from '@portfolio/shared';
 import { ROUTES } from 'src/constants/routes';
-import { Alert, Button, Input, Spin, notification } from 'antd';
+import { Alert, Button, Input, Spin } from 'antd';
+import { destroyNotifications, warningToast, successToast, persistentErrorToast } from 'src/utils/notifications';
 
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();
@@ -37,16 +38,16 @@ const ResetPasswordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    notification.destroy();
+    destroyNotifications();
 
     if (password !== confirmPassword) {
-      notification.warning({ message: 'Пароли не совпадают', placement: 'topRight', duration: 5 });
+      warningToast('Пароли не совпадают');
       setLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      notification.warning({ message: 'Пароль должен быть не менее 6 символов', placement: 'topRight', duration: 5 });
+      warningToast('Пароль должен быть не менее 6 символов');
       setLoading(false);
       return;
     }
@@ -54,10 +55,10 @@ const ResetPasswordPage = () => {
     const result = await resetPassword(token, password);
 
     if (result.success) {
-      notification.success({ message: 'Пароль успешно сброшен. Теперь вы можете войти.', placement: 'topRight', duration: 5 });
+      successToast('Пароль успешно сброшен. Теперь вы можете войти.');
       navigate(ROUTES.LOGIN);
     } else {
-      notification.error({ message: result.error, placement: 'topRight', duration: 0 });
+      persistentErrorToast(result.error);
     }
 
     setLoading(false);

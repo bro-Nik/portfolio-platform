@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Popover, Checkbox, Space, Button, message } from 'antd';
+import { Popover, Checkbox, Space, Button } from 'antd';
 import { Tag } from 'lucide-react';
 import { useTagsQuery } from '../hooks/useTagsQuery';
 import { useTagMutations } from '../hooks/useTagMutations';
+import { errorToast } from 'src/utils/notifications';
 
 const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate }) => {
   const [open, setOpen] = useState(false);
@@ -34,7 +35,7 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate })
       onUpdate?.();
     } catch (error) {
       setSelectedIds(prev);
-      message.error(error.message);
+      errorToast(error);
     }
     setLoading(false);
   };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Button, message } from 'antd';
+import { Modal, Form, Input, Button } from 'antd';
 import { authService } from '@portfolio/shared';
+import { successToast, errorToast } from 'src/utils/notifications';
 
 const ChangePasswordModal = ({ open, onClose }) => {
   const [form] = Form.useForm();
@@ -12,11 +13,11 @@ const ChangePasswordModal = ({ open, onClose }) => {
     const result = await changePassword(values.currentPassword, values.newPassword);
     setLoading(false);
     if (result.success) {
-      message.success('Пароль успешно изменён');
+      successToast('Пароль успешно изменён');
       form.resetFields();
       onClose();
     } else {
-      message.error(result.error || 'Ошибка смены пароля');
+      errorToast(result.error || 'Ошибка смены пароля');
     }
   };
 

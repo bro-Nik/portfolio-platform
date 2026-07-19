@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Button, message, Typography } from 'antd';
+import { Modal, Form, Input, Button, Typography } from 'antd';
 import { AlertTriangle } from 'lucide-react';
 import { authService, useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
+import { successToast, errorToast } from 'src/utils/notifications';
 
 const { Text } = Typography;
 
@@ -18,11 +19,11 @@ const DeleteAccountModal = ({ open, onClose }) => {
     const result = await deleteAccount(values.currentPassword);
     setLoading(false);
     if (result.success) {
-      message.success('Аккаунт успешно удалён');
+      successToast('Аккаунт успешно удалён');
       logout();
       navigate('/');
     } else {
-      message.error(result.error || 'Ошибка удаления аккаунта');
+      errorToast(result.error || 'Ошибка удаления аккаунта');
     }
   };
 

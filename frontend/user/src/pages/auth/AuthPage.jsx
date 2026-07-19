@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService, useAuthStore } from '@portfolio/shared';
 import { ROUTES } from 'src/constants/routes';
-import { Alert, Button, Input, Spin, notification } from 'antd';
+import { Alert, Button, Input, Spin } from 'antd';
+import { destroyNotifications, warningToast, persistentErrorToast } from 'src/utils/notifications';
 
 const AuthPage = ({ type }) => {
   const [searchParams] = useSearchParams();
@@ -39,11 +40,11 @@ const AuthPage = ({ type }) => {
     e.preventDefault();
     setVerifyStatus(null);
     setLoading(true);
-    notification.destroy();
+    destroyNotifications();
 
     // Валидация для регистрации
     if (!isLogin && password !== confirmPassword) {
-      notification.warning({ message: 'Пароли не совпадают', placement: 'topRight', duration: 5 });
+      warningToast('Пароли не совпадают');
       setLoading(false);
       return;
     }
@@ -54,7 +55,7 @@ const AuthPage = ({ type }) => {
     if (result.success) {
       authLogin(await getCurrentUser());
     } else {
-      notification.error({ message: result.error, placement: 'topRight', duration: 0 });
+      persistentErrorToast(result.error);
     }
     
     setLoading(false);

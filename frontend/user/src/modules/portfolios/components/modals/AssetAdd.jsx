@@ -1,9 +1,10 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { Modal, Input, List, Avatar, Spin, Empty, Button, message, Tooltip } from 'antd';
+import { Modal, Input, List, Avatar, Spin, Empty, Button, Tooltip } from 'antd';
 import { Search } from 'lucide-react';
 import { useModalStore } from '@portfolio/shared';
 import { assetApi } from 'src/modules/assets/api/assetApi';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
+import { successToast, errorToast } from 'src/utils/notifications';
 
 const AssetAddModal = () => {
   const { modalProps, closeModal } = useModalStore();
@@ -106,10 +107,10 @@ const AssetAddModal = () => {
     const result = await addAsset(portfolio, ticker);
 
     if (result.success) {
-      message.success('Актив успешно добавлен в портфель');
+      successToast('Актив успешно добавлен в портфель');
       closeModal();
     } else {
-      message.error(result.error || 'Произошла ошибка при добавлении актива');
+      errorToast(result.error || 'Произошла ошибка при добавлении актива');
     }
   };
 
