@@ -3,6 +3,8 @@ import { Button, Card, Tag, Space, Modal, message, Typography, Avatar, Spin } fr
 import { AlertTriangle, Monitor, Smartphone, Tablet, Globe, Trash2, LogOut, KeyRound, Mail, ShieldCheck, Smartphone as DeviceIcon } from 'lucide-react';
 import { authService, useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
+import { useNavigation } from 'src/hooks/useNavigation';
+import { useProfileQuery } from './useProfileQuery';
 import ChangePasswordModal from './ChangePasswordModal';
 import ChangeEmailModal from './ChangeEmailModal';
 import DeleteAccountModal from './DeleteAccountModal';
@@ -37,6 +39,10 @@ const SettingsPage = () => {
   const navigate = useNavigate();
   const { user, logout: storeLogout } = useAuthStore();
   const { getSessions, deleteSession, logoutAll, resendVerification } = authService();
+  const { activeSection } = useNavigation();
+  const { data: profile, isLoading: profileLoading } = useProfileQuery({
+    enabled: activeSection === 'settings',
+  });
 
   const loadSessions = async () => {
     setSessionsLoading(true);
@@ -107,38 +113,40 @@ const SettingsPage = () => {
       </div>
 
       <Card style={{ marginBottom: 20 }} classNames={{ body: { padding: 24 } }}>
-        <div className="profile-header">
-          <Avatar
-            size={64}
-            className="profile-avatar"
-            style={{
-              backgroundColor: '#6366f1',
-              color: '#fff',
-              fontSize: 24,
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {getInitials(user?.email)}
-          </Avatar>
-          <div className="profile-info">
-            <h2 className="profile-name">{user?.login || 'Пользователь'}</h2>
-            <div className="profile-meta">
-              <span className="profile-email">{user?.email}</span>
-              {user && (
-                <span className={`verified-badge ${user.isVerified ? 'verified' : 'unverified'}`}>
-                  {user.isVerified ? (
-                    <><ShieldCheck size={12} /> Подтверждён</>
-                  ) : (
-                    <><AlertTriangle size={12} /> Не подтверждён</>
-                  )}
-                </span>
-              )}
+        <Spin spinning={profileLoading}>
+          <div className="profile-header">
+            <Avatar
+              size={64}
+              className="profile-avatar"
+              style={{
+                backgroundColor: '#6366f1',
+                color: '#fff',
+                fontSize: 24,
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {getInitials(profile?.email || user?.email)}
+            </Avatar>
+            <div className="profile-info">
+              <h2 className="profile-name">{user?.login || 'Пользователь'}</h2>
+              <div className="profile-meta">
+                <span className="profile-email">{profile?.email}</span>
+                {profile && (
+                  <span className={`verified-badge ${profile.isVerified ? 'verified' : 'unverified'}`}>
+                    {profile.isVerified ? (
+                      <><ShieldCheck size={12} /> Подтверждён</>
+                    ) : (
+                      <><AlertTriangle size={12} /> Не подтверждён</>
+                    )}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </Spin>
       </Card>
 
       <Card style={{ marginBottom: 20 }} classNames={{ body: { padding: '8px 24px' } }}>
@@ -148,7 +156,7 @@ const SettingsPage = () => {
               <Mail size={16} />
             </div>
             <div className="security-item-text">
-              <div className="security-item-label">{user?.email || '—'}</div>
+              <div className="security-item-label">{profile?.email || '—'}</div>
               <div className="security-item-desc">Электронная почта</div>
             </div>
           </div>
@@ -157,7 +165,7 @@ const SettingsPage = () => {
           </Button>
         </div>
 
-        {user && !user.isVerified && (
+        {profile && !profile.isVerified && (
           <div style={{
             display: 'flex',
             gap: 10,

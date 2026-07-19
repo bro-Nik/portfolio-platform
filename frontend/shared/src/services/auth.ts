@@ -48,7 +48,7 @@ export const authService = () => {
   const api = apiService(process.env.REACT_APP_AUTH_SERVICE_URL);
   const authApi = createApi(process.env.REACT_APP_AUTH_SERVICE_URL, { useAuth: true });
 
-  const getCurrentUser = async (): Promise<{ id: string; login: string; role: string; email: string; isVerified: boolean } | undefined> => {
+  const getCurrentUser = async (): Promise<{ id: string; login: string; role: string } | undefined> => {
     const token = await getValidToken();
     const decodedToken = decodeToken(token ?? null);
     if (!decodedToken) return;
@@ -57,8 +57,6 @@ export const authService = () => {
       id: decodedToken.id,
       login: decodedToken.login ?? '',
       role: decodedToken.role ?? '',
-      email: decodedToken.email ?? '',
-      isVerified: decodedToken.is_verified ?? false,
     };
   };
 

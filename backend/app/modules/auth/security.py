@@ -76,10 +76,8 @@ class SecurityService:
     def _create_access_token(cls, user: AuthUser) -> str:
         return cls._jwt_encode({
             'id': str(user.id),
-            'login': user.email.split('@')[0] if user.email else '',
+            'login': user.login or '',
             'role': user.role.value if hasattr(user.role, 'value') else user.role,
-            'email': user.email or '',
-            'is_verified': user.is_verified,
             'type': 'access',
             'exp': cls._get_access_token_expiry(),
         })

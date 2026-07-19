@@ -1,38 +1,32 @@
-# Python
 __pycache__/
 venv/
 .pytest_cache/
 .coverage*
 
-# Environment
 .env
 .env.local
 .env.*.local
 **/!.env.example
 
-# Frontend (React)
 frontend/**/node_modules
 frontend/**/build
 frontend/**/dist
 frontend/**/.env.local
 frontend/**/coverage
 frontend/**/.cache
+frontend/.turbo/
 
-# Logs
 *.log
 logs/
 
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
 .DS_Store
 Thumbs.db
 
-# Project specific
 to_ignore/
 databases/dumps/
 db_backups/

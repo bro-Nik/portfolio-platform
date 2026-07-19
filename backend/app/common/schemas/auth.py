@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 class UserRole(str, Enum):
@@ -20,5 +20,4 @@ class UserRole(str, Enum):
 class AuthUser(BaseModel):
     id: int
     role: UserRole = UserRole.USER
-    email: EmailStr | None = None
-    is_verified: bool = False
+    login: str = ''

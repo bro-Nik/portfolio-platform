@@ -6,11 +6,11 @@ from app.core.rate_limit import limiter
 from app.core import settings
 from app.modules.auth.dependencies import AuthServiceDep, SessionServiceDep, UserServiceDep, require_user
 from app.common.schemas import AuthUser
-from app.common.dependencies import CurrentUserOrNone
+from app.common.dependencies import CurrentUser, CurrentUserOrNone
 from app.modules.auth.schemas import (
     DeleteAccountRequest, EmailChangeRequest, ForgotPasswordRequest, LoginSessionResponse,
     PasswordChangeRequest, RefreshTokenRequest, RegisterResponse, ResetPasswordRequest,
-    ResendVerificationRequest, TokensResponse, UserLogin, UserRegister,
+    ResendVerificationRequest, TokensResponse, UserLogin, UserRegister, UserResponse,
 )
 from app.modules.auth.services.auth import RegisterTaskData
 from app.modules.auth.tasks import (
@@ -73,9 +73,14 @@ async def resend_verification(
     data: ResendVerificationRequest,
     request: Request,
     auth: AuthServiceDep,
+    user_service: UserServiceDep,
     current_user: CurrentUserOrNone = None,
 ) -> RegisterResponse:
-    email = current_user.email if current_user else data.email
+    if current_user:
+        user = await user_service.get_for_auth(id=current_user.id)
+        email = user.email
+    else:
+        email = data.email
     if not email:
         return RegisterResponse(message='Email не указан')
     result = await auth.resend_verification(email)
@@ -126,6 +131,18 @@ async def reset_password(
     await auth.logout_all(user_id)
     await send_password_reset_confirmation_email.kiq(user.email)
     return RegisterResponse(message='Пароль успешно сброшен')
+
+
+@router.get('/me')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка получения профиля')
+async def get_me(
+    request: Request,
+    user_service: UserServiceDep,
+    current_user: CurrentUser,
+) -> UserResponse:
+    user = await user_service.get_detailed(current_user.id)
+    return UserResponse.model_validate(user)
 
 
 @router.put('/password', status_code=204)

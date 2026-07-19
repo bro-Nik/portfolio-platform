@@ -119,7 +119,8 @@ class AuthService:
         return token
 
     async def _create_tokens(self, user: User, db_token: RefreshToken | None = None) -> AuthResult:
-        auth_user = AuthUser(id=user.id, role=user.role, email=user.email, is_verified=user.is_verified)
+        login = user.email.split('@')[0] if user.email else ''
+        auth_user = AuthUser(id=user.id, role=user.role, login=login)
         token_data = self.security.create_token_pair(auth_user)
         token_hash = self.security.hash_token(token_data.refresh_token)
 
