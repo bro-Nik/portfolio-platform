@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, Card, Tag, Space, Modal, Typography, Avatar, Spin } from 'antd';
 import { AlertTriangle, Monitor, Smartphone, Tablet, Globe, Trash2, LogOut, KeyRound, Mail, ShieldCheck, Smartphone as DeviceIcon } from 'lucide-react';
-import { authService, useAuthStore } from '@portfolio/shared';
+import { useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useProfileQuery } from './useProfileQuery';
+import { useSessionsQuery } from './useSessionsQuery';
+import { useAuthMutations } from 'src/hooks/useAuthMutations';
 import { successToast, errorToast } from 'src/utils/notifications';
 import ChangePasswordModal from './ChangePasswordModal';
 import ChangeEmailModal from './ChangeEmailModal';
@@ -31,37 +33,23 @@ const getDeviceIcon = (deviceType) => {
 };
 
 const SettingsPage = () => {
-  const [sessions, setSessions] = useState([]);
-  const [sessionsLoading, setSessionsLoading] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
   const navigate = useNavigate();
   const { user, logout: storeLogout } = useAuthStore();
-  const { getSessions, deleteSession, logoutAll, resendVerification } = authService();
   const { activeSection } = useNavigation();
+  const { resendVerification, deleteSession, logoutAll } = useAuthMutations();
   const { data: profile, isLoading: profileLoading } = useProfileQuery({
     enabled: activeSection === 'settings',
   });
 
-  const loadSessions = async () => {
-    setSessionsLoading(true);
-    const result = await getSessions();
-    if (result.success) {
-      setSessions(result.data || []);
-    }
-    setSessionsLoading(false);
-  };
-
-  useEffect(() => {
-    loadSessions();
-  }, []);
+  const { data: sessions = [], isLoading: sessionsLoading } = useSessionsQuery({
+    enabled: activeSection === 'settings',
+  });
 
   const handleResend = async () => {
-    setResendLoading(true);
-    const result = await resendVerification();
-    setResendLoading(false);
+    const result = await resendVerification.mutateAsync();
     if (result.success) {
       successToast(result.message || 'Письмо отправлено');
     } else {
@@ -77,10 +65,9 @@ const SettingsPage = () => {
       cancelText: 'Отмена',
       okButtonProps: { danger: true },
       onOk: async () => {
-        const result = await deleteSession(sessionId);
+        const result = await deleteSession.mutateAsync(sessionId);
         if (result.success) {
           successToast('Сессия завершена');
-          loadSessions();
         } else {
           errorToast(result.error || 'Ошибка удаления сессии');
         }
@@ -96,7 +83,7 @@ const SettingsPage = () => {
       cancelText: 'Отмена',
       okButtonProps: { danger: true },
       onOk: async () => {
-        const result = await logoutAll();
+        const result = await logoutAll.mutateAsync();
         if (result.success) {
           storeLogout();
           navigate('/login');
@@ -181,7 +168,7 @@ const SettingsPage = () => {
               </Text>
               <Button
                 type="link"
-                loading={resendLoading}
+                loading={resendVerification.isPending}
                 onClick={handleResend}
                 style={{ padding: 0, height: 'auto', fontSize: 13, marginLeft: 4 }}
               >

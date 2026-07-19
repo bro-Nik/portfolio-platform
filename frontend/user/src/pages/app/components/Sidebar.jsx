@@ -1,6 +1,7 @@
 import React from 'react';
-import { useAuthStore, authService, useThemeStore } from '@portfolio/shared';
+import { useAuthStore, useThemeStore } from '@portfolio/shared';
 import { useNavigation } from 'src/hooks/useNavigation';
+import { useAuthMutations } from 'src/hooks/useAuthMutations';
 import { Dropdown, Space, Avatar, Select, Button } from 'antd';
 import { User, Settings, LogOut, ChevronDown, Briefcase, Wallet, Star, X, Sun, Moon } from 'lucide-react';
 import '../styles/Sidebar.scss';
@@ -8,7 +9,7 @@ import '../styles/Sidebar.scss';
 const Sidebar = () => {
   const { activeSection, setActiveSection, openedItems, openItem, closeItem } = useNavigation();
   const { user, logout: authLogout, isAdmin } = useAuthStore();
-  const { logout } = authService();
+  const { logout } = useAuthMutations();
 
   const menuItems = [
     { id: 'portfolios', label: 'Портфели', icon: <Briefcase size={16} style={{ marginRight: 8 }} /> },
@@ -17,7 +18,7 @@ const Sidebar = () => {
   ];
 
   const handleLogout = async () => {
-    await logout();
+    await logout.mutateAsync();
     authLogout();
   };
 

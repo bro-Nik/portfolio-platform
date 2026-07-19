@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Modal, Form, Input, Button } from 'antd';
-import { authService } from '@portfolio/shared';
 import { successToast, errorToast } from 'src/utils/notifications';
+import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ChangePasswordModal = ({ open, onClose }) => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const { changePassword } = authService();
+  const { changePassword } = useAuthMutations();
 
   const handleSubmit = async (values) => {
-    setLoading(true);
-    const result = await changePassword(values.currentPassword, values.newPassword);
-    setLoading(false);
+    const result = await changePassword.mutateAsync(values);
     if (result.success) {
       successToast('Пароль успешно изменён');
       form.resetFields();
@@ -67,7 +64,7 @@ const ChangePasswordModal = ({ open, onClose }) => {
         >
           <Input.Password />
         </Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading} block>
+        <Button type="primary" htmlType="submit" loading={changePassword.isPending} block>
           Сменить пароль
         </Button>
       </Form>

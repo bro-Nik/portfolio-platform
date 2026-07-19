@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService, useAuthStore } from '@portfolio/shared';
 import { ROUTES } from 'src/constants/routes';
 import { Alert, Button, Input, Spin } from 'antd';
 import { destroyNotifications, warningToast, persistentErrorToast } from 'src/utils/notifications';
+import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const AuthPage = ({ type }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [verifyStatus, setVerifyStatus] = useState(null);
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [verifyStatus, setVerifyStatus] = React.useState(null);
 
-  const { login, register, verifyEmail, getCurrentUser } = authService();
+  const { getCurrentUser } = authService();
   const { isAuthenticated, loading: authLoading, login: authLogin } = useAuthStore();
+  const { login, register, verifyEmail } = useAuthMutations();
   const isLogin = type === 'login';
 
   useEffect(() => {
@@ -23,7 +24,7 @@ const AuthPage = ({ type }) => {
     if (!token) return;
 
     setVerifyStatus('loading');
-    verifyEmail(token).then((result) => {
+    verifyEmail.mutateAsync(token).then((result) => {
       setVerifyStatus(result.success ? 'success' : 'error');
       if (result.success) {
         getCurrentUser().then(u => u && authLogin(u));
@@ -39,26 +40,21 @@ const AuthPage = ({ type }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setVerifyStatus(null);
-    setLoading(true);
     destroyNotifications();
 
-    // Валидация для регистрации
     if (!isLogin && password !== confirmPassword) {
       warningToast('Пароли не совпадают');
-      setLoading(false);
       return;
     }
 
     const handler = isLogin ? login : register;
-    const result = await handler(email, password)
-    
+    const result = await handler.mutateAsync(isLogin ? { email, password } : { email, password });
+
     if (result.success) {
       authLogin(await getCurrentUser());
     } else {
       persistentErrorToast(result.error);
     }
-    
-    setLoading(false);
   };
 
   const title = isLogin ? 'Вход' : 'Регистрация';
@@ -105,8 +101,8 @@ const AuthPage = ({ type }) => {
           </div>
         )}
 
-        <Button type="primary" htmlType="submit" disabled={loading} block style={{ marginBottom: 8 }}>
-          {loading ? <Spin size="small" /> : submitText}
+        <Button type="primary" htmlType="submit" disabled={login.isPending || register.isPending} block style={{ marginBottom: 8 }}>
+          {login.isPending || register.isPending ? <Spin size="small" /> : submitText}
         </Button>
       </form>
     </main>

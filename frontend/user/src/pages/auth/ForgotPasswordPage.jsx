@@ -1,30 +1,26 @@
 import React, { useState } from 'react';
-import { authService } from '@portfolio/shared';
 import { ROUTES } from 'src/constants/routes';
 import { Alert, Button, Input, Spin } from 'antd';
 import { destroyNotifications, persistentErrorToast } from 'src/utils/notifications';
+import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const { forgotPassword } = authService();
+  const { forgotPassword } = useAuthMutations();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     destroyNotifications();
 
-    const result = await forgotPassword(email);
+    const result = await forgotPassword.mutateAsync(email);
 
     if (result.success) {
       setSent(true);
     } else {
       persistentErrorToast(result.error);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -55,8 +51,8 @@ const ForgotPasswordPage = () => {
               <Input id="email" type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
 
-            <Button type="primary" htmlType="submit" disabled={loading} block style={{ marginBottom: 8 }}>
-              {loading ? <Spin size="small" /> : 'Отправить ссылку'}
+            <Button type="primary" htmlType="submit" disabled={forgotPassword.isPending} block style={{ marginBottom: 8 }}>
+              {forgotPassword.isPending ? <Spin size="small" /> : 'Отправить ссылку'}
             </Button>
           </>
         )}

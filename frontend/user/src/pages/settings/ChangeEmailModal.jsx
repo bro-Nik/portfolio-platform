@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Modal, Form, Input, Button } from 'antd';
-import { authService } from '@portfolio/shared';
 import { successToast, errorToast } from 'src/utils/notifications';
+import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ChangeEmailModal = ({ open, onClose }) => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const { changeEmail } = authService();
+  const { changeEmail } = useAuthMutations();
 
   const handleSubmit = async (values) => {
-    setLoading(true);
-    const result = await changeEmail(values.password, values.newEmail);
-    setLoading(false);
+    const result = await changeEmail.mutateAsync(values);
     if (result.success) {
       successToast('Письмо с подтверждением отправлено на новый адрес');
       form.resetFields();
@@ -49,7 +46,7 @@ const ChangeEmailModal = ({ open, onClose }) => {
         >
           <Input.Password />
         </Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading} block>
+        <Button type="primary" htmlType="submit" loading={changeEmail.isPending} block>
           Сменить email
         </Button>
       </Form>

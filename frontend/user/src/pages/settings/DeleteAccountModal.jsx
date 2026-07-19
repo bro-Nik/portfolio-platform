@@ -1,23 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Modal, Form, Input, Button, Typography } from 'antd';
 import { AlertTriangle } from 'lucide-react';
-import { authService, useAuthStore } from '@portfolio/shared';
+import { useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
 import { successToast, errorToast } from 'src/utils/notifications';
+import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const { Text } = Typography;
 
 const DeleteAccountModal = ({ open, onClose }) => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
   const { logout } = useAuthStore();
   const navigate = useNavigate();
-  const { deleteAccount } = authService();
+  const { deleteAccount } = useAuthMutations();
 
   const handleSubmit = async (values) => {
-    setLoading(true);
-    const result = await deleteAccount(values.currentPassword);
-    setLoading(false);
+    const result = await deleteAccount.mutateAsync(values.currentPassword);
     if (result.success) {
       successToast('Аккаунт успешно удалён');
       logout();
@@ -76,7 +74,7 @@ const DeleteAccountModal = ({ open, onClose }) => {
           danger
           type="primary"
           htmlType="submit"
-          loading={loading}
+          loading={deleteAccount.isPending}
           block
         >
           Удалить аккаунт

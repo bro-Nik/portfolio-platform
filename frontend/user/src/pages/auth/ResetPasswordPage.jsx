@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { authService } from '@portfolio/shared';
 import { ROUTES } from 'src/constants/routes';
 import { Alert, Button, Input, Spin } from 'antd';
 import { destroyNotifications, warningToast, successToast, persistentErrorToast } from 'src/utils/notifications';
+import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();
@@ -12,9 +12,8 @@ const ResetPasswordPage = () => {
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const { resetPassword } = authService();
+  const { resetPassword } = useAuthMutations();
 
   if (!token) {
     return (
@@ -37,22 +36,19 @@ const ResetPasswordPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     destroyNotifications();
 
     if (password !== confirmPassword) {
       warningToast('Пароли не совпадают');
-      setLoading(false);
       return;
     }
 
     if (password.length < 6) {
       warningToast('Пароль должен быть не менее 6 символов');
-      setLoading(false);
       return;
     }
 
-    const result = await resetPassword(token, password);
+    const result = await resetPassword.mutateAsync({ token, password });
 
     if (result.success) {
       successToast('Пароль успешно сброшен. Теперь вы можете войти.');
@@ -60,8 +56,6 @@ const ResetPasswordPage = () => {
     } else {
       persistentErrorToast(result.error);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -82,8 +76,8 @@ const ResetPasswordPage = () => {
           <Input.Password required placeholder="Подтверждение пароля" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
         </div>
 
-        <Button type="primary" htmlType="submit" disabled={loading} block style={{ marginBottom: 8 }}>
-          {loading ? <Spin size="small" /> : 'Сбросить пароль'}
+        <Button type="primary" htmlType="submit" disabled={resetPassword.isPending} block style={{ marginBottom: 8 }}>
+          {resetPassword.isPending ? <Spin size="small" /> : 'Сбросить пароль'}
         </Button>
 
         <div style={{ textAlign: 'center', marginTop: 16 }}>
