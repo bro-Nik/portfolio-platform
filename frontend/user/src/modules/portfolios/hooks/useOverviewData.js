@@ -1,16 +1,16 @@
 import { useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { usePortfoliosQuery } from './usePortfoliosQuery';
+import { useOverviewQuery } from './useOverviewQuery';
 import { useTickerIds, extractTickerIds } from 'src/hooks/TickerContext';
 import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 
-export const usePortfoliosData = (showArchived = false, options = {}) => {
-  const { prices: externalPrices, pricesLoading: externalPricesLoading } = options;
+export const useOverviewData = () => {
   const queryClient = useQueryClient();
   const { addTickerIds } = useTickerIds();
 
-  const { data, isLoading } = usePortfoliosQuery();
+  const { data, isLoading: overviewLoading } = useOverviewQuery();
   const rawPortfolios = data?.portfolios || [];
+  const rawWallets = data?.wallets || [];
 
   useEffect(() => {
     if (rawPortfolios.length > 0) {
@@ -19,17 +19,11 @@ export const usePortfoliosData = (showArchived = false, options = {}) => {
     }
   }, [rawPortfolios, addTickerIds]);
 
-  const internalPricesQuery = useAssetPricesQuery();
-  const prices = useMemo(() =>
-    externalPrices || internalPricesQuery.data?.prices || {},
-    [externalPrices, internalPricesQuery.data]
-  );
-  const pricesLoading = externalPricesLoading !== undefined
-    ? externalPricesLoading
-    : internalPricesQuery.isLoading;
+  const { data: pricesData, isLoading: pricesLoading } = useAssetPricesQuery();
+  const prices = useMemo(() => pricesData?.prices || {}, [pricesData]);
 
-  const { portfoliosWithStats, overallStats } = useMemo(() => {
-    if (!rawPortfolios || rawPortfolios.length === 0) return { portfoliosWithStats: [], overallStats: {} };
+  const { portfoliosWithStats, overallPortfolioStats } = useMemo(() => {
+    if (!rawPortfolios || rawPortfolios.length === 0) return { portfoliosWithStats: [], overallPortfolioStats: {} };
 
     let totalCostNow = 0;
     let totalInvested = 0;
@@ -99,7 +93,7 @@ export const usePortfoliosData = (showArchived = false, options = {}) => {
 
     return {
       portfoliosWithStats: portfoliosWithStatsAndShare,
-      overallStats: {
+      overallPortfolioStats: {
         totalCostNow,
         totalInvested,
         totalProfit,
@@ -109,29 +103,79 @@ export const usePortfoliosData = (showArchived = false, options = {}) => {
     };
   }, [rawPortfolios, prices]);
 
-  const filteredPortfolios = useMemo(() => {
-    if (showArchived) return portfoliosWithStats;
-    const active = portfoliosWithStats.filter(p => !p.isArchived);
-    return active.length > 0 ? active : portfoliosWithStats.filter(p => p.isArchived);
-  }, [portfoliosWithStats, showArchived]);
+  const { walletsWithStats, overallWalletStats } = useMemo(() => {
+    if (!rawWallets || rawWallets.length === 0) return { walletsWithStats: [], overallWalletStats: {} };
 
-  const showingArchivedFallback = !showArchived && portfoliosWithStats.length > 0 && portfoliosWithStats.every(p => p.isArchived);
+    let totalCostNow = 0;
+    let totalBuyOrders = 0;
+
+    const walletsWithStats = rawWallets.map(wallet => {
+      let costNow = 0;
+      let buyOrders = 0;
+
+      const assetsWithStats = wallet.assets?.map(asset => {
+        const assetQuantity = Number(asset.quantity) || 0;
+        const assetBuyOrders = Number(asset.buyOrders) || 0;
+
+        const price = prices[asset.tickerId] || 0;
+        const assetCostNow = assetQuantity * price;
+
+        costNow += assetCostNow;
+        buyOrders += assetBuyOrders || 0;
+
+        return {
+          ...asset,
+          costNow: assetCostNow,
+          price
+        };
+      }) || [];
+
+      totalCostNow += costNow;
+      totalBuyOrders += buyOrders;
+
+      return {
+        ...wallet,
+        assets: assetsWithStats,
+        costNow,
+        buyOrders,
+      };
+    });
+
+    const walletsWithStatsAndShare = walletsWithStats.map(wallet => ({
+      ...wallet,
+      share: totalCostNow > 0 ? (wallet.costNow / totalCostNow) * 100 : 0
+    }));
+
+    return {
+      walletsWithStats: walletsWithStatsAndShare,
+      overallWalletStats: {
+        totalCostNow,
+        totalBuyOrders
+      }
+    };
+  }, [rawWallets, prices]);
+
+  const loading = overviewLoading || pricesLoading;
 
   const getPortfolio = (id) => rawPortfolios?.find(p => p.id === id);
   const getPortfolioAsset = (portfolio, id) => portfolio.assets?.find(a => a.id === id);
+  const getWallet = (id) => rawWallets?.find(w => w.id === id);
 
   const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['portfolios'] });
+    queryClient.invalidateQueries({ queryKey: ['overview'] });
   };
 
   return {
-    portfolios: filteredPortfolios,
+    portfolios: portfoliosWithStats,
+    wallets: walletsWithStats,
     allPortfolios: portfoliosWithStats,
-    overallStats,
-    loading: isLoading || pricesLoading,
-    showingArchivedFallback,
+    allWallets: walletsWithStats,
+    portfolioStats: overallPortfolioStats,
+    walletStats: overallWalletStats,
+    loading,
     getPortfolio,
     getPortfolioAsset,
+    getWallet,
     refresh,
   };
 };

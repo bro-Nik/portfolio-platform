@@ -1,3 +1,4 @@
+from .overview import OverviewResponse
 from .portfolio import (
     PortfolioAssetCreate,
     PortfolioAssetCreateRequest,
@@ -38,6 +39,7 @@ from .wallet import (
 )
 
 __all__ = [
+    'OverviewResponse',
     'PortfolioAssetCreate',
     'PortfolioAssetCreateRequest',
     'PortfolioAssetCreateResponse',

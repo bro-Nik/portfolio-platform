@@ -4,6 +4,7 @@ from fastapi import Depends
 
 from app.common.dependencies import Ctx, DBSession
 
+from app.queries.overview_read import OverviewReadQuery
 from app.queries.portfolio_read import PortfolioReadQuery
 from app.queries.transaction_read import TransactionReadQuery
 from app.queries.wallet_read import WalletReadQuery
@@ -51,6 +52,10 @@ def get_transaction_read_query(session: DBSession, ctx: Ctx) -> TransactionReadQ
     return TransactionReadQuery(session, ctx)
 
 
+def get_overview_read_query(session: DBSession, ctx: Ctx) -> OverviewReadQuery:
+    return OverviewReadQuery(session, ctx)
+
+
 PortfolioServiceDep = Annotated[PortfolioService, Depends(get_portfolio_service)]
 PortfolioAssetServiceDep = Annotated[PortfolioAssetService, Depends(get_portfolio_asset_service)]
 WalletServiceDep = Annotated[WalletService, Depends(get_wallet_service)]
@@ -60,3 +65,4 @@ TransactionServiceDep = Annotated[TransactionService, Depends(get_transaction_se
 PortfolioReadQueryDep = Annotated[PortfolioReadQuery, Depends(get_portfolio_read_query)]
 WalletReadQueryDep = Annotated[WalletReadQuery, Depends(get_wallet_read_query)]
 TransactionReadQueryDep = Annotated[TransactionReadQuery, Depends(get_transaction_read_query)]
+OverviewReadQueryDep = Annotated[OverviewReadQuery, Depends(get_overview_read_query)]

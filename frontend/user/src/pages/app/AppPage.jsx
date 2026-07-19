@@ -12,8 +12,7 @@ import WalletAssetPage from 'src/modules/wallets/components/asset/AssetPage';
 import WishlistPage from './WishlistPage'
 import SettingsPage from 'src/pages/settings/SettingsPage'
 
-import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
-import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
+import { useOverviewData } from 'src/modules/portfolios/hooks/useOverviewData';
 
 const ModalContainer = () => {
   const { currentModal: ModalComponent, modalProps } = useModalStore();
@@ -22,8 +21,7 @@ const ModalContainer = () => {
 
 const AppPage = () => {
   const { activeSection, openedItems } = useNavigation();
-  const { allPortfolios, refresh: refreshPortfolios } = usePortfoliosData();
-  const { allWallets, refresh: refreshWallets } = useWalletsData();
+  const { allPortfolios, allWallets, refresh } = useOverviewData();
 
   const mainSections = {
     'portfolios': PortfoliosPage,
@@ -57,7 +55,7 @@ const AppPage = () => {
 
       renderItems.push(
         <div key={`portfolio-${portfolio.id}`} style={{ display: activeSection === `portfolio-${portfolio.id}` ? '' : 'none' }}>
-          <PortfolioPage portfolio={portfolioData} onRefresh={refreshPortfolios} />
+          <PortfolioPage portfolio={portfolioData} onRefresh={refresh} />
         </div>
       );
       
@@ -80,7 +78,7 @@ const AppPage = () => {
 
       renderItems.push(
         <div key={`wallet-${wallet.id}`} style={{ display: activeSection === `wallet-${wallet.id}` ? '' : 'none' }}>
-          <WalletPage wallet={walletData} onRefresh={refreshWallets} />
+          <WalletPage wallet={walletData} onRefresh={refresh} />
         </div>
       );
       

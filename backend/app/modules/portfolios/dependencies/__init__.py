@@ -1,5 +1,6 @@
 from app.common.dependencies import CurrentUser, CurrentUserOrNone, Ctx, DBSession, get_session, require_user
 from .services import (
+    OverviewReadQueryDep,
     PortfolioAssetServiceDep,
     PortfolioReadQueryDep,
     PortfolioServiceDep,
@@ -16,6 +17,7 @@ __all__ = [
     'CurrentUserOrNone',
     'Ctx',
     'DBSession',
+    'OverviewReadQueryDep',
     'PortfolioAssetServiceDep',
     'PortfolioReadQueryDep',
     'PortfolioServiceDep',

@@ -1,25 +1,23 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWalletsQuery } from './useWalletsQuery';
-import { useTickerIds, extractTickerIds } from 'src/hooks/TickerContext';
 import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 
-export const useWalletsData = (showArchived = false) => {
+export const useWalletsData = (showArchived = false, options = {}) => {
+  const { prices: externalPrices, pricesLoading: externalPricesLoading } = options;
   const queryClient = useQueryClient();
-  const { addTickerIds } = useTickerIds();
 
   const { data, isLoading } = useWalletsQuery();
   const rawWallets = data?.wallets || [];
 
-  useEffect(() => {
-    if (rawWallets.length > 0) {
-      const ids = extractTickerIds(rawWallets);
-      if (ids.length > 0) addTickerIds(ids);
-    }
-  }, [rawWallets, addTickerIds]);
-
-  const { data: pricesData, isLoading: pricesLoading } = useAssetPricesQuery();
-  const prices = useMemo(() => pricesData?.prices || {}, [pricesData]);
+  const internalPricesQuery = useAssetPricesQuery();
+  const prices = useMemo(() =>
+    externalPrices || internalPricesQuery.data?.prices || {},
+    [externalPrices, internalPricesQuery.data]
+  );
+  const pricesLoading = externalPricesLoading !== undefined
+    ? externalPricesLoading
+    : internalPricesQuery.isLoading;
 
   const getWallet = (walletId) => {
     return rawWallets?.find(wallet => wallet.id === walletId) || null;
