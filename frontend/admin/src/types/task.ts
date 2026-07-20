@@ -1,10 +1,7 @@
-import { Provider } from "./provider";
-
 export interface Task {
   id: number;
   name: string;
-  providerId: number;
-  providerName?: string;
+  providerName: string;
   taskType: string;
   schedule: string;
   parameters: Record<string, any>;
@@ -12,12 +9,11 @@ export interface Task {
   lastRun?: string;
   nextRun?: string;
   status?: string;
-  provider?: Provider
 }
 
 export interface TaskFormData {
   name: string;
-  providerId: number;
+  providerName: string;
   taskType: string;
   schedule: string;
   isActive: boolean;

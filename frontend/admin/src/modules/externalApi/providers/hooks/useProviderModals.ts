@@ -10,6 +10,6 @@ export const useProviderModals = () => {
   return {
     providerDetailsModal: (provider: Provider) => openModal(ProviderDetailsModal, { provider }),
     providerFormModal: (provider?: Provider) => openModal(ProviderFormModal, { provider }),
-    providerDeleteConfirmModal: (provider: Provider) => openModal(ProviderDelModal, { provider }),
+    providerResetConfigConfirmModal: (provider: Provider) => openModal(ProviderDelModal, { provider }),
   };
 };

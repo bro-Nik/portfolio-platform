@@ -17,17 +17,8 @@ class TaskService:
     async def get_all(self) -> list[Task]:
         return await self.repo.get_all()
 
-    async def get_all_with_providers(self) -> list[Task]:
-        return await self.repo.get_all_with_providers()
-
     async def get(self, id: int) -> Task:
         task = await self.repo.get(id)
-        if not task:
-            raise NotFoundError('API задача не найдена')
-        return task
-
-    async def get_with_provider(self, id: int) -> Task:
-        task = await self.repo.get_with_provider(id)
         if not task:
             raise NotFoundError('API задача не найдена')
         return task

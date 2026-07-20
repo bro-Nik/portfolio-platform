@@ -44,15 +44,12 @@ class Provider(Base):
     failed_requests: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
     avg_response_time: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
 
-    request_logs: Mapped[list['RequestLog']] = relationship(back_populates='provider', cascade='all, delete-orphan')
-    tasks: Mapped[list['Task']] = relationship(back_populates='provider', cascade='all, delete-orphan')
-
 
 class RequestLog(Base):
     __tablename__ = 'request_log'
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    provider_id: Mapped[int | None] = mapped_column(Integer, ForeignKey('provider.id', ondelete='CASCADE'), nullable=False, index=True)
+    provider_name: Mapped[str | None] = mapped_column(String(100), index=True)
     endpoint: Mapped[str] = mapped_column(String(500), nullable=False)
     method: Mapped[str] = mapped_column(String(10), default='GET', nullable=False)
     status_code: Mapped[int | None] = mapped_column(Integer)
@@ -77,7 +74,6 @@ class RequestLog(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC), nullable=False)
 
-    provider: Mapped['Provider'] = relationship(back_populates='request_logs')
     task: Mapped['Task | None'] = relationship(back_populates='request_logs')
 
 
@@ -89,7 +85,7 @@ class Task(Base):
     description: Mapped[str | None] = mapped_column(Text)
 
     task_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    provider_id: Mapped[int] = mapped_column(Integer, ForeignKey('provider.id', ondelete='CASCADE'), nullable=False, index=True)
+    provider_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
 
     schedule: Mapped[str] = mapped_column(String(100), nullable=False)
     schedule_type: Mapped[str] = mapped_column(String(20), default='cron', nullable=False)
@@ -111,5 +107,4 @@ class Task(Base):
     success_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
     error_count: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
 
-    provider: Mapped['Provider | None'] = relationship(back_populates='tasks')
     request_logs: Mapped[list['RequestLog']] = relationship(back_populates='task')

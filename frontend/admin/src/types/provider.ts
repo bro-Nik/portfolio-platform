@@ -5,20 +5,21 @@ export interface ApiResponse<T = any> {
 }
 
 export interface Provider {
-  id: number;
+  id?: number | null;
   name: string;
+  hasConfig?: boolean;
   apiKey?: string;
   requestsPerMinute?: number;
   requestsPerHour?: number;
   requestsPerDay?: number;
   requestsPerMonth?: number;
-  isActive: boolean;
-  timeout: number;
-  retryDelay: number;
-  minuteCounter: number;
-  hourCounter: number;
-  dayCounter: number;
-  monthCounter: number;
+  isActive?: boolean;
+  timeout?: number;
+  retryDelay?: number;
+  minuteCounter?: number;
+  hourCounter?: number;
+  dayCounter?: number;
+  monthCounter?: number;
 }
 
 export interface ProviderStats {
@@ -40,7 +41,7 @@ export interface ProviderStats {
 
 export interface ProviderLog {
   id: number;
-  providerId: number;
+  providerName?: string;
   endpoint: string;
   method: string;
   statusCode?: number;

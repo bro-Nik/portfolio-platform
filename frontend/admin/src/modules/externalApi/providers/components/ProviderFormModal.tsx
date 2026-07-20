@@ -1,14 +1,10 @@
-import { ApiOutlined, KeyOutlined } from '@ant-design/icons';
+import { KeyOutlined } from '@ant-design/icons';
 import { useModalStore } from '@portfolio/shared';
-import { Button, Col, Divider, Form, Input, InputNumber, Modal, Row, Select, Space, Switch } from 'antd';
-import { useEffect } from 'react';
+import { Button, Col, Divider, Form, Input, InputNumber, Modal, Row, Space, Switch } from 'antd';
 import { useProviderActions } from '../hooks/useProviderActions';
-import { useProvidersWithMethods } from '../hooks/useProviders';
 import { Provider, ProviderFormData } from '../../../../types/provider';
 
 interface ProviderFormModalProps { provider?: Provider }
-
-const { Option } = Select;
 
 const DEFAULT_VALUES: Partial<ProviderFormData> = {
   retryDelay: 60,
@@ -24,40 +20,26 @@ export const ProviderFormModal: React.FC = () => {
   const [form] = Form.useForm();
   const editMode = !!provider?.id;
 
-  const { data: providers = [], isLoading: providersLoading, error: providersError } = useProvidersWithMethods();
-
-
   const getInitialValues = () => {
     if (!provider) return DEFAULT_VALUES;
     return { ...DEFAULT_VALUES, ...provider };
   };
 
-  const selectedProviderName = Form.useWatch('name', form);
-
-  useEffect(() => {
-    if (!editMode && selectedProviderName) {
-      const selectedProvider = providers.find(p => p.name === selectedProviderName);
-      if (selectedProvider) {
-        form.setFieldsValue({ ...DEFAULT_VALUES, ...selectedProvider });
-      }
-    }
-  }, [selectedProviderName, providers, editMode, form]);
-
   const handleSubmit = (values: ProviderFormData) => {
     if (editMode) {
-      updateProvider(provider.id, values);
+      updateProvider(provider!.name, values);
     } else {
-      createProvider(values);
+      createProvider({ ...values, name: provider!.name });
     }
     closeModal();
   };
 
-  const modalKey = provider?.id || 'new';
+  const modalKey = provider?.id || provider?.name || 'new';
 
   return (
     <Modal
       key={modalKey}
-      title={editMode ? 'Редактировать API провайдера' : 'Создать новый API провайдер'}
+      title={editMode ? `Редактировать ${provider?.name}` : `Настроить ${provider?.name || 'провайдера'}`}
       open={true}
       onCancel={closeModal}
       footer={null}
@@ -69,27 +51,6 @@ export const ProviderFormModal: React.FC = () => {
         onFinish={handleSubmit}
         initialValues={getInitialValues()}
       >
-        <Form.Item
-          label="Провайдер"
-          name="name"
-          rules={[{ required: true, message: 'Введите провайдера' }]}
-        >
-          <Select
-            placeholder="Выберите провайдера"
-            prefix={<ApiOutlined />}
-            allowClear
-            disabled={editMode || !!providersError}
-            optionFilterProp="children"
-            loading={providersLoading}
-          >
-            {providers.map(p => (
-              <Option key={p.name} value={p.name}>
-                {p.name}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-
         <Form.Item
           label="API Ключ (опционально)"
           name="apiKey"

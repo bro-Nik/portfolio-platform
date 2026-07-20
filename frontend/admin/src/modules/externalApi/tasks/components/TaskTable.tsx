@@ -31,7 +31,7 @@ export const TaskTable: React.FC<TaskTableProps> = ({ data, loading }) => {
       key: 'providerName',
       width: 160,
       render: (_: unknown, record: Task) => (
-        <Tag icon={<ApiOutlined />} color="green">{record.provider?.name || '—'}</Tag>
+        <Tag icon={<ApiOutlined />} color="green">{record.providerName || '—'}</Tag>
       )
     },
     {

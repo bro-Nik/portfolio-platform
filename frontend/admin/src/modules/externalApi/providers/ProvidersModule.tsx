@@ -1,16 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Badge, Button, Space, Tabs } from 'antd';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { ReloadOutlined } from '@ant-design/icons';
 import { ProviderTable } from './components/ProviderTable';
 import { ProviderFilterPanel, ProviderFilters } from './components/ProviderFilterPanel';
 import { ProviderStatsCards } from './components/ProviderStatsCards';
 import { useProviders } from './hooks/useProviders';
-import { useProviderModals } from './hooks/useProviderModals';
 import { QueryError } from '../../../components/QueryError';
 
 export const ProvidersModule: React.FC = () => {
   const { data: providers = [], isLoading, error } = useProviders();
-  const { providerFormModal } = useProviderModals();
 
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState<ProviderFilters>({ status: 'all' });
@@ -20,7 +18,6 @@ export const ProvidersModule: React.FC = () => {
     total: providers.length,
     active: providers.filter(p => p.isActive).length,
     inactive: providers.filter(p => !p.isActive).length,
-    withCounters: providers.filter(p => p.dayCounter > 0 || p.monthCounter > 0).length,
   }), [providers]);
 
   const filteredProviders = useMemo(() => {
@@ -64,7 +61,6 @@ export const ProvidersModule: React.FC = () => {
         tabBarExtraContent={
           <Space>
             <Button icon={<ReloadOutlined />} loading={isLoading}>Обновить</Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => providerFormModal()}>Добавить провайдера</Button>
           </Space>
         }
       >
@@ -76,10 +72,6 @@ export const ProvidersModule: React.FC = () => {
         <Tabs.TabPane
           tab={<span>Неактивные <Badge count={quickStats.inactive} style={{ backgroundColor: '#ff4d4f' }} /></span>}
           key="inactive"
-        />
-        <Tabs.TabPane
-          tab={<span>С счётчиками <Badge count={quickStats.withCounters} style={{ backgroundColor: '#722ed1' }} /></span>}
-          key="withCounters"
         />
       </Tabs>
 

@@ -13,24 +13,24 @@ export const providersApi = {
     return api.post('', data);
   },
 
-  updateProvider: (id: number, data: UpdateProviderData): Promise<Provider> => {
-    return api.put(`/${id}`, data);
+  updateProvider: (name: string, data: UpdateProviderData): Promise<Provider> => {
+    return api.put(`/${encodeURIComponent(name)}`, data);
   },
 
-  deleteProvider: (id: number): Promise<void> => {
-    return api.del(`/${id}`);
+  deleteProvider: (name: string): Promise<void> => {
+    return api.del(`/${encodeURIComponent(name)}`);
   },
 
-  resetCountersProvider: (id: number): Promise<void> => {
-    return api.post(`/${id}/reset-counters`);
+  resetCountersProvider: (name: string): Promise<void> => {
+    return api.post(`/${encodeURIComponent(name)}/reset-counters`);
   },
 
-  getProviderLogs: (id: number): Promise<ProviderLog[]> => {
-    return api.get(`/${id}/logs?hours=24&limit=20`);
+  getProviderLogs: (name: string): Promise<ProviderLog[]> => {
+    return api.get(`/${encodeURIComponent(name)}/logs?hours=24&limit=20`);
   },
 
-  getProviderStats: (id: number): Promise<ProviderStats> => {
-    return api.get(`/${id}/stats`);
+  getProviderStats: (name: string): Promise<ProviderStats> => {
+    return api.get(`/${encodeURIComponent(name)}/stats`);
   },
 
   getProvidersWithPresets: (): Promise<ProviderPreset[]> => {

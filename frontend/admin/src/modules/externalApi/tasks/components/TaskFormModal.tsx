@@ -38,8 +38,8 @@ export const TaskFormModal: React.FC = () => {
     };
   };
 
-  const selectedProviderId = Form.useWatch('providerId', form);
-  const selectedProvider = providers.find(p => p.id === selectedProviderId);
+  const selectedProviderName = Form.useWatch('providerName', form);
+  const selectedProvider = providers.find(p => p.name === selectedProviderName);
 
   const availableTaskTypes = selectedProvider?.methods?.map(m => ({
     value: m.method,
@@ -103,7 +103,7 @@ export const TaskFormModal: React.FC = () => {
 
         <Form.Item
           label="Провайдер (API)"
-          name="providerId"
+          name="providerName"
           help="Выберите поставщика данных"
           rules={[{ required: true, message: 'Выберите API провайдера' }]}
         >
@@ -115,7 +115,7 @@ export const TaskFormModal: React.FC = () => {
             optionFilterProp="children"
           >
             {providers.map(provider => (
-              <Option key={provider.id} value={provider.id}>
+              <Option key={provider.name} value={provider.name}>
                 {provider.name}
               </Option>
             ))}
@@ -129,7 +129,7 @@ export const TaskFormModal: React.FC = () => {
         >
           <Select
             placeholder="Выберите тип задачи"
-            disabled={!selectedProviderId}
+            disabled={!selectedProviderName}
             showSearch
             optionFilterProp="children"
           >

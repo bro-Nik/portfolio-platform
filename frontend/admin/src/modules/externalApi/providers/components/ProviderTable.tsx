@@ -1,5 +1,5 @@
 import { Table, Space, Tag, Dropdown, Button, Progress } from 'antd';
-import { ApiOutlined, EditOutlined, DeleteOutlined, MoreOutlined, ReloadOutlined, EyeOutlined } from '@ant-design/icons';
+import { ApiOutlined, EditOutlined, DeleteOutlined, MoreOutlined, ReloadOutlined, EyeOutlined, SettingOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { getStatusTag, getUtilizationColor } from '../utils';
@@ -11,7 +11,7 @@ interface ProviderTableProps { data: Provider[]; loading: boolean }
 
 
 export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) => {
-  const { providerDetailsModal, providerFormModal, providerDeleteConfirmModal } = useProviderModals();
+  const { providerDetailsModal, providerFormModal, providerResetConfigConfirmModal } = useProviderModals();
   const { resetProviderCounters } = useProviderActions();
 
   const columns: ColumnsType<Provider> = [
@@ -89,7 +89,7 @@ export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) =
       fixed: 'right',
       width: 80,
       render: (_: unknown, record: Provider) => {
-        const menuItems: MenuProps['items'] = [
+        const items: MenuProps['items'] = [
           {
             key: 'view',
             label: 'Подробнее',
@@ -97,29 +97,32 @@ export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) =
             onClick: () => providerDetailsModal(record)
           },
           {
-            key: 'edit',
-            label: 'Редактировать',
-            icon: <EditOutlined />,
-            onClick: () => providerFormModal(record)
-          },
-          {
             key: 'counters',
             label: 'Сбросить счетчики',
             icon: <ReloadOutlined />,
-            onClick: () => resetProviderCounters(record.id)
+            onClick: () => resetProviderCounters(record.name)
           },
           { type: 'divider' },
           {
-            key: 'delete',
-            label: 'Удалить',
-            icon: <DeleteOutlined />,
-            danger: true,
-            onClick: () => providerDeleteConfirmModal(record)
+            key: 'setup',
+            label: 'Настроить',
+            icon: <SettingOutlined />,
+            onClick: () => providerFormModal(record)
           },
         ];
 
+        if (record.hasConfig) {
+          items.push({
+            key: 'resetConfig',
+            label: 'Сбросить конфиг',
+            icon: <DeleteOutlined />,
+            danger: true,
+            onClick: () => providerResetConfigConfirmModal(record)
+          });
+        }
+
         return (
-          <Dropdown menu={{ items: menuItems }} placement="bottomRight" trigger={['click']}>
+          <Dropdown menu={{ items }} placement="bottomRight" trigger={['click']}>
             <Button icon={<MoreOutlined />} />
           </Dropdown>
         );
@@ -127,5 +130,5 @@ export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) =
     }
   ];
 
-  return <Table columns={columns} dataSource={data} rowKey="id" loading={loading} pagination={{ pageSize: 10 }} scroll={{ x: 900 }} />;
+  return <Table columns={columns} dataSource={data} rowKey="name" loading={loading} pagination={{ pageSize: 10 }} scroll={{ x: 900 }} />;
 };

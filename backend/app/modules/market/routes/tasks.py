@@ -13,21 +13,21 @@ tasks_router = AppRouter(prefix='/tasks', tags=['Admin | ApiTasks'])
 @tasks_router.get('')
 @handle_errors('Ошибка получения задач')
 async def get_tasks(task_service: TaskServiceDep) -> list[TaskResponse]:
-    return await task_service.get_all_with_providers()
+    return await task_service.get_all()
 
 
 @tasks_router.post('', status_code=201)
 @handle_errors('Ошибка создания задачи')
 async def create_task(data: TaskCreateRequest, task_service: TaskServiceDep) -> TaskResponse:
     task = await task_service.create(data)
-    return await task_service.get_with_provider(task.id)
+    return await task_service.get(task.id)
 
 
 @tasks_router.put('/{task_id}')
 @handle_errors('Ошибка обновления задачи')
 async def update_task(task_id: int, data: TaskUpdateRequest, task_service: TaskServiceDep) -> TaskResponse:
     task = await task_service.update(task_id, data)
-    return await task_service.get_with_provider(task.id)
+    return await task_service.get(task.id)
 
 
 @tasks_router.delete('/{task_id}', status_code=204)

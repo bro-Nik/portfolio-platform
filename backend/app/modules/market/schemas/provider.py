@@ -32,8 +32,9 @@ class ProviderUpdate(ProviderBase):
 
 
 class ProviderResponse(ProviderBase):
-    id: int
+    id: int | None = None
     name: str
+    has_config: bool = False
     minute_counter: int | None = None
     hour_counter: int | None = None
     day_counter: int | None = None
@@ -60,7 +61,7 @@ class ProviderStats(BaseModel):
 
 class ProviderLog(BaseModel):
     id: int
-    provider_id: int
+    provider_name: str | None = None
     endpoint: str
     method: str
     status_code: int | None

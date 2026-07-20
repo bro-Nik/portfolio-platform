@@ -23,25 +23,25 @@ export const useProviderActions = () => {
   });
 
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateProviderData }) => providersApi.updateProvider(id, data),
+    mutationFn: ({ name, data }: { name: string; data: UpdateProviderData }) => providersApi.updateProvider(name, data),
     ...mutationOptions('API провайдер обновлен', 'Ошибка обновления'),
   });
 
   const deleteMut = useMutation({
-    mutationFn: (id: number) => providersApi.deleteProvider(id),
+    mutationFn: (name: string) => providersApi.deleteProvider(name),
     ...mutationOptions('API провайдер удален', 'Ошибка удаления'),
   });
 
   const resetMut = useMutation({
-    mutationFn: (id: number) => providersApi.resetCountersProvider(id),
+    mutationFn: (name: string) => providersApi.resetCountersProvider(name),
     ...mutationOptions('Счетчики сброшены', 'Ошибка сброса'),
   });
 
   return {
     createProvider: (data: CreateProviderData) => createMut.mutate(data),
-    updateProvider: (id: number, data: UpdateProviderData) => updateMut.mutate({ id, data }),
-    deleteProvider: (id: number) => deleteMut.mutate(id),
-    resetProviderCounters: (id: number) => resetMut.mutate(id),
+    updateProvider: (name: string, data: UpdateProviderData) => updateMut.mutate({ name, data }),
+    deleteProvider: (name: string) => deleteMut.mutate(name),
+    resetProviderCounters: (name: string) => resetMut.mutate(name),
     isCreating: createMut.isPending,
     isUpdating: updateMut.isPending,
     isDeleting: deleteMut.isPending,

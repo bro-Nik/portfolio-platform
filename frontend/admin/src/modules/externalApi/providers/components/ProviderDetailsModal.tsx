@@ -19,8 +19,8 @@ import { useProviderActions } from '../hooks/useProviderActions';
 
 interface ProviderDetailsModalProps { provider: Provider }
 interface ProviderInfoTabProps { provider: Provider }
-interface ProviderStatsTabProps { providerId: number }
-interface ProviderLogsTabProps { providerId: number }
+interface ProviderStatsTabProps { providerName: string }
+interface ProviderLogsTabProps { providerName: string }
 
 const { TabPane } = Tabs;
 
@@ -44,11 +44,11 @@ export const ProviderDetailsModal: React.FC = () => {
         </TabPane>
 
         <TabPane tab="Статистика" key="stats" icon={<BarChartOutlined />}>
-          <ProviderStatsTab providerId={provider.id} />
+          <ProviderStatsTab providerName={provider.name} />
         </TabPane>
 
         <TabPane tab="История запросов" key="logs" icon={<HistoryOutlined />}>
-          <ProviderLogsTab providerId={provider.id} />
+          <ProviderLogsTab providerName={provider.name} />
         </TabPane>
       </Tabs>
     </Modal>
@@ -85,10 +85,10 @@ const ProviderInfoTab: React.FC<ProviderInfoTabProps> = ({ provider }) => {
   );
 };
 
-const ProviderStatsTab: React.FC<ProviderStatsTabProps> = ({ providerId }) => {
+const ProviderStatsTab: React.FC<ProviderStatsTabProps> = ({ providerName }) => {
   const { data: stats, isLoading, error } = useQuery({
-    queryKey: ['providerStats', providerId],
-    queryFn: () => providersApi.getProviderStats(providerId),
+    queryKey: ['providerStats', providerName],
+    queryFn: () => providersApi.getProviderStats(providerName),
   });
 
   const { resetProviderCounters } = useProviderActions();
@@ -167,7 +167,7 @@ const ProviderStatsTab: React.FC<ProviderStatsTabProps> = ({ providerId }) => {
         <Button
           type="primary"
           icon={<ReloadOutlined />}
-          onClick={() => resetProviderCounters(providerId)}
+          onClick={() => resetProviderCounters(providerName)}
         >
           Сбросить все счетчики
         </Button>
@@ -177,10 +177,11 @@ const ProviderStatsTab: React.FC<ProviderStatsTabProps> = ({ providerId }) => {
 };
 
 
-const ProviderLogsTab: React.FC<ProviderLogsTabProps> = ({ providerId }) => {
+const ProviderLogsTab: React.FC<ProviderLogsTabProps> = ({ providerName }) => {
+  const [hours, setHours] = useState(24);
   const { data: logs, isLoading, error } = useQuery({
-    queryKey: ['providerLogs', providerId],
-    queryFn: () => providersApi.getProviderLogs(providerId),
+    queryKey: ['providerLogs', providerName, hours],
+    queryFn: () => providersApi.getProviderLogs(providerName),
   });
 
   if (isLoading) return <LoadingSpinner size={48}/>;

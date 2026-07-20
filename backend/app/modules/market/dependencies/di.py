@@ -78,16 +78,16 @@ class TaskProvider(Provider):
     def get_provider_factory(self, redis: Redis, session_factory: SessionFactory, provider_service: ProviderService) -> Callable[[str, int], Awaitable[BaseProvider]]:
         async def factory(provider_name: str, task_id: int) -> BaseProvider:
             provider_class = registry.get_provider(provider_name)
-            provider = await provider_service.get_by_name(provider_name)
-            config = LimiterConfig(
+            config = await provider_service.get_config_by_name(provider_name)
+            limiter_config = LimiterConfig(
                 key=provider_name,
-                requests_per_minute=provider.requests_per_minute,
-                requests_per_hour=provider.requests_per_hour,
-                requests_per_day=provider.requests_per_day,
-                requests_per_month=provider.requests_per_month,
+                requests_per_minute=config.requests_per_minute,
+                requests_per_hour=config.requests_per_hour,
+                requests_per_day=config.requests_per_day,
+                requests_per_month=config.requests_per_month,
             )
-            limiter = RateLimiter(redis=redis, config=config)
-            logger = RequestLogger(provider.id, task_id, session_factory=session_factory)
+            limiter = RateLimiter(redis=redis, config=limiter_config)
+            logger = RequestLogger(provider_name, task_id, session_factory=session_factory)
             http = HTTPClient(provider_class.BASE_URL, limiter=limiter, logger=logger)
             return provider_class(http)
         return factory

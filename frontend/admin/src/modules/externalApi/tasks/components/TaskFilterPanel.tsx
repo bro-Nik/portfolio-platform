@@ -5,7 +5,7 @@ import { useProviders } from '../../providers/hooks/useProviders';
 
 export interface TaskFilters {
   status: string;
-  providerId: string;
+  providerName: string;
 }
 
 interface TaskFilterPanelProps {
@@ -32,7 +32,7 @@ export const TaskFilterPanel: React.FC<TaskFilterPanelProps> = ({ filters, setFi
         <Button
           size="small"
           onClick={() => {
-            setFilters({ status: 'all', providerId: 'all' });
+            setFilters({ status: 'all', providerName: 'all' });
             setSearchText('');
           }}
         >
@@ -68,14 +68,14 @@ export const TaskFilterPanel: React.FC<TaskFilterPanelProps> = ({ filters, setFi
           <Select
             placeholder="Провайдер"
             style={{ width: '100%' }}
-            value={filters.providerId}
+            value={filters.providerName}
             disabled={providersLoading || !!providersError}
-            onChange={(value) => setFilters({ ...filters, providerId: value })}
+            onChange={(value) => setFilters({ ...filters, providerName: value })}
             allowClear
           >
             <Select.Option value="all">Все провайдеры</Select.Option>
             {providers.map(p => (
-              <Select.Option key={p.id} value={String(p.id)}>{p.name}</Select.Option>
+              <Select.Option key={p.name} value={p.name}>{p.name}</Select.Option>
             ))}
           </Select>
         </Col>

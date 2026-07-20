@@ -13,7 +13,7 @@ export const TasksModule: React.FC = () => {
   const { taskFormModal } = useTaskModals();
 
   const [searchText, setSearchText] = useState('');
-  const [filters, setFilters] = useState<TaskFilters>({ status: 'all', providerId: 'all' });
+  const [filters, setFilters] = useState<TaskFilters>({ status: 'all', providerName: 'all' });
   const [activeTab, setActiveTab] = useState('all');
 
   const quickStats = useMemo(() => ({
@@ -40,8 +40,8 @@ export const TasksModule: React.FC = () => {
       filtered = filtered.filter(t => t.isActive === (filters.status === 'active'));
     }
 
-    if (filters.providerId !== 'all') {
-      filtered = filtered.filter(t => String(t.providerId) === filters.providerId);
+    if (filters.providerName !== 'all') {
+      filtered = filtered.filter(t => t.providerName === filters.providerName);
     }
 
     return filtered;
