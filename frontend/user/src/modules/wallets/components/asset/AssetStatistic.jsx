@@ -8,27 +8,22 @@ const AssetStatistic = ({ portfolio, asset }) => {
     {
       title: 'Количество',
       value: `${asset.quantity || 0} ${asset.symbol}`,
-      description: ''
     },
     {
       title: 'Стоимость',
       value: formatCurrency(asset.costNow || 0),
-      description: 'Общая стоимость активов по текущим ценам'
     },
     {
       title: 'В ордерах на покупку',
       value: formatCurrency(asset.buyOrders || 0),
-      description: ''
     },
     {
       title: 'В ордерах на продажу',
       value: formatCurrency(asset.sellOrders || 0),
-      description: ''
     },
     {
       title: 'Свободно',
       value: formatCurrency(asset.free || 0, asset.symbol),
-      description: 'Прибыль/убыток за все время'
     }
   ];
 

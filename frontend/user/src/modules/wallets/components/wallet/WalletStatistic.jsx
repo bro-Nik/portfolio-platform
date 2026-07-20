@@ -7,17 +7,14 @@ const WalletStatistic = ({ wallet }) => {
     {
       title: 'Стоимость',
       value: formatCurrency(wallet.costNow),
-      description: 'Общая стоимость активов по текущим ценам'
     },
     {
       title: 'Доля',
       value: formatPercentage(wallet.share),
-      description: 'Доля от всех кошельков'
     },
     {
       title: 'В ордерах',
       value: formatCurrency(wallet.buyOrders),
-      description: 'В ордерах на покупку'
     }
   ];
 
