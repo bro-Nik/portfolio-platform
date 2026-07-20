@@ -63,11 +63,21 @@ export interface ProviderPreset {
   timeout: number;
 }
 
+export interface ParameterSchemaField {
+  name: string;
+  label: string;
+  type: 'string' | 'number' | 'select' | 'boolean';
+  options?: Record<string, string>;
+  required?: boolean;
+  default?: any;
+}
+
 export interface ProviderMethod {
   method: string;
   name: string;
   description?: string;
   exampleParams?: Record<string, any>;
+  parametersSchema?: ParameterSchemaField[];
 }
 
 export interface ProviderWithMethods extends Provider {

@@ -12,6 +12,29 @@ class SmartPriceUpdater(MethodBase):
     NAME = 'Умное обновление цен'
     DESCRIPTION = 'Умное обновление цен с различными стратегиями'
     EXEMPLE_PARAMS = {'strategy': 'used', 'limit': 100}
+    PARAMETERS_SCHEMA = [
+        {
+            'name': 'strategy',
+            'label': 'Стратегия',
+            'type': 'select',
+            'options': {
+                'top': 'Топ монеты',
+                'active': 'Активные',
+                'all': 'Все монеты',
+                'used': 'Используемые',
+                'auto': 'Авто',
+            },
+            'default': 'used',
+            'required': True,
+        },
+        {
+            'name': 'limit',
+            'label': 'Лимит тикеров',
+            'type': 'number',
+            'default': None,
+            'required': False,
+        },
+    ]
 
     STRATEGIES = {
         'top': '_fetch_top_coins', 'active': '_fetch_active_coins',

@@ -10,6 +10,16 @@ class TickerLoader(MethodBase):
     NAME = 'Загрузка тикеров'
     DESCRIPTION = 'Загрузка и обновление списка доступных тикеров из API'
     EXEMPLE_PARAMS = {'strategy': 'all'}
+    PARAMETERS_SCHEMA = [
+        {
+            'name': 'strategy',
+            'label': 'Стратегия',
+            'type': 'select',
+            'options': {'all': 'Все тикеры', 'new': 'Только новые'},
+            'default': 'all',
+            'required': True,
+        },
+    ]
 
     STRATEGIES = {
         'all': '_sync_all',

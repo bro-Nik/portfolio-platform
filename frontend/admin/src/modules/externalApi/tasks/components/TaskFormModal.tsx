@@ -6,11 +6,11 @@ import { useModalStore } from '@portfolio/shared';
 import { useTaskActions } from '../hooks/useTaskActions';
 import { Task, TaskFormData } from '../../../../types/task';
 import { useProvidersWithMethods } from '../../providers/hooks/useProviders';
+import { DynamicParametersForm } from './DynamicParametersForm';
 
 interface TaskFormModalProps { task?: Task }
 
 const { Option } = Select;
-const { TextArea } = Input;
 
 const DEFAULT_VALUES: Partial<TaskFormData> = {
   schedule: '0 * * * *',
@@ -33,8 +33,8 @@ export const TaskFormModal: React.FC = () => {
       ...DEFAULT_VALUES,
       ...task,
       parameters: typeof task.parameters === 'string'
-        ? task.parameters
-        : JSON.stringify(task.parameters || {}, null, 2),
+        ? JSON.parse(task.parameters)
+        : task.parameters || {},
     };
   };
 
@@ -46,6 +46,7 @@ export const TaskFormModal: React.FC = () => {
     label: m.name,
     description: m.description,
     exampleParams: m.exampleParams,
+    parametersSchema: m.parametersSchema,
   })) || [];
 
   const selectedTaskType = Form.useWatch('taskType', form);
@@ -53,20 +54,15 @@ export const TaskFormModal: React.FC = () => {
 
   useEffect(() => {
     if (selectedMethod?.exampleParams) {
-      form.setFieldValue('parameters', JSON.stringify(selectedMethod.exampleParams, null, 2));
+      form.setFieldValue('parameters', selectedMethod.exampleParams);
     }
   }, [selectedMethod, form]);
 
   const handleSubmit = (values: TaskFormData) => {
-    const taskData = {
-      ...values,
-      parameters: typeof values.parameters === 'string' ? JSON.parse(values.parameters) : values.parameters,
-    };
-
     if (editMode && task) {
-      updateTask(task.id, taskData);
+      updateTask(task.id, values);
     } else {
-      createTask(taskData);
+      createTask(values);
     }
     closeModal();
   };
@@ -168,24 +164,8 @@ export const TaskFormModal: React.FC = () => {
           </Select>
         </Form.Item>
 
-        <Form.Item
-          label="Параметры задачи (JSON)"
-          name="parameters"
-          rules={[
-            { required: true, message: 'Введите параметры' },
-            {
-              validator: (_, value) => {
-                try {
-                  JSON.parse(value);
-                  return Promise.resolve();
-                } catch {
-                  return Promise.reject(new Error('Неверный JSON формат'));
-                }
-              },
-            },
-          ]}
-        >
-          <TextArea rows={6} style={{ fontFamily: 'monospace' }} />
+        <Form.Item label="Параметры задачи">
+          <DynamicParametersForm schema={selectedMethod?.parametersSchema || []} />
         </Form.Item>
 
         <Form.Item

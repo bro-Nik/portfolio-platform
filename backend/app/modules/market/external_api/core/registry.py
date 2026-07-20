@@ -26,6 +26,7 @@ class ProviderRegistry:
                 'name': method.name,
                 'description': method.description,
                 'example_params': method.exemple_params,
+                'parameters_schema': method.parameters_schema,
                 **kwargs,
             }
             return func
