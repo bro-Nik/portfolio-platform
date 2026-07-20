@@ -2,7 +2,7 @@ from decimal import Decimal
 import logging
 
 from ..core import BaseProvider, registry
-from ..methods import smart_price_updater
+from ..methods import smart_price_updater, ticker_loader
 from ..url_chunker import chunk_ids_for_url
 
 logger = logging.getLogger(__name__)
@@ -25,6 +25,32 @@ class CoingeckoProvider(BaseProvider):
     @registry.register_method(smart_price_updater)
     async def smart_price_update(self, **kwargs) -> dict:
         return await smart_price_updater.run('crypto', self.get_prices, **kwargs)
+
+    @registry.register_method(ticker_loader)
+    async def load_tickers(self, **kwargs) -> dict:
+        return await ticker_loader.run('crypto', self.fetch_all_tickers, **kwargs)
+
+    async def fetch_all_tickers(self) -> list[dict]:
+        all_coins = []
+        page = 1
+        while True:
+            logger.info('Загрузка страницы тикеров %s...', page)
+            try:
+                data = await self.http.request(
+                    'GET', 'coins/markets',
+                    params={'vs_currency': 'usd', 'per_page': 250, 'page': page},
+                )
+            except Exception:
+                logger.exception('Ошибка загрузки страницы %s', page)
+                break
+            if not data:
+                break
+            all_coins.extend(data)
+            if len(data) < 250:
+                break
+            page += 1
+        logger.info('Загружено %s монет с CoinGecko', len(all_coins))
+        return all_coins
 
     async def get_prices(self, ids: list[str]) -> dict[str, Decimal]:
         if not ids:

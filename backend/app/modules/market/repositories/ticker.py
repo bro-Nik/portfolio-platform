@@ -12,6 +12,9 @@ class TickerRepository(BaseRepository[Ticker]):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(Ticker, session)
 
+    async def get_all_by_market(self, market: str) -> list[Ticker]:
+        return await self.get_all(self.model.market == market)
+
     async def update_ticker_prices(self, data: dict[str, object]) -> int:
         if not data:
             return 0

@@ -3,6 +3,7 @@ uvicorn[standard]
 sqlalchemy
 asyncpg
 pyjwt
+Pillow
 pydantic[email]
 pydantic-settings
 python-multipart

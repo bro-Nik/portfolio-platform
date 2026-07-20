@@ -1,3 +1,9 @@
+from io import BytesIO
+from pathlib import Path
+import logging
+
+import httpx
+from PIL import Image
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -5,9 +11,13 @@ from app.modules.market import models
 from app.modules.market.models import Ticker
 from app.modules.market.repositories import TickerRepository
 
+logger = logging.getLogger(__name__)
 
 COUNTER_PERIODS = ['minute', 'hour', 'day', 'month']
 BASE_IMAGES_URL = '/market/static/images/tickers'
+
+STATIC_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent / 'static'
+TICKER_IMAGES_DIR = STATIC_DIR / 'images' / 'tickers'
 
 
 class MarketTickerPrefix:
@@ -74,6 +84,84 @@ class TickerService:
 
     async def get_all(self, ids: list) -> list[Ticker]:
         return await self.repo.get_all_by_ids(ids)
+
+    async def get_all_by_market(self, market: str) -> list[Ticker]:
+        return await self.repo.get_all_by_market(market)
+
+    async def sync_tickers(self, market: str, raw_data: list[dict], strategy: str = 'all') -> dict:
+        prefix = getattr(MarketTickerPrefix, market.upper())
+        existing = await self.get_all_by_market(market)
+        existing_map = {MarketTickerPrefix.remove(prefix, t.id): t for t in existing}
+
+        created = 0
+        updated = 0
+        skipped = 0
+
+        for coin in raw_data:
+            ext_id = coin.get('id')
+            if not ext_id:
+                continue
+
+            if ext_id in existing_map:
+                ticker = existing_map[ext_id]
+                if strategy == 'all':
+                    self._update_ticker_fields(ticker, coin)
+                    if not ticker.image:
+                        image_url = coin.get('image')
+                        if image_url:
+                            image_file = await self._download_resize_image(image_url, market, ext_id)
+                            if image_file:
+                                ticker.image = image_file
+                    updated += 1
+                else:
+                    skipped += 1
+            else:
+                full_id = f'{prefix}{ext_id}'
+                ticker = await self.repo.create({
+                    'id': full_id,
+                    'market': market,
+                    'name': coin.get('name', ''),
+                    'symbol': coin.get('symbol', ''),
+                    'market_cap_rank': coin.get('market_cap_rank'),
+                })
+                image_url = coin.get('image')
+                if image_url:
+                    ticker.image = await self._download_resize_image(image_url, market, ext_id)
+                existing_map[ext_id] = ticker
+                created += 1
+
+        await self.session.flush()
+        logger.info('sync_tickers(%s, %s): created=%s, updated=%s, skipped=%s',
+                     market, strategy, created, updated, skipped)
+        return {'created': created, 'updated': updated, 'skipped': skipped}
+
+    def _update_ticker_fields(self, ticker: Ticker, coin: dict) -> None:
+        ticker.name = coin.get('name', ticker.name)
+        ticker.symbol = coin.get('symbol', ticker.symbol)
+        ticker.market_cap_rank = coin.get('market_cap_rank', ticker.market_cap_rank)
+
+    async def _download_resize_image(self, image_url: str, market: str, ext_id: str) -> str | None:
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                response = await client.get(image_url)
+                response.raise_for_status()
+
+            img = Image.open(BytesIO(response.content))
+            ext = img.format.lower() if img.format else 'png'
+            filename = f'{ext_id}.{ext}'
+
+            base_dir = TICKER_IMAGES_DIR / market
+
+            for px in (24, 40):
+                dir_path = base_dir / str(px)
+                dir_path.mkdir(parents=True, exist_ok=True)
+                img.resize((px, px), Image.LANCZOS).save(dir_path / filename)
+
+            logger.info('Загружена иконка %s/%s', market, ext_id)
+            return filename
+        except Exception:
+            logger.exception('Ошибка загрузки изображения %s: %s', ext_id, image_url)
+            return None
 
     async def save_prices(self, market: str, price_data: dict) -> int:
         data = MarketTickerPrefix.add_dict(market, price_data)
