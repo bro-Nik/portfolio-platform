@@ -158,7 +158,6 @@ export const TaskFormModal: React.FC = () => {
         <Form.Item
           label="Расписание"
           name="schedule"
-          rules={[{ required: true, message: 'Выберите расписание' }]}
         >
           <Select placeholder="Выберите расписание">
             {schedulePresets.map((preset) => (

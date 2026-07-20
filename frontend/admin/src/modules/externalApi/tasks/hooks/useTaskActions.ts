@@ -32,13 +32,20 @@ export const useTaskActions = () => {
     ...mutationOptions('Задача успешно удалена', 'Ошибка удаления'),
   });
 
+  const runMut = useMutation({
+    mutationFn: (id: number) => tasksApi.runTask(id),
+    ...mutationOptions('Задача запущена', 'Ошибка запуска'),
+  });
+
   return {
     createTask: (data: CreateTaskData) => createMut.mutate(data),
     updateTask: (id: number, data: UpdateTaskData) => updateMut.mutate({ id, data }),
     deleteTask: (id: number) => deleteMut.mutate(id),
+    runTask: (id: number) => runMut.mutate(id),
     isCreating: createMut.isPending,
     isUpdating: updateMut.isPending,
     isDeleting: deleteMut.isPending,
+    isRunning: runMut.isPending,
   };
 };
 

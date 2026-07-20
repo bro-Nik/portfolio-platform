@@ -20,4 +20,8 @@ export const tasksApi = {
   deleteTask: (id: number): Promise<void> => {
     return api.del(`/${id}`);
   },
+
+  runTask: (id: number): Promise<{ message: string; task_id: number }> => {
+    return api.post(`/${id}/run`);
+  },
 }

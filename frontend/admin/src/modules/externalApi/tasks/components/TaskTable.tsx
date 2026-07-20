@@ -1,18 +1,20 @@
 import React from 'react';
 import { Table, Tag, Dropdown, Button, Tooltip } from 'antd';
-import { ScheduleOutlined, ApiOutlined, DeleteOutlined, MoreOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { ScheduleOutlined, ApiOutlined, DeleteOutlined, MoreOutlined, EditOutlined, EyeOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { schedulePresets } from '../constants';
 import { formatRelativeTime } from '../../../../utils/date';
 import { Task } from '../../../../types/task';
 import { useTaskModals } from '../hooks/useTaskModals';
+import { useTaskActions } from '../hooks/useTaskActions';
 import { getTaskTypeTag, getStatusBadge } from '../utils';
 
 interface TaskTableProps { data: Task[]; loading: boolean }
 
 export const TaskTable: React.FC<TaskTableProps> = ({ data, loading }) => {
   const { taskDetailsModal, taskFormModal, taskDeleteConfirmModal } = useTaskModals();
+  const { runTask, isRunning } = useTaskActions();
 
   const columns: ColumnsType<Task> = [
     {
@@ -45,11 +47,15 @@ export const TaskTable: React.FC<TaskTableProps> = ({ data, loading }) => {
       dataIndex: 'schedule',
       key: 'schedule',
       render: (schedule: string) => (
-        <Tooltip title={schedule}>
-          <Tag icon={<ScheduleOutlined />} color="purple">
-            {schedulePresets.find(p => p.value === schedule)?.label || schedule}
-          </Tag>
-        </Tooltip>
+        schedule ? (
+          <Tooltip title={schedule}>
+            <Tag icon={<ScheduleOutlined />} color="purple">
+              {schedulePresets.find(p => p.value === schedule)?.label || schedule}
+            </Tag>
+          </Tooltip>
+        ) : (
+          <Tag color="orange">Вручную</Tag>
+        )
       )
     },
     {
@@ -93,6 +99,13 @@ export const TaskTable: React.FC<TaskTableProps> = ({ data, loading }) => {
             label: 'Редактировать',
             icon: <EditOutlined />,
             onClick: () => taskFormModal(record)
+          },
+          {
+            key: 'run',
+            label: 'Запустить сейчас',
+            icon: <PlayCircleOutlined />,
+            disabled: isRunning,
+            onClick: () => runTask(record.id)
           },
           { type: 'divider' },
           {

@@ -4,6 +4,7 @@ export interface SchedulePreset {
 }
 
 export const schedulePresets: SchedulePreset[] = [
+  { value: '', label: 'Запуск вручную' },
   { value: '* * * * *', label: 'Каждую минуту' },
   { value: '*/5 * * * *', label: 'Каждые 5 минут' },
   { value: '*/15 * * * *', label: 'Каждые 15 минут' },

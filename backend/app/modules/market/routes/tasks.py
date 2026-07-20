@@ -1,5 +1,6 @@
 from app.common.exceptions import handle_errors
 
+from app.core.taskiq import broker
 from app.modules.market.dependencies import TaskServiceDep
 from app.modules.market.schemas import (
     TaskCreateRequest, TaskResponse, TaskUpdateRequest,
@@ -34,3 +35,19 @@ async def update_task(task_id: int, data: TaskUpdateRequest, task_service: TaskS
 @handle_errors('Ошибка удаления задачи')
 async def delete_task(task_id: int, task_service: TaskServiceDep) -> None:
     await task_service.delete(task_id)
+
+
+@tasks_router.post('/{task_id}/run', status_code=202)
+@handle_errors('Ошибка запуска задачи')
+async def run_task(task_id: int, task_service: TaskServiceDep) -> dict:
+    task = await task_service.get(task_id)
+    await broker.kick(
+        task_name='update_market_data',
+        kwargs={
+            'provider_name': task.provider_name,
+            'method': task.task_type,
+            'db_task_id': task.id,
+            **task.parameters,
+        },
+    )
+    return {'message': 'Задача отправлена в очередь', 'task_id': task_id}
