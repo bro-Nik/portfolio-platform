@@ -19,10 +19,11 @@ class RequestLogger:
         self._logs = []
 
     async def log(self, method: str, endpoint: str, response: httpx.Response | None,
-                  params: dict[str, Any] | None, response_time: float, error: str | None = None) -> None:
+                  params: dict[str, Any] | None, response_time: float, error: str | None = None,
+                  url: str | None = None) -> None:
         log = RequestLog(
             provider_name=self.provider_name, task_id=self.task_id, endpoint=endpoint,
-            method=method, request_params=params or {},
+            method=method, request_params=params or {}, request_url=url or '',
             status_code=response.status_code if response else None,
             response_time=response_time,
             was_successful=response.is_success if response else False,

@@ -63,13 +63,13 @@ class HTTPClient:
                     params=params, data=data, json=json_data,
                     headers=request_headers, timeout=timeout or self.TIMEOUT,
                 )
-                await self.logger.log(method, endpoint, response, params, response_time=time.time() - start_time)
+                await self.logger.log(method, endpoint, response, params, response_time=time.time() - start_time, url=url)
                 if not response.is_success:
                     logger.error(f'API request failed: {response.status_code} - {response.text[:200]}')
                     response.raise_for_status()
                 return response.json()
         except Exception as e:
-            await self.logger.log(method, endpoint, response, params, response_time=time.time() - start_time, error=str(e))
+            await self.logger.log(method, endpoint, response, params, response_time=time.time() - start_time, error=str(e), url=url)
             logger.error(f'Unexpected error for {url}: {e}')
             raise
 

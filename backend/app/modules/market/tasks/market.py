@@ -4,14 +4,11 @@ from dishka.integrations.taskiq import inject
 
 from app.modules.market.taskiq_setup import broker
 from app.modules.market.external_api import handle_task_errors
-from app.modules.market.services.task_tracker import TaskTrackerService
-from app.modules.market.external_api.core import BaseProvider
-from app.modules.market.dependencies.di import SessionDep
-from collections.abc import Awaitable, Callable
-from typing import Annotated
-
-TaskTrackerServiceDep = Annotated[TaskTrackerService, ...]
-ProviderFactoryDep = Annotated[Callable[[str, int], Awaitable[BaseProvider]], ...]
+from app.modules.market.dependencies.di import (
+    ProviderFactoryDep,
+    SessionDep,
+    TaskTrackerServiceDep,
+)
 
 logger = logging.getLogger(__name__)
 

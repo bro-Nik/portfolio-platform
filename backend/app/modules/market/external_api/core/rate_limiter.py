@@ -37,7 +37,7 @@ class RateLimiter:
         self.counter = RateCounter(redis, config)
 
     @asynccontextmanager
-    async def limit(self, max_wait_time: int = 30) -> AsyncIterator:
+    async def limit(self, max_wait_time: int = 60) -> AsyncIterator:
         if not self.config.limits or all(limit == 0 for limit in self.config.limits.values()):
             yield
             return

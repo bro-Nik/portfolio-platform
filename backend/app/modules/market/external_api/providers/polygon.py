@@ -47,7 +47,7 @@ class PolygonProvider(BaseProvider):
             params = self._augment_params({'market': 'stocks', 'limit': 1000, 'active': 'true'})
             try:
                 if next_url:
-                    data = await self.http.request('GET', next_url)
+                    data = await self.http.request('GET', f"{next_url}&apiKey={self._api_key}")
                 else:
                     data = await self.http.request('GET', 'v3/reference/tickers', params=params)
             except Exception:

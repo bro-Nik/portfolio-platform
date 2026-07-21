@@ -15,5 +15,8 @@ class TickerExternalIdService:
         mapping = await self.repo.get_ticker_id_map(provider_name, ext_ids)
         return {mapping.get(k, k): v for k, v in ext_map.items()}
 
+    async def get_ext_to_ticker_map(self, provider_name: str) -> dict[str, str]:
+        return await self.repo.get_ext_to_ticker_map(provider_name)
+
     async def upsert(self, ticker_id: str, provider_name: str, ext_id: str) -> None:
         await self.repo.upsert(ticker_id, provider_name, ext_id)
