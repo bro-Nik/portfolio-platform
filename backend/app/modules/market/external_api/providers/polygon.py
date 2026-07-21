@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 @registry.register_provider()
 class PolygonProvider(BaseProvider):
     NAME = 'Polygon'
-    DESCRIPTION = 'Акции США — цены, тикеры, иконки'
+    DESCRIPTION = 'Акции США'
     BASE_URL = 'https://api.polygon.io/'
 
     REQUESTS_PER_MINUTE = 5

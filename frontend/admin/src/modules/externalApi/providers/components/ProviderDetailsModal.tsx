@@ -62,6 +62,12 @@ const ProviderInfoTab: React.FC<ProviderInfoTabProps> = ({ provider }) => {
         {provider.name}
       </Descriptions.Item>
 
+      {provider.description && (
+        <Descriptions.Item label="Описание">
+          {provider.description}
+        </Descriptions.Item>
+      )}
+
       <Descriptions.Item label="API Ключ">
         {provider.apiKey ? (
           <Tag color="green" icon={<KeyOutlined />}>Настроен</Tag>

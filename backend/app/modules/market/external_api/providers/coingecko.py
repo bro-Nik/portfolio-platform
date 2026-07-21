@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 @registry.register_provider()
 class CoingeckoProvider(BaseProvider):
     NAME = 'CoinGecko'
-    DESCRIPTION = 'Криптовалютные данные и цены'
+    DESCRIPTION = 'Криптовалюты'
     BASE_URL = 'https://api.coingecko.com/api/v3'
 
     REQUESTS_PER_MINUTE = 30

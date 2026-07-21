@@ -24,7 +24,12 @@ export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) =
       render: (name: string, record: Provider) => (
         <Button type="link" onClick={() => providerDetailsModal(record)} style={{ padding: 0 }}>
           <ApiOutlined style={{ color: '#1890ff', marginRight: 4 }} />
-          <strong>{name}</strong>
+          <div style={{ textAlign: 'left' }}>
+            <div><strong>{name}</strong></div>
+            {record.description && (
+              <div style={{ fontSize: '12px', color: 'var(--text-admin-secondary)', lineHeight: 1.4 }}>{record.description}</div>
+            )}
+          </div>
         </Button>
       )
     },

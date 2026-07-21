@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 @registry.register_provider()
 class CurrencyLayerProvider(BaseProvider):
     NAME = 'CurrencyLayer'
-    DESCRIPTION = 'Валютные курсы'
+    DESCRIPTION = 'Валюты'
     BASE_URL = 'http://api.currencylayer.com/'
 
     REQUESTS_PER_MINUTE = 10

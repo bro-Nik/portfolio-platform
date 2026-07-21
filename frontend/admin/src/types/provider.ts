@@ -7,6 +7,7 @@ export interface ApiResponse<T = any> {
 export interface Provider {
   id?: number | null;
   name: string;
+  description?: string;
   hasConfig?: boolean;
   apiKey?: string;
   requestsPerMinute?: number;
