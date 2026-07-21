@@ -12,14 +12,10 @@ class BasePriceUpdater(MethodBase):
     NAME = 'Обновление цен'
     DESCRIPTION = 'Обновление цен тикеров'
 
-    async def _save_prices(self, market: str, prices: dict) -> int:
-        from app.core.database import AsyncSessionLocal
+    async def _save_prices(self, market: str, prices: dict, session) -> int:
         from app.modules.market.services.ticker import TickerService
-        async with AsyncSessionLocal() as session:
-            ticker_service = TickerService(session)
-            updated = await ticker_service.save_prices(market, prices)
-            await session.commit()
-            return updated
+        ticker_service = TickerService(session)
+        return await ticker_service.save_prices(market, prices)
 
 
 class SelectivePriceUpdater(BasePriceUpdater):
@@ -52,13 +48,25 @@ class SelectivePriceUpdater(BasePriceUpdater):
         'all': '_fetch_all_coins', 'used': '_fetch_used_coins', 'auto': '_fetch_smart_coins',
     }
 
-    async def run(self, market: str, get_prices: Callable[[list[str]], Awaitable[dict]], strategy: str = 'used', limit: int | None = None, **_) -> dict:
+    async def run(self, market: str, get_prices: Callable[[list[str]], Awaitable[dict]], strategy: str = 'used', limit: int | None = None, *, provider_name: str, session=None, **_) -> dict:
         logger.info('Старт обновления цен со стратегией: %s', strategy)
         ticker_ids = await self._fetch_ticker_ids(market, strategy, limit)
         if not ticker_ids:
             return {'status': 'error', 'message': 'Нет тикеров для обновления'}
-        prices = await get_prices(ticker_ids)
-        updated_count = await self._save_prices(market, prices)
+
+        from app.modules.market.services.ticker_external_id import TickerExternalIdService
+
+        ext_id_service = TickerExternalIdService(session)
+        ext_id_map = await ext_id_service.resolve_to_external(ticker_ids, provider_name)
+
+        ext_ids = [ext_id_map[tid] for tid in ticker_ids if tid in ext_id_map]
+        if not ext_ids:
+            return {'status': 'error', 'message': f'Нет external_id для {provider_name}'}
+
+        prices = await get_prices(ext_ids)
+        prices = await ext_id_service.resolve_to_internal(provider_name, prices)
+
+        updated_count = await self._save_prices(market, prices, session=session)
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
     async def _fetch_ticker_ids(self, market: str, strategy: str, limit: int | None) -> list[str]:
@@ -91,11 +99,11 @@ class SelectivePriceUpdater(BasePriceUpdater):
 class FullPriceUpdater(BasePriceUpdater):
     PARAMETERS_SCHEMA: list[dict] = []
 
-    async def run(self, market: str, fetch_prices: Callable[[], Awaitable[dict]], **_) -> dict:
+    async def run(self, market: str, fetch_prices: Callable[[], Awaitable[dict]], session=None, **_) -> dict:
         prices = await fetch_prices()
         if not prices:
             return {'status': 'error', 'message': 'Нет данных от провайдера'}
-        updated_count = await self._save_prices(market, prices)
+        updated_count = await self._save_prices(market, prices, session=session)
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
 

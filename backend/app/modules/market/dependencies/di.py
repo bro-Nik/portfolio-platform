@@ -98,6 +98,7 @@ container = make_async_container(AppProvider())
 ProviderServiceDep = Annotated[FromDishka[ProviderService], ...]
 TaskServiceDep = Annotated[FromDishka[TaskService], ...]
 TickerServiceDep = Annotated[FromDishka[TickerService], ...]
+SessionDep = Annotated[FromDishka[AsyncSession], ...]
 
 TaskTrackerServiceDep = Annotated[FromDishka[TaskTrackerService], ...]
 ProviderFactoryDep = Annotated[FromDishka[Callable[[str, int], Awaitable[BaseProvider]]], ...]

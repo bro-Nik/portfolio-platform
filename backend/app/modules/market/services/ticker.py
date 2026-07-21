@@ -92,10 +92,16 @@ class TickerService:
     async def get_tickers_without_images(self, market: str) -> list[Ticker]:
         return await self.repo.get_all_by_market_without_images(market)
 
-    async def sync_tickers(self, market: str, raw_data: list[dict], strategy: str = 'all') -> dict:
+    async def sync_tickers(self, market: str, raw_data: list[dict], strategy: str = 'all', *, provider_name: str) -> dict:
+        from app.modules.market.services.ticker_external_id import TickerExternalIdService
+
         prefix = getattr(MarketTickerPrefix, market.upper())
-        existing = await self.get_all_by_market(market)
-        existing_map = {MarketTickerPrefix.remove(prefix, t.id): t for t in existing}
+        ext_id_service = TickerExternalIdService(self.session)
+        ext_id_map = await ext_id_service.get_ext_to_ticker_map(provider_name)
+        ticker_ids = list(ext_id_map.values())
+        existing_tickers = await self.repo.get_all_by_ids(ticker_ids) if ticker_ids else []
+        ticker_map = {t.id: t for t in existing_tickers}
+        existing_by_ext = {ext_id: ticker_map[tid] for ext_id, tid in ext_id_map.items() if tid in ticker_map}
 
         created = 0
         updated = 0
@@ -106,8 +112,9 @@ class TickerService:
             if not ext_id:
                 continue
 
-            if ext_id in existing_map:
-                ticker = existing_map[ext_id]
+            ticker = existing_by_ext.get(ext_id)
+
+            if ticker:
                 if strategy == 'all':
                     self._update_ticker_fields(ticker, coin)
                     if not ticker.image:
@@ -131,8 +138,10 @@ class TickerService:
                 image_url = coin.get('image')
                 if image_url:
                     ticker.image = await self._download_resize_image(image_url, market, ext_id)
-                existing_map[ext_id] = ticker
+                existing_by_ext[ext_id] = ticker
                 created += 1
+
+            await ext_id_service.upsert(ticker.id, provider_name, ext_id)
 
         await self.session.flush()
         logger.info('sync_tickers(%s, %s): created=%s, updated=%s, skipped=%s',

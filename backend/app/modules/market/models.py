@@ -7,6 +7,16 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
 
+class TickerExternalId(Base):
+    __tablename__ = 'ticker_external_id'
+
+    ticker_id: Mapped[str] = mapped_column(String(256), ForeignKey('ticker.id', ondelete='CASCADE'), primary_key=True)
+    provider_name: Mapped[str] = mapped_column(String(100), primary_key=True)
+    external_id: Mapped[str] = mapped_column(String(256), nullable=False, index=True)
+
+    ticker: Mapped['Ticker'] = relationship(back_populates='external_ids')
+
+
 class Ticker(Base):
     __tablename__ = 'ticker'
 
@@ -18,6 +28,8 @@ class Ticker(Base):
     price: Mapped[float] = mapped_column(Float, default=0.0)
     market: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC))
+
+    external_ids: Mapped[list[TickerExternalId]] = relationship(back_populates='ticker', cascade='all, delete-orphan')
 
 
 class Provider(Base):

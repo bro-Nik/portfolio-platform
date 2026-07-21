@@ -23,7 +23,7 @@ class PolygonProvider(BaseProvider):
 
     @registry.register_method(ticker_loader)
     async def load_tickers(self, **kwargs) -> dict:
-        return await ticker_loader.run('stock', self._fetch_all_tickers, **kwargs)
+        return await ticker_loader.run('stock', self._fetch_all_tickers, provider_name=self.NAME, **kwargs)
 
     @registry.register_method(full_price_updater)
     async def update_prices(self, **kwargs) -> dict:

@@ -24,11 +24,11 @@ class CoingeckoProvider(BaseProvider):
 
     @registry.register_method(selective_price_updater)
     async def selective_price_update(self, **kwargs) -> dict:
-        return await selective_price_updater.run('crypto', self.get_prices, **kwargs)
+        return await selective_price_updater.run('crypto', self.get_prices, provider_name=self.NAME, **kwargs)
 
     @registry.register_method(ticker_loader)
     async def load_tickers(self, **kwargs) -> dict:
-        return await ticker_loader.run('crypto', self.fetch_all_tickers, **kwargs)
+        return await ticker_loader.run('crypto', self.fetch_all_tickers, provider_name=self.NAME, **kwargs)
 
     async def fetch_all_tickers(self) -> list[dict]:
         all_coins = []
