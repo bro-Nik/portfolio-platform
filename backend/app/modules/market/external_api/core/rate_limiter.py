@@ -7,6 +7,9 @@ from types import MappingProxyType
 
 from pydantic import BaseModel, Field
 from redis.asyncio import Redis
+from redis.exceptions import RedisError
+
+from app.modules.market.external_api.exceptions import RateLimiterUnavailableError, RateLimitTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +57,7 @@ class RateLimiter:
             logger.warning('Лимит запросов превышен для %s', self.config.key)
             await asyncio.sleep(self.RETRY_INTERVAL)
             if (datetime.now(UTC) - start_time).total_seconds() >= max_wait_time:
-                raise TimeoutError(f'Лимит запросов превышен для {self.config.key} после {max_wait_time}с')
+                raise RateLimitTimeoutError(self.config.key, max_wait_time)
 
 
 class RateCounter:
@@ -93,7 +96,16 @@ class RateCounter:
     async def increment(self) -> bool:
         if not self.config.limits:
             return True
-        periods = list(self.PERIODS.keys())
+        periods = [p for p in self.PERIODS if self.config.limits.get(p, 0) > 0]
+        if not periods:
+            return True
         keys = [f'counter:{self.config.key}:{period}' for period in periods]
-        result = await self._script(keys=keys, args=[self.config.limits[p] for p in periods] + [self.PERIODS[p] for p in periods])
+        try:
+            result = await self._script(keys=keys, args=[self.config.limits[p] for p in periods] + [self.PERIODS[p] for p in periods])
+        except RedisError as e:
+            logger.error(
+                'Redis недоступен. Rate limiter для %s отключён, запросы заблокированы: %s',
+                self.config.key, e,
+            )
+            raise RateLimiterUnavailableError(self.config.key, str(e)) from e
         return result == 1

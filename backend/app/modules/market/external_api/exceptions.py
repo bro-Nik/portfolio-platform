@@ -27,3 +27,20 @@ def handle_task_errors(
 class ExternalAPIError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
+
+
+class RateLimitTimeoutError(TimeoutError):
+    def __init__(self, key: str, max_wait_time: int) -> None:
+        self.key = key
+        self.max_wait_time = max_wait_time
+        super().__init__(f'Лимит запросов превышен для {key} после {max_wait_time}с')
+
+
+class RateLimiterUnavailableError(Exception):
+    def __init__(self, key: str, original_error: str) -> None:
+        self.key = key
+        self.original_error = original_error
+        super().__init__(
+            f'Rate limiter недоступен (Redis): {original_error}. '
+            f'Все запросы {key} заблокированы до восстановления.'
+        )
