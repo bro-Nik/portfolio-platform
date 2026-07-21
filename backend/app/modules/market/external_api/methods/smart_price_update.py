@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 import logging
 
 import httpx
@@ -8,10 +8,21 @@ from .base import MethodBase
 logger = logging.getLogger(__name__)
 
 
-class SmartPriceUpdater(MethodBase):
-    NAME = 'Умное обновление цен'
-    DESCRIPTION = 'Умное обновление цен с различными стратегиями'
-    EXEMPLE_PARAMS = {'strategy': 'used', 'limit': 100}
+class BasePriceUpdater(MethodBase):
+    NAME = 'Обновление цен'
+    DESCRIPTION = 'Обновление цен тикеров'
+
+    async def _save_prices(self, market: str, prices: dict) -> int:
+        from app.core.database import AsyncSessionLocal
+        from app.modules.market.services.ticker import TickerService
+        async with AsyncSessionLocal() as session:
+            ticker_service = TickerService(session)
+            updated = await ticker_service.save_prices(market, prices)
+            await session.commit()
+            return updated
+
+
+class SmartPriceUpdater(BasePriceUpdater):
     PARAMETERS_SCHEMA = [
         {
             'name': 'strategy',
@@ -41,23 +52,14 @@ class SmartPriceUpdater(MethodBase):
         'all': '_fetch_all_coins', 'used': '_fetch_used_coins', 'auto': '_fetch_smart_coins',
     }
 
-    async def run(self, market: str, get_prices: Callable, strategy: str = 'used', limit: int | None = None, **_) -> dict:
-        logger.info('Старт умного обновления цен со стратегией: %s', strategy)
+    async def run(self, market: str, get_prices: Callable[[list[str]], Awaitable[dict]], strategy: str = 'used', limit: int | None = None, **_) -> dict:
+        logger.info('Старт обновления цен со стратегией: %s', strategy)
         ticker_ids = await self._fetch_ticker_ids(market, strategy, limit)
         if not ticker_ids:
             return {'status': 'error', 'message': 'Нет тикеров для обновления'}
         prices = await get_prices(ticker_ids)
         updated_count = await self._save_prices(market, prices)
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
-
-    async def _save_prices(self, market: str, prices: dict) -> int:
-        from app.core.database import AsyncSessionLocal
-        from app.modules.market.services.ticker import TickerService
-        async with AsyncSessionLocal() as session:
-            ticker_service = TickerService(session)
-            updated = await ticker_service.save_prices(market, prices)
-            await session.commit()
-            return updated
 
     async def _fetch_ticker_ids(self, market: str, strategy: str, limit: int | None) -> list[str]:
         if strategy not in self.STRATEGIES:
@@ -86,4 +88,16 @@ class SmartPriceUpdater(MethodBase):
         return unique_ids[:limit] if limit else unique_ids
 
 
+class BulkPriceUpdater(BasePriceUpdater):
+    PARAMETERS_SCHEMA: list[dict] = []
+
+    async def run(self, market: str, fetch_prices: Callable[[], Awaitable[dict]], **_) -> dict:
+        prices = await fetch_prices()
+        if not prices:
+            return {'status': 'error', 'message': 'Нет данных от провайдера'}
+        updated_count = await self._save_prices(market, prices)
+        return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
+
+
 smart_price_updater = SmartPriceUpdater()
+bulk_price_updater = BulkPriceUpdater()

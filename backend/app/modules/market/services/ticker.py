@@ -1,3 +1,4 @@
+from collections.abc import Awaitable, Callable
 from io import BytesIO
 from pathlib import Path
 import logging
@@ -88,6 +89,9 @@ class TickerService:
     async def get_all_by_market(self, market: str) -> list[Ticker]:
         return await self.repo.get_all_by_market(market)
 
+    async def get_tickers_without_images(self, market: str) -> list[Ticker]:
+        return await self.repo.get_all_by_market_without_images(market)
+
     async def sync_tickers(self, market: str, raw_data: list[dict], strategy: str = 'all') -> dict:
         prefix = getattr(MarketTickerPrefix, market.upper())
         existing = await self.get_all_by_market(market)
@@ -173,3 +177,23 @@ class TickerService:
             batch_data = {id: data[id] for id in batch_ids}
             updated_total += await self.repo.update_ticker_prices(batch_data)
         return updated_total
+
+    async def load_images(self, market: str, fetch_images: Callable[[list[str]], Awaitable[dict[str, str]]]) -> int:
+        tickers = await self.get_tickers_without_images(market)
+        if not tickers:
+            return 0
+
+        prefix = getattr(MarketTickerPrefix, market.upper())
+        ext_ids = [MarketTickerPrefix.remove(prefix, t.id) for t in tickers]
+        ticker_map = {MarketTickerPrefix.remove(prefix, t.id): t for t in tickers}
+
+        image_urls = await fetch_images(ext_ids)
+
+        loaded = 0
+        for ext_id, url in image_urls.items():
+            ticker = ticker_map.get(ext_id)
+            if ticker and url:
+                ticker.image = await self._download_resize_image(url, market, ext_id)
+                loaded += 1
+
+        return loaded

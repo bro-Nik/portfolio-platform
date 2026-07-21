@@ -19,8 +19,9 @@ class BaseProvider:
     REQUESTS_PER_MONTH = 10000
     TIMEOUT = 30
 
-    def __init__(self, http: 'HTTPClient') -> None:
+    def __init__(self, http: 'HTTPClient', api_key: str | None = None) -> None:
         self.http = http
+        self._api_key = api_key
 
     @property
     def name(self) -> str:
