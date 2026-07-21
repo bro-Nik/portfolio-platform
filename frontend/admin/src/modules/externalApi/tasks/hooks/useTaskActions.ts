@@ -1,20 +1,21 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../api';
 import { CreateTaskData, UpdateTaskData } from '../../../../types/task';
-import { errorNotification, successNotification } from '../../../../utils';
+import { useNotifications } from '@portfolio/shared';
 
 export const useTaskActions = () => {
   const queryClient = useQueryClient();
+  const { error, success } = useNotifications();
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['tasks'] });
 
   // Общая логика для всех мутаций
   const mutationOptions = (successMsg: string, errorMsg: string) => ({
     onSuccess: () => {
-      successNotification(successMsg);
+      success(successMsg);
       invalidate();
     },
-    onError: (error: Error) => errorNotification(error, errorMsg),
+    onError: (err: Error) => error(err?.message || errorMsg),
   });
 
   const createMut = useMutation({

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from 'src/constants/routes';
 import { Alert, Button, Input, Spin } from 'antd';
-import { destroyNotifications, warningToast, successToast, persistentErrorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ResetPasswordPage = () => {
+  const { destroy, warning, success, persistentError } = useNotifications();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
@@ -36,25 +37,25 @@ const ResetPasswordPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    destroyNotifications();
+    destroy();
 
     if (password !== confirmPassword) {
-      warningToast('Пароли не совпадают');
+      warning('Пароли не совпадают');
       return;
     }
 
     if (password.length < 6) {
-      warningToast('Пароль должен быть не менее 6 символов');
+      warning('Пароль должен быть не менее 6 символов');
       return;
     }
 
     const result = await resetPassword.mutateAsync({ token, password });
 
     if (result.success) {
-      successToast('Пароль успешно сброшен. Теперь вы можете войти.');
+      success('Пароль успешно сброшен. Теперь вы можете войти.');
       navigate(ROUTES.LOGIN);
     } else {
-      persistentErrorToast(result.error);
+      persistentError(result.error);
     }
   };
 

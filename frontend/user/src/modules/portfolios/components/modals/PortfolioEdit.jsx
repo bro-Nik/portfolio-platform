@@ -6,9 +6,10 @@ import FormComment from 'src/features/forms/FormComment';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
 import FormSelect from 'src/features/forms/FormSelect';
 import ShowMore from 'src/components/ui/ShowMore';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 
 const PortfolioEditModal = () => {
+  const { success, error } = useNotifications();
   const { modalProps, closeModal } = useModalStore();
   const { 
     portfolio = null,
@@ -36,10 +37,10 @@ const PortfolioEditModal = () => {
     const result = await editPortfolio(submitData);
 
     if (result.success) {
-      successToast(portfolio ? 'Портфель обновлен' : 'Портфель создан');
+      success(portfolio ? 'Портфель обновлен' : 'Портфель создан');
       closeModal();
     } else {
-      errorToast(result.error || 'Произошла ошибка');
+      error(result.error || 'Произошла ошибка');
       console.log(result.error || 'Произошла ошибка')
     }
   };

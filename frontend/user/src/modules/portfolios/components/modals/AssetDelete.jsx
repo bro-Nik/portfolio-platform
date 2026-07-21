@@ -2,9 +2,10 @@ import React from 'react';
 import { Modal } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { usePortfolioOperations } from 'src/modules/portfolios/hooks/usePortfolioOperations';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 
 const AssetDeleteModal = () => {
+  const { success, error } = useNotifications();
   const { modalProps, closeModal } = useModalStore();
   const { portfolio, asset } = modalProps;
   const { deleteAsset, loading } = usePortfolioOperations();
@@ -13,9 +14,9 @@ const AssetDeleteModal = () => {
     const result = await deleteAsset(portfolio, asset);
 
     if (result.success) {
-      successToast('Актив удален');
+      success('Актив удален');
     } else {
-      errorToast(result.error);
+      error(result.error);
     }
     closeModal();
   };

@@ -3,12 +3,13 @@ import { Modal, Form, Input, Button, Typography } from 'antd';
 import { AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const { Text } = Typography;
 
 const DeleteAccountModal = ({ open, onClose }) => {
+  const { success, error } = useNotifications();
   const [form] = Form.useForm();
   const { logout } = useAuthStore();
   const navigate = useNavigate();
@@ -17,11 +18,11 @@ const DeleteAccountModal = ({ open, onClose }) => {
   const handleSubmit = async (values) => {
     const result = await deleteAccount.mutateAsync(values.currentPassword);
     if (result.success) {
-      successToast('Аккаунт успешно удалён');
+      success('Аккаунт успешно удалён');
       logout();
       navigate('/');
     } else {
-      errorToast(result.error || 'Ошибка удаления аккаунта');
+      error(result.error || 'Ошибка удаления аккаунта');
     }
   };
 

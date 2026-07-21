@@ -124,6 +124,7 @@ table {
     border: none !important;
 }
 #wrapper {
+    --ant-color-bg-layout: #ffffff;
     display: flex;
     flex-direction: column;
     height: 100%;

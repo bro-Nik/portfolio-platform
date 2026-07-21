@@ -41,7 +41,8 @@ export const lightTheme = {
   token: {
     ...sharedTokens,
     colorPrimary: '#6366f1',
-    colorBgLayout: '#f5f5f5',
+    // colorBgLayout: '#f6f5f5',
+    colorBgLayout: '#ffffff',
     colorBgContainer: '#ffffff',
   },
   components: sharedComponents,

@@ -7,7 +7,7 @@ import { useNavigation } from 'src/hooks/useNavigation';
 import { useProfileQuery } from './useProfileQuery';
 import { useSessionsQuery } from './useSessionsQuery';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 import ChangePasswordModal from './ChangePasswordModal';
 import ChangeEmailModal from './ChangeEmailModal';
 import DeleteAccountModal from './DeleteAccountModal';
@@ -33,6 +33,7 @@ const getDeviceIcon = (deviceType) => {
 };
 
 const SettingsPage = () => {
+  const { success, error } = useNotifications();
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -51,9 +52,9 @@ const SettingsPage = () => {
   const handleResend = async () => {
     const result = await resendVerification.mutateAsync();
     if (result.success) {
-      successToast(result.message || 'Письмо отправлено');
+      success(result.message || 'Письмо отправлено');
     } else {
-      errorToast(result.error || 'Ошибка отправки');
+      error(result.error || 'Ошибка отправки');
     }
   };
 
@@ -67,9 +68,9 @@ const SettingsPage = () => {
       onOk: async () => {
         const result = await deleteSession.mutateAsync(sessionId);
         if (result.success) {
-          successToast('Сессия завершена');
+          success('Сессия завершена');
         } else {
-          errorToast(result.error || 'Ошибка удаления сессии');
+          error(result.error || 'Ошибка удаления сессии');
         }
       },
     });
@@ -88,7 +89,7 @@ const SettingsPage = () => {
           storeLogout();
           navigate('/login');
         } else {
-          errorToast(result.error || 'Ошибка выхода');
+          error(result.error || 'Ошибка выхода');
         }
       },
     });

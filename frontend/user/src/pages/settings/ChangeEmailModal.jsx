@@ -1,20 +1,21 @@
 import React from 'react';
 import { Modal, Form, Input, Button } from 'antd';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ChangeEmailModal = ({ open, onClose }) => {
+  const { success, error } = useNotifications();
   const [form] = Form.useForm();
   const { changeEmail } = useAuthMutations();
 
   const handleSubmit = async (values) => {
     const result = await changeEmail.mutateAsync(values);
     if (result.success) {
-      successToast('Письмо с подтверждением отправлено на новый адрес');
+      success('Письмо с подтверждением отправлено на новый адрес');
       form.resetFields();
       onClose();
     } else {
-      errorToast(result.error || 'Ошибка смены email');
+      error(result.error || 'Ошибка смены email');
     }
   };
 

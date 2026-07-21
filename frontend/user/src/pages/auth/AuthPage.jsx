@@ -3,10 +3,11 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService, useAuthStore } from '@portfolio/shared';
 import { ROUTES } from 'src/constants/routes';
 import { Alert, Button, Input, Spin } from 'antd';
-import { destroyNotifications, warningToast, persistentErrorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const AuthPage = ({ type }) => {
+  const { destroy, warning, persistentError } = useNotifications();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [email, setEmail] = React.useState('');
@@ -40,10 +41,10 @@ const AuthPage = ({ type }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setVerifyStatus(null);
-    destroyNotifications();
+    destroy();
 
     if (!isLogin && password !== confirmPassword) {
-      warningToast('Пароли не совпадают');
+      warning('Пароли не совпадают');
       return;
     }
 
@@ -53,7 +54,7 @@ const AuthPage = ({ type }) => {
     if (result.success) {
       authLogin(await getCurrentUser());
     } else {
-      persistentErrorToast(result.error);
+      persistentError(result.error);
     }
   };
 

@@ -5,9 +5,10 @@ import { useWalletOperations } from '../../hooks/useWalletOperations';
 import ShowMore from 'src/components/ui/ShowMore';
 import FormComment from 'src/features/forms/FormComment';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 
 const WalletEditModal = () => {
+  const { success, error } = useNotifications();
   const { modalProps, closeModal } = useModalStore();
   const { 
     wallet = null,
@@ -34,10 +35,10 @@ const WalletEditModal = () => {
     const result = await editWallet(submitData);
     
     if (result.success) {
-      successToast(wallet ? 'Кошелек обновлен' : 'Кошелек создан');
+      success(wallet ? 'Кошелек обновлен' : 'Кошелек создан');
       closeModal();
     } else {
-      errorToast(result.error || 'Произошла ошибка');
+      error(result.error || 'Произошла ошибка');
       console.log(result.error || 'Произошла ошибка')
     }
   };

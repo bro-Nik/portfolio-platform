@@ -19,3 +19,5 @@ export { useModalStore } from './stores/modalStore.js';
 export { useThemeStore } from './stores/themeStore.js';
 
 export { createApi } from './factories/api.js';
+
+export { useNotifications } from './hooks/useNotifications.js';

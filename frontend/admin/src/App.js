@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { App as AntApp } from 'antd';
 import { useAuthStore } from '@portfolio/shared';
 import AdminPage from './AdminPage';
 
@@ -15,7 +16,7 @@ function App() {
   if (!isAuthenticated) window.location.href = '/login';
   if (!isAdmin()) window.location.href = '/portfolios';
 
-  return <AdminPage />;
+  return <AntApp style={{ height: '100%', display: 'contents' }}><AdminPage /></AntApp>;
 }
 
 export default App;

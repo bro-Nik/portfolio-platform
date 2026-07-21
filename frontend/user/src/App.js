@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { App as AntApp, ConfigProvider } from 'antd';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ChevronDown } from 'lucide-react';
@@ -28,7 +28,8 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ConfigProvider select={{ suffixIcon: <ChevronDown size={14} /> }}>
+      <ConfigProvider theme={currentTheme} select={{ suffixIcon: <ChevronDown size={14} /> }} renderEmpty={() => <div style={{ padding: '24px 0', color: 'var(--ant-color-text-tertiary)' }}>Нет данных</div>}>
+        <AntApp style={{ height: '100%', display: 'contents' }}>
         <Router>
           <Routes>
             <Route path={ROUTES.HOME} element={<LandingPage />} />
@@ -37,18 +38,17 @@ function App() {
             <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
             <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
             <Route path={ROUTES.APP} element={
-              <ConfigProvider theme={currentTheme} renderEmpty={() => <div style={{ padding: '24px 0', color: 'var(--ant-color-text-tertiary)' }}>Нет данных</div>}>
                 <ProtectedRoute>
                   <ThemeSetter />
                   <TickerIdsProvider>
                     <AppPage />
                   </TickerIdsProvider>
                 </ProtectedRoute>
-              </ConfigProvider>
             } />
 
           </Routes>
         </Router>
+        </AntApp>
       </ConfigProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

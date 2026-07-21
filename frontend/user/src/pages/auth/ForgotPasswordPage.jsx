@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { ROUTES } from 'src/constants/routes';
 import { Alert, Button, Input, Spin } from 'antd';
-import { destroyNotifications, persistentErrorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ForgotPasswordPage = () => {
+  const { destroy, persistentError } = useNotifications();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
 
@@ -12,14 +13,14 @@ const ForgotPasswordPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    destroyNotifications();
+    destroy();
 
     const result = await forgotPassword.mutateAsync(email);
 
     if (result.success) {
       setSent(true);
     } else {
-      persistentErrorToast(result.error);
+      persistentError(result.error);
     }
   };
 

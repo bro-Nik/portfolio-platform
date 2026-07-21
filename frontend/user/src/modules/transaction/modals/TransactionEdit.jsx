@@ -3,9 +3,10 @@ import { useModalStore } from '@portfolio/shared';
 import { Modal } from 'antd';
 import BaseTransactionForm from 'src/modules/transaction/components/TransactionEdit/BaseTransactionForm';
 import { useTransactionOperations } from 'src/modules/transaction/hooks/useTransactionOperations';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 
 const TransactionEditModal = () => {
+  const { success, error } = useNotifications();
   const { modalProps, closeModal } = useModalStore();
   const { tickerId = null, portfolioId = null, walletId = null, transaction = null } = modalProps;
   const { editTransaction, loading } = useTransactionOperations();
@@ -15,10 +16,10 @@ const TransactionEditModal = () => {
     const result = await editTransaction(transaction, submitData);
 
     if (result.success) {
-      successToast(transaction ? 'Транзакция обновлена' : 'Транзакция добавлена');
+      success(transaction ? 'Транзакция обновлена' : 'Транзакция добавлена');
       closeModal();
     } else {
-      errorToast(result.error || 'Произошла ошибка');
+      error(result.error || 'Произошла ошибка');
     }
   };
 

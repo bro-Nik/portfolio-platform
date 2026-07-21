@@ -3,9 +3,10 @@ import { Popover, Checkbox, Space, Button } from 'antd';
 import { Tag } from 'lucide-react';
 import { useTagsQuery } from '../hooks/useTagsQuery';
 import { useTagMutations } from '../hooks/useTagMutations';
-import { errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 
 const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate }) => {
+  const { error } = useNotifications();
   const [open, setOpen] = useState(false);
   const { data: allTags = [] } = useTagsQuery();
   const { attachTag, detachTag } = useTagMutations();
@@ -35,7 +36,7 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate })
       onUpdate?.();
     } catch (error) {
       setSelectedIds(prev);
-      errorToast(error);
+      error(error?.message || 'Произошла ошибка');
     }
     setLoading(false);
   };

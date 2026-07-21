@@ -2,9 +2,10 @@ import React from 'react';
 import { Modal } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { useWalletOperations } from '../../hooks/useWalletOperations';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 
 const WalletDeleteModal = () => {
+  const { success, error } = useNotifications();
   const { modalProps, closeModal } = useModalStore();
   const { wallet } = modalProps;
   const { deleteWallet, loading } = useWalletOperations();
@@ -13,9 +14,9 @@ const WalletDeleteModal = () => {
     const result = await deleteWallet(wallet);
 
     if (result.success) {
-      successToast('Кошелек удален');
+      success('Кошелек удален');
     } else {
-      errorToast(result.error);
+      error(result.error);
     }
     closeModal();
   };

@@ -1,20 +1,21 @@
 import React from 'react';
 import { Modal, Form, Input, Button } from 'antd';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ChangePasswordModal = ({ open, onClose }) => {
+  const { success, error } = useNotifications();
   const [form] = Form.useForm();
   const { changePassword } = useAuthMutations();
 
   const handleSubmit = async (values) => {
     const result = await changePassword.mutateAsync(values);
     if (result.success) {
-      successToast('Пароль успешно изменён');
+      success('Пароль успешно изменён');
       form.resetFields();
       onClose();
     } else {
-      errorToast(result.error || 'Ошибка смены пароля');
+      error(result.error || 'Ошибка смены пароля');
     }
   };
 
@@ -25,7 +26,7 @@ const ChangePasswordModal = ({ open, onClose }) => {
       onCancel={onClose}
       footer={null}
       width={500}
-      destroyOnClose
+      destroyOnHidden
       centered
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ marginTop: 16 }}>

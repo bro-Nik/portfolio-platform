@@ -4,9 +4,10 @@ import { Search } from 'lucide-react';
 import { useModalStore } from '@portfolio/shared';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
 import { useTickersQuery } from 'src/modules/assets/hooks/useTickersQuery';
-import { successToast, errorToast } from 'src/utils/notifications';
+import { useNotifications } from '@portfolio/shared';
 
 const AssetAddModal = () => {
+  const { success, error } = useNotifications();
   const { modalProps, closeModal } = useModalStore();
   const { portfolio } = modalProps;
   const { addAsset } = usePortfolioOperations();
@@ -60,10 +61,10 @@ const AssetAddModal = () => {
     const result = await addAsset(portfolio, ticker);
 
     if (result.success) {
-      successToast('Актив успешно добавлен в портфель');
+      success('Актив успешно добавлен в портфель');
       closeModal();
     } else {
-      errorToast(result.error || 'Произошла ошибка при добавлении актива');
+      error(result.error || 'Произошла ошибка при добавлении актива');
     }
   };
 

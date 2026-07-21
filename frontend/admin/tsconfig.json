@@ -17,8 +17,8 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@portfolio/shared": ["../shared/src/index.ts"],
-      "@portfolio/shared/*": ["../shared/src/*"]
+      "@portfolio/shared": ["../shared/dist/index.js"],
+      "@portfolio/shared/*": ["../shared/dist/*"]
     }
   },
   "include": ["src"],

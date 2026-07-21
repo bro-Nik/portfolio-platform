@@ -1,19 +1,21 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '../api';
 import { CreateUserData, UpdateUserData } from '../../../types/user';
-import { errorNotification, successNotification } from '../../../utils';
+import { useNotifications } from '@portfolio/shared';
 
 export const useUserActions = () => {
   const queryClient = useQueryClient();
+  const { error, success } = useNotifications();
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['users'] });
 
+  // Общая логика для всех мутаций
   const mutationOptions = (successMsg: string, errorMsg: string) => ({
     onSuccess: () => {
-      successNotification(successMsg);
+      success(successMsg);
       invalidate();
     },
-    onError: (error: Error) => errorNotification(error, errorMsg),
+    onError: (err: Error) => error(err?.message || errorMsg),
   });
 
   const createMut = useMutation({
