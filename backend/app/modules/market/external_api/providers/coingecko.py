@@ -2,7 +2,7 @@ from decimal import Decimal
 import logging
 
 from ..core import BaseProvider, registry
-from ..methods import smart_price_updater, ticker_loader
+from ..methods import selective_price_updater, ticker_loader
 from ..url_chunker import chunk_ids_for_url
 
 logger = logging.getLogger(__name__)
@@ -22,9 +22,9 @@ class CoingeckoProvider(BaseProvider):
 
     MAX_URL_LENGTH = 2048
 
-    @registry.register_method(smart_price_updater)
-    async def smart_price_update(self, **kwargs) -> dict:
-        return await smart_price_updater.run('crypto', self.get_prices, **kwargs)
+    @registry.register_method(selective_price_updater)
+    async def selective_price_update(self, **kwargs) -> dict:
+        return await selective_price_updater.run('crypto', self.get_prices, **kwargs)
 
     @registry.register_method(ticker_loader)
     async def load_tickers(self, **kwargs) -> dict:

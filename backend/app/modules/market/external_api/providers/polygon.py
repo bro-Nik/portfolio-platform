@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 import logging
 
 from ..core import BaseProvider, registry
-from ..methods import bulk_price_updater, image_loader, ticker_loader
+from ..methods import full_price_updater, image_loader, ticker_loader
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +25,9 @@ class PolygonProvider(BaseProvider):
     async def load_tickers(self, **kwargs) -> dict:
         return await ticker_loader.run('stock', self._fetch_all_tickers, **kwargs)
 
-    @registry.register_method(bulk_price_updater)
+    @registry.register_method(full_price_updater)
     async def update_prices(self, **kwargs) -> dict:
-        return await bulk_price_updater.run('stock', self._fetch_all_prices)
+        return await full_price_updater.run('stock', self._fetch_all_prices)
 
     @registry.register_method(image_loader)
     async def load_images(self, **kwargs) -> dict:

@@ -22,7 +22,7 @@ class BasePriceUpdater(MethodBase):
             return updated
 
 
-class SmartPriceUpdater(BasePriceUpdater):
+class SelectivePriceUpdater(BasePriceUpdater):
     PARAMETERS_SCHEMA = [
         {
             'name': 'strategy',
@@ -88,7 +88,7 @@ class SmartPriceUpdater(BasePriceUpdater):
         return unique_ids[:limit] if limit else unique_ids
 
 
-class BulkPriceUpdater(BasePriceUpdater):
+class FullPriceUpdater(BasePriceUpdater):
     PARAMETERS_SCHEMA: list[dict] = []
 
     async def run(self, market: str, fetch_prices: Callable[[], Awaitable[dict]], **_) -> dict:
@@ -99,5 +99,5 @@ class BulkPriceUpdater(BasePriceUpdater):
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
 
-smart_price_updater = SmartPriceUpdater()
-bulk_price_updater = BulkPriceUpdater()
+selective_price_updater = SelectivePriceUpdater()
+full_price_updater = FullPriceUpdater()
