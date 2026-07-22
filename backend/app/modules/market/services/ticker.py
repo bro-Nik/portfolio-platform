@@ -12,6 +12,7 @@ from app.modules.market import models
 from app.modules.market.models import Ticker
 from app.modules.market.repositories import TickerRepository
 from app.modules.market.services.ticker_external_id import TickerExternalIdService
+from app.modules.market.services.ticker_identifier import TickerIdentifierService
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,8 @@ class TickerService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.repo = TickerRepository(session)
+        self._ext_id_service = TickerExternalIdService(session)
+        self._identifier_service = TickerIdentifierService(session)
 
     async def search(self, search: str | None = None, market: str | None = None, page: int = 1, page_size: int = 20) -> dict:
         query = select(models.Ticker)
@@ -69,8 +72,12 @@ class TickerService:
     async def get_tickers_without_images(self, market: str) -> list[Ticker]:
         return await self.repo.get_all_by_market_without_images(market)
 
-    async def sync_tickers(self, market: str, raw_data: list[dict], strategy: str = 'all', *, provider_name: str) -> dict:
-        ext_id_service = TickerExternalIdService(self.session)
+    async def sync_tickers(self, market: str, raw_data: list[dict], strategy: str = 'all', *,
+                           provider_name: str,
+                           extract_identifiers: Callable[[dict], dict[str, str]] | None = None) -> dict:
+        ext_id_service = self._ext_id_service
+        identifier_service = self._identifier_service
+
         ext_id_map = await ext_id_service.get_ext_to_ticker_map(provider_name)
         ticker_ids = list(ext_id_map.values())
         existing_tickers = await self.repo.get_all_by_ids(ticker_ids) if ticker_ids else []
@@ -80,6 +87,7 @@ class TickerService:
         created = 0
         updated = 0
         skipped = 0
+        matched = 0
 
         for coin in raw_data:
             ext_id = coin.get('id')
@@ -87,6 +95,21 @@ class TickerService:
                 continue
 
             ticker = existing_by_ext.get(ext_id)
+
+            if not ticker and extract_identifiers:
+                identifiers = extract_identifiers(coin)
+                if identifiers:
+                    matched_id = await identifier_service.find_matching_ticker(identifiers, market)
+                    if matched_id:
+                        ticker = ticker_map.get(matched_id)
+                        if not ticker:
+                            fetched = await self.repo.get_all_by_ids([matched_id])
+                            if fetched:
+                                ticker = fetched[0]
+                                ticker_map[ticker.id] = ticker
+                        if ticker:
+                            existing_by_ext[ext_id] = ticker
+                            matched += 1
 
             if ticker:
                 if strategy == 'all':
@@ -118,11 +141,15 @@ class TickerService:
                 created += 1
 
             await ext_id_service.upsert(ticker.id, provider_name, ext_id)
+            if extract_identifiers:
+                identifiers = extract_identifiers(coin)
+                if identifiers:
+                    await identifier_service.save_identifiers(ticker.id, identifiers)
 
         await self.session.flush()
-        logger.info('sync_tickers(%s, %s): created=%s, updated=%s, skipped=%s',
-                     market, strategy, created, updated, skipped)
-        return {'created': created, 'updated': updated, 'skipped': skipped}
+        logger.info('sync_tickers(%s, %s): created=%s, updated=%s, skipped=%s, matched=%s',
+                     market, strategy, created, updated, skipped, matched)
+        return {'created': created, 'updated': updated, 'skipped': skipped, 'matched': matched}
 
     def _update_ticker_fields(self, ticker: Ticker, coin: dict) -> None:
         ticker.name = coin.get('name', ticker.name)
@@ -152,14 +179,14 @@ class TickerService:
             logger.exception('Ошибка загрузки изображения %s: %s', symbol, image_url)
             return None
 
-    async def save_prices(self, market: str, price_data: dict) -> int:
+    async def save_prices(self, market: str, price_data: dict, *, provider_name: str | None = None) -> int:
         batch_size = 500
         updated_total = 0
         ticker_ids = list(price_data.keys())
         for i in range(0, len(ticker_ids), batch_size):
             batch_ids = ticker_ids[i:i + batch_size]
             batch_data = {id: price_data[id] for id in batch_ids}
-            updated_total += await self.repo.update_ticker_prices(batch_data)
+            updated_total += await self.repo.update_ticker_prices(batch_data, price_updated_by=provider_name)
         return updated_total
 
     async def load_images(self, market: str, fetch_images: Callable[[list[str]], Awaitable[dict[str, str]]], *, provider_name: str) -> int:
@@ -167,7 +194,7 @@ class TickerService:
         if not tickers:
             return 0
 
-        ext_id_service = TickerExternalIdService(self.session)
+        ext_id_service = self._ext_id_service
         ticker_ids = [t.id for t in tickers]
         ext_id_map = await ext_id_service.resolve_to_external(ticker_ids, provider_name)
         ext_ids = list(ext_id_map.values())

@@ -47,7 +47,22 @@ class ProviderRegistry:
             attr = getattr(provider, attr_name)
             method_info = getattr(attr, 'api_method_info', None)
             if method_info:
-                methods.append({'name': attr_name, 'method': attr_name, **method_info})
+                info = {'name': attr_name, 'method': attr_name, **method_info}
+                markets = getattr(provider, 'SUPPORTED_MARKETS', [])
+                if len(markets) > 1:
+                    schema = list(info.get('parameters_schema', []))
+                    schema.insert(0, {
+                        'name': 'market',
+                        'label': 'Рынок',
+                        'type': 'select',
+                        'options': {m: m for m in markets},
+                        'required': True,
+                    })
+                    info['parameters_schema'] = schema
+                    example = dict(info.get('example_params', {}))
+                    example.setdefault('market', markets[0])
+                    info['example_params'] = example
+                methods.append(info)
         return methods
 
 

@@ -15,9 +15,9 @@ class BasePriceUpdater(MethodBase):
     NAME = 'Обновление цен'
     DESCRIPTION = 'Обновление цен тикеров'
 
-    async def _save_prices(self, market: str, prices: dict, session) -> int:
+    async def _save_prices(self, market: str, prices: dict, session, provider_name: str) -> int:
         ticker_service = TickerService(session)
-        return await ticker_service.save_prices(market, prices)
+        return await ticker_service.save_prices(market, prices, provider_name=provider_name)
 
 
 class SelectivePriceUpdater(BasePriceUpdater):
@@ -67,7 +67,7 @@ class SelectivePriceUpdater(BasePriceUpdater):
         prices = await get_prices(ext_ids)
         prices = await ext_id_service.resolve_to_internal(provider_name, prices)
 
-        updated_count = await self._save_prices(market, prices, session=session)
+        updated_count = await self._save_prices(market, prices, session=session, provider_name=provider_name)
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
     async def _fetch_ticker_ids(self, market: str, strategy: str, limit: int | None, session) -> list[int]:
@@ -122,7 +122,7 @@ class FullPriceUpdater(BasePriceUpdater):
             return {'status': 'error', 'message': 'Нет данных от провайдера'}
         ext_id_service = TickerExternalIdService(session)
         prices = await ext_id_service.resolve_to_internal(provider_name, prices)
-        updated_count = await self._save_prices(market, prices, session=session)
+        updated_count = await self._save_prices(market, prices, session=session, provider_name=provider_name)
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
 

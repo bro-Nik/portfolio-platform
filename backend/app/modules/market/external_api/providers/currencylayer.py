@@ -26,13 +26,17 @@ class CurrencyLayerProvider(BaseProvider):
     REQUESTS_PER_MONTH = 10000
     TIMEOUT = 30
 
+    SUPPORTED_MARKETS = ['currency']
+
     @registry.register_method(ticker_loader)
     async def load_tickers(self, **kwargs) -> dict:
-        return await ticker_loader.run('currency', self._fetch_all_tickers, **kwargs)
+        market = self._resolve_market(kwargs)
+        return await ticker_loader.run(market, self._fetch_all_tickers, **kwargs)
 
     @registry.register_method(full_price_updater)
     async def update_prices(self, **kwargs) -> dict:
-        return await full_price_updater.run('currency', self._fetch_live_rates, **kwargs)
+        market = self._resolve_market(kwargs)
+        return await full_price_updater.run(market, self._fetch_live_rates, **kwargs)
 
     def _augment_params(self, params: dict | None = None) -> dict:
         p = dict(params or {})

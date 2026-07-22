@@ -3,6 +3,7 @@ from .request_log import RequestLogRepository
 from .task import TaskRepository
 from .ticker import TickerRepository
 from .ticker_external_id import TickerExternalIdRepository
+from .ticker_identifier import TickerIdentifierRepository
 
 __all__ = [
     'ProviderRepository',
@@ -10,4 +11,5 @@ __all__ = [
     'TaskRepository',
     'TickerRepository',
     'TickerExternalIdRepository',
+    'TickerIdentifierRepository',
 ]

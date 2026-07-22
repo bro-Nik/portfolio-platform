@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 from ..exceptions import ExternalAPIError
 
 if TYPE_CHECKING:
+    from redis.asyncio import Redis
+
     from .http_client import HTTPClient
 
 logger = logging.getLogger(__name__)
@@ -18,11 +20,18 @@ class BaseProvider:
     REQUESTS_PER_DAY = 1000
     REQUESTS_PER_MONTH = 10000
     TIMEOUT = 30
+    SUPPORTED_MARKETS: list[str] = []
     API_KEY_REQUIRED = False
 
-    def __init__(self, http: 'HTTPClient', api_key: str | None = None) -> None:
+    def __init__(self, http: 'HTTPClient', api_key: str | None = None, redis: 'Redis | None' = None) -> None:
         self.http = http
         self._api_key = api_key
+        self._redis = redis
+
+    def _resolve_market(self, kwargs: dict) -> str:
+        if len(self.SUPPORTED_MARKETS) == 1:
+            return self.SUPPORTED_MARKETS[0]
+        return kwargs.pop('market')
 
     @classmethod
     def validate_config(cls, api_key: str | None) -> list[str]:

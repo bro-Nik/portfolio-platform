@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 class ProviderBase(BaseModel):
     api_key: str | None = None
+    supported_markets: list[str] | None = None
     requests_per_minute: int | None = None
     requests_per_hour: int | None = None
     requests_per_day: int | None = None

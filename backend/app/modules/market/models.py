@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -17,6 +17,21 @@ class TickerExternalId(Base):
     ticker: Mapped['Ticker'] = relationship(back_populates='external_ids')
 
 
+class TickerIdentifier(Base):
+    __tablename__ = 'ticker_identifier'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ticker_id: Mapped[int] = mapped_column(Integer, ForeignKey('ticker.id', ondelete='CASCADE'), nullable=False, index=True)
+    system: Mapped[str] = mapped_column(String(64), nullable=False)
+    value: Mapped[str] = mapped_column(String(512), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('system', 'value', name='uq_ticker_identifier_system_value'),
+    )
+
+    ticker: Mapped['Ticker'] = relationship(back_populates='identifiers')
+
+
 class Ticker(Base):
     __tablename__ = 'ticker'
 
@@ -26,11 +41,13 @@ class Ticker(Base):
     image: Mapped[str | None] = mapped_column(String(1024))
     market_cap_rank: Mapped[int | None] = mapped_column(Integer, nullable=True)
     price: Mapped[float] = mapped_column(Float, default=0.0)
+    price_updated_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
     market: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC))
 
     external_ids: Mapped[list[TickerExternalId]] = relationship(back_populates='ticker', cascade='all, delete-orphan')
+    identifiers: Mapped[list[TickerIdentifier]] = relationship(back_populates='ticker', cascade='all, delete-orphan')
 
 
 class Provider(Base):
@@ -40,6 +57,7 @@ class Provider(Base):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     api_key: Mapped[str | None] = mapped_column(String(500))
+    supported_markets: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
 
     requests_per_minute: Mapped[int | None] = mapped_column(Integer)
     requests_per_hour: Mapped[int | None] = mapped_column(Integer)

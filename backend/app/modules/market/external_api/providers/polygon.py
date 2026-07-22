@@ -31,17 +31,22 @@ class PolygonProvider(BaseProvider):
 
     MAX_ATTEMPTS = 5
 
+    SUPPORTED_MARKETS = ['stocks']
+
     @registry.register_method(ticker_loader)
     async def load_tickers(self, **kwargs) -> dict:
-        return await ticker_loader.run('stocks', self._fetch_all_tickers, **kwargs)
+        market = self._resolve_market(kwargs)
+        return await ticker_loader.run(market, self._fetch_all_tickers, **kwargs)
 
     @registry.register_method(full_price_updater)
     async def update_prices(self, **kwargs) -> dict:
-        return await full_price_updater.run('stocks', self._fetch_all_prices, **kwargs)
+        market = self._resolve_market(kwargs)
+        return await full_price_updater.run(market, self._fetch_all_prices, **kwargs)
 
     @registry.register_method(image_loader)
     async def load_images(self, **kwargs) -> dict:
-        return await image_loader.run('stocks', self._fetch_ticker_images, **kwargs)
+        market = self._resolve_market(kwargs)
+        return await image_loader.run(market, self._fetch_ticker_images, **kwargs)
 
     def _augment_params(self, params: dict | None = None) -> dict:
         p = dict(params or {})

@@ -89,7 +89,7 @@ class TaskProvider(Provider):
             limiter = RateLimiter(redis=redis, config=limiter_config)
             logger = RequestLogger(provider_name, task_id, session_factory=session_factory)
             http = HTTPClient(provider_class.BASE_URL, limiter=limiter, logger=logger)
-            return provider_class(http, api_key=config.api_key)
+            return provider_class(http, api_key=config.api_key, redis=redis)
         return factory
 
 

@@ -55,6 +55,7 @@ class ProviderService:
                 'name': name,
                 'description': cls.DESCRIPTION,
                 'has_config': db is not None,
+                'supported_markets': db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
                 'api_key_required': cls.API_KEY_REQUIRED,
                 'api_key': db.api_key if db else None,
                 'requests_per_minute': db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
@@ -183,6 +184,7 @@ class ProviderService:
             db = db_map.get(name)
             result.append({
                 'name': name,
+                'supported_markets': db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
                 'api_key': db.api_key if db else None,
                 'api_key_required': cls.API_KEY_REQUIRED,
                 'requests_per_minute': db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,

@@ -18,17 +18,20 @@ class TickerRepository(BaseRepository[Ticker]):
     async def get_all_by_market_without_images(self, market: str) -> list[Ticker]:
         return await self.get_all(self.model.market == market, self.model.image.is_(None))
 
-    async def update_ticker_prices(self, data: dict[int, object]) -> int:
+    async def update_ticker_prices(self, data: dict[int, object], price_updated_by: str | None = None) -> int:
         if not data:
             return 0
         now = datetime.now(UTC)
         ids = list(data.keys())
         value_mappings = [(self.model.id == id, value) for id, value in data.items()]
         case_expr = case(*value_mappings, else_=self.model.price)
+        vals = {'price': case_expr, 'updated_at': now}
+        if price_updated_by:
+            vals['price_updated_by'] = price_updated_by
         stmt = (
             update(self.model)
             .where(self.model.id.in_(ids))
-            .values(price=case_expr, updated_at=now)
+            .values(**vals)
             .execution_options(synchronize_session=False)
         )
         result = await self._session.execute(stmt)
