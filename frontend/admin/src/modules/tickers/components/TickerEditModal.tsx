@@ -31,6 +31,7 @@ export const TickerEditModal: React.FC<TickerEditModalProps> = ({ ticker }) => {
       open
       onOk={handleOk}
       onCancel={closeModal}
+      destroyOnHidden
       confirmLoading={isUpdating}
     >
       <Form form={form} layout="vertical">

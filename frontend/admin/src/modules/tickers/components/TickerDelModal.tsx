@@ -21,7 +21,6 @@ export const TickerDelModal: React.FC<TickerDelModalProps> = ({ ticker }) => {
       open
       onOk={handleConfirm}
       onCancel={closeModal}
-      centered
       confirmLoading={isDeleting}
       okText="Удалить"
       okButtonProps={{ danger: true }}

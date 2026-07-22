@@ -25,7 +25,6 @@ export const TaskDelModal: React.FC<TaskDelModalProps> = ({ task }) => {
       okText="Удалить"
       cancelText="Отмена"
       okType="danger"
-      centered
       confirmLoading={isDeleting}
     >
       <p>Вы уверены, что хотите удалить <strong>{task.name}</strong>?</p>

@@ -42,6 +42,7 @@ export const ProviderFormModal: React.FC = () => {
       title={editMode ? `Редактировать ${provider?.name}` : `Настроить ${provider?.name || 'провайдера'}`}
       open={true}
       onCancel={closeModal}
+      destroyOnHidden
       footer={null}
       width={700}
     >

@@ -85,6 +85,7 @@ export const TaskFormModal: React.FC = () => {
       title={editMode ? 'Редактирование задачи' : 'Создание новой задачи'}
       open={true}
       onCancel={handleCancel}
+      destroyOnHidden
       footer={null}
       width={600}
     >

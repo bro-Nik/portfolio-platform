@@ -26,7 +26,6 @@ export const ProviderDelModal: React.FC = () => {
       okText="Сбросить"
       cancelText="Отмена"
       okType="danger"
-      centered
       confirmLoading={isDeleting}
     >
       {(

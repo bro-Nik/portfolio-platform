@@ -47,6 +47,7 @@ const ThemedApp = () => {
   return (
     <ConfigProvider
       theme={currentTheme === 'dark' ? darkTheme : lightThemeConfig}
+      modal={{ centered: true }}
     >
       <App />
     </ConfigProvider>

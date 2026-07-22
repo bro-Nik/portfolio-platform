@@ -25,7 +25,6 @@ export const UserDelModal: React.FC<UserDelModalProps> = ({ user }) => {
       okText="Удалить"
       cancelText="Отмена"
       okType="danger"
-      centered
       confirmLoading={isDeleting}
     >
       <p>Вы уверены, что хотите удалить <strong>{user.email}</strong>?</p>

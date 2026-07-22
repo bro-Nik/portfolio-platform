@@ -51,6 +51,7 @@ export const UserFormModal: React.FC = () => {
       title={editMode ? 'Редактировать пользователя' : 'Создать пользователя'}
       open={true}
       onCancel={handleCancel}
+      destroyOnHidden
       footer={null}
       width={600}
     >

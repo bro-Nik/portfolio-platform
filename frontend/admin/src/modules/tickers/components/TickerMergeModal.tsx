@@ -20,6 +20,7 @@ export const TickerMergeModal: React.FC = () => {
       open
       onOk={handleOk}
       onCancel={closeModal}
+      destroyOnHidden
       confirmLoading={isMerging}
       okText="Объединить"
     >
