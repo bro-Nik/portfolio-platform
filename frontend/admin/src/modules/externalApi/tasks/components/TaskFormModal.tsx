@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Modal, Form, Input, Switch, Select, Space, Button } from 'antd';
 import { schedulePresets } from '../constants';
-import { formatDescription } from '../utils';
+
 import { useModalStore } from '@portfolio/shared';
 import { useTaskActions } from '../hooks/useTaskActions';
 import { Task, TaskFormData } from '../../../../types/task';
@@ -50,7 +50,6 @@ export const TaskFormModal: React.FC = () => {
   const availableTaskTypes = selectedProvider?.methods?.map(m => ({
     value: m.method,
     label: m.name,
-    description: m.description,
     exampleParams: m.exampleParams,
     parametersSchema: m.parametersSchema,
   })) || [];
@@ -159,20 +158,6 @@ export const TaskFormModal: React.FC = () => {
             ))}
           </Select>
         </Form.Item>
-
-        {selectedMethod?.description && (
-          <div style={{
-            marginBottom: 16,
-            padding: '8px 12px',
-            background: '#f0f5ff',
-            borderRadius: '6px',
-            borderLeft: '3px solid #1890ff',
-          }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-admin-method)' }}>
-              {formatDescription(selectedMethod.description)}
-            </div>
-          </div>
-        )}
 
         <Form.Item
           label="Расписание"

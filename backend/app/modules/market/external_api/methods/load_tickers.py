@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 class TickerLoader(MethodBase):
     NAME = 'Загрузка тикеров'
-    DESCRIPTION = 'Загрузка и обновление списка доступных тикеров из API'
     EXEMPLE_PARAMS = {'strategy': 'all'}
     PARAMETERS_SCHEMA = [
         {

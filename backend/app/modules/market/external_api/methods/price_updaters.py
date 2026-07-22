@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 class BasePriceUpdater(MethodBase):
     NAME = 'Обновление цен'
-    DESCRIPTION = 'Обновление цен тикеров'
 
     async def _save_prices(self, market: str, prices: dict, session, provider_name: str) -> int:
         ticker_service = TickerService(session)

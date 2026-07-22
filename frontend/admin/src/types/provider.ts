@@ -77,7 +77,6 @@ export interface ParameterSchemaField {
 export interface ProviderMethod {
   method: string;
   name: string;
-  description?: string;
   exampleParams?: Record<string, any>;
   parametersSchema?: ParameterSchemaField[];
 }

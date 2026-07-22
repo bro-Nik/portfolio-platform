@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 class ImageLoader(MethodBase):
     NAME = 'Загрузка изображений'
-    DESCRIPTION = 'Загрузка иконок/логотипов тикеров через API провайдера'
     EXEMPLE_PARAMS = {}
     PARAMETERS_SCHEMA: list[dict] = []
 

@@ -24,7 +24,6 @@ class ProviderRegistry:
         def decorator(func: Callable) -> Callable:
             func.__dict__['api_method_info'] = {
                 'name': method.name,
-                'description': method.description,
                 'example_params': method.exemple_params,
                 'parameters_schema': method.parameters_schema,
                 **kwargs,
