@@ -18,10 +18,15 @@ class BaseProvider:
     REQUESTS_PER_DAY = 1000
     REQUESTS_PER_MONTH = 10000
     TIMEOUT = 30
+    API_KEY_REQUIRED = False
 
     def __init__(self, http: 'HTTPClient', api_key: str | None = None) -> None:
         self.http = http
         self._api_key = api_key
+
+    @classmethod
+    def validate_config(cls, api_key: str | None) -> list[str]:
+        return []
 
     @property
     def name(self) -> str:

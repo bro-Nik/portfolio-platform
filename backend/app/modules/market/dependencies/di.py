@@ -57,8 +57,8 @@ class AppProvider(Provider):
         return RequestLogRepository(session)
 
     @provide(scope=Scope.REQUEST)
-    def get_task_service(self, session: AsyncSession, task_repo: TaskRepository) -> TaskService:
-        return TaskService(session=session, task_repo=task_repo)
+    def get_task_service(self, session: AsyncSession, task_repo: TaskRepository, provider_repo: ProviderRepository) -> TaskService:
+        return TaskService(session=session, task_repo=task_repo, provider_repo=provider_repo)
 
     @provide(scope=Scope.REQUEST)
     def get_ticker_service(self, session: AsyncSession) -> TickerService:

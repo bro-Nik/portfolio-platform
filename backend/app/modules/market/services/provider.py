@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.exceptions import ConflictError, NotFoundError
+from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError
 
 from app.modules.market.models import Provider, RequestLog
 from app.modules.market.repositories import ProviderRepository, RequestLogRepository
@@ -55,6 +55,7 @@ class ProviderService:
                 'name': name,
                 'description': cls.DESCRIPTION,
                 'has_config': db is not None,
+                'api_key_required': cls.API_KEY_REQUIRED,
                 'api_key': db.api_key if db else None,
                 'requests_per_minute': db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
                 'requests_per_hour': db.requests_per_hour if db and db.requests_per_hour is not None else cls.REQUESTS_PER_HOUR,
@@ -62,7 +63,7 @@ class ProviderService:
                 'requests_per_month': db.requests_per_month if db and db.requests_per_month is not None else cls.REQUESTS_PER_MONTH,
                 'retry_delay': db.retry_delay if db else cls.RETRY_DELAY if hasattr(cls, 'RETRY_DELAY') else 60,
                 'timeout': db.timeout if db else cls.TIMEOUT,
-                'is_active': db.is_active if db else True,
+                'is_active': db.is_active if db else False,
                 'minute_counter': counters.get('minute', 0),
                 'hour_counter': counters.get('hour', 0),
                 'day_counter': counters.get('day', 0),
@@ -95,9 +96,20 @@ class ProviderService:
             raise NotFoundError(f'API провайдер {name} не найден')
         return provider
 
+    async def _validate_can_be_active(self, name: str, api_key: str | None) -> None:
+        from app.modules.market.external_api.core import registry
+        cls = registry.PROVIDERS.get(name)
+        if not cls:
+            raise NotFoundError(f'API провайдер {name} не зарегистрирован')
+        issues = cls.validate_config(api_key)
+        if issues:
+            raise BusinessRuleError(f'Провайдер "{name}" не может быть активирован: {"; ".join(issues)}')
+
     async def create(self, data: ProviderCreateRequest) -> Provider:
         if await self.repo.exists_by_name(data.name):
             raise ConflictError(f'Провайдер с именем "{data.name}" уже существует')
+        if data.is_active:
+            await self._validate_can_be_active(data.name, data.api_key)
         provider = await self.repo.create(ProviderCreate(**data.model_dump()).model_dump())
         await self.session.flush()
         return provider
@@ -106,6 +118,8 @@ class ProviderService:
         provider = await self.get_db_record(name)
         if data.api_key == '***':
             data.api_key = provider.api_key
+        if data.is_active:
+            await self._validate_can_be_active(name, data.api_key)
         return await self.repo.update(provider.id, ProviderUpdate(**data.model_dump()).model_dump())
 
     async def delete(self, name: str) -> None:
@@ -166,15 +180,24 @@ class ProviderService:
 
     async def get_all_with_methods(self) -> list[dict]:
         from app.modules.market.external_api.core import registry
-        return [{
-            'name': name,
-            'requests_per_minute': cls.REQUESTS_PER_MINUTE,
-            'requests_per_hour': cls.REQUESTS_PER_HOUR,
-            'requests_per_day': cls.REQUESTS_PER_DAY,
-            'requests_per_month': cls.REQUESTS_PER_MONTH,
-            'timeout': cls.TIMEOUT,
-            'methods': registry.get_provider_methods(name),
-        } for name, cls in registry.PROVIDERS.items()]
+        db_providers = await self.repo.get_all()
+        db_map = {p.name: p for p in db_providers}
+        result = []
+        for name, cls in registry.PROVIDERS.items():
+            db = db_map.get(name)
+            result.append({
+                'name': name,
+                'api_key': db.api_key if db else None,
+                'api_key_required': cls.API_KEY_REQUIRED,
+                'requests_per_minute': db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
+                'requests_per_hour': db.requests_per_hour if db and db.requests_per_hour is not None else cls.REQUESTS_PER_HOUR,
+                'requests_per_day': db.requests_per_day if db and db.requests_per_day is not None else cls.REQUESTS_PER_DAY,
+                'requests_per_month': db.requests_per_month if db and db.requests_per_month is not None else cls.REQUESTS_PER_MONTH,
+                'timeout': db.timeout if db else cls.TIMEOUT,
+                'is_active': db.is_active if db else False,
+                'methods': registry.get_provider_methods(name),
+            })
+        return result
 
     async def get_current_counter(self, name: str, period: str) -> int:
         key = f'counter:{name}:{period}'

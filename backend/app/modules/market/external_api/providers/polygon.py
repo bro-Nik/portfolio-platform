@@ -12,6 +12,14 @@ class PolygonProvider(BaseProvider):
     NAME = 'Polygon'
     DESCRIPTION = 'Акции США'
     BASE_URL = 'https://api.polygon.io/'
+    API_KEY_REQUIRED = True
+
+    @classmethod
+    def validate_config(cls, api_key: str | None) -> list[str]:
+        issues = []
+        if not api_key:
+            issues.append('Требуется API ключ')
+        return issues
 
     REQUESTS_PER_MINUTE = 5
     REQUESTS_PER_HOUR = 60

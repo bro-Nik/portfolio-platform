@@ -9,6 +9,7 @@ export interface Provider {
   name: string;
   description?: string;
   hasConfig?: boolean;
+  apiKeyRequired?: boolean;
   apiKey?: string;
   requestsPerMinute?: number;
   requestsPerHour?: number;

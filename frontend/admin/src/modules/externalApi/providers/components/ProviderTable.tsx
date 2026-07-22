@@ -1,5 +1,5 @@
-import { Table, Space, Tag, Dropdown, Button, Progress } from 'antd';
-import { ApiOutlined, EditOutlined, DeleteOutlined, MoreOutlined, ReloadOutlined, EyeOutlined, SettingOutlined } from '@ant-design/icons';
+import { Table, Space, Tag, Tooltip, Dropdown, Button, Progress } from 'antd';
+import { ApiOutlined, EditOutlined, DeleteOutlined, MoreOutlined, ReloadOutlined, EyeOutlined, SettingOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { getStatusTag, getUtilizationColor } from '../utils';
@@ -37,8 +37,19 @@ export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) =
       title: 'Статус',
       dataIndex: 'isActive',
       key: 'isActive',
-      width: 120,
-      render: (isActive: boolean) => getStatusTag(isActive)
+      width: 140,
+      render: (isActive: boolean, record: Provider) => {
+        const tag = getStatusTag(isActive);
+        if (isActive) return tag;
+        const reason = !record.hasConfig
+          ? 'Провайдер не настроен. Откройте настройки и заполните конфигурацию.'
+          : 'Провайдер отключен вручную.';
+        return (
+          <Tooltip title={<span><InfoCircleOutlined style={{ marginRight: 4 }} />{reason}</span>}>
+            {tag}
+          </Tooltip>
+        );
+      }
     },
     {
       title: 'Лимиты',

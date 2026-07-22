@@ -6,7 +6,7 @@ from taskiq import ScheduledTask, ScheduleSource
 
 from app.core.database import AsyncSessionLocal
 from app.modules.market.models import Task
-from app.modules.market.repositories import TaskRepository
+from app.modules.market.repositories import ProviderRepository, TaskRepository
 
 logger = logging.getLogger(__name__)
 
@@ -16,12 +16,18 @@ class DBScheduleSource(ScheduleSource):
         logger.info('Проверка БД на наличие запланированных задач...')
         async with AsyncSessionLocal() as session:
             tasks = await TaskRepository(session).get_all_active()
+            provider_repo = ProviderRepository(session)
+            active_providers = {p.name for p in await provider_repo.get_all_active()}
         logger.info('Обнаружено %s активных задач в БД', len(tasks))
 
         now = datetime.now(UTC)
         schedules = []
         overdue_count = 0
+        skipped_count = 0
         for task in tasks:
+            if task.provider_name not in active_providers:
+                skipped_count += 1
+                continue
             is_overdue = (
                 task.next_run is not None
                 and task.next_run <= now
@@ -31,6 +37,9 @@ class DBScheduleSource(ScheduleSource):
             st = self._create_scheduled_task(task, force_run=is_overdue)
             if st:
                 schedules.append(st)
+
+        if skipped_count:
+            logger.warning('Пропущено %s задач с неактивными провайдерами', skipped_count)
 
         if overdue_count:
             logger.warning('Обнаружено %s просроченных задач — запуск немедленно', overdue_count)

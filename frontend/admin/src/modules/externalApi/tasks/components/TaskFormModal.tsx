@@ -27,6 +27,12 @@ export const TaskFormModal: React.FC = () => {
 
   const { data: providers = [], isLoading: providersLoading, error: providersError } = useProvidersWithMethods();
 
+  const activeProviders = providers.filter(p => p.isActive);
+  const currentProviderInactive = editMode && task?.providerName && !activeProviders.find(p => p.name === task.providerName);
+  const selectableProviders = currentProviderInactive
+    ? providers.filter(p => p.isActive || p.name === task?.providerName)
+    : activeProviders;
+
   const getInitialValues = () => {
     if (!task) return DEFAULT_VALUES;
     return {
@@ -109,14 +115,31 @@ export const TaskFormModal: React.FC = () => {
             disabled={!!providersError}
             showSearch
             optionFilterProp="children"
+            notFoundContent={
+              providersLoading ? 'Загрузка...' : 'Нет активных провайдеров. Сначала настройте провайдера.'
+            }
           >
-            {providers.map(provider => (
+            {selectableProviders.map(provider => (
               <Option key={provider.name} value={provider.name}>
                 {provider.name}
               </Option>
             ))}
           </Select>
         </Form.Item>
+
+        {currentProviderInactive && (
+          <div style={{
+            marginBottom: 16,
+            padding: '8px 12px',
+            background: '#fff7e6',
+            borderRadius: '6px',
+            borderLeft: '3px solid #faad14',
+            fontSize: '13px',
+            color: '#ad6800',
+          }}>
+            Текущий провайдер &laquo;{task?.providerName}&raquo; неактивен. Задача продолжит работу, но для новых задач выберите другого провайдера.
+          </div>
+        )}
 
         <Form.Item
           label="Тип задачи"
