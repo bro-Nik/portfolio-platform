@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.market import models
 from app.modules.market.models import Ticker
 from app.modules.market.repositories import TickerRepository
+from app.modules.market.services.ticker_external_id import TickerExternalIdService
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +70,6 @@ class TickerService:
         return await self.repo.get_all_by_market_without_images(market)
 
     async def sync_tickers(self, market: str, raw_data: list[dict], strategy: str = 'all', *, provider_name: str) -> dict:
-        from app.modules.market.services.ticker_external_id import TickerExternalIdService
-
         ext_id_service = TickerExternalIdService(self.session)
         ext_id_map = await ext_id_service.get_ext_to_ticker_map(provider_name)
         ticker_ids = list(ext_id_map.values())
@@ -164,8 +163,6 @@ class TickerService:
         return updated_total
 
     async def load_images(self, market: str, fetch_images: Callable[[list[str]], Awaitable[dict[str, str]]], *, provider_name: str) -> int:
-        from app.modules.market.services.ticker_external_id import TickerExternalIdService
-
         tickers = await self.get_tickers_without_images(market)
         if not tickers:
             return 0

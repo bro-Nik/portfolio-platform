@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError
 
+from app.modules.market.external_api.core import registry
 from app.modules.market.models import Provider, RequestLog
 from app.modules.market.repositories import ProviderRepository, RequestLogRepository
 from app.modules.market.schemas import (
@@ -37,7 +38,6 @@ class ProviderService:
         self.log_repo = log_repo
 
     async def get_all_with_details(self) -> list[dict]:
-        from app.modules.market.external_api.core import registry
         db_providers = await self.repo.get_all()
         db_map = {p.name: p for p in db_providers}
         counters_map = await self._get_counters_for_providers(
@@ -73,7 +73,6 @@ class ProviderService:
         return result
 
     async def get_config_by_name(self, name: str) -> ProviderConfig:
-        from app.modules.market.external_api.core import registry
         cls = registry.PROVIDERS.get(name)
         if not cls:
             raise NotFoundError(f'API провайдер {name} не зарегистрирован')
@@ -97,7 +96,6 @@ class ProviderService:
         return provider
 
     async def _validate_can_be_active(self, name: str, api_key: str | None) -> None:
-        from app.modules.market.external_api.core import registry
         cls = registry.PROVIDERS.get(name)
         if not cls:
             raise NotFoundError(f'API провайдер {name} не зарегистрирован')
@@ -172,14 +170,12 @@ class ProviderService:
         return await self.log_repo.get_all_by_provider(name, last_time)
 
     async def get_all_with_settings(self) -> list[dict]:
-        from app.modules.market.external_api.core import registry
         return [{'name': name, 'description': cls.DESCRIPTION, 'limits': {
             'per_minute': cls.REQUESTS_PER_MINUTE, 'per_hour': cls.REQUESTS_PER_HOUR,
             'per_day': cls.REQUESTS_PER_DAY, 'per_month': cls.REQUESTS_PER_MONTH,
         }} for name, cls in registry.PROVIDERS.items()]
 
     async def get_all_with_methods(self) -> list[dict]:
-        from app.modules.market.external_api.core import registry
         db_providers = await self.repo.get_all()
         db_map = {p.name: p for p in db_providers}
         result = []

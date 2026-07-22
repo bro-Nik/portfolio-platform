@@ -1,6 +1,8 @@
 from collections.abc import Callable
 import logging
 
+from app.modules.market.services.ticker import TickerService
+
 from .base import MethodBase
 
 logger = logging.getLogger(__name__)
@@ -36,14 +38,12 @@ class TickerLoader(MethodBase):
         return await getattr(self, method_name)(market, raw_tickers, provider_name=provider_name, session=session)
 
     async def _sync_all(self, market: str, raw_tickers: list[dict], provider_name: str, session) -> dict:
-        from app.modules.market.services.ticker import TickerService
         ticker_service = TickerService(session)
         result = await ticker_service.sync_tickers(market, raw_tickers, strategy='all', provider_name=provider_name)
         await session.flush()
         return result
 
     async def _sync_new(self, market: str, raw_tickers: list[dict], provider_name: str, session) -> dict:
-        from app.modules.market.services.ticker import TickerService
         ticker_service = TickerService(session)
         result = await ticker_service.sync_tickers(market, raw_tickers, strategy='new', provider_name=provider_name)
         await session.flush()

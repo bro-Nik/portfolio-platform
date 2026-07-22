@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError
 
+from app.modules.market.external_api.core import registry
 from app.modules.market.models import Task
 from app.modules.market.repositories import ProviderRepository, TaskRepository
 from app.modules.market.schemas import (
@@ -25,7 +26,6 @@ class TaskService:
         return task
 
     async def _validate_provider_active(self, provider_name: str) -> None:
-        from app.modules.market.external_api.core import registry
         if provider_name not in registry.PROVIDERS:
             raise NotFoundError(f'API провайдер "{provider_name}" не зарегистрирован')
         provider = await self.provider_repo.get_by_name(provider_name)
