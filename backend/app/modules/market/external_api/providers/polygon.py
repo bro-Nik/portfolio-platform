@@ -1,6 +1,8 @@
 from datetime import UTC, datetime, timedelta
 import logging
 
+import httpx
+
 from ..core import BaseProvider, registry
 from ..methods import full_price_updater, image_loader, ticker_loader
 
@@ -55,7 +57,8 @@ class PolygonProvider(BaseProvider):
             params = self._augment_params({'market': 'stocks', 'limit': 1000, 'active': 'true'})
             try:
                 if next_url:
-                    data = await self.http.request('GET', next_url)
+                    url = httpx.URL(next_url).copy_with(params={'apiKey': self._api_key})
+                    data = await self.http.request('GET', str(url))
                 else:
                     data = await self.http.request('GET', 'v3/reference/tickers', params=params)
             except Exception:
