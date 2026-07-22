@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Modal, Input, List, Avatar, Spin, Empty, Tooltip } from 'antd';
+import { Modal, Input, Avatar, Spin, Empty, Tooltip } from 'antd';
 import { Search } from 'lucide-react';
 import { useModalStore } from '@portfolio/shared';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
@@ -76,7 +76,7 @@ const AssetAddModal = () => {
     const isDisabled = existingTickerIds.has(ticker.id);
 
     return (
-    <List.Item
+    <div
       key={ticker.id}
       style={{ 
         padding: 0,
@@ -181,7 +181,7 @@ const AssetAddModal = () => {
         </div>
       </div>
       </Tooltip>
-    </List.Item>
+    </div>
     );
   };
 
@@ -193,8 +193,7 @@ const AssetAddModal = () => {
       footer={null}
       width={600}
       style={{ top: 20 }}
-      destroyOnClose
-      centered
+      destroyOnHidden
     >
       <div style={{ marginBottom: 16, position: 'relative' }}>
         <Input
@@ -213,13 +212,10 @@ const AssetAddModal = () => {
         onScroll={handleScroll}
         style={{ height: 400, overflow: 'auto' }}
       >
-        <List
-          dataSource={tickers}
-          renderItem={renderTickerItem}
-          locale={{
-            emptyText: isFetching ? <Spin size="large" /> : <Empty description="Активы не найдены" />
-          }}
-        />
+        {tickers.length > 0
+          ? tickers.map(renderTickerItem)
+          : (isFetching ? <Spin size="large" /> : <Empty description="Активы не найдены" />)
+        }
         
         {isFetchingNextPage && tickers.length > 0 && (
           <div style={{ textAlign: 'center', padding: '12px' }}>

@@ -1,4 +1,4 @@
-import { Form, Button, InputNumber } from 'antd';
+import { Form, Button, InputNumber, Space } from 'antd';
 
 const exists = (value) => value !== undefined && value !== null && value !== false;
 
@@ -52,17 +52,16 @@ const FormSumInput = ({ showFree, walletFree, ticker, onChange, disabled }) => {
       name="quantity2"
       rules={rules}
     >
-      <InputNumber
-        addonBefore={ticker || '—'}
-        placeholder="0.00"
-        // step="0.01"
-        // min="0.01"
-        max={freeAmount}
-        // precision={2}
-        style={{ width: '100%' }}
-        disabled={disabled}
-        onChange={onChange}
-      />
+      <Space.Compact style={{ width: '100%' }}>
+        <Button style={{ pointerEvents: 'none' }}>{ticker || '—'}</Button>
+        <InputNumber
+          placeholder="0.00"
+          max={freeAmount}
+          style={{ width: '100%' }}
+          disabled={disabled}
+          onChange={onChange}
+        />
+      </Space.Compact>
     </Form.Item>
   );
 };

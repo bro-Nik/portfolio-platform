@@ -70,17 +70,12 @@ export const TasksModule: React.FC = () => {
             <Button type="primary" icon={<PlusOutlined />} onClick={() => taskFormModal()}>Добавить задачу</Button>
           </Space>
         }
-      >
-        <Tabs.TabPane tab="Все задачи" key="all" />
-        <Tabs.TabPane
-          tab={<span>Активные <Badge count={quickStats.active} style={{ backgroundColor: '#52c41a' }} /></span>}
-          key="active"
-        />
-        <Tabs.TabPane
-          tab={<span>Неактивные <Badge count={quickStats.inactive} style={{ backgroundColor: '#ff4d4f' }} /></span>}
-          key="inactive"
-        />
-      </Tabs>
+        items={[
+          { key: 'all', label: 'Все задачи' },
+          { key: 'active', label: <span>Активные <Badge count={quickStats.active} style={{ backgroundColor: '#52c41a' }} /></span> },
+          { key: 'inactive', label: <span>Неактивные <Badge count={quickStats.inactive} style={{ backgroundColor: '#ff4d4f' }} /></span> },
+        ]}
+      />
 
       <TaskTable data={filteredTasks} loading={isLoading} />
     </div>

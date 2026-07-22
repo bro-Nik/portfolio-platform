@@ -40,8 +40,6 @@ const DataTable = memo(({
         onChange={handleTableChange}
         pagination={false}
         rowKey={(record) => record.id ?? record.key ?? Math.random()}
-        size="small"
-        showSorterTooltip={false}
         scroll={{ x: 'max-content' }}
         rowClassName={rowClassName}
       />

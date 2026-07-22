@@ -100,7 +100,6 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
   return (
     <Form
       form={form}
-      layout="vertical"
       onFinish={handleSubmit}
       // requiredMark="optional"
       requiredMark={false}

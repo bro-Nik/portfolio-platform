@@ -22,8 +22,6 @@ interface ProviderInfoTabProps { provider: Provider }
 interface ProviderStatsTabProps { providerName: string }
 interface ProviderLogsTabProps { providerName: string }
 
-const { TabPane } = Tabs;
-
 export const ProviderDetailsModal: React.FC = () => {
   const { modalProps, closeModal } = useModalStore();
   const { provider }: ProviderDetailsModalProps = modalProps;
@@ -38,19 +36,14 @@ export const ProviderDetailsModal: React.FC = () => {
       footer={null}
       width={800}
     >
-      <Tabs defaultActiveKey="info">
-        <TabPane tab="Информация" key="info" icon={<SafetyOutlined />}>
-          <ProviderInfoTab provider={provider}/>
-        </TabPane>
-
-        <TabPane tab="Статистика" key="stats" icon={<BarChartOutlined />}>
-          <ProviderStatsTab providerName={provider.name} />
-        </TabPane>
-
-        <TabPane tab="История запросов" key="logs" icon={<HistoryOutlined />}>
-          <ProviderLogsTab providerName={provider.name} />
-        </TabPane>
-      </Tabs>
+      <Tabs
+        defaultActiveKey="info"
+        items={[
+          { key: 'info', label: 'Информация', icon: <SafetyOutlined />, children: <ProviderInfoTab provider={provider}/> },
+          { key: 'stats', label: 'Статистика', icon: <BarChartOutlined />, children: <ProviderStatsTab providerName={provider.name} /> },
+          { key: 'logs', label: 'История запросов', icon: <HistoryOutlined />, children: <ProviderLogsTab providerName={provider.name} /> },
+        ]}
+      />
     </Modal>
   );
 };

@@ -86,19 +86,14 @@ export const UsersModule: React.FC = () => {
             <Button type="primary" icon={<UserAddOutlined />} onClick={() => userFormModal()}>Добавить пользователя</Button>
           </Space>
         }
-      >
-        <Tabs.TabPane tab="Все пользователи" key="all" />
-        <Tabs.TabPane
-          tab={<span>Онлайн <Badge count={quickStats.online} style={{ backgroundColor: '#52c41a' }} /></span>}
-          key="online"
-        />
-        <Tabs.TabPane
-          tab={<span>Активные <Badge count={quickStats.active} style={{ backgroundColor: '#52c41a' }} /></span>}
-          key="active"
-        />
-        <Tabs.TabPane tab="Заблокированные" key="block" />
-        <Tabs.TabPane tab="Недавние" key="recent" />
-      </Tabs>
+        items={[
+          { key: 'all', label: 'Все пользователи' },
+          { key: 'online', label: <span>Онлайн <Badge count={quickStats.online} style={{ backgroundColor: '#52c41a' }} /></span> },
+          { key: 'active', label: <span>Активные <Badge count={quickStats.active} style={{ backgroundColor: '#52c41a' }} /></span> },
+          { key: 'block', label: 'Заблокированные' },
+          { key: 'recent', label: 'Недавние' },
+        ]}
+      />
 
       <UserTable data={filteredUsers} loading={isLoading} />
     </div>

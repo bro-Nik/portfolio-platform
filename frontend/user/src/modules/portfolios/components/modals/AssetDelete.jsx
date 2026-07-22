@@ -34,7 +34,6 @@ const AssetDeleteModal = () => {
       okText="Удалить"
       cancelText="Отмена"
       okType="danger"
-      centered
       confirmLoading={loading}
     >
       <p>Вы уверены, что хотите удалить актив "{asset.name}"?</p>

@@ -102,10 +102,10 @@ const AssetDetail = ({ data }) => {
             </div>
           }
           color="white"
-          overlayStyle={{
+          styles={{ root: {
             maxWidth: 350,
             boxShadow: '0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05)'
-          }}
+          }}}
           placement="top"
         >
           <div style={{ position: 'relative', cursor: 'pointer' }}>
@@ -164,7 +164,7 @@ const AssetDetail = ({ data }) => {
                   />
                   <Text strong style={{ fontSize: 13 }}>{segment.name}</Text>
                 </Space>
-                <Space direction="vertical" size={0} style={{ marginLeft: 16 }}>
+                <Space orientation="vertical" size={0} style={{ marginLeft: 16 }}>
                   <Text type="secondary" style={{ fontSize: 12 }}>
                     {formatCurrency(segment.costNow)} ({formatPercentage(segment.percent)})
                   </Text>
@@ -177,10 +177,10 @@ const AssetDetail = ({ data }) => {
           </div>
         }
         color="white"
-        overlayStyle={{ 
+        styles={{ root: { 
           maxWidth: 350,
           boxShadow: '0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05)'
-        }}
+        }}}
         placement="top"
       >
         <div style={{ position: 'relative', cursor: 'pointer' }}>
@@ -223,11 +223,11 @@ const AssetDetail = ({ data }) => {
     <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
       <Col xs={24} md={12}>
         <Card 
-          bordered={false}
-          bodyStyle={{ padding: 24 }}
+          variant="borderless"
+          styles={{ body: { padding: 24 } }}
           style={{ borderRadius: 12 }}
         >
-          <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={16} style={{ width: '100%' }}>
             <Space align="center">
               <PieChart size={16} />
               <Text>Распределение по портфелям</Text>
@@ -240,11 +240,11 @@ const AssetDetail = ({ data }) => {
 
       <Col xs={24} md={12}>
         <Card 
-          bordered={false}
-          bodyStyle={{ padding: 24 }}
+          variant="borderless"
+          styles={{ body: { padding: 24 } }}
           style={{ borderRadius: 12 }}
         >
-          <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={16} style={{ width: '100%' }}>
             <Space align="center">
               <Wallet size={16} />
               <Text>Распределение по кошелькам</Text>

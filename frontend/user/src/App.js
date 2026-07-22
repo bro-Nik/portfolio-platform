@@ -28,7 +28,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ConfigProvider theme={currentTheme} select={{ suffixIcon: <ChevronDown size={14} /> }} renderEmpty={() => <div style={{ padding: '24px 0', color: 'var(--ant-color-text-tertiary)' }}>Нет данных</div>}>
+      <ConfigProvider theme={currentTheme} modal={{ centered: true }} form={{ layout: 'vertical' }} table={{ size: 'small', pagination: false, showSorterTooltip: false }} select={{ suffixIcon: <ChevronDown size={14} /> }} renderEmpty={() => <div style={{ padding: '24px 0', color: 'var(--ant-color-text-tertiary)' }}>Нет данных</div>}>
         <AntApp style={{ height: '100%', display: 'contents' }}>
         <Router>
           <Routes>

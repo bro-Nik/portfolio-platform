@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form } from 'antd';
 import FormSelect from 'src/features/forms/FormSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
@@ -9,12 +9,16 @@ const WalletTransferFields = ({
   baseTicker,
   isCounterTransaction,
 }) => {
+  const form = Form.useFormInstance();
+
+  useEffect(() => {
+    form.setFieldsValue({ walletId: fromWallet?.id });
+  }, [form, fromWallet?.id]);
+
   const wallets = getWallets({ excludeId: fromWallet?.id, showTickerId: baseTicker?.id });
 
   return (
     <>
-    {/* Кошелек отправитель */}
-    <Form.Item name="walletId" hidden initialValue={fromWallet?.id}></Form.Item>
 
     {/* Кошелек получатель */}
     <FormSelect

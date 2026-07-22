@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form } from 'antd';
 import FormSelect from 'src/features/forms/FormSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
@@ -9,12 +9,16 @@ const PortfolioTransferFields = ({
   baseTicker,
   isCounterTransaction,
 }) => {
+  const form = Form.useFormInstance();
+
+  useEffect(() => {
+    form.setFieldsValue({ portfolioId: fromPortfolio?.id });
+  }, [form, fromPortfolio?.id]);
+
   const portfolios = getPortfolios({ excludeId: fromPortfolio?.id, showTickerId: baseTicker?.id });
 
   return (
     <>
-    {/* Портфель отправитель */}
-    <Form.Item name="portfolioId" hidden initialValue={fromPortfolio?.id}></Form.Item>
 
     {/* Портфель получатель */}
     <FormSelect

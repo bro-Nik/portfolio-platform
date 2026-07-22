@@ -42,7 +42,7 @@ const LandingPage = () => {
 
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', rowGap: 16, columnGap: 16 }}>
-                  <Card size="small" style={{ flex: 1, minWidth: 180 }} bordered={false}>
+                  <Card size="small" style={{ flex: 1, minWidth: 180 }} variant="borderless">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <div style={{ padding: 4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffc107', backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0))', fontSize: 'calc(1rem + .15vw)', borderRadius: '.375rem' }}>
                         <Coins size={20} color="white" />
@@ -52,7 +52,7 @@ const LandingPage = () => {
                     <Paragraph style={{ color: '#6c757d', marginBottom: 0 }}>Ведение криптовалютных портфелей с различнами стратегиями управления.</Paragraph>
                   </Card>
 
-                  <Card size="small" style={{ flex: 1, minWidth: 180 }} bordered={false}>
+                  <Card size="small" style={{ flex: 1, minWidth: 180 }} variant="borderless">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <div style={{ padding: 4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffc107', backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0))', fontSize: 'calc(1rem + .15vw)', borderRadius: '.375rem' }}>
                         <TrendingUp size={20} color="white" />
@@ -62,7 +62,7 @@ const LandingPage = () => {
                     <Paragraph style={{ color: '#6c757d', marginBottom: 0 }}>Ведение портфелей с акциями разделенных по своему усмотрению.</Paragraph>
                   </Card>
 
-                  <Card size="small" style={{ flex: 1, minWidth: 180 }} bordered={false}>
+                  <Card size="small" style={{ flex: 1, minWidth: 180 }} variant="borderless">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <div style={{ padding: 4, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffc107', backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0))', fontSize: 'calc(1rem + .15vw)', borderRadius: '.375rem' }}>
                         <Globe size={20} color="white" />

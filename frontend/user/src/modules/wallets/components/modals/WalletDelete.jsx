@@ -34,7 +34,6 @@ const WalletDeleteModal = () => {
       okText="Удалить"
       cancelText="Отмена"
       okType="danger"
-      centered
       confirmLoading={loading}
     >
       <p>Вы уверены, что хотите удалить кошелек "{wallet.name}"?</p>

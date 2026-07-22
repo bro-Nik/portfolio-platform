@@ -31,7 +31,6 @@ const TransactionEditModal = () => {
       footer={null}
       width={500}
       destroyOnHidden
-      centered
     >
       <BaseTransactionForm
         tickerId={tickerId}

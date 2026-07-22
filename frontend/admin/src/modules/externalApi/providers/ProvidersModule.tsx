@@ -63,17 +63,12 @@ export const ProvidersModule: React.FC = () => {
             <Button icon={<ReloadOutlined />} loading={isLoading}>Обновить</Button>
           </Space>
         }
-      >
-        <Tabs.TabPane tab="Все провайдеры" key="all" />
-        <Tabs.TabPane
-          tab={<span>Активные <Badge count={quickStats.active} style={{ backgroundColor: '#52c41a' }} /></span>}
-          key="active"
-        />
-        <Tabs.TabPane
-          tab={<span>Неактивные <Badge count={quickStats.inactive} style={{ backgroundColor: '#ff4d4f' }} /></span>}
-          key="inactive"
-        />
-      </Tabs>
+        items={[
+          { key: 'all', label: 'Все провайдеры' },
+          { key: 'active', label: <span>Активные <Badge count={quickStats.active} style={{ backgroundColor: '#52c41a' }} /></span> },
+          { key: 'inactive', label: <span>Неактивные <Badge count={quickStats.inactive} style={{ backgroundColor: '#ff4d4f' }} /></span> },
+        ]}
+      />
 
       <ProviderTable data={filteredProviders} loading={isLoading} />
     </div>

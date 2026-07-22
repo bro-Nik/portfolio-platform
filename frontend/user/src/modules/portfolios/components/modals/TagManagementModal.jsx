@@ -75,8 +75,8 @@ const TagManagementModal = () => {
   };
 
   return (
-    <Modal title="Управление тегами" open={true} onCancel={closeModal} footer={null} width={500} destroyOnClose centered>
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Modal title="Управление тегами" open={true} onCancel={closeModal} footer={null} width={500} destroyOnHidden>
+      <Space orientation="vertical" style={{ width: '100%' }} size="middle">
         {tags.map(tag => (
           <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', backgroundColor: tag.color || '#1890ff' }} />

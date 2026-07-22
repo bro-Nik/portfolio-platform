@@ -55,17 +55,15 @@ const WalletEditModal = () => {
       onCancel={handleCancel}
       footer={null}
       width={500}
-      destroyOnClose
-      centered
+      destroyOnHidden
     >
       <Form
         form={form}
-        layout="vertical"
         onFinish={handleSubmit}
         requiredMark="optional"
         size="middle"
       >
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           {/* Основные поля */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <Form.Item

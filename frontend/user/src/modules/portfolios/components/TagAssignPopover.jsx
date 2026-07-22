@@ -51,7 +51,7 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate })
         <div style={{ minWidth: 200 }}>
           {allTags.length === 0 && <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Нет тегов</div>}
           <Checkbox.Group value={[...selectedIds]}>
-            <Space direction="vertical" size="small">
+            <Space orientation="vertical" size="small">
               {allTags.map(tag => (
                 <Checkbox
                   key={tag.id}

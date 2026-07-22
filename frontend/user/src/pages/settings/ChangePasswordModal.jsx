@@ -27,9 +27,8 @@ const ChangePasswordModal = ({ open, onClose }) => {
       footer={null}
       width={500}
       destroyOnHidden
-      centered
     >
-      <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ marginTop: 16 }}>
+      <Form form={form} onFinish={handleSubmit} style={{ marginTop: 16 }}>
         <Form.Item
           name="currentPassword"
           label="Текущий пароль"

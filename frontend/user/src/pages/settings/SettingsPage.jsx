@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Card, Tag, Space, Modal, Typography, Avatar, Spin } from 'antd';
+import { Button, Card, Tag, Space, Modal, Typography, Avatar, Spin, App } from 'antd';
 import { AlertTriangle, Monitor, Smartphone, Tablet, Globe, Trash2, LogOut, KeyRound, Mail, ShieldCheck, Smartphone as DeviceIcon } from 'lucide-react';
 import { useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
@@ -49,6 +49,8 @@ const SettingsPage = () => {
     enabled: activeSection === 'settings',
   });
 
+  const { modal } = App.useApp();
+
   const handleResend = async () => {
     const result = await resendVerification.mutateAsync();
     if (result.success) {
@@ -59,7 +61,7 @@ const SettingsPage = () => {
   };
 
   const handleDeleteSession = (sessionId) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Завершить сессию?',
       content: 'Вы будете разлогинены на этом устройстве.',
       okText: 'Завершить',
@@ -77,7 +79,7 @@ const SettingsPage = () => {
   };
 
   const handleLogoutAll = () => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Выйти со всех устройств?',
       content: 'Вы будете разлогинены везде, включая это устройство.',
       okText: 'Выйти',

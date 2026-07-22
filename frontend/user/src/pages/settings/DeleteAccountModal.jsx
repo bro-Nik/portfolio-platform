@@ -33,8 +33,7 @@ const DeleteAccountModal = ({ open, onClose }) => {
       onCancel={onClose}
       footer={null}
       width={500}
-      destroyOnClose
-      centered
+      destroyOnHidden
     >
       <div style={{ marginTop: 8, marginBottom: 20 }}>
         <div style={{
@@ -63,7 +62,7 @@ const DeleteAccountModal = ({ open, onClose }) => {
         </Text>
       </div>
 
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+      <Form form={form} onFinish={handleSubmit}>
         <Form.Item
           name="currentPassword"
           label="Текущий пароль"

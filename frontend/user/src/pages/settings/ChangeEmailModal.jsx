@@ -26,10 +26,9 @@ const ChangeEmailModal = ({ open, onClose }) => {
       onCancel={onClose}
       footer={null}
       width={500}
-      destroyOnClose
-      centered
+      destroyOnHidden
     >
-      <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ marginTop: 16 }}>
+      <Form form={form} onFinish={handleSubmit} style={{ marginTop: 16 }}>
         <Form.Item
           name="newEmail"
           label="Новый email"
