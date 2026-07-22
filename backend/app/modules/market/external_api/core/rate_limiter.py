@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 import logging
+import random
 from types import MappingProxyType
 
 from pydantic import BaseModel, Field
@@ -33,6 +34,7 @@ class LimiterConfig(BaseModel):
 
 class RateLimiter:
     RETRY_INTERVAL = 1
+    MAX_BACKOFF = 60
 
     def __init__(self, redis: Redis, config: LimiterConfig) -> None:
         self.redis = redis
@@ -45,8 +47,9 @@ class RateLimiter:
             yield
             return
         start_time = datetime.now(UTC)
+        attempt = 0
         while True:
-            success = await self.counter.increment()
+            success, ttl = await self.counter.increment()
             if success:
                 try:
                     yield
@@ -54,8 +57,27 @@ class RateLimiter:
                     logger.exception('Request failed after increment')
                     raise
                 return
-            logger.warning('Лимит запросов превышен для %s', self.config.key)
-            await asyncio.sleep(self.RETRY_INTERVAL)
+
+            attempt += 1
+
+            if ttl is not None:
+                wait = min(ttl, self.MAX_BACKOFF) + random.uniform(0, 0.5)
+            else:
+                wait = min(self.RETRY_INTERVAL * (2 ** attempt), self.MAX_BACKOFF) + random.uniform(0, 1)
+
+            if attempt & (attempt + 1) == 0:
+                logger.warning(
+                    'Лимит запросов превышен для %s, ожидание %.1fс (попытка %d)',
+                    self.config.key, wait, attempt,
+                )
+            else:
+                logger.debug(
+                    'Лимит запросов превышен для %s, ожидание %.1fс',
+                    self.config.key, wait,
+                )
+
+            await asyncio.sleep(wait)
+
             if (datetime.now(UTC) - start_time).total_seconds() >= max_wait_time:
                 raise RateLimitTimeoutError(self.config.key, max_wait_time)
 
@@ -78,11 +100,21 @@ class RateCounter:
             limits[i] = tonumber(ARGV[i])
             ttls[i] = tonumber(ARGV[num_periods + i])
         end
+        local min_ttl = 0
         for i = 1, num_periods do
             local current = redis.call('GET', keys[i])
             if current and tonumber(current) >= limits[i] then
-                return 0
+                local remaining = redis.call('TTL', keys[i])
+                if remaining < 0 then
+                    remaining = ttls[i]
+                end
+                if min_ttl == 0 or remaining < min_ttl then
+                    min_ttl = remaining
+                end
             end
+        end
+        if min_ttl > 0 then
+            return -min_ttl
         end
         for i = 1, num_periods do
             local new = redis.call('INCR', keys[i])
@@ -93,19 +125,24 @@ class RateCounter:
         return 1
         """
 
-    async def increment(self) -> bool:
+    async def increment(self) -> tuple[bool, int | None]:
         if not self.config.limits:
-            return True
+            return True, None
         periods = [p for p in self.PERIODS if self.config.limits.get(p, 0) > 0]
         if not periods:
-            return True
+            return True, None
         keys = [f'counter:{self.config.key}:{period}' for period in periods]
         try:
-            result = await self._script(keys=keys, args=[self.config.limits[p] for p in periods] + [self.PERIODS[p] for p in periods])
+            result = await self._script(
+                keys=keys,
+                args=[self.config.limits[p] for p in periods] + [self.PERIODS[p] for p in periods],
+            )
         except RedisError as e:
             logger.error(
                 'Redis недоступен. Rate limiter для %s отключён, запросы заблокированы: %s',
                 self.config.key, e,
             )
             raise RateLimiterUnavailableError(self.config.key, str(e)) from e
-        return result == 1
+        if result == 1:
+            return True, None
+        return False, -result
