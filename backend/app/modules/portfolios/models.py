@@ -25,7 +25,7 @@ class PortfolioAsset(Base):
     __tablename__ = 'portfolio_asset'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
-    ticker_id: Mapped[str] = mapped_column(String(256))
+    ticker_id: Mapped[int] = mapped_column(Integer)
     portfolio_id: Mapped[int] = mapped_column(ForeignKey('portfolio.id', ondelete='CASCADE'))
     quantity: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     buy_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
@@ -46,8 +46,8 @@ class Transaction(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC))
-    ticker_id: Mapped[str] = mapped_column(String(32))
-    ticker2_id: Mapped[str | None] = mapped_column(String(32))
+    ticker_id: Mapped[int] = mapped_column(Integer)
+    ticker2_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     quantity: Mapped[Decimal] = mapped_column(Numeric)
     quantity2: Mapped[Decimal | None] = mapped_column(Numeric)
     price: Mapped[Decimal | None] = mapped_column(Numeric)
@@ -104,7 +104,7 @@ class WalletAsset(Base):
     __tablename__ = 'wallet_asset'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    ticker_id: Mapped[str] = mapped_column(String(256))
+    ticker_id: Mapped[int] = mapped_column(Integer)
     wallet_id: Mapped[int] = mapped_column(ForeignKey('wallet.id', ondelete='CASCADE'))
     quantity: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     buy_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))

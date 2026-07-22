@@ -69,23 +69,23 @@ class SelectivePriceUpdater(BasePriceUpdater):
         updated_count = await self._save_prices(market, prices, session=session)
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
-    async def _fetch_ticker_ids(self, market: str, strategy: str, limit: int | None) -> list[str]:
+    async def _fetch_ticker_ids(self, market: str, strategy: str, limit: int | None) -> list[int]:
         if strategy not in self.STRATEGIES:
             logger.warning('Неизвестная стратегия "%s", возврат к "used"', strategy)
             strategy = 'used'
         method_name = self.STRATEGIES[strategy]
         return await getattr(self, method_name)(market, limit)
 
-    async def _fetch_top_coins(self, market: str, limit: int | None = None) -> list[str]:
+    async def _fetch_top_coins(self, market: str, limit: int | None = None) -> list[int]:
         return []
-    async def _fetch_active_coins(self, market: str, limit: int | None = None) -> list[str]:
+    async def _fetch_active_coins(self, market: str, limit: int | None = None) -> list[int]:
         return []
-    async def _fetch_all_coins(self, market: str, limit: int | None = None) -> list[str]:
+    async def _fetch_all_coins(self, market: str, limit: int | None = None) -> list[int]:
         return []
-    async def _fetch_smart_coins(self, market: str, limit: int | None = None) -> list[str]:
+    async def _fetch_smart_coins(self, market: str, limit: int | None = None) -> list[int]:
         return []
 
-    async def _fetch_used_coins(self, market: str, limit: int | None = None) -> list[str]:
+    async def _fetch_used_coins(self, market: str, limit: int | None = None) -> list[int]:
         url = 'http://backend:8000/api/internal/all_used_tickers'
         async with httpx.AsyncClient() as client:
             response = await client.get(url, timeout=30)
@@ -99,10 +99,13 @@ class SelectivePriceUpdater(BasePriceUpdater):
 class FullPriceUpdater(BasePriceUpdater):
     PARAMETERS_SCHEMA: list[dict] = []
 
-    async def run(self, market: str, fetch_prices: Callable[[], Awaitable[dict]], session=None, **_) -> dict:
+    async def run(self, market: str, fetch_prices: Callable[[], Awaitable[dict]], *, provider_name: str, session=None, **_) -> dict:
+        from app.modules.market.services.ticker_external_id import TickerExternalIdService
         prices = await fetch_prices()
         if not prices:
             return {'status': 'error', 'message': 'Нет данных от провайдера'}
+        ext_id_service = TickerExternalIdService(session)
+        prices = await ext_id_service.resolve_to_internal(provider_name, prices)
         updated_count = await self._save_prices(market, prices, session=session)
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 

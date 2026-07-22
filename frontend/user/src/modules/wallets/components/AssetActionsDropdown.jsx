@@ -56,7 +56,7 @@ const AssetActionsDropdown = ({ wallet, asset, btn, onUpdate }) => {
       key: 'tradingview',
       icon: <ExternalLink size={16} />,
       label: 'Посмотреть на TradingView',
-      onClick: () => window.open(getTradingViewUrl(asset.symbol, asset.tickerId), '_blank', 'noopener,noreferrer'),
+      onClick: () => window.open(getTradingViewUrl(asset.symbol, wallet.market), '_blank', 'noopener,noreferrer'),
     },
     {
       type: 'divider',

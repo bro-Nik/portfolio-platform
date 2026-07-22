@@ -29,11 +29,11 @@ class PortfolioUpdate(PortfolioBase):
 
 class PortfolioAssetBase(BaseModel):
     portfolio_id: int
-    ticker_id: str
+    ticker_id: int
 
 
 class PortfolioAssetCreateRequest(BaseModel):
-    ticker_id: str
+    ticker_id: int
     portfolio_id: int
 
 

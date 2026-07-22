@@ -12,13 +12,13 @@ class ImageLoader(MethodBase):
     EXEMPLE_PARAMS = {}
     PARAMETERS_SCHEMA: list[dict] = []
 
-    async def run(self, market: str, fetch_images: Callable[[list[str]], Awaitable[dict[str, str]]], **_) -> dict:
+    async def run(self, market: str, fetch_images: Callable[[list[str]], Awaitable[dict[str, str]]], *, provider_name: str, **_) -> dict:
         from app.core.database import AsyncSessionLocal
         from app.modules.market.services.ticker import TickerService
 
         async with AsyncSessionLocal() as session:
             service = TickerService(session)
-            loaded = await service.load_images(market, fetch_images)
+            loaded = await service.load_images(market, fetch_images, provider_name=provider_name)
             await session.commit()
             return {'loaded': loaded}
 

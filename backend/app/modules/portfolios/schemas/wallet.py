@@ -28,7 +28,7 @@ class WalletUpdate(WalletBase):
 
 class WalletAssetBase(BaseModel):
     wallet_id: int
-    ticker_id: str
+    ticker_id: int
 
 
 class WalletAssetCreate(WalletAssetBase):

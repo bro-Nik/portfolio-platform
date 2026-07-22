@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class TickerResponse(BaseModel):
-    id: str
+    id: int
     name: str
     symbol: str
     image: str | None = None
@@ -18,12 +18,12 @@ class TickerSearchResponse(BaseModel):
 
 
 class PricesResponse(BaseModel):
-    prices: dict[str, float]
+    prices: dict[int, float]
 
 
 class ImagesResponse(BaseModel):
-    images: dict[str, str]
+    images: dict[int, str]
 
 
 class TickerInfoListResponse(BaseModel):
-    info: dict[str, dict]
+    info: dict[int, dict]

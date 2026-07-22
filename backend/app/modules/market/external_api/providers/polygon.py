@@ -33,15 +33,15 @@ class PolygonProvider(BaseProvider):
 
     @registry.register_method(ticker_loader)
     async def load_tickers(self, **kwargs) -> dict:
-        return await ticker_loader.run('stocks', self._fetch_all_tickers, provider_name=self.NAME, **kwargs)
+        return await ticker_loader.run('stocks', self._fetch_all_tickers, **kwargs)
 
     @registry.register_method(full_price_updater)
     async def update_prices(self, **kwargs) -> dict:
-        return await full_price_updater.run('stocks', self._fetch_all_prices)
+        return await full_price_updater.run('stocks', self._fetch_all_prices, **kwargs)
 
     @registry.register_method(image_loader)
     async def load_images(self, **kwargs) -> dict:
-        return await image_loader.run('stocks', self._fetch_ticker_images)
+        return await image_loader.run('stocks', self._fetch_ticker_images, **kwargs)
 
     def _augment_params(self, params: dict | None = None) -> dict:
         p = dict(params or {})

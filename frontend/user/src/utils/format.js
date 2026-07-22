@@ -73,8 +73,8 @@ export const formatNumber = (number, options = {}) => {
   return formatter.format(number);
 };
 
-export const getTradingViewUrl = (symbol, tickerId) => {
-  if (tickerId?.startsWith('cr-')) {
+export const getTradingViewUrl = (symbol, market) => {
+  if (market === 'crypto') {
     return `https://www.tradingview.com/chart/?symbol=${symbol}USDT`
   }
   return `https://www.tradingview.com/chart/?symbol=${symbol}USD`

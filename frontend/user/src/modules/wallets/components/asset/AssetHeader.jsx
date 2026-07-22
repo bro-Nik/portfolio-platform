@@ -18,7 +18,7 @@ const AssetHeader = ({ wallet, asset }) => {
               <h1 style={{ fontSize: '1rem', color: 'var(--text-muted)', margin: 0 }}>
                 {asset.name} 
                 <span style={{ textTransform: 'uppercase' }}>({asset.symbol})</span>
-                <a href={getTradingViewUrl(asset.symbol, asset.tickerId)} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 4 }} onClick={(e) => e.stopPropagation()}>
+                <a href={getTradingViewUrl(asset.symbol, wallet.market)} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 4 }} onClick={(e) => e.stopPropagation()}>
                   <ExternalLink size={14} />
                 </a>
               </h1>

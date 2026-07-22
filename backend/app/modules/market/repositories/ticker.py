@@ -18,7 +18,7 @@ class TickerRepository(BaseRepository[Ticker]):
     async def get_all_by_market_without_images(self, market: str) -> list[Ticker]:
         return await self.get_all(self.model.market == market, self.model.image.is_(None))
 
-    async def update_ticker_prices(self, data: dict[str, object]) -> int:
+    async def update_ticker_prices(self, data: dict[int, object]) -> int:
         if not data:
             return 0
         now = datetime.now(UTC)

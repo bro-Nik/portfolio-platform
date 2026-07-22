@@ -10,7 +10,7 @@ from app.core.database import Base
 class TickerExternalId(Base):
     __tablename__ = 'ticker_external_id'
 
-    ticker_id: Mapped[str] = mapped_column(String(256), ForeignKey('ticker.id', ondelete='CASCADE'), primary_key=True)
+    ticker_id: Mapped[int] = mapped_column(Integer, ForeignKey('ticker.id', ondelete='CASCADE'), primary_key=True)
     provider_name: Mapped[str] = mapped_column(String(100), primary_key=True)
     external_id: Mapped[str] = mapped_column(String(256), nullable=False, index=True)
 
@@ -20,13 +20,14 @@ class TickerExternalId(Base):
 class Ticker(Base):
     __tablename__ = 'ticker'
 
-    id: Mapped[str] = mapped_column(String(256), primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(1024), nullable=False)
     symbol: Mapped[str] = mapped_column(String(124), nullable=False, index=True)
     image: Mapped[str | None] = mapped_column(String(1024))
     market_cap_rank: Mapped[int | None] = mapped_column(Integer, nullable=True)
     price: Mapped[float] = mapped_column(Float, default=0.0)
     market: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC))
 
     external_ids: Mapped[list[TickerExternalId]] = relationship(back_populates='ticker', cascade='all, delete-orphan')

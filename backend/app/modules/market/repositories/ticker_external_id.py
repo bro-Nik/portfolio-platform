@@ -9,7 +9,7 @@ class TickerExternalIdRepository(BaseRepository[TickerExternalId]):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(TickerExternalId, session)
 
-    async def get_ext_id_map(self, ticker_ids: list[str], provider_name: str) -> dict[str, str]:
+    async def get_ext_id_map(self, ticker_ids: list[int], provider_name: str) -> dict[int, str]:
         if not ticker_ids:
             return {}
         rows = await self.get_all(
@@ -18,7 +18,7 @@ class TickerExternalIdRepository(BaseRepository[TickerExternalId]):
         )
         return {row.ticker_id: row.external_id for row in rows}
 
-    async def get_ticker_id_map(self, provider_name: str, ext_ids: list[str]) -> dict[str, str]:
+    async def get_ticker_id_map(self, provider_name: str, ext_ids: list[str]) -> dict[str, int]:
         if not ext_ids:
             return {}
         rows = await self.get_all(
@@ -27,11 +27,11 @@ class TickerExternalIdRepository(BaseRepository[TickerExternalId]):
         )
         return {row.external_id: row.ticker_id for row in rows}
 
-    async def get_ext_to_ticker_map(self, provider_name: str) -> dict[str, str]:
+    async def get_ext_to_ticker_map(self, provider_name: str) -> dict[str, int]:
         rows = await self.get_all(self.model.provider_name == provider_name)
         return {row.external_id: row.ticker_id for row in rows}
 
-    async def upsert(self, ticker_id: str, provider_name: str, ext_id: str) -> TickerExternalId:
+    async def upsert(self, ticker_id: int, provider_name: str, ext_id: str) -> TickerExternalId:
         existing = await self.get_by(
             self.model.ticker_id == ticker_id,
             self.model.provider_name == provider_name,

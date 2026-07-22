@@ -9,8 +9,8 @@ from .wallet import WalletAssetResponse
 
 class TransactionBase(BaseModel):
     date: datetime
-    ticker_id: str
-    ticker2_id: str | None = None
+    ticker_id: int
+    ticker2_id: int | None = None
     quantity: Decimal
     quantity2: Decimal | None = None
     price: Decimal | None = None
@@ -37,8 +37,8 @@ class TransactionCreateRequest(TransactionBase):
 
 class TransactionUpdateRequest(BaseModel):
     date: datetime | None = None
-    ticker_id: str | None = None
-    ticker2_id: str | None = None
+    ticker_id: int | None = None
+    ticker2_id: int | None = None
     quantity: Decimal | None = None
     quantity2: Decimal | None = None
     price: Decimal | None = None

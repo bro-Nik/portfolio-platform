@@ -28,4 +28,4 @@ async def update_market_data(
     logger.info('Запуск задачи %s: %s.%s', db_task_id, provider_name, method)
     provider = await provider_factory(provider_name, db_task_id)
     async with tracker.task_context(db_task_id):
-        return await provider.execute(method, session=session, **kwargs)
+        return await provider.execute(method, session=session, provider_name=provider_name, **kwargs)

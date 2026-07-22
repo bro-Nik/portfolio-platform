@@ -30,7 +30,7 @@ async def search_tickers(
 @user_router.post('/prices')
 @handle_errors('Ошибка получения цен')
 async def get_prices(
-    ticker_ids: list[str],
+    ticker_ids: list[int],
     ticker_service: TickerServiceDep,
 ) -> PricesResponse:
     prices = await ticker_service.get_prices(ticker_ids)
@@ -40,7 +40,7 @@ async def get_prices(
 @user_router.post('/images')
 @handle_errors('Ошибка получения изображений')
 async def get_images(
-    ticker_ids: list[str],
+    ticker_ids: list[int],
     ticker_service: TickerServiceDep,
 ) -> ImagesResponse:
     images = await ticker_service.get_images(ticker_ids)
@@ -50,7 +50,7 @@ async def get_images(
 @user_router.post('/info')
 @handle_errors('Ошибка получения информации о тикере')
 async def get_info(
-    ticker_ids: list[str],
+    ticker_ids: list[int],
     ticker_service: TickerServiceDep,
 ) -> TickerInfoListResponse:
     info = await ticker_service.get_info(ticker_ids)
