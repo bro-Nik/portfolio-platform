@@ -19,9 +19,12 @@ from .task import (
 from .ticker import (
     ImagesResponse,
     PricesResponse,
+    TickerAdminResponse,
     TickerInfoListResponse,
+    TickerMergeRequest,
     TickerResponse,
     TickerSearchResponse,
+    TickerUpdateRequest,
 )
 
 __all__ = [
@@ -42,7 +45,10 @@ __all__ = [
     'TaskResponse',
     'TaskUpdate',
     'TaskUpdateRequest',
+    'TickerAdminResponse',
     'TickerInfoListResponse',
+    'TickerMergeRequest',
     'TickerResponse',
     'TickerSearchResponse',
+    'TickerUpdateRequest',
 ]

@@ -5,6 +5,7 @@ from .di import (
     TaskProvider,
     TaskServiceDep,
     TaskTrackerServiceDep,
+    TickerAdminServiceDep,
     TickerServiceDep,
     container,
 )
@@ -15,6 +16,7 @@ __all__ = [
     'TaskProvider',
     'TaskServiceDep',
     'TaskTrackerServiceDep',
+    'TickerAdminServiceDep',
     'TickerServiceDep',
     'container',
     'require_admin',

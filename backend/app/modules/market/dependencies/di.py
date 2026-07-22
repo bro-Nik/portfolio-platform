@@ -17,6 +17,7 @@ from app.modules.market.external_api.core import (
     registry,
 )
 from app.modules.market.repositories import ProviderRepository, RequestLogRepository, TaskRepository
+from app.modules.market.services.admin_ticker import TickerAdminService
 from app.modules.market.services.provider import ProviderService
 from app.modules.market.services.task import TaskService
 from app.modules.market.services.task_tracker import TaskTrackerService
@@ -65,6 +66,10 @@ class AppProvider(Provider):
         return TickerService(session)
 
     @provide(scope=Scope.REQUEST)
+    def get_admin_ticker_service(self, session: AsyncSession) -> TickerAdminService:
+        return TickerAdminService(session)
+
+    @provide(scope=Scope.REQUEST)
     def get_provider_service(self, session: AsyncSession, redis: Redis, provider_repo: ProviderRepository, log_repo: RequestLogRepository) -> ProviderService:
         return ProviderService(session=session, redis=redis, provider_repo=provider_repo, log_repo=log_repo)
 
@@ -98,6 +103,7 @@ container = make_async_container(AppProvider())
 ProviderServiceDep = Annotated[FromDishka[ProviderService], ...]
 TaskServiceDep = Annotated[FromDishka[TaskService], ...]
 TickerServiceDep = Annotated[FromDishka[TickerService], ...]
+TickerAdminServiceDep = Annotated[FromDishka[TickerAdminService], ...]
 SessionDep = Annotated[FromDishka[AsyncSession], ...]
 
 TaskTrackerServiceDep = Annotated[FromDishka[TaskTrackerService], ...]

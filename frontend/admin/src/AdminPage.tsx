@@ -11,14 +11,16 @@ import {
   ApiOutlined,
   TeamOutlined,
   SunOutlined,
-  MoonOutlined
+  MoonOutlined,
+  StockOutlined
 } from '@ant-design/icons';
 import { useAuthStore, useModalStore, authService, useThemeStore } from '@portfolio/shared';
 import { ExternalApiModule } from './modules/externalApi/ExternalApiModule';
+import { TickersModule } from './modules/tickers/TickersModule';
 import { UsersModule } from './modules/users/UsersModule';
 import { HeaderContext, useHeaderExtra, SubTabsBar } from './utils/headerContext';
 
-type MenuKey = 'api-services' | 'users';
+type MenuKey = 'api-services' | 'users' | 'tickers';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -53,6 +55,7 @@ const AdminPage = () => {
 
   const sidebarMenu = [
     { key: 'api-services', icon: <ApiOutlined />, label: 'API Сервисы' },
+    { key: 'tickers', icon: <StockOutlined />, label: 'Тикеры' },
     { key: 'users', icon: <TeamOutlined />, label: 'Пользователи' },
   ];
 
@@ -69,6 +72,8 @@ const AdminPage = () => {
     switch (selectedMenu) {
       case 'api-services':
         return <ExternalApiModule />;
+      case 'tickers':
+        return <TickersModule />;
       case 'users':
         return <UsersModule />;
       default:

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -10,6 +12,12 @@ class TickerResponse(BaseModel):
     price: float
     market: str
     model_config = ConfigDict(from_attributes=True)
+
+
+class TickerAdminResponse(TickerResponse):
+    is_active: bool
+    price_updated_by: str | None = None
+    updated_at: datetime | None = None
 
 
 class TickerSearchResponse(BaseModel):
@@ -27,3 +35,14 @@ class ImagesResponse(BaseModel):
 
 class TickerInfoListResponse(BaseModel):
     info: dict[int, dict]
+
+
+class TickerUpdateRequest(BaseModel):
+    name: str | None = None
+    symbol: str | None = None
+    is_active: bool | None = None
+
+
+class TickerMergeRequest(BaseModel):
+    source_id: int
+    target_id: int
