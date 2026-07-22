@@ -24,6 +24,7 @@ TICKER_IMAGES_DIR = STATIC_DIR / 'images' / 'tickers'
 class MarketTickerPrefix:
     CRYPTO = 'cr-'
     STOCK = 'st-'
+    STOCKS = 'st-'
     CURRENCY = 'cu-'
 
     @classmethod

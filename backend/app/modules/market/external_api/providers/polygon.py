@@ -31,15 +31,15 @@ class PolygonProvider(BaseProvider):
 
     @registry.register_method(ticker_loader)
     async def load_tickers(self, **kwargs) -> dict:
-        return await ticker_loader.run('stock', self._fetch_all_tickers, provider_name=self.NAME, **kwargs)
+        return await ticker_loader.run('stocks', self._fetch_all_tickers, provider_name=self.NAME, **kwargs)
 
     @registry.register_method(full_price_updater)
     async def update_prices(self, **kwargs) -> dict:
-        return await full_price_updater.run('stock', self._fetch_all_prices)
+        return await full_price_updater.run('stocks', self._fetch_all_prices)
 
     @registry.register_method(image_loader)
     async def load_images(self, **kwargs) -> dict:
-        return await image_loader.run('stock', self._fetch_ticker_images)
+        return await image_loader.run('stocks', self._fetch_ticker_images)
 
     def _augment_params(self, params: dict | None = None) -> dict:
         p = dict(params or {})
@@ -55,7 +55,7 @@ class PolygonProvider(BaseProvider):
             params = self._augment_params({'market': 'stocks', 'limit': 1000, 'active': 'true'})
             try:
                 if next_url:
-                    data = await self.http.request('GET', f"{next_url}&apiKey={self._api_key}")
+                    data = await self.http.request('GET', next_url)
                 else:
                     data = await self.http.request('GET', 'v3/reference/tickers', params=params)
             except Exception:
@@ -63,7 +63,12 @@ class PolygonProvider(BaseProvider):
                 break
 
             results = data.get('results', [])
-            all_tickers.extend(results)
+            for item in results:
+                all_tickers.append({
+                    'id': item.get('ticker'),
+                    'symbol': item.get('ticker'),
+                    'name': item.get('name'),
+                })
             logger.info('Загружено %s тикеров (всего: %s)', len(results), len(all_tickers))
 
             next_url = data.get('next_url')
