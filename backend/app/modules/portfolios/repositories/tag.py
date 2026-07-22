@@ -1,4 +1,4 @@
-from sqlalchemy import and_, delete, or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
@@ -15,9 +15,9 @@ class TagRepository(BaseRepository[Tag]):
         return list(result.scalars().all())
 
 
-class TaggableRepository:
+class TaggableRepository(BaseRepository[Taggable]):
     def __init__(self, session: AsyncSession) -> None:
-        self._session = session
+        super().__init__(Taggable, session)
 
     async def get_tags(self, entity_type: str, entity_id: int) -> list[Tag]:
         result = await self._session.execute(
@@ -31,8 +31,10 @@ class TaggableRepository:
         self._session.add(Taggable(tag_id=tag_id, entity_type=entity_type, entity_id=entity_id))
 
     async def remove(self, tag_id: int, entity_type: str, entity_id: int) -> None:
-        await self._session.execute(
-            delete(Taggable).where(Taggable.tag_id == tag_id, Taggable.entity_type == entity_type, Taggable.entity_id == entity_id),
+        await self.delete_by(
+            Taggable.tag_id == tag_id,
+            Taggable.entity_type == entity_type,
+            Taggable.entity_id == entity_id,
         )
 
     async def bulk_get_tags(self, items: list[tuple[str, int]]) -> dict[tuple[str, int], list[Tag]]:

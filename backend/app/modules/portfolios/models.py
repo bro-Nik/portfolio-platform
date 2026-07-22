@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -25,8 +25,8 @@ class PortfolioAsset(Base):
     __tablename__ = 'portfolio_asset'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
-    ticker_id: Mapped[int] = mapped_column(Integer)
-    portfolio_id: Mapped[int] = mapped_column(ForeignKey('portfolio.id', ondelete='CASCADE'))
+    ticker_id: Mapped[int] = mapped_column(Integer, index=True)
+    portfolio_id: Mapped[int] = mapped_column(ForeignKey('portfolio.id', ondelete='CASCADE'), index=True)
     quantity: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     buy_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     sell_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
@@ -35,31 +35,35 @@ class PortfolioAsset(Base):
     total_invested: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     percent: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     comment: Mapped[str | None] = mapped_column(String(1024))
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
     portfolio: Mapped['Portfolio'] = relationship(back_populates='assets')
+
+    __table_args__ = (
+        Index('ix_portfolio_asset_portfolio_ticker', 'portfolio_id', 'ticker_id'),
+    )
 
 
 class Transaction(Base):
     __tablename__ = 'transaction'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC))
-    ticker_id: Mapped[int] = mapped_column(Integer)
-    ticker2_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(UTC), index=True)
+    ticker_id: Mapped[int] = mapped_column(Integer, index=True)
+    ticker2_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
     quantity: Mapped[Decimal] = mapped_column(Numeric)
     quantity2: Mapped[Decimal | None] = mapped_column(Numeric)
     price: Mapped[Decimal | None] = mapped_column(Numeric)
     price_usd: Mapped[Decimal | None] = mapped_column(Numeric)
     type: Mapped[str] = mapped_column(String(24))
     comment: Mapped[str | None] = mapped_column(String(1024))
-    wallet_id: Mapped[int | None] = mapped_column(ForeignKey('wallet.id'))
-    wallet2_id: Mapped[int | None] = mapped_column(ForeignKey('wallet.id'))
-    portfolio_id: Mapped[int | None] = mapped_column(ForeignKey('portfolio.id'))
-    portfolio2_id: Mapped[int | None] = mapped_column(ForeignKey('portfolio.id'))
+    wallet_id: Mapped[int | None] = mapped_column(ForeignKey('wallet.id'), index=True)
+    wallet2_id: Mapped[int | None] = mapped_column(ForeignKey('wallet.id'), index=True)
+    portfolio_id: Mapped[int | None] = mapped_column(ForeignKey('portfolio.id'), index=True)
+    portfolio2_id: Mapped[int | None] = mapped_column(ForeignKey('portfolio.id'), index=True)
     order: Mapped[bool | None] = mapped_column(Boolean)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
 
     def get_direction(self, cancel: bool = False) -> int:
         positive_types = {'Buy', 'Input', 'TransferIn', 'Earning'}
@@ -95,21 +99,29 @@ class Taggable(Base):
     __tablename__ = 'taggable'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    tag_id: Mapped[int] = mapped_column(Integer, ForeignKey('tag.id', ondelete='CASCADE'))
+    tag_id: Mapped[int] = mapped_column(Integer, ForeignKey('tag.id', ondelete='CASCADE'), index=True)
     entity_type: Mapped[str] = mapped_column(String(32))
     entity_id: Mapped[int] = mapped_column(Integer)
+
+    __table_args__ = (
+        Index('ix_taggable_entity_type_entity_id', 'entity_type', 'entity_id'),
+    )
 
 
 class WalletAsset(Base):
     __tablename__ = 'wallet_asset'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    ticker_id: Mapped[int] = mapped_column(Integer)
-    wallet_id: Mapped[int] = mapped_column(ForeignKey('wallet.id', ondelete='CASCADE'))
+    ticker_id: Mapped[int] = mapped_column(Integer, index=True)
+    wallet_id: Mapped[int] = mapped_column(ForeignKey('wallet.id', ondelete='CASCADE'), index=True)
     quantity: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     buy_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
     sell_orders: Mapped[Decimal] = mapped_column(Numeric, default=Decimal(0))
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
     wallet: Mapped['Wallet'] = relationship(back_populates='assets')
+
+    __table_args__ = (
+        Index('ix_wallet_asset_wallet_ticker', 'wallet_id', 'ticker_id'),
+    )

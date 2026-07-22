@@ -64,7 +64,7 @@ class Provider(Base):
     requests_per_day: Mapped[int | None] = mapped_column(Integer)
     requests_per_month: Mapped[int | None] = mapped_column(Integer)
 
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, index=True)
     retry_delay: Mapped[int] = mapped_column(Integer, default=60, nullable=False)
     timeout: Mapped[int] = mapped_column(Integer, default=30, nullable=False)
     max_retries: Mapped[int] = mapped_column(Integer, default=3, nullable=False)
@@ -112,7 +112,7 @@ class Task(Base):
     __tablename__ = 'task'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(Text)
 
     task_type: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -122,7 +122,7 @@ class Task(Base):
     schedule_type: Mapped[str] = mapped_column(String(20), default='cron', nullable=False)
     timezone: Mapped[str] = mapped_column(String(50), default='UTC', nullable=False)
 
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, index=True)
     status: Mapped[str | None] = mapped_column(String(200))
 
     parameters: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict, nullable=False)

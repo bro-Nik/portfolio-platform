@@ -16,6 +16,7 @@ class RefreshToken(Base):
         Integer,
         ForeignKey('users.id', ondelete='CASCADE'),
         nullable=False,
+        index=True,
     )
     token: Mapped[str | None] = mapped_column(String(512), nullable=True, index=True)
     token_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
@@ -85,6 +86,7 @@ class LoginSession(Base):
         Integer,
         ForeignKey('users.id', ondelete='CASCADE'),
         nullable=False,
+        index=True,
     )
     refresh_token_id: Mapped[int] = mapped_column(
         Integer,
@@ -108,7 +110,6 @@ class LoginSession(Base):
     last_activity_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),
         nullable=False,
     )
 

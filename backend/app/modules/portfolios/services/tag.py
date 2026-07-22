@@ -32,8 +32,8 @@ class TagService:
         if color is not None:
             update_data['color'] = color
         if update_data:
-            await self.repo.update(tag_id, update_data)
-        return await self.repo.get(tag_id)
+            tag = await self.repo.update(tag_id, update_data)
+        return tag
 
     async def delete(self, tag_id: int) -> None:
         tag = await self.repo.get(tag_id)
