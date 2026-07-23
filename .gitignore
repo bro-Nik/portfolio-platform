@@ -32,4 +32,5 @@ databases/dumps/
 db_backups/
 reports/
 backend/static/
+landing/
 

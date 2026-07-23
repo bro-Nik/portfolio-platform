@@ -134,6 +134,7 @@ services:
       - backend
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./landing:/var/www/landing
 
 networks:
   portfolios-net:
