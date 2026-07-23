@@ -13,6 +13,9 @@ just up
 open http://localhost
 ```
 
+On first start, migrations and seed data (admin user, providers, etc.) are applied automatically.
+Login: `admin@example.com` / `admin123`.
+
 ## 📚 Structure
 
 - [`Backend`](backend/) — FastAPI monolith (modules: auth, portfolios, market)
@@ -24,6 +27,22 @@ open http://localhost
 ```bash
 just          # Show all available commands with descriptions
 ```
+
+## 🏠 Self-Hosting
+
+### Quick Start
+
+```bash
+just up-workers
+
+```
+
+
+### Requirements
+
+- **Docker** + **Docker Compose**
+- **just** (command runner)
+
 
 ## 📜 Development History
 

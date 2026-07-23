@@ -3,6 +3,25 @@ services:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
+  init:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    command: >
+      sh -c "alembic upgrade head && python -m app.scripts.seed"
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/app/alembic.ini:/app/alembic.ini
+      - ./backend/app/alembic/:/app/alembic/
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   backend:
     build:
       target: development
@@ -12,6 +31,11 @@ services:
       - ./backend/app:/app/app
       - ./backend/app/alembic.ini:/app/alembic.ini
       - ./backend/app/alembic/:/app/alembic/
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
 
   worker:
     volumes:
