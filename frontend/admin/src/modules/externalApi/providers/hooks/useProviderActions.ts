@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { providersApi } from '../api';
-import { CreateProviderData, UpdateProviderData } from '../../../../types/provider';
+import { CreateProviderData, Provider, UpdateProviderData } from '../../../../types/provider';
 import { useNotifications } from '@portfolio/shared';
 
 export const useProviderActions = () => {
@@ -9,8 +9,7 @@ export const useProviderActions = () => {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['providers'] });
 
-  // Общая логика для всех мутаций
-  const mutationOptions = (successMsg: string, errorMsg: string) => ({
+  const simpleMutation = (successMsg: string, errorMsg: string) => ({
     onSuccess: () => {
       success(successMsg);
       invalidate();
@@ -20,22 +19,75 @@ export const useProviderActions = () => {
 
   const createMut = useMutation({
     mutationFn: (data: CreateProviderData) => providersApi.createProvider(data),
-    ...mutationOptions('API провайдер успешно создан', 'Ошибка создания'),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['providers'] });
+      const previous = queryClient.getQueryData<Provider[]>(['providers']);
+      const optimisticId = `optimistic-${Date.now()}`;
+      queryClient.setQueryData<Provider[]>(['providers'], (old: Provider[] | undefined) => [
+        ...(old || []),
+        { ...data, id: optimisticId } as unknown as Provider,
+      ]);
+      return { previous, optimisticId };
+    },
+    onSuccess: () => {
+      success('API провайдер успешно создан');
+    },
+    onError: (err: Error, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['providers'], context.previous);
+      }
+      error(err?.message || 'Ошибка создания');
+    },
+    onSettled: () => invalidate(),
   });
 
   const updateMut = useMutation({
-    mutationFn: ({ name, data }: { name: string; data: UpdateProviderData }) => providersApi.updateProvider(name, data),
-    ...mutationOptions('API провайдер обновлен', 'Ошибка обновления'),
+    mutationFn: ({ name, data }: { name: string; data: UpdateProviderData }) =>
+      providersApi.updateProvider(name, data),
+    onMutate: async ({ name, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['providers'] });
+      const previous = queryClient.getQueryData<Provider[]>(['providers']);
+      queryClient.setQueryData<Provider[]>(['providers'], (old: Provider[] | undefined) =>
+        old?.map((p: Provider) => p.name === name ? { ...p, ...data } : p)
+      );
+      return { previous };
+    },
+    onSuccess: (serverProvider, { name }) => {
+      queryClient.setQueryData<Provider[]>(['providers'], (old: Provider[] | undefined) =>
+        old?.map((p: Provider) => p.name === name ? serverProvider : p)
+      );
+      success('API провайдер обновлен');
+    },
+    onError: (err: Error, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['providers'], context.previous);
+      }
+      error(err?.message || 'Ошибка обновления');
+    },
   });
 
   const deleteMut = useMutation({
     mutationFn: (name: string) => providersApi.deleteProvider(name),
-    ...mutationOptions('API провайдер удален', 'Ошибка удаления'),
+    onMutate: async (name) => {
+      await queryClient.cancelQueries({ queryKey: ['providers'] });
+      const previous = queryClient.getQueryData<Provider[]>(['providers']);
+      queryClient.setQueryData<Provider[]>(['providers'], (old: Provider[] | undefined) =>
+        old?.filter((p: Provider) => p.name !== name)
+      );
+      return { previous };
+    },
+    onSuccess: () => success('API провайдер удален'),
+    onError: (err: Error, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['providers'], context.previous);
+      }
+      error(err?.message || 'Ошибка удаления');
+    },
   });
 
   const resetMut = useMutation({
     mutationFn: (name: string) => providersApi.resetCountersProvider(name),
-    ...mutationOptions('Счетчики сброшены', 'Ошибка сброса'),
+    ...simpleMutation('Счетчики сброшены', 'Ошибка сброса'),
   });
 
   return {

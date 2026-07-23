@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../api';
-import { CreateTaskData, UpdateTaskData } from '../../../../types/task';
+import { CreateTaskData, Task, UpdateTaskData } from '../../../../types/task';
 import { useNotifications } from '@portfolio/shared';
 
 export const useTaskActions = () => {
@@ -9,8 +9,7 @@ export const useTaskActions = () => {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['tasks'] });
 
-  // Общая логика для всех мутаций
-  const mutationOptions = (successMsg: string, errorMsg: string) => ({
+  const simpleMutation = (successMsg: string, errorMsg: string) => ({
     onSuccess: () => {
       success(successMsg);
       invalidate();
@@ -20,22 +19,74 @@ export const useTaskActions = () => {
 
   const createMut = useMutation({
     mutationFn: (data: CreateTaskData) => tasksApi.createTask(data),
-    ...mutationOptions('Задача успешно создана', 'Ошибка создания'),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      const previous = queryClient.getQueryData<Task[]>(['tasks']);
+      const optimisticId = `optimistic-${Date.now()}`;
+      queryClient.setQueryData<Task[]>(['tasks'], (old: Task[] | undefined) => [
+        ...(old || []),
+        { ...data, id: optimisticId } as unknown as Task,
+      ]);
+      return { previous, optimisticId };
+    },
+    onSuccess: () => {
+      success('Задача успешно создана');
+    },
+    onError: (err: Error, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['tasks'], context.previous);
+      }
+      error(err?.message || 'Ошибка создания');
+    },
+    onSettled: () => invalidate(),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateTaskData }) => tasksApi.updateTask(id, data),
-    ...mutationOptions('Задача успешно обновлена', 'Ошибка обновления'),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      const previous = queryClient.getQueryData<Task[]>(['tasks']);
+      queryClient.setQueryData<Task[]>(['tasks'], (old: Task[] | undefined) =>
+        old?.map((t: Task) => t.id === id ? { ...t, ...data } : t)
+      );
+      return { previous };
+    },
+    onSuccess: (serverTask, { id }) => {
+      queryClient.setQueryData<Task[]>(['tasks'], (old: Task[] | undefined) =>
+        old?.map((t: Task) => t.id === id ? serverTask : t)
+      );
+      success('Задача успешно обновлена');
+    },
+    onError: (err: Error, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['tasks'], context.previous);
+      }
+      error(err?.message || 'Ошибка обновления');
+    },
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: number) => tasksApi.deleteTask(id),
-    ...mutationOptions('Задача успешно удалена', 'Ошибка удаления'),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      const previous = queryClient.getQueryData<Task[]>(['tasks']);
+      queryClient.setQueryData<Task[]>(['tasks'], (old: Task[] | undefined) =>
+        old?.filter((t: Task) => t.id !== id)
+      );
+      return { previous };
+    },
+    onSuccess: () => success('Задача успешно удалена'),
+    onError: (err: Error, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['tasks'], context.previous);
+      }
+      error(err?.message || 'Ошибка удаления');
+    },
   });
 
   const runMut = useMutation({
     mutationFn: (id: number) => tasksApi.runTask(id),
-    ...mutationOptions('Задача запущена', 'Ошибка запуска'),
+    ...simpleMutation('Задача запущена', 'Ошибка запуска'),
   });
 
   return {
@@ -49,6 +100,3 @@ export const useTaskActions = () => {
     isRunning: runMut.isPending,
   };
 };
-
-
-
