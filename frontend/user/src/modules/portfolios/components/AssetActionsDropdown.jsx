@@ -93,7 +93,7 @@ const AssetActionsDropdown = ({ portfolio, asset, btn, onUpdate }) => {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <TagAssignPopover entityType={entityType} entityId={asset?.id} assignedTags={asset?.tags} onUpdate={onUpdate} />
+      <TagAssignPopover entityType={entityType} entityId={asset?.id} assignedTags={asset?.tags} onUpdate={onUpdate} parentId={portfolio?.id} />
       <ActionsDropdown items={menuItems} btn={btn}/>
     </div>
   );

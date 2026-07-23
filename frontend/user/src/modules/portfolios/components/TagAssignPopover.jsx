@@ -5,7 +5,7 @@ import { useTagsQuery } from '../hooks/useTagsQuery';
 import { useTagMutations } from '../hooks/useTagMutations';
 import { useNotifications } from '@portfolio/shared';
 
-const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate }) => {
+const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate, parentId }) => {
   const { error } = useNotifications();
   const [open, setOpen] = useState(false);
   const { data: allTags = [] } = useTagsQuery();
@@ -32,8 +32,7 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate })
 
     const mutation = checked ? attachTag : detachTag;
     try {
-      await mutation.mutateAsync({ tagId, entityType, entityId });
-      onUpdate?.();
+      await mutation.mutateAsync({ tagId, entityType, entityId, parentId });
     } catch (error) {
       setSelectedIds(prev);
       error(error?.message || 'Произошла ошибка');

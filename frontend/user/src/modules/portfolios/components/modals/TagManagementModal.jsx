@@ -14,7 +14,6 @@ const PRESET_COLORS = [
 const TagManagementModal = () => {
   const { success, error } = useNotifications();
   const { modalProps, closeModal } = useModalStore();
-  const { onTagsChange } = modalProps;
 
   const { data: tags = [] } = useTagsQuery();
   const { createTag, updateTag, deleteTag } = useTagMutations();
@@ -32,7 +31,6 @@ const TagManagementModal = () => {
       success('Тег создан');
       setEditName('');
       setShowForm(false);
-      onTagsChange?.();
     } catch (error) {
       error(error);
     }
@@ -48,7 +46,6 @@ const TagManagementModal = () => {
       setEditId(null);
       setEditName('');
       setShowForm(false);
-      onTagsChange?.();
     } catch (error) {
       error(error?.message || 'Произошла ошибка');
     }
@@ -60,7 +57,6 @@ const TagManagementModal = () => {
     try {
       await deleteTag.mutateAsync(tagId);
       success('Тег удалён');
-      onTagsChange?.();
     } catch (error) {
       error(error?.message || 'Произошла ошибка');
     }
