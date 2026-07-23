@@ -4,15 +4,65 @@ import { portfolioApi } from '../api/portfolioApi';
 export const usePortfolioMutations = () => {
   const queryClient = useQueryClient();
 
-  const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['portfolios'] });
-    queryClient.invalidateQueries({ queryKey: ['wallets'] });
-    queryClient.invalidateQueries({ queryKey: ['overview'] });
+  const updateOverviewPortfolio = (old, serverPortfolio) => {
+    if (!old?.portfolios) return { ...old, portfolios: [serverPortfolio] };
+    const idx = old.portfolios.findIndex(p => p.id === serverPortfolio.id);
+    if (idx === -1) {
+      return { ...old, portfolios: [...old.portfolios, serverPortfolio] };
+    }
+    const updated = [...old.portfolios];
+    updated[idx] = serverPortfolio;
+    return { ...old, portfolios: updated };
+  };
+
+  const updateCache = (old, serverPortfolio) => {
+    if (!old?.portfolios) return { portfolios: [serverPortfolio] };
+    const idx = old.portfolios.findIndex(p => p.id === serverPortfolio.id);
+    if (idx === -1) {
+      return { ...old, portfolios: [...old.portfolios, serverPortfolio] };
+    }
+    const updated = [...old.portfolios];
+    updated[idx] = serverPortfolio;
+    return { ...old, portfolios: updated };
   };
 
   const editPortfolio = useMutation({
     mutationFn: (portfolio) => portfolioApi.savePortfolio(portfolio),
-    onSuccess: () => invalidate(),
+
+    onMutate: async (portfolio) => {
+      if (!portfolio.id) return {};
+      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      await queryClient.cancelQueries({ queryKey: ['overview'] });
+      const previous = queryClient.getQueryData(['portfolios']);
+
+      queryClient.setQueryData(['portfolios'], (old) => {
+        if (!old?.portfolios) return old;
+        return {
+          ...old,
+          portfolios: old.portfolios.map(p =>
+            p.id === portfolio.id ? { ...p, ...portfolio } : p
+          ),
+        };
+      });
+
+      return { previous };
+    },
+
+    onSuccess: (serverPortfolio) => {
+      if (!serverPortfolio?.id) return;
+      queryClient.setQueryData(['portfolios'], (old) =>
+        updateCache(old, serverPortfolio)
+      );
+      queryClient.setQueryData(['overview'], (old) =>
+        updateOverviewPortfolio(old, serverPortfolio)
+      );
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['portfolios'], context.previous);
+      }
+    },
   });
 
   const deletePortfolio = useMutation({
@@ -38,8 +88,6 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['portfolios'], context.previous);
       }
     },
-
-    onSettled: () => invalidate(),
   });
 
   const addAsset = useMutation({
@@ -48,6 +96,7 @@ export const usePortfolioMutations = () => {
 
     onMutate: async ({ portfolio, asset }) => {
       await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      await queryClient.cancelQueries({ queryKey: ['overview'] });
       const previous = queryClient.getQueryData(['portfolios']);
 
       queryClient.setQueryData(['portfolios'], (old) => {
@@ -76,13 +125,21 @@ export const usePortfolioMutations = () => {
       return { previous };
     },
 
+    onSuccess: (serverPortfolio) => {
+      if (!serverPortfolio?.id) return;
+      queryClient.setQueryData(['portfolios'], (old) =>
+        updateCache(old, serverPortfolio)
+      );
+      queryClient.setQueryData(['overview'], (old) =>
+        updateOverviewPortfolio(old, serverPortfolio)
+      );
+    },
+
     onError: (_err, _vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['portfolios'], context.previous);
       }
     },
-
-    onSettled: () => invalidate(),
   });
 
   const deleteAsset = useMutation({
@@ -91,6 +148,7 @@ export const usePortfolioMutations = () => {
 
     onMutate: async ({ portfolio, asset }) => {
       await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      await queryClient.cancelQueries({ queryKey: ['overview'] });
       const previous = queryClient.getQueryData(['portfolios']);
 
       queryClient.setQueryData(['portfolios'], (old) => {
@@ -110,13 +168,21 @@ export const usePortfolioMutations = () => {
       return { previous };
     },
 
+    onSuccess: (serverPortfolio) => {
+      if (!serverPortfolio?.id) return;
+      queryClient.setQueryData(['portfolios'], (old) =>
+        updateCache(old, serverPortfolio)
+      );
+      queryClient.setQueryData(['overview'], (old) =>
+        updateOverviewPortfolio(old, serverPortfolio)
+      );
+    },
+
     onError: (_err, _vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['portfolios'], context.previous);
       }
     },
-
-    onSettled: () => invalidate(),
   });
 
   const archivePortfolio = useMutation({
@@ -144,8 +210,6 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['portfolios'], context.previous);
       }
     },
-
-    onSettled: () => invalidate(),
   });
 
   const unarchivePortfolio = useMutation({
@@ -173,8 +237,6 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['portfolios'], context.previous);
       }
     },
-
-    onSettled: () => invalidate(),
   });
 
   const archiveAsset = useMutation({
@@ -182,6 +244,7 @@ export const usePortfolioMutations = () => {
 
     onMutate: async ({ portfolioId, assetId }) => {
       await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      await queryClient.cancelQueries({ queryKey: ['overview'] });
       const previous = queryClient.getQueryData(['portfolios']);
 
       queryClient.setQueryData(['portfolios'], (old) => {
@@ -203,13 +266,21 @@ export const usePortfolioMutations = () => {
       return { previous };
     },
 
+    onSuccess: (serverPortfolio) => {
+      if (!serverPortfolio?.id) return;
+      queryClient.setQueryData(['portfolios'], (old) =>
+        updateCache(old, serverPortfolio)
+      );
+      queryClient.setQueryData(['overview'], (old) =>
+        updateOverviewPortfolio(old, serverPortfolio)
+      );
+    },
+
     onError: (_err, _vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['portfolios'], context.previous);
       }
     },
-
-    onSettled: () => invalidate(),
   });
 
   const unarchiveAsset = useMutation({
@@ -217,6 +288,7 @@ export const usePortfolioMutations = () => {
 
     onMutate: async ({ portfolioId, assetId }) => {
       await queryClient.cancelQueries({ queryKey: ['portfolios'] });
+      await queryClient.cancelQueries({ queryKey: ['overview'] });
       const previous = queryClient.getQueryData(['portfolios']);
 
       queryClient.setQueryData(['portfolios'], (old) => {
@@ -238,13 +310,21 @@ export const usePortfolioMutations = () => {
       return { previous };
     },
 
+    onSuccess: (serverPortfolio) => {
+      if (!serverPortfolio?.id) return;
+      queryClient.setQueryData(['portfolios'], (old) =>
+        updateCache(old, serverPortfolio)
+      );
+      queryClient.setQueryData(['overview'], (old) =>
+        updateOverviewPortfolio(old, serverPortfolio)
+      );
+    },
+
     onError: (_err, _vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(['portfolios'], context.previous);
       }
     },
-
-    onSettled: () => invalidate(),
   });
 
   return { editPortfolio, deletePortfolio, addAsset, deleteAsset, archivePortfolio, unarchivePortfolio, archiveAsset, unarchiveAsset };
