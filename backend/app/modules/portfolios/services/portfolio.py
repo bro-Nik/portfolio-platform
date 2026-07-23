@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 
-from app.modules.portfolios.models import Portfolio, Transaction
+from app.modules.portfolios.models import Portfolio, PortfolioAsset, Transaction
 from app.modules.portfolios.repositories import (
     PortfolioRepository, TaggableRepository, TransactionRepository,
 )
@@ -93,11 +93,11 @@ class PortfolioService:
         await self.get(id)
         await self.repo.update(id, {'is_archived': False})
 
-    async def add_asset(self, id: int, data: PortfolioAssetCreateRequest) -> None:
+    async def add_asset(self, id: int, data: PortfolioAssetCreateRequest) -> PortfolioAsset:
         portfolio = await self.get(id)
         if portfolio.is_archived:
             raise ConflictError('Нельзя добавлять активы в архивный портфель')
-        await self.asset_service.create(data)
+        return await self.asset_service.create(data)
 
     async def delete_asset(self, id: int, asset_id: int) -> None:
         await self.get(id)

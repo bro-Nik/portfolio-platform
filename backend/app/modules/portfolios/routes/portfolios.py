@@ -10,7 +10,8 @@ from app.modules.portfolios.dependencies import (
     require_user,
 )
 from app.modules.portfolios.schemas import (
-    PortfolioAssetCreateRequest, PortfolioCreateRequest, PortfolioDeleteResponse,
+    PortfolioAssetActionResponse, PortfolioAssetCreateRequest, PortfolioAssetResponse,
+    PortfolioCreateRequest, PortfolioDeleteResponse,
     PortfolioListResponse, PortfolioResponse, PortfolioUpdateRequest,
     TransactionResponse,
 )
@@ -113,9 +114,10 @@ async def add_asset_to_portfolio(
     data: PortfolioAssetCreateRequest,
     portfolio_service: PortfolioServiceDep,
     query: PortfolioReadQueryDep,
-) -> PortfolioResponse:
-    await portfolio_service.add_asset(portfolio_id, data)
-    return await query.get_with_assets(portfolio_id)
+) -> PortfolioAssetResponse:
+    asset = await portfolio_service.add_asset(portfolio_id, data)
+    await query.enrich_single_asset(asset)
+    return PortfolioAssetResponse.model_validate(asset)
 
 
 @router.delete('/portfolios/{portfolio_id}/assets/{asset_id}')
@@ -126,10 +128,9 @@ async def delete_asset_from_portfolio(
     portfolio_id: int,
     asset_id: int,
     portfolio_service: PortfolioServiceDep,
-    query: PortfolioReadQueryDep,
-) -> PortfolioResponse:
+) -> PortfolioAssetActionResponse:
     await portfolio_service.delete_asset(portfolio_id, asset_id)
-    return await query.get_with_assets(portfolio_id)
+    return PortfolioAssetActionResponse(portfolio_id=portfolio_id, asset_id=asset_id)
 
 
 @router.post('/portfolios/{portfolio_id}/assets/{asset_id}/archive')
@@ -140,10 +141,9 @@ async def archive_asset_in_portfolio(
     portfolio_id: int,
     asset_id: int,
     portfolio_service: PortfolioServiceDep,
-    query: PortfolioReadQueryDep,
-) -> PortfolioResponse:
+) -> PortfolioAssetActionResponse:
     await portfolio_service.archive_asset(portfolio_id, asset_id)
-    return await query.get_with_assets(portfolio_id)
+    return PortfolioAssetActionResponse(portfolio_id=portfolio_id, asset_id=asset_id)
 
 
 @router.post('/portfolios/{portfolio_id}/assets/{asset_id}/unarchive')
@@ -154,10 +154,9 @@ async def unarchive_asset_in_portfolio(
     portfolio_id: int,
     asset_id: int,
     portfolio_service: PortfolioServiceDep,
-    query: PortfolioReadQueryDep,
-) -> PortfolioResponse:
+) -> PortfolioAssetActionResponse:
     await portfolio_service.unarchive_asset(portfolio_id, asset_id)
-    return await query.get_with_assets(portfolio_id)
+    return PortfolioAssetActionResponse(portfolio_id=portfolio_id, asset_id=asset_id)
 
 
 @router.get('/portfolios/assets/{asset_id}/transactions')

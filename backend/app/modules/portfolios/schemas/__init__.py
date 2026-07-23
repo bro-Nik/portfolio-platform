@@ -1,5 +1,6 @@
 from .overview import OverviewResponse
 from .portfolio import (
+    PortfolioAssetActionResponse,
     PortfolioAssetCreate,
     PortfolioAssetCreateRequest,
     PortfolioAssetCreateResponse,
@@ -25,6 +26,7 @@ from .transaction import (
     TransactionUpdateRequest,
 )
 from .wallet import (
+    WalletAssetActionResponse,
     WalletAssetCreate,
     WalletAssetResponse,
     WalletAssetUpdate,
@@ -40,6 +42,7 @@ from .wallet import (
 
 __all__ = [
     'OverviewResponse',
+    'PortfolioAssetActionResponse',
     'PortfolioAssetCreate',
     'PortfolioAssetCreateRequest',
     'PortfolioAssetCreateResponse',
@@ -64,6 +67,7 @@ __all__ = [
     'TransactionResponseWithAssets',
     'TransactionUpdate',
     'TransactionUpdateRequest',
+    'WalletAssetActionResponse',
     'WalletAssetCreate',
     'WalletAssetResponse',
     'WalletAssetUpdate',

@@ -2,8 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.schemas import Context
 from app.modules.market.repositories.ticker import TickerRepository
-from app.modules.portfolios.models import Portfolio
-from app.modules.portfolios.repositories import TransactionRepository
+from app.modules.portfolios.models import Portfolio, PortfolioAsset
+from app.modules.portfolios.repositories import TaggableRepository, TransactionRepository
 from app.modules.portfolios.services.portfolio import PortfolioService
 
 IMAGES_URL = '/market/static/images/tickers'
@@ -16,6 +16,7 @@ class PortfolioReadQuery:
         self.service = PortfolioService(session, ctx)
         self.ticker_repo = TickerRepository(session)
         self.transaction_repo = TransactionRepository(session)
+        self.taggable_repo = TaggableRepository(session)
 
     async def _enrich(self, portfolios: list[Portfolio]) -> None:
         all_assets = [a for p in portfolios for a in p.assets]
@@ -49,6 +50,17 @@ class PortfolioReadQuery:
             txn_tickers = await self.transaction_repo.portfolio_tickers_with_transactions(pid, ticker_ids)
             for a in assets:
                 a.has_transactions = a.ticker_id in txn_tickers
+
+    async def enrich_single_asset(self, asset: PortfolioAsset) -> PortfolioAsset:
+        tickers_list = await self.ticker_repo.get_all_by_ids([asset.ticker_id])
+        if tickers_list:
+            t = tickers_list[0]
+            asset.name = t.name
+            asset.symbol = t.symbol
+            asset.image = f'{IMAGES_URL}/{t.market}/24/{t.image}' if t.image else None
+        asset.tags = await self.taggable_repo.get_tags(self.service.ASSET_ENTITY_TYPE, asset.id)
+        asset.has_transactions = False
+        return asset
 
     async def get_with_assets(self, id: int) -> Portfolio:
         portfolio = await self.service.get_with_assets(id)

@@ -79,6 +79,11 @@ class PortfolioDeleteResponse(BaseModel):
     portfolio_id: int
 
 
+class PortfolioAssetActionResponse(BaseModel):
+    portfolio_id: int
+    asset_id: int
+
+
 class PortfolioAssetCreateResponse(BaseModel):
     pass
 

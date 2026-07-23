@@ -69,4 +69,9 @@ class WalletDeleteResponse(BaseModel):
     wallet_id: int
 
 
+class WalletAssetActionResponse(BaseModel):
+    wallet_id: int
+    asset_id: int
+
+
 WalletResponse.model_rebuild()

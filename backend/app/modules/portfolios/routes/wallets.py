@@ -10,8 +10,8 @@ from app.modules.portfolios.dependencies import (
     require_user,
 )
 from app.modules.portfolios.schemas import (
-    TransactionResponse, WalletCreateRequest, WalletDeleteResponse,
-    WalletListResponse, WalletResponse, WalletUpdateRequest,
+    TransactionResponse, WalletAssetActionResponse, WalletCreateRequest,
+    WalletDeleteResponse, WalletListResponse, WalletResponse, WalletUpdateRequest,
 )
 
 
@@ -111,10 +111,9 @@ async def delete_wallet_asset(
     wallet_id: int,
     asset_id: int,
     wallet_service: WalletServiceDep,
-    query: WalletReadQueryDep,
-) -> WalletResponse:
+) -> WalletAssetActionResponse:
     await wallet_service.delete_asset(wallet_id, asset_id)
-    return await query.get_with_assets(wallet_id)
+    return WalletAssetActionResponse(wallet_id=wallet_id, asset_id=asset_id)
 
 
 @router.post('/wallets/{wallet_id}/assets/{asset_id}/archive')
@@ -125,10 +124,9 @@ async def archive_wallet_asset(
     wallet_id: int,
     asset_id: int,
     wallet_service: WalletServiceDep,
-    query: WalletReadQueryDep,
-) -> WalletResponse:
+) -> WalletAssetActionResponse:
     await wallet_service.archive_asset(wallet_id, asset_id)
-    return await query.get_with_assets(wallet_id)
+    return WalletAssetActionResponse(wallet_id=wallet_id, asset_id=asset_id)
 
 
 @router.post('/wallets/{wallet_id}/assets/{asset_id}/unarchive')
@@ -139,10 +137,9 @@ async def unarchive_wallet_asset(
     wallet_id: int,
     asset_id: int,
     wallet_service: WalletServiceDep,
-    query: WalletReadQueryDep,
-) -> WalletResponse:
+) -> WalletAssetActionResponse:
     await wallet_service.unarchive_asset(wallet_id, asset_id)
-    return await query.get_with_assets(wallet_id)
+    return WalletAssetActionResponse(wallet_id=wallet_id, asset_id=asset_id)
 
 
 @router.get('/wallets/assets/{asset_id}/transactions')
