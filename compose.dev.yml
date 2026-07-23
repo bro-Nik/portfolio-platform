@@ -31,6 +31,7 @@ services:
       - ./backend/app:/app/app
       - ./backend/app/alembic.ini:/app/alembic.ini
       - ./backend/app/alembic/:/app/alembic/
+      - ./backend/static:/app/static
     depends_on:
       init:
         condition: service_completed_successfully
@@ -40,10 +41,12 @@ services:
   worker:
     volumes:
       - ./backend/app:/app/app
+      - ./backend/static:/app/static
 
   scheduler:
     volumes:
       - ./backend/app:/app/app
+      - ./backend/static:/app/static
 
   mailpit:
     image: axllent/mailpit

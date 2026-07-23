@@ -117,11 +117,9 @@ class TickerService:
                     if not ticker.image:
                         image_url = coin.get('image')
                         if image_url:
-                            symbol = coin.get('symbol', '').lower()
-                            if symbol:
-                                image_file = await self._download_resize_image(image_url, market, symbol)
-                                if image_file:
-                                    ticker.image = image_file
+                            image_file = await self._download_resize_image(image_url, market, ticker.id)
+                            if image_file:
+                                ticker.image = image_file
                     updated += 1
                 else:
                     skipped += 1
@@ -134,9 +132,7 @@ class TickerService:
                 })
                 image_url = coin.get('image')
                 if image_url:
-                    symbol = coin.get('symbol', '').lower()
-                    if symbol:
-                        ticker.image = await self._download_resize_image(image_url, market, symbol)
+                    ticker.image = await self._download_resize_image(image_url, market, ticker.id)
                 existing_by_ext[ext_id] = ticker
                 created += 1
 
@@ -156,7 +152,7 @@ class TickerService:
         ticker.symbol = coin.get('symbol', ticker.symbol)
         ticker.market_cap_rank = coin.get('market_cap_rank', ticker.market_cap_rank)
 
-    async def _download_resize_image(self, image_url: str, market: str, symbol: str) -> str | None:
+    async def _download_resize_image(self, image_url: str, market: str, ticker_id: int) -> str | None:
         try:
             async with httpx.AsyncClient(timeout=10) as client:
                 response = await client.get(image_url)
@@ -164,7 +160,7 @@ class TickerService:
 
             img = Image.open(BytesIO(response.content))
             ext = img.format.lower() if img.format else 'png'
-            filename = f'{symbol}.{ext}'
+            filename = f'{ticker_id}.{ext}'
 
             base_dir = TICKER_IMAGES_DIR / market
 
@@ -173,10 +169,10 @@ class TickerService:
                 dir_path.mkdir(parents=True, exist_ok=True)
                 img.resize((px, px), Image.LANCZOS).save(dir_path / filename)
 
-            logger.info('Загружена иконка %s/%s', market, symbol)
+            logger.info('Загружена иконка %s/%s', market, filename)
             return filename
         except Exception:
-            logger.exception('Ошибка загрузки изображения %s: %s', symbol, image_url)
+            logger.exception('Ошибка загрузки изображения %s: %s', ticker_id, image_url)
             return None
 
     async def save_prices(self, market: str, price_data: dict, *, provider_name: str | None = None) -> int:
@@ -209,7 +205,7 @@ class TickerService:
         for ext_id, url in image_urls.items():
             ticker = ticker_by_ext_id.get(ext_id)
             if ticker and url:
-                ticker.image = await self._download_resize_image(url, market, ticker.symbol.lower())
+                ticker.image = await self._download_resize_image(url, market, ticker.id)
                 loaded += 1
 
         return loaded

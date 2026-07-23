@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from sqlalchemy import select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +8,8 @@ from app.common.exceptions import BusinessRuleError, NotFoundError
 from app.modules.market.models import Ticker, TickerExternalId, TickerIdentifier
 from app.modules.market.repositories import TickerRepository
 from app.modules.market.schemas import TickerAdminResponse, TickerUpdateRequest
+
+TICKER_IMAGES_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent / 'static' / 'images' / 'tickers'
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +75,9 @@ class TickerAdminService:
                 f'Тикер используется в {refs} записях. Удалите или переназначьте их перед удалением.'
             )
 
+        if ticker.image:
+            self._delete_image_files(ticker.image, ticker.market)
+
         await self.repo.delete(ticker_id)
 
     async def merge(self, source_id: int, target_id: int) -> Ticker:
@@ -83,6 +89,7 @@ class TickerAdminService:
         if not source or not target:
             raise NotFoundError('Один из тикеров не найден')
 
+        await self._merge_handle_image(source, target)
         await self._merge_reassign_external_ids(source_id, target_id)
         await self._merge_reassign_identifiers(source_id, target_id)
         await self._merge_update_references(source_id, target_id)
@@ -115,6 +122,28 @@ class TickerAdminService:
                 text(f'UPDATE {table} SET {column} = :target WHERE {column} = :source'),
                 {'source': source_id, 'target': target_id},
             )
+
+    def _delete_image_files(self, filename: str, market: str) -> None:
+        for px in (24, 40):
+            path = TICKER_IMAGES_DIR / market / str(px) / filename
+            path.unlink(missing_ok=True)
+
+    async def _merge_handle_image(self, source: Ticker, target: Ticker) -> None:
+        if not source.image:
+            return
+        ext = source.image.rsplit('.', 1)[-1]
+        for px in (24, 40):
+            src = TICKER_IMAGES_DIR / source.market / str(px) / source.image
+            if not src.exists():
+                continue
+            if target.image:
+                src.unlink(missing_ok=True)
+            else:
+                dst = TICKER_IMAGES_DIR / target.market / str(px) / f'{target.id}.{ext}'
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                src.rename(dst)
+        if not target.image:
+            target.image = f'{target.id}.{ext}'
 
     async def _merge_reassign_external_ids(self, source_id: int, target_id: int) -> None:
         existing = await self.session.execute(
