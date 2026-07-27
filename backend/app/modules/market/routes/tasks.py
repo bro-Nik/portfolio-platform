@@ -1,6 +1,8 @@
 from app.common.exceptions import handle_errors
+from app.common.exceptions.business import BusinessRuleError
 
 from app.modules.market.dependencies import TaskServiceDep
+from app.modules.market.enums import TaskStatus
 from app.modules.market.tasks.market import update_market_data
 from app.modules.market.schemas import (
     TaskCreateRequest, TaskResponse, TaskUpdateRequest,
@@ -41,6 +43,8 @@ async def delete_task(task_id: int, task_service: TaskServiceDep) -> None:
 @handle_errors('Ошибка запуска задачи')
 async def run_task(task_id: int, task_service: TaskServiceDep) -> dict:
     task = await task_service.get(task_id)
+    if task.status == TaskStatus.RUNNING:
+        raise BusinessRuleError(f'Задача {task_id} уже выполняется')
     await update_market_data.kiq(
         provider_name=task.provider_name,
         method=task.task_type,

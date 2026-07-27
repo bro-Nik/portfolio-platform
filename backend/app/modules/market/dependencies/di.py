@@ -76,8 +76,8 @@ class AppProvider(Provider):
 
 class TaskProvider(Provider):
     @provide(scope=Scope.REQUEST)
-    def get_task_tracker_service(self, session_factory: SessionFactory) -> TaskTrackerService:
-        return TaskTrackerService(session_factory)
+    def get_task_tracker_service(self, session_factory: SessionFactory, redis: Redis) -> TaskTrackerService:
+        return TaskTrackerService(session_factory, redis)
 
     @provide(scope=Scope.REQUEST)
     def get_provider_factory(self, redis: Redis, session_factory: SessionFactory, provider_service: ProviderService) -> Callable[[str, int], Awaitable[BaseProvider]]:
