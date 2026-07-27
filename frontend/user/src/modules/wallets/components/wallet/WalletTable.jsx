@@ -1,5 +1,6 @@
 import React, { memo, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
+import TickerAvatar from 'src/components/TickerAvatar';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
@@ -85,7 +86,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
       fixed: 'left',
       render: (_, record) => (
         <div style={{ display: 'flex', gap: 8 }} onClick={() => openItem(record, 'wallet_asset', wallet.id)}>
-          <img className="img-asset-min" loading="lazy" src={record.image} style={{ cursor: 'pointer' }} />
+          <TickerAvatar src={record.image} symbol={record.symbol} size={24} style={{ cursor: 'pointer' }} />
           <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
             <span style={{ display: 'flex', alignItems: 'flex-start' }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }} title={record.name}>{record.name}</span>

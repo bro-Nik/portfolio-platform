@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Modal, Input, Avatar, Spin, Empty, Tooltip } from 'antd';
+import { Modal, Input, Spin, Empty, Tooltip } from 'antd';
 import { Search } from 'lucide-react';
+import TickerAvatar from 'src/components/TickerAvatar';
 import { useModalStore } from '@portfolio/shared';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
 import { useTickersQuery } from 'src/modules/assets/hooks/useTickersQuery';
@@ -91,27 +92,11 @@ const AssetAddModal = () => {
         style={isDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
       >
         <div style={{ flexShrink: 0 }}>
-          {ticker.image ? (
-            <Avatar 
-              src={getAssetImage(ticker)} 
-              size={24}
-              style={{ minWidth: 24 }}
-            />
-          ) : (
-            <Avatar 
-              size={24}
-              style={{ 
-                backgroundColor: '#1890ff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                minWidth: 24,
-              }}
-            >
-              {ticker.symbol.slice(0, 2).toUpperCase()}
-            </Avatar>
-          )}
+          <TickerAvatar
+            src={ticker.image ? getAssetImage(ticker) : null}
+            symbol={ticker.symbol}
+            size={24}
+          />
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>

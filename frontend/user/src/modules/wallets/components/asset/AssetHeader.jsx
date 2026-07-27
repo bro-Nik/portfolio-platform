@@ -1,6 +1,7 @@
 import React from 'react';
 import { Space, Button } from 'antd';
 import { ExternalLink } from 'lucide-react';
+import TickerAvatar from 'src/components/TickerAvatar';
 import { formatCurrency, getTradingViewUrl } from 'src/utils/format';
 import { useModalStore } from '@portfolio/shared';
 import AssetActionsDropdown from '../AssetActionsDropdown';
@@ -24,7 +25,7 @@ const AssetHeader = ({ wallet, asset }) => {
               </h1>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <img className="img-asset" src={asset.image?.replace('/24/', '/40/')} alt={`${asset.name} logo`} />
+                <TickerAvatar src={asset.image?.replace('/24/', '/40/')} symbol={asset.symbol} size={40} />
                 <span style={{ fontSize: '2.5rem', fontWeight: 600 }}>{formatCurrency(asset.price)}</span>
               </div>
 
