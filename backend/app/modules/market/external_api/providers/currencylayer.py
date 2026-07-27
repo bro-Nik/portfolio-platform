@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 import logging
 
 from ..core import BaseProvider, registry
@@ -44,17 +45,17 @@ class CurrencyLayerProvider(BaseProvider):
             p['access_key'] = self._api_key
         return p
 
-    async def _fetch_all_tickers(self) -> list[dict]:
+    async def _fetch_all_tickers(self) -> AsyncIterator[list[dict]]:
         params = self._augment_params()
         try:
             data = await self.http.request('GET', 'list', params=params)
         except Exception:
             logger.exception('Ошибка загрузки списка валют')
-            return []
+            return
 
         currencies = data.get('currencies', {})
-        return [{'id': code.lower(), 'name': name, 'symbol': code}
-                for code, name in currencies.items()]
+        yield [{'id': code.lower(), 'name': name, 'symbol': code}
+               for code, name in currencies.items()]
 
     async def _fetch_live_rates(self) -> dict[str, float]:
         params = self._augment_params()

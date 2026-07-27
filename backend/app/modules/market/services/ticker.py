@@ -1,9 +1,9 @@
-from collections.abc import Awaitable, Callable
+import asyncio
+from collections.abc import AsyncIterator, Awaitable, Callable
 from io import BytesIO
 from pathlib import Path
 import logging
 
-import httpx
 from PIL import Image
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.market import models
 from app.modules.market.models import Ticker
 from app.modules.market.repositories import TickerRepository
+from app.modules.market.external_api.core import MediaClient
 from app.modules.market.services.ticker_external_id import TickerExternalIdService
 from app.modules.market.services.ticker_identifier import TickerIdentifierService
 
@@ -72,7 +73,7 @@ class TickerService:
     async def get_tickers_without_images(self, market: str) -> list[Ticker]:
         return await self.repo.get_all_by_market_without_images(market)
 
-    async def sync_tickers(self, market: str, raw_data: list[dict], strategy: str = 'all', *,
+    async def sync_tickers(self, market: str, raw_data: AsyncIterator[list[dict]], strategy: str = 'all', *,
                            provider_name: str,
                            extract_identifiers: Callable[[dict], dict[str, str]] | None = None) -> dict:
         ext_id_service = self._ext_id_service
@@ -89,60 +90,74 @@ class TickerService:
         skipped = 0
         matched = 0
 
-        for coin in raw_data:
-            ext_id = coin.get('id')
-            if not ext_id:
-                continue
+        async for batch in raw_data:
+            queued_images: list[tuple[str, Ticker]] = []
 
-            ticker = existing_by_ext.get(ext_id)
+            for coin in batch:
+                ext_id = coin.get('id')
+                if not ext_id:
+                    continue
 
-            if not ticker and extract_identifiers:
-                identifiers = extract_identifiers(coin)
-                if identifiers:
-                    matched_id = await identifier_service.find_matching_ticker(identifiers, market)
-                    if matched_id:
-                        ticker = ticker_map.get(matched_id)
-                        if not ticker:
-                            fetched = await self.repo.get_all_by_ids([matched_id])
-                            if fetched:
-                                ticker = fetched[0]
-                                ticker_map[ticker.id] = ticker
-                        if ticker:
-                            existing_by_ext[ext_id] = ticker
-                            matched += 1
+                ticker = existing_by_ext.get(ext_id)
 
-            if ticker:
-                if strategy == 'all':
-                    self._update_ticker_fields(ticker, coin)
-                    if not ticker.image:
-                        image_url = coin.get('image')
-                        if image_url:
-                            image_file = await self._download_resize_image(image_url, market, ticker.id)
-                            if image_file:
-                                ticker.image = image_file
-                    updated += 1
+                if not ticker and extract_identifiers:
+                    identifiers = extract_identifiers(coin)
+                    if identifiers:
+                        matched_id = await identifier_service.find_matching_ticker(identifiers, market)
+                        if matched_id:
+                            ticker = ticker_map.get(matched_id)
+                            if not ticker:
+                                fetched = await self.repo.get_all_by_ids([matched_id])
+                                if fetched:
+                                    ticker = fetched[0]
+                                    ticker_map[ticker.id] = ticker
+                            if ticker:
+                                existing_by_ext[ext_id] = ticker
+                                matched += 1
+
+                if ticker:
+                    if strategy == 'all':
+                        self._update_ticker_fields(ticker, coin)
+                        image_url = coin.get('image') if not ticker.image else None
+                        updated += 1
+                    else:
+                        skipped += 1
+                        continue
                 else:
-                    skipped += 1
-            else:
-                ticker = await self.repo.create({
-                    'market': market,
-                    'name': coin.get('name', ''),
-                    'symbol': coin.get('symbol', ''),
-                    'market_cap_rank': coin.get('market_cap_rank'),
-                })
-                image_url = coin.get('image')
+                    ticker = await self.repo.create({
+                        'market': market,
+                        'name': coin.get('name', ''),
+                        'symbol': coin.get('symbol', ''),
+                        'market_cap_rank': coin.get('market_cap_rank'),
+                    })
+                    await self.session.flush()
+                    existing_by_ext[ext_id] = ticker
+                    image_url = coin.get('image')
+                    created += 1
+
+                await ext_id_service.upsert(ticker.id, provider_name, ext_id)
+                if extract_identifiers:
+                    identifiers = extract_identifiers(coin)
+                    if identifiers:
+                        await identifier_service.save_identifiers(ticker.id, identifiers)
+
                 if image_url:
-                    ticker.image = await self._download_resize_image(image_url, market, ticker.id)
-                existing_by_ext[ext_id] = ticker
-                created += 1
+                    queued_images.append((image_url, ticker))
 
-            await ext_id_service.upsert(ticker.id, provider_name, ext_id)
-            if extract_identifiers:
-                identifiers = extract_identifiers(coin)
-                if identifiers:
-                    await identifier_service.save_identifiers(ticker.id, identifiers)
+            if queued_images:
+                urls = [url for url, _ in queued_images]
+                results = await MediaClient.download_batch(urls)
+                for url, ticker in queued_images:
+                    content = results.get(url)
+                    if isinstance(content, Exception):
+                        continue
+                    filename = await asyncio.to_thread(self._process_image, content, market, ticker.id)
+                    if filename:
+                        ticker.image = filename
 
-        await self.session.flush()
+            await self.session.flush()
+            await self.session.commit()
+
         logger.info('sync_tickers(%s, %s): created=%s, updated=%s, skipped=%s, matched=%s',
                      market, strategy, created, updated, skipped, matched)
         return {'created': created, 'updated': updated, 'skipped': skipped, 'matched': matched}
@@ -152,28 +167,19 @@ class TickerService:
         ticker.symbol = coin.get('symbol', ticker.symbol)
         ticker.market_cap_rank = coin.get('market_cap_rank', ticker.market_cap_rank)
 
-    async def _download_resize_image(self, image_url: str, market: str, ticker_id: int) -> str | None:
-        try:
-            async with httpx.AsyncClient(timeout=10) as client:
-                response = await client.get(image_url)
-                response.raise_for_status()
+    def _process_image(self, content: bytes, market: str, ticker_id: int) -> str | None:
+        img = Image.open(BytesIO(content))
+        ext = img.format.lower() if img.format else 'png'
+        filename = f'{ticker_id}.{ext}'
 
-            img = Image.open(BytesIO(response.content))
-            ext = img.format.lower() if img.format else 'png'
-            filename = f'{ticker_id}.{ext}'
+        base_dir = TICKER_IMAGES_DIR / market
 
-            base_dir = TICKER_IMAGES_DIR / market
+        for px in (24, 40):
+            dir_path = base_dir / str(px)
+            dir_path.mkdir(parents=True, exist_ok=True)
+            img.resize((px, px), Image.LANCZOS).save(dir_path / filename)
 
-            for px in (24, 40):
-                dir_path = base_dir / str(px)
-                dir_path.mkdir(parents=True, exist_ok=True)
-                img.resize((px, px), Image.LANCZOS).save(dir_path / filename)
-
-            logger.info('Загружена иконка %s/%s', market, filename)
-            return filename
-        except Exception:
-            logger.exception('Ошибка загрузки изображения %s: %s', ticker_id, image_url)
-            return None
+        return filename
 
     async def save_prices(self, market: str, price_data: dict, *, provider_name: str | None = None) -> int:
         batch_size = 500
@@ -201,11 +207,26 @@ class TickerService:
 
         image_urls = await fetch_images(ext_ids)
 
-        loaded = 0
+        tasks = []
         for ext_id, url in image_urls.items():
             ticker = ticker_by_ext_id.get(ext_id)
             if ticker and url:
-                ticker.image = await self._download_resize_image(url, market, ticker.id)
+                tasks.append((ticker, url))
+
+        if not tasks:
+            return 0
+
+        urls = [url for _, url in tasks]
+        results = await MediaClient.download_batch(urls)
+
+        loaded = 0
+        for ticker, url in tasks:
+            content = results.get(url)
+            if isinstance(content, Exception):
+                continue
+            filename = await asyncio.to_thread(self._process_image, content, market, ticker.id)
+            if filename:
+                ticker.image = filename
                 loaded += 1
 
         return loaded

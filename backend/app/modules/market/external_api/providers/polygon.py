@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 import logging
 
@@ -54,8 +55,7 @@ class PolygonProvider(BaseProvider):
             p['apiKey'] = self._api_key
         return p
 
-    async def _fetch_all_tickers(self) -> list[dict]:
-        all_tickers = []
+    async def _fetch_all_tickers(self) -> AsyncIterator[list[dict]]:
         next_url: str | None = None
 
         while True:
@@ -71,20 +71,16 @@ class PolygonProvider(BaseProvider):
                 break
 
             results = data.get('results', [])
-            for item in results:
-                all_tickers.append({
-                    'id': item.get('ticker'),
-                    'symbol': item.get('ticker'),
-                    'name': item.get('name'),
-                })
-            logger.info('Загружено %s тикеров (всего: %s)', len(results), len(all_tickers))
+            batch = [
+                {'id': item.get('ticker'), 'symbol': item.get('ticker'), 'name': item.get('name')}
+                for item in results
+            ]
+            logger.info('Загружено %s тикеров', len(batch))
+            yield batch
 
             next_url = data.get('next_url')
             if not next_url:
                 break
-
-        logger.info('Загружено всего %s тикеров с Polygon', len(all_tickers))
-        return all_tickers
 
     async def _fetch_all_prices(self) -> dict[str, float]:
         date = datetime.now().date()

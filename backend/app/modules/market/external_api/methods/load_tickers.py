@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
 import logging
 
 from app.modules.market.services.ticker import TickerService
@@ -34,33 +34,33 @@ class TickerLoader(MethodBase):
         if strategy not in self.STRATEGIES:
             logger.warning('Неизвестная стратегия "%s", возврат к "all"', strategy)
             strategy = 'all'
-        raw_tickers = await fetch_all_tickers()
+        raw_data = fetch_all_tickers()
         method_name = self.STRATEGIES[strategy]
         return await getattr(self, method_name)(
-            market, raw_tickers,
+            market, raw_data,
             provider_name=provider_name,
             extract_identifiers=extract_identifiers,
             session=session,
         )
 
-    async def _sync_all(self, market: str, raw_tickers: list[dict], provider_name: str,
+    async def _sync_all(self, market: str, raw_data: AsyncIterator[list[dict]], provider_name: str,
                         extract_identifiers: Callable[[dict], dict[str, str]] | None = None,
                         session=None) -> dict:
         ticker_service = TickerService(session)
         result = await ticker_service.sync_tickers(
-            market, raw_tickers, strategy='all',
+            market, raw_data, strategy='all',
             provider_name=provider_name,
             extract_identifiers=extract_identifiers,
         )
         await session.flush()
         return result
 
-    async def _sync_new(self, market: str, raw_tickers: list[dict], provider_name: str,
+    async def _sync_new(self, market: str, raw_data: AsyncIterator[list[dict]], provider_name: str,
                         extract_identifiers: Callable[[dict], dict[str, str]] | None = None,
                         session=None) -> dict:
         ticker_service = TickerService(session)
         result = await ticker_service.sync_tickers(
-            market, raw_tickers, strategy='new',
+            market, raw_data, strategy='new',
             provider_name=provider_name,
             extract_identifiers=extract_identifiers,
         )

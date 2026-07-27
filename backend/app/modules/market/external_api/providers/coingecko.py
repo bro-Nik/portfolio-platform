@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 from decimal import Decimal
 import json
 import logging
@@ -81,8 +82,7 @@ class CoingeckoProvider(BaseProvider):
             logger.exception('Ошибка загрузки платформ')
             return {}
 
-    async def _fetch_all_tickers(self, platforms_map: dict[str, dict] | None = None) -> list[dict]:
-        all_coins = []
+    async def _fetch_all_tickers(self, platforms_map: dict[str, dict] | None = None) -> AsyncIterator[list[dict]]:
         page = 1
         while True:
             logger.info('Загрузка страницы тикеров %s...', page)
@@ -99,15 +99,14 @@ class CoingeckoProvider(BaseProvider):
             for coin in data:
                 if platforms_map:
                     coin['platforms'] = platforms_map.get(coin.get('id'), {})
-            all_coins.extend(data)
+            yield data
             if len(data) < 250:
                 break
             page += 1
-        logger.info('Загружено %s монет с CoinGecko', len(all_coins))
-        return all_coins
 
-    async def fetch_all_tickers(self) -> list[dict]:
-        return await self._fetch_all_tickers()
+    async def fetch_all_tickers(self) -> AsyncIterator[list[dict]]:
+        async for batch in self._fetch_all_tickers():
+            yield batch
 
     async def get_prices(self, ids: list[str]) -> dict[str, Decimal]:
         if not ids:

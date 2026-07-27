@@ -57,6 +57,15 @@ services:
   nginx:
     ports: ["8081:80"]
 
+  dozzle:
+    image: amir20/dozzle:latest
+    ports:
+      - "9999:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    profiles:
+      - dozzle
+
   adminer:
     image: adminer
     ports: ["8082:8080"]

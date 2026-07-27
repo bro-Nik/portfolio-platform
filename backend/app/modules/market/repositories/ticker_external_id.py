@@ -32,18 +32,12 @@ class TickerExternalIdRepository(BaseRepository[TickerExternalId]):
         return {row.external_id: row.ticker_id for row in rows}
 
     async def upsert(self, ticker_id: int, provider_name: str, ext_id: str) -> TickerExternalId:
-        existing = await self.get_by(
-            self.model.ticker_id == ticker_id,
-            self.model.provider_name == provider_name,
+        obj = self.model(
+            ticker_id=ticker_id,
+            provider_name=provider_name,
+            external_id=ext_id,
         )
-        if existing:
-            existing.external_id = ext_id
-            return existing
-        return await self.create({
-            'ticker_id': ticker_id,
-            'provider_name': provider_name,
-            'external_id': ext_id,
-        })
+        return await self._session.merge(obj)
 
     async def find_tickers_without_ext_id(self, provider_name: str) -> list[Ticker]:
         subq = select(self.model.ticker_id).where(
