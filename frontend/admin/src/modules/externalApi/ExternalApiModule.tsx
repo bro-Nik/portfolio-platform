@@ -18,7 +18,7 @@ const components: Record<SubTabKey, React.FC> = {
 };
 
 export const ExternalApiModule: React.FC = () => {
-  const { activeTab } = useSubTabs({ tabs: tabs, defaultKey: 'providers' });
+  const { activeTab } = useSubTabs({ tabs: tabs, defaultKey: 'providers', storageKey: 'subtab_externalApi' });
 
   const ActiveComponent = components[activeTab];
   return <ActiveComponent />;

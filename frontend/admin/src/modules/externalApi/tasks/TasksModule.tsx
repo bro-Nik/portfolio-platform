@@ -6,6 +6,7 @@ import { TaskFilterPanel, TaskFilters } from './components/TaskFilterPanel';
 import { TaskStatsCards } from './components/TaskStatsCards';
 import { useTasks } from './hooks/useTasks';
 import { useTaskModals } from './hooks/useTaskModals';
+import { usePersistedState } from '../../../hooks/usePersistedState';
 import { QueryError } from '../../../components/QueryError';
 
 export const TasksModule: React.FC = () => {
@@ -14,7 +15,7 @@ export const TasksModule: React.FC = () => {
 
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState<TaskFilters>({ status: 'all', providerName: 'all' });
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = usePersistedState('tasks_tab', 'all');
 
   const quickStats = useMemo(() => ({
     total: tasks.length,

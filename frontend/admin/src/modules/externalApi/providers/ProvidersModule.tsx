@@ -5,6 +5,7 @@ import { ProviderTable } from './components/ProviderTable';
 import { ProviderFilterPanel, ProviderFilters } from './components/ProviderFilterPanel';
 import { ProviderStatsCards } from './components/ProviderStatsCards';
 import { useProviders } from './hooks/useProviders';
+import { usePersistedState } from '../../../hooks/usePersistedState';
 import { QueryError } from '../../../components/QueryError';
 
 export const ProvidersModule: React.FC = () => {
@@ -12,7 +13,7 @@ export const ProvidersModule: React.FC = () => {
 
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState<ProviderFilters>({ status: 'all' });
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = usePersistedState('providers_tab', 'all');
 
   const quickStats = useMemo(() => ({
     total: providers.length,

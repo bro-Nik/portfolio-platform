@@ -7,6 +7,7 @@ import { UserFilterPanel } from './components/UserFilterPanel';
 import { UserStatsCards } from './components/UserStatsCards';
 import { useUsers } from './hooks/useUsers';
 import { useUserModals } from './hooks/useUserModals';
+import { usePersistedState } from '../../hooks/usePersistedState';
 import { UserFilters } from '../../types/user';
 import { QueryError } from '../../components/QueryError';
 
@@ -16,7 +17,7 @@ export const UsersModule: React.FC = () => {
 
   const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState<UserFilters>({ status: 'all', role: 'all' });
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = usePersistedState('users_tab', 'all');
 
   const quickStats = useMemo(() => {
     const thirtyDaysAgo = new Date();

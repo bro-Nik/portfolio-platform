@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-const useNavigationStore = create((set, get) => ({
+const store = (set, get) => ({
   // Активный раздел
   activeSection: 'portfolios',
 
@@ -240,7 +241,17 @@ const useNavigationStore = create((set, get) => ({
       return get().openedItems;
     }
   }
-}));
+});
+
+const useNavigationStore = create(
+  persist(store, {
+    name: 'user-navigation',
+    partialize: (state) => ({
+      activeSection: state.activeSection,
+      openedItems: state.openedItems,
+    }),
+  }),
+);
 
 const getMainSectionByItemType = (itemType) => {
   const type = itemType.split('_')[0];
