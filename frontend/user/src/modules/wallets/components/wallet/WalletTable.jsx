@@ -17,6 +17,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
   const { openItem } = useNavigation();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
+  const [hideCheap, setHideCheap] = useLocalStorage('wallet-hide-cheap', false);
   const [showArchived, setShowArchived] = useLocalStorage('wallet-archive', false);
 
   const preparedAssets = useMemo(() => {
@@ -58,6 +59,9 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
 
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;
+    if (hideCheap) {
+      result = result.filter(asset => asset.costNow >= 1 || !asset.hasTransactions);
+    }
     if (!showArchived) {
       const active = result.filter(asset => !asset.isArchived);
       if (active.length > 0) result = active;
@@ -75,7 +79,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
       );
     }
     return result;
-  }, [preparedAssets, showArchived, tagFilterIds, search]);
+  }, [preparedAssets, hideCheap, showArchived, tagFilterIds, search]);
 
   const showingArchivedFallback = !showArchived && preparedAssets.length > 0 && preparedAssets.every(a => a.isArchived);
 
@@ -178,6 +182,9 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
           style={{ width: 160 }}
         />
         <TagFilter onChange={setTagFilterIds} />
+        <Checkbox checked={hideCheap} onChange={(e) => setHideCheap(e.target.checked)}>
+          Спрятать дешевле $1
+        </Checkbox>
         <Checkbox checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)}>
           Показывать архивные
         </Checkbox>

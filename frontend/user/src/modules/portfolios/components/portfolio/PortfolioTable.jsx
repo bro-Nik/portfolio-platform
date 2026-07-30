@@ -58,7 +58,9 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
 
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;
-    if (hideCheap) result = result.filter(asset => asset.costNow >= 1);
+    if (hideCheap) {
+      result = result.filter(asset => asset.costNow >= 1 || !asset.hasTransactions);
+    }
     if (!showArchived) {
       const active = result.filter(asset => !asset.isArchived);
       if (active.length > 0) result = active;
