@@ -1,5 +1,6 @@
 import React from 'react';
-import { Form, Input, Modal, Alert } from 'antd';
+import { Alert } from '@portfolio/shared';
+import { Form, Input, Modal } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { useTickerActions } from '../hooks/useTickerActions';
 
@@ -25,9 +26,8 @@ export const TickerMergeModal: React.FC = () => {
       okText="Объединить"
     >
       <Alert
-        message="Тикер-источник будет удалён. Все ссылки (портфели, кошельки, транзакции, external_id, identifiers) будут перенесены на тикер-получатель."
+        title="Тикер-источник будет удалён. Все ссылки (портфели, кошельки, транзакции, external_id, identifiers) будут перенесены на тикер-получатель."
         type="info"
-        showIcon
         style={{ marginBottom: 16 }}
       />
       <Form form={form} layout="vertical">

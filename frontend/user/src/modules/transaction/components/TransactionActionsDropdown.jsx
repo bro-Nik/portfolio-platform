@@ -4,7 +4,7 @@ import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 import TransactionDeleteModal from 'src/modules/transaction/modals/TransactionDelete';
 
-const TransactionActionsDropdown = ({ portfolio, wallet, asset, transaction, btn }) => {
+const TransactionActionsDropdown = ({ portfolio, wallet, asset, transaction }) => {
   const { openModal } = useModalStore();
   const isArchived = asset?.isArchived || portfolio?.isArchived || wallet?.isArchived;
 
@@ -28,7 +28,7 @@ const TransactionActionsDropdown = ({ portfolio, wallet, asset, transaction, btn
     },
   ];
 
-  return <ActionsDropdown items={menuItems} btn={btn}/>;
+  return <ActionsDropdown items={menuItems} />;
 };
 
 export default TransactionActionsDropdown;

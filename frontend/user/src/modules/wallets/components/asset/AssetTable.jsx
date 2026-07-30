@@ -9,7 +9,6 @@ import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosDat
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { isTradeTransaction, isTransferTransaction } from 'src/modules/transaction/utils/type';
 import {
-  createActionsColumn,
   createTransactionLinkColumn,
   createTransactionPriceColumn,
   createTransactionQuantityColumn,
@@ -37,7 +36,7 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
   }, [openModal, asset, wallet.id]);
 
   const columns = useMemo(() => [
-    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick, asset.isArchived),
+    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick, asset.isArchived, (record) => <TransactionActionsDropdown wallet={wallet} asset={asset} transaction={record} />),
     createTransactionPriceColumn(),
     createTransactionSumColumn(isCounterTransaction),
     createTransactionQuantityColumn(isCounterTransaction),
@@ -67,7 +66,6 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
       width: 120,
     },
     createCommentColumn(),
-    createActionsColumn(({ row }) => <TransactionActionsDropdown wallet={wallet} asset={asset} transaction={row.original} btn='icon' />),
   ], [
     isCounterTransaction, handleTransactionClick,
     getPortfolio, getWallet, openItem

@@ -41,7 +41,7 @@ const AssetHeader = ({ wallet, asset }) => {
             <Button type="primary" disabled={asset.isArchived} onClick={() => openModal(TransactionEditModal, { tickerId: asset.tickerId, walletId: wallet.id })} >
               Отправить
             </Button>
-            <AssetActionsDropdown wallet={wallet} asset={asset} btn='btn' />
+            <AssetActionsDropdown wallet={wallet} asset={asset} />
           </Space>
         </div>
       </div>

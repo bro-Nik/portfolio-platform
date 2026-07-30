@@ -15,7 +15,7 @@ import TagAssignPopover from 'src/modules/portfolios/components/TagAssignPopover
 import { getTradingViewUrl } from 'src/utils/format';
 import { useWalletMutations } from 'src/modules/wallets/hooks/useWalletMutations';
 
-const AssetActionsDropdown = ({ wallet, asset, btn, onUpdate }) => {
+const AssetActionsDropdown = ({ wallet, asset, onUpdate }) => {
   const { openModal } = useModalStore();
   const { archiveWalletAsset, unarchiveWalletAsset } = useWalletMutations();
 
@@ -62,7 +62,11 @@ const AssetActionsDropdown = ({ wallet, asset, btn, onUpdate }) => {
       type: 'divider',
     },
     {
-      key: 'tags',
+      key: 'assignTags',
+      label: <TagAssignPopover entityType="wallet_asset" entityId={asset?.id} assignedTags={asset?.tags} onUpdate={onUpdate} menuItem />,
+    },
+    {
+      key: 'manageTags',
       icon: <Tag size={16} />,
       label: 'Управление тегами',
       onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
@@ -93,12 +97,7 @@ const AssetActionsDropdown = ({ wallet, asset, btn, onUpdate }) => {
     },
   ];
 
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <TagAssignPopover entityType="wallet_asset" entityId={asset?.id} assignedTags={asset?.tags} onUpdate={onUpdate} />
-      <ActionsDropdown items={menuItems} btn={btn}/>
-    </div>
-  );
+  return <ActionsDropdown items={menuItems} />;
 };
 
 export default AssetActionsDropdown;

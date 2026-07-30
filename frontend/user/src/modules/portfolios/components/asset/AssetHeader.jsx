@@ -42,7 +42,7 @@ const AssetHeader = ({ portfolio, asset }) => {
             <Button type="primary" disabled={asset.isArchived} onClick={() => openModal(TransactionEditModal, { tickerId: asset.tickerId, portfolioId: portfolio.id })} >
               Добавить транзакцию
             </Button>
-            <AssetActionsDropdown portfolio={portfolio} asset={asset} btn='btn' />
+            <AssetActionsDropdown portfolio={portfolio} asset={asset} />
           </Space>
         </div>
       </div>

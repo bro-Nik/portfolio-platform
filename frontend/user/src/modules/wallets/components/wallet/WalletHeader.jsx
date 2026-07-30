@@ -13,7 +13,10 @@ const WalletHeader = ({ wallet, onRefresh }) => {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div>
-              <h1 style={{ fontSize: '1.75rem', marginBottom: 4 }}>{wallet.name}</h1>
+              <h1 style={{ fontSize: '1.75rem', marginBottom: 4 }}>
+                {wallet.name}
+                {wallet.isArchived && <span style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 8 }}>Архивный</span>}
+              </h1>
               <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
                 <span>Активов: {wallet.assets.length}</span>
               </div>
@@ -23,7 +26,7 @@ const WalletHeader = ({ wallet, onRefresh }) => {
 
         <div style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
           <Space>
-            <WalletActionsDropdown wallet={wallet} btn='btn' onUpdate={onRefresh} />
+            <WalletActionsDropdown wallet={wallet} onUpdate={onRefresh} />
           </Space>
         </div>
 

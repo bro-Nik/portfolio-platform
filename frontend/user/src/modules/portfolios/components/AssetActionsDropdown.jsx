@@ -17,7 +17,7 @@ import { getTradingViewUrl } from 'src/utils/format';
 import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
 
 
-const AssetActionsDropdown = ({ portfolio, asset, btn, onUpdate }) => {
+const AssetActionsDropdown = ({ portfolio, asset, onUpdate }) => {
   const { openModal } = useModalStore();
   const { archiveAsset, unarchiveAsset } = usePortfolioMutations();
   const entityType = portfolio ? 'portfolio_asset' : 'wallet_asset';
@@ -59,7 +59,11 @@ const AssetActionsDropdown = ({ portfolio, asset, btn, onUpdate }) => {
       type: 'divider',
     },
     {
-      key: 'tags',
+      key: 'assignTags',
+      label: <TagAssignPopover entityType={entityType} entityId={asset?.id} assignedTags={asset?.tags} onUpdate={onUpdate} menuItem parentId={portfolio?.id} />,
+    },
+    {
+      key: 'manageTags',
       icon: <Tag size={16} />,
       label: 'Управление тегами',
       onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
@@ -91,12 +95,7 @@ const AssetActionsDropdown = ({ portfolio, asset, btn, onUpdate }) => {
     },
   ];
 
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <TagAssignPopover entityType={entityType} entityId={asset?.id} assignedTags={asset?.tags} onUpdate={onUpdate} parentId={portfolio?.id} />
-      <ActionsDropdown items={menuItems} btn={btn}/>
-    </div>
-  );
+  return <ActionsDropdown items={menuItems} />;
 };
 
 export default AssetActionsDropdown;

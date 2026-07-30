@@ -1,5 +1,6 @@
 import React from 'react';
-import { Table, Button, Space, Avatar, Badge, Dropdown } from 'antd';
+import { Button, Space, Avatar, Badge, Dropdown } from 'antd';
+import Table from 'src/components/Table';
 import { LockOutlined, UnlockOutlined, DeleteOutlined, EyeOutlined, EditOutlined, MoreOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';

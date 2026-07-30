@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { authService, useAuthStore } from '@portfolio/shared';
 import { ROUTES } from 'src/constants/routes';
-import { Alert, Button, Input, Spin } from 'antd';
+import { Alert } from '@portfolio/shared';
+import { Button, Input, Spin } from 'antd';
 import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
@@ -66,9 +67,9 @@ const AuthPage = ({ type }) => {
   return (
     <main style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', width: '100%' }}>
       <form onSubmit={handleSubmit} style={{width: '330px'}}>
-        {verifyStatus === 'loading' && <Alert message="Подтверждение email..." type="info" showIcon style={{ marginBottom: 16 }} />}
-        {verifyStatus === 'success' && <Alert message="Email успешно подтверждён" type="success" showIcon style={{ marginBottom: 16 }} />}
-        {verifyStatus === 'error' && <Alert message="Ошибка подтверждения email" type="error" showIcon style={{ marginBottom: 16 }} />}
+        {verifyStatus === 'loading' && <Alert title="Подтверждение email..." type="info" style={{ marginBottom: 16 }} />}
+        {verifyStatus === 'success' && <Alert title="Email успешно подтверждён" type="success" style={{ marginBottom: 16 }} />}
+        {verifyStatus === 'error' && <Alert title="Ошибка подтверждения email" type="error" style={{ marginBottom: 16 }} />}
 
         <a href={ROUTES.HOME} style={{ display: 'flex', alignItems: 'center', marginBottom: 48, justifyContent: 'center', color: '#212529', textDecoration: 'none' }}>
           <img style={{ marginBottom: 0, marginRight: 8 }} src="/favicon.png" alt="" width="32" height="32" />

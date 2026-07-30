@@ -16,7 +16,7 @@ import TagManagementModal from './modals/TagManagementModal';
 import TagAssignPopover from './TagAssignPopover';
 import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
 
-const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
+const PortfolioActionsDropdown = ({ portfolio, onUpdate }) => {
   const { openModal } = useModalStore();
   const { archivePortfolio, unarchivePortfolio } = usePortfolioMutations();
 
@@ -52,7 +52,11 @@ const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
       type: 'divider',
     },
     {
-      key: 'tags',
+      key: 'assignTags',
+      label: <TagAssignPopover entityType="portfolio" entityId={portfolio?.id} assignedTags={portfolio?.tags} onUpdate={onUpdate} menuItem />,
+    },
+    {
+      key: 'manageTags',
       icon: <Tag size={16} />,
       label: 'Управление тегами',
       onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
@@ -84,12 +88,7 @@ const PortfolioActionsDropdown = ({ portfolio, btn, onUpdate }) => {
     },
   ];
 
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <TagAssignPopover entityType="portfolio" entityId={portfolio?.id} assignedTags={portfolio?.tags} onUpdate={onUpdate} />
-      <ActionsDropdown items={menuItems} btn={btn}/>
-    </div>
-  );
+  return <ActionsDropdown items={menuItems} />;
 };
 
 export default PortfolioActionsDropdown;

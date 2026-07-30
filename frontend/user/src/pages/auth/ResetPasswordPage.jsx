@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ROUTES } from 'src/constants/routes';
-import { Alert, Button, Input, Spin } from 'antd';
+import { Alert } from '@portfolio/shared';
+import { Button, Input, Spin } from 'antd';
 import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
@@ -21,10 +22,9 @@ const ResetPasswordPage = () => {
       <main style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', width: '100%' }}>
         <div style={{width: '330px'}}>
           <Alert
-            message="Недействительная ссылка"
+            title="Недействительная ссылка"
             description="Ссылка для сброса пароля отсутствует или повреждена."
             type="error"
-            showIcon
             style={{ marginBottom: 16 }}
           />
           <div style={{ textAlign: 'center' }}>

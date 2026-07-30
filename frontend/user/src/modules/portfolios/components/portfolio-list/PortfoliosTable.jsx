@@ -1,12 +1,12 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { Alert, Checkbox, Input } from 'antd';
+import { Alert } from '@portfolio/shared';
+import { Checkbox, Input } from 'antd';
 import {
   createCostColumn,
   createShareColumn,
   createBuyOrdersColumn,
-  createActionsColumn,
   createProfitColumn,
   createInvestedColumn,
   createNameColumn
@@ -42,13 +42,12 @@ const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, show
   }, [portfolios, tagFilterIds, search]);
 
   const columns = useMemo(() => [
-    createNameColumn(openItem, 'portfolio'),
+    createNameColumn(openItem, 'portfolio', (record) => <PortfolioActionsDropdown portfolio={record} onUpdate={handleRefresh} />),
     createCostColumn(),
     createInvestedColumn(),
     createProfitColumn(),
     createShareColumn(),
     createBuyOrdersColumn(),
-    createActionsColumn(({ row }) => <PortfolioActionsDropdown portfolio={row.original} btn='icon' onUpdate={handleRefresh} />),
   ], [openItem, handleRefresh]);
 
   return (
@@ -70,9 +69,8 @@ const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, show
       </div>
       {showingArchivedFallback && (
         <Alert
-          message="Нет активных портфелей — показаны архивные"
+          title="Нет активных портфелей — показаны архивные"
           type="info"
-          showIcon
           style={{ marginBottom: 16 }}
         />
       )}

@@ -1,4 +1,5 @@
-import { Modal, Tabs, Row, Col, Card, Statistic, Progress, Space, Descriptions, Tag, Timeline, Alert, Button } from 'antd';
+import { Alert } from '@portfolio/shared';
+import { Modal, Tabs, Row, Col, Card, Statistic, Progress, Space, Descriptions, Tag, Timeline, Button } from 'antd';
 import {
   BarChartOutlined,
   HistoryOutlined,
@@ -93,8 +94,8 @@ const ProviderStatsTab: React.FC<ProviderStatsTabProps> = ({ providerName }) => 
   const { resetProviderCounters } = useProviderActions();
 
   if (isLoading) return <LoadingSpinner size={48}/>;
-  if (error) return <Alert title="Ошибка" description={error.message} type="error" showIcon />;
-  if (!stats) return <Alert title="Нет данных" description="Статистика не загружена" type="info" showIcon />;
+  if (error) return <Alert title="Ошибка" description={error.message} type="error" />;
+  if (!stats) return <Alert title="Нет данных" description="Статистика не загружена" type="info" />;
 
   return (
     <>
@@ -184,8 +185,8 @@ const ProviderLogsTab: React.FC<ProviderLogsTabProps> = ({ providerName }) => {
   });
 
   if (isLoading) return <LoadingSpinner size={48}/>;
-  if (error) return <Alert title="Ошибка" description={error.message} type="error" showIcon />;
-  if (!logs || logs.length === 0) return <Alert title="Нет данных" description="За последние 24 часа не было запросов" type="info" showIcon />;
+  if (error) return <Alert title="Ошибка" description={error.message} type="error" />;
+  if (!logs || logs.length === 0) return <Alert title="Нет данных" description="За последние 24 часа не было запросов" type="info" />;
 
   return (
     <Timeline>

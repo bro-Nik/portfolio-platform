@@ -1,4 +1,5 @@
-import { Alert, Button } from 'antd';
+import { Alert } from '@portfolio/shared';
+import { Button } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 
 interface QueryErrorProps {
@@ -16,7 +17,6 @@ export const QueryError: React.FC<QueryErrorProps> = ({ title, error, onRetry })
         title={title || "Ошибка загрузки"}
         description={error.message}
         type="error"
-        showIcon
         action={onRetry && (
           <Button size="small" icon={<ReloadOutlined />} onClick={onRetry}>
             Повторить

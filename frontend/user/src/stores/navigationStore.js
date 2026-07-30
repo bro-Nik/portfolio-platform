@@ -239,7 +239,16 @@ const store = (set, get) => ({
     // Для сайдбара
     getGroupedItems: () => {
       return get().openedItems;
-    }
+    },
+
+    resetNavigation: () => set({
+      activeSection: 'portfolios',
+      openedItems: {
+        portfolios: [],
+        wallets: [],
+        wishlist: [],
+      },
+    }),
   }
 });
 

@@ -16,7 +16,7 @@ import TagManagementModal from 'src/modules/portfolios/components/modals/TagMana
 import TagAssignPopover from 'src/modules/portfolios/components/TagAssignPopover';
 import { useWalletMutations } from 'src/modules/wallets/hooks/useWalletMutations';
 
-const WalletActionsDropdown = ({ wallet, btn, onUpdate }) => {
+const WalletActionsDropdown = ({ wallet, onUpdate }) => {
   const { openModal } = useModalStore();
   const { archiveWallet, unarchiveWallet } = useWalletMutations();
 
@@ -52,7 +52,11 @@ const WalletActionsDropdown = ({ wallet, btn, onUpdate }) => {
       type: 'divider',
     },
     {
-      key: 'tags',
+      key: 'assignTags',
+      label: <TagAssignPopover entityType="wallet" entityId={wallet?.id} assignedTags={wallet?.tags} onUpdate={onUpdate} menuItem />,
+    },
+    {
+      key: 'manageTags',
       icon: <Tag size={16} />,
       label: 'Управление тегами',
       onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
@@ -84,12 +88,7 @@ const WalletActionsDropdown = ({ wallet, btn, onUpdate }) => {
     },
   ];
 
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <TagAssignPopover entityType="wallet" entityId={wallet?.id} assignedTags={wallet?.tags} onUpdate={onUpdate} />
-      <ActionsDropdown items={menuItems} btn={btn}/>
-    </div>
-  );
+  return <ActionsDropdown items={menuItems} />;
 };
 
 export default WalletActionsDropdown;

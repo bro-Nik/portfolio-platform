@@ -14,9 +14,12 @@ const PortfolioHeader = ({ portfolio, onRefresh }) => {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div>
-              <h1 style={{ fontSize: '1.75rem', marginBottom: 4 }}>{portfolio.name}</h1>
+              <h1 style={{ fontSize: '1.75rem', marginBottom: 4 }}>
+                {portfolio.name}
+                {portfolio.isArchived && <span style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 8 }}>Архивный</span>}
+              </h1>
               <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-                <span style={{ marginRight: 12 }}>Рынок: {portfolio.market}</span>
+                <span style={{ marginRight: 12, textTransform: 'capitalize' }}>Рынок: {portfolio.market}</span>
                 <span>Активов: {portfolio.assets.length}</span>
               </div>
             </div>
@@ -28,7 +31,7 @@ const PortfolioHeader = ({ portfolio, onRefresh }) => {
             <Button type="primary" disabled={portfolio.isArchived} onClick={() => openModal(AssetAddModal, { portfolio: portfolio })} >
               Добавить актив
             </Button>
-            <PortfolioActionsDropdown portfolio={portfolio} btn='btn' onUpdate={onRefresh} />
+            <PortfolioActionsDropdown portfolio={portfolio} onUpdate={onRefresh} />
           </Space>
         </div>
       </div>

@@ -10,6 +10,7 @@ const sharedComponents = {
     borderRadius: 8,
     controlHeight: 36,
     borderRadiusLG: 10,
+    colorBorderDisabled: 'transparent',
   },
   Card: {
     borderRadius: 12,
@@ -34,6 +35,9 @@ const sharedComponents = {
   },
   Tooltip: {
     borderRadius: 6,
+  },
+  Alert: {
+    lineWidth: 0,
   },
 };
 

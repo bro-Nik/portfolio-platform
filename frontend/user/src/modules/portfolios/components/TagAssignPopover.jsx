@@ -5,7 +5,7 @@ import { useTagsQuery } from '../hooks/useTagsQuery';
 import { useTagMutations } from '../hooks/useTagMutations';
 import { useNotifications } from '@portfolio/shared';
 
-const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate, parentId }) => {
+const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate, parentId, menuItem }) => {
   const { error } = useNotifications();
   const [open, setOpen] = useState(false);
   const { data: allTags = [] } = useTagsQuery();
@@ -40,11 +40,21 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate, p
     setLoading(false);
   };
 
+  const trigger = menuItem ? (
+    <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <Tag size={16} />
+      <span>Назначить теги</span>
+    </div>
+  ) : (
+    <Button type="text" icon={<Tag size={16} />} />
+  );
+
   return (
     <Popover
       open={open}
       onOpenChange={setOpen}
       trigger="click"
+      placement={menuItem ? 'rightTop' : 'bottom'}
       title="Назначить теги"
       content={
         <div style={{ minWidth: 200 }}>
@@ -67,7 +77,7 @@ const TagAssignPopover = ({ entityType, entityId, assignedTags = [], onUpdate, p
         </div>
       }
     >
-      <Button type="text" size="small" icon={<Tag size={14} />} />
+      {trigger}
     </Popover>
   );
 };

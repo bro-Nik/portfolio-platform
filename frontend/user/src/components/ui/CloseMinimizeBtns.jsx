@@ -3,7 +3,9 @@ import { X, Minus } from 'lucide-react';
 import { useNavigation } from 'src/hooks/useNavigation';
 
 const CloseMinimizeBtns = ({ id, type, parentId }) => {
-  const { closeItem, minimizeItem } = useNavigation();
+  const { closeItem, minimizeItem, activeSection } = useNavigation();
+
+  if (activeSection !== `${type}-${id}`) return null;
 
   return (
     <div className="close-minimize-btns">

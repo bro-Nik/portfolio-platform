@@ -9,7 +9,6 @@ import { useNavigation } from 'src/hooks/useNavigation';
 import { Briefcase, Wallet } from 'lucide-react'
 import { isTradeTransaction, isTransferTransaction } from 'src/modules/transaction/utils/type';
 import {
-  createActionsColumn,
   createTransactionLinkColumn,
   createTransactionPriceColumn,
   createTransactionQuantityColumn,
@@ -37,7 +36,7 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
   }, [openModal, asset, portfolio.id]);
 
   const columns = useMemo(() => [
-    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick, asset.isArchived),
+    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick, asset.isArchived, (record) => <TransactionActionsDropdown portfolio={portfolio} asset={asset} transaction={record} />),
     createTransactionPriceColumn(),
     createTransactionSumColumn(isCounterTransaction),
     createTransactionQuantityColumn(isCounterTransaction),
@@ -66,7 +65,6 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
       width: 120,
     },
     createCommentColumn(),
-    createActionsColumn(({ row }) => <TransactionActionsDropdown portfolio={portfolio} asset={asset} transaction={row.original} btn='icon' />),
   ], [
     isCounterTransaction, handleTransactionClick,
     getPortfolio, getWallet, openItem

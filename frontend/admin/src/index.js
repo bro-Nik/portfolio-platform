@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider } from 'antd';
 import './index.css';
 import App from './App';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useThemeStore } from '@portfolio/shared';
+import { darkTheme, lightTheme } from './theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,25 +19,6 @@ const queryClient = new QueryClient({
   },
 });
 
-const darkTheme = {
-  algorithm: theme.darkAlgorithm,
-  token: {
-    colorPrimary: '#1890ff',
-    borderRadius: 6,
-    colorBgLayout: '#1a1f2e',
-    colorBgContainer: '#242a3d',
-    colorBgElevated: '#2d3448',
-  },
-};
-
-const lightThemeConfig = {
-  algorithm: theme.defaultAlgorithm,
-  token: {
-    colorPrimary: '#1890ff',
-    borderRadius: 6,
-  },
-};
-
 const ThemedApp = () => {
   const { theme: currentTheme } = useThemeStore();
 
@@ -46,7 +28,7 @@ const ThemedApp = () => {
 
   return (
     <ConfigProvider
-      theme={currentTheme === 'dark' ? darkTheme : lightThemeConfig}
+      theme={currentTheme === 'dark' ? darkTheme : lightTheme}
       modal={{ centered: true }}
     >
       <App />

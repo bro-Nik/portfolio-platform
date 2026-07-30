@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ROUTES } from 'src/constants/routes';
-import { Alert, Button, Input, Spin } from 'antd';
+import { Alert } from '@portfolio/shared';
+import { Button, Input, Spin } from 'antd';
 import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
@@ -36,10 +37,9 @@ const ForgotPasswordPage = () => {
 
         {sent ? (
           <Alert
-            message="Проверьте вашу почту"
+            title="Проверьте вашу почту"
             description="Если email зарегистрирован, мы отправили ссылку для сброса пароля."
             type="success"
-            showIcon
             style={{ marginBottom: 16 }}
           />
         ) : (

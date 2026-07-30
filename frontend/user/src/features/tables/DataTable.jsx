@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Table } from 'antd';
+import Table from 'src/components/Table';
 import { useLocalStorage } from 'src/hooks/useLocalStorage';
 
 const DataTable = memo(({

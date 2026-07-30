@@ -21,3 +21,6 @@ export { useThemeStore } from './stores/themeStore.js';
 export { createApi } from './factories/api.js';
 
 export { useNotifications } from './hooks/useNotifications.js';
+
+export { Alert } from './components/Alert.js';
+export type { AlertProps } from './components/Alert.js';

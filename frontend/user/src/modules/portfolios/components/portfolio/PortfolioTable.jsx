@@ -6,7 +6,8 @@ import { useLocalStorage } from 'src/hooks/useLocalStorage';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from '../TagFilter';
 import TagBadges from '../TagBadges';
-import { Alert, Checkbox, Input } from 'antd';
+import { Alert } from '@portfolio/shared';
+import { Checkbox, Input } from 'antd';
 import { formatCurrency, formatProfit, formatPercentage, getColorClass } from 'src/utils/format';
 
 const DEFAULT_VALUE = '-';
@@ -88,15 +89,20 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
       title: 'Актив',
       fixed: 'left',
       render: (_, record) => (
-        <div style={{ display: 'flex', gap: 8 }} onClick={() => openItem(record, 'portfolio_asset', portfolio.id)}>
-          <TickerAvatar src={record.image} symbol={record.symbol} size={24} style={{ cursor: 'pointer' }} />
-          <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
-            <span style={{ display: 'flex', alignItems: 'flex-start' }}>
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }} title={record.name}>{record.name}</span>
-              <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4, flexShrink: 0 }}>{record.symbol}</span>
-              {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 4, marginTop: 1 }}>Архивный</span>}
-            </span>
-            <TagBadges tags={record.tags} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flex: 1 }} onClick={() => openItem(record, 'portfolio_asset', portfolio.id)}>
+            <TickerAvatar src={record.image} symbol={record.symbol} size={24} style={{ cursor: 'pointer' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+              <span style={{ display: 'flex', alignItems: 'flex-start' }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }} title={record.name}>{record.name}</span>
+                <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4, flexShrink: 0 }}>{record.symbol}</span>
+                {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 4, marginTop: 1 }}>Архивный</span>}
+              </span>
+              <TagBadges tags={record.tags} />
+            </div>
+          </div>
+          <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
+            <AssetActionsDropdown portfolio={portfolio} asset={record} onUpdate={onRefresh} />
           </div>
         </div>
       ),
@@ -155,12 +161,6 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
       width: 120,
       sorter: (a, b) => (a.buyOrders || 0) - (b.buyOrders || 0),
     },
-    {
-      key: 'actions',
-      title: '',
-      width: 100,
-      render: (_, record) => <AssetActionsDropdown portfolio={portfolio} asset={record} btn='icon' onUpdate={onRefresh} />,
-    },
   ], [openItem, portfolio, onRefresh]);
 
   return (
@@ -184,9 +184,8 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
 
       {showingArchivedFallback && (
         <Alert
-          message="Нет активных активов — показаны архивные"
+          title="Нет активных активов — показаны архивные"
           type="info"
-          showIcon
           style={{ marginBottom: 16 }}
         />
       )}

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { App as AntApp, ConfigProvider } from 'antd';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -12,13 +12,24 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import AppPage from './pages/app/AppPage';
 import { ROUTES } from './constants/routes';
 import { useAuthStore, useThemeStore } from '@portfolio/shared';
+import useNavigationStore from './stores/navigationStore';
 import { queryClient } from './queryClient';
 import { TickerIdsProvider } from './hooks/TickerContext';
 import { lightTheme, darkTheme } from './theme';
 
 function App() {
-  const { initializeAuth } = useAuthStore();
+  const { isAuthenticated, initializeAuth } = useAuthStore();
   const { theme } = useThemeStore();
+  const prevAuth = useRef(isAuthenticated);
+
+  useEffect(() => {
+    if (prevAuth.current && !isAuthenticated) {
+      queryClient.clear();
+      useNavigationStore.getState().actions.resetNavigation();
+      useNavigationStore.persist.clearStorage();
+    }
+    prevAuth.current = isAuthenticated;
+  }, [isAuthenticated]);
 
   useEffect(() => {
     initializeAuth();

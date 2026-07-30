@@ -1,8 +1,9 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { Alert, Checkbox, Input } from 'antd';
-import { createCostColumn, createShareColumn, createBuyOrdersColumn, createNameColumn, createActionsColumn } from 'src/features/tables/tableColumns';
+import { Alert } from '@portfolio/shared';
+import { Checkbox, Input } from 'antd';
+import { createCostColumn, createShareColumn, createBuyOrdersColumn, createNameColumn } from 'src/features/tables/tableColumns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
 import TagFilter from 'src/modules/portfolios/components/TagFilter';
 import { useQueryClient } from '@tanstack/react-query';
@@ -34,11 +35,10 @@ const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArc
   }, [wallets, tagFilterIds, search]);
 
   const columns = useMemo(() => [
-    createNameColumn(openItem, 'wallet'),
+    createNameColumn(openItem, 'wallet', (record) => <WalletActionsDropdown wallet={record} onUpdate={handleRefresh} />),
     createCostColumn(),
     createShareColumn(),
     createBuyOrdersColumn(),
-    createActionsColumn(({ row }) => <WalletActionsDropdown wallet={row.original} btn='icon' onUpdate={handleRefresh} />),
   ], [openItem, handleRefresh]);
 
   return (
@@ -60,9 +60,8 @@ const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArc
       </div>
       {showingArchivedFallback && (
         <Alert
-          message="Нет активных кошельков — показаны архивные"
+          title="Нет активных кошельков — показаны архивные"
           type="info"
-          showIcon
           style={{ marginBottom: 16 }}
         />
       )}
