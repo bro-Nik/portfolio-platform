@@ -203,24 +203,37 @@ export const usePortfolioMutations = () => {
 
     onMutate: async (portfolioId) => {
       await queryClient.cancelQueries({ queryKey: ['portfolios'] });
-      const previous = queryClient.getQueryData(['portfolios']);
+      await queryClient.cancelQueries({ queryKey: ['overview'] });
+      const previous = {
+        portfolios: queryClient.getQueryData(['portfolios']),
+        overview: queryClient.getQueryData(['overview']),
+      };
 
-      queryClient.setQueryData(['portfolios'], (old) => {
+      const updateFn = (old) => {
         if (!old?.portfolios) return old;
         return {
           ...old,
           portfolios: old.portfolios.map(p =>
-            p.id === portfolioId ? { ...p, isArchived: true } : p
+            p.id === portfolioId
+              ? {
+                  ...p,
+                  isArchived: true,
+                  assets: p.assets?.map(a => ({ ...a, isArchived: true })) ?? [],
+                }
+              : p
           ),
         };
-      });
+      };
+      queryClient.setQueryData(['portfolios'], updateFn);
+      queryClient.setQueryData(['overview'], updateFn);
 
       return { previous };
     },
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['portfolios'], context.previous);
+        queryClient.setQueryData(['portfolios'], context.previous.portfolios);
+        queryClient.setQueryData(['overview'], context.previous.overview);
       }
     },
   });
@@ -230,9 +243,13 @@ export const usePortfolioMutations = () => {
 
     onMutate: async (portfolioId) => {
       await queryClient.cancelQueries({ queryKey: ['portfolios'] });
-      const previous = queryClient.getQueryData(['portfolios']);
+      await queryClient.cancelQueries({ queryKey: ['overview'] });
+      const previous = {
+        portfolios: queryClient.getQueryData(['portfolios']),
+        overview: queryClient.getQueryData(['overview']),
+      };
 
-      queryClient.setQueryData(['portfolios'], (old) => {
+      const updateFn = (old) => {
         if (!old?.portfolios) return old;
         return {
           ...old,
@@ -240,14 +257,17 @@ export const usePortfolioMutations = () => {
             p.id === portfolioId ? { ...p, isArchived: false } : p
           ),
         };
-      });
+      };
+      queryClient.setQueryData(['portfolios'], updateFn);
+      queryClient.setQueryData(['overview'], updateFn);
 
       return { previous };
     },
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['portfolios'], context.previous);
+        queryClient.setQueryData(['portfolios'], context.previous.portfolios);
+        queryClient.setQueryData(['overview'], context.previous.overview);
       }
     },
   });
