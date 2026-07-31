@@ -2,7 +2,6 @@ import { jwtDecode } from 'jwt-decode';
 
 interface TokenPayload {
   id: string;
-  login?: string;
   role?: string;
   exp: number;
   [key: string]: unknown;
@@ -21,9 +20,18 @@ export function setTokens(accessToken: string, refreshToken: string): void {
   localStorage.setItem('refreshToken', refreshToken);
 }
 
+export function getStoredLogin(): string {
+  return localStorage.getItem('userLogin') ?? '';
+}
+
+export function setStoredLogin(login: string): void {
+  localStorage.setItem('userLogin', login);
+}
+
 export function clearTokens(): void {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
+  localStorage.removeItem('userLogin');
 }
 
 export const decodeToken = (token: string | null): TokenPayload | null => {

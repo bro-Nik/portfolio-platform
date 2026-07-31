@@ -1,4 +1,4 @@
-import { getToken, getRefreshToken, setTokens, decodeToken, isTokenExpired, clearTokens } from './token.js';
+import { getToken, getRefreshToken, setTokens, decodeToken, isTokenExpired, clearTokens, getStoredLogin, setStoredLogin } from './token.js';
 import { apiService } from './api.js';
 import { createApi } from '../factories/api.js';
 
@@ -9,6 +9,8 @@ declare const process: {
 };
 
 export const authService = () => {
+  const computeLogin = (email: string): string => email.split('@')[0] ?? '';
+
   const setTokensFromResponse = (data: { accessToken?: string; refreshToken?: string }) => {
     const { accessToken, refreshToken } = data;
     if (!accessToken && !refreshToken) throw new Error('Не получены токены авторизации');
@@ -55,7 +57,7 @@ export const authService = () => {
 
     return {
       id: decodedToken.id,
-      login: decodedToken.login ?? '',
+      login: getStoredLogin(),
       role: decodedToken.role ?? '',
     };
   };
@@ -64,6 +66,7 @@ export const authService = () => {
     try {
       const data = await api.post('/login', { email, password });
       setTokensFromResponse(data as { accessToken?: string; refreshToken?: string });
+      setStoredLogin(computeLogin(email));
       return { success: true, data };
     } catch (error) {
       return { success: false, error: (error as Error)?.message || 'Ошибка входа' };
@@ -74,6 +77,7 @@ export const authService = () => {
     try {
       const data = await api.post('/register', { email, password });
       setTokensFromResponse(data as { accessToken?: string; refreshToken?: string });
+      setStoredLogin(computeLogin(email));
       return { success: true, data };
     } catch (error) {
       return { success: false, error: (error as Error)?.message || 'Ошибка регистрации' };
@@ -169,6 +173,7 @@ export const authService = () => {
   const changeEmail = async (currentPassword: string, newEmail: string): Promise<{ success: boolean; error?: string }> => {
     try {
       await authApi.put('/email', { currentPassword, newEmail });
+      setStoredLogin(computeLogin(newEmail));
       return { success: true };
     } catch (error) {
       return { success: false, error: (error as Error)?.message || 'Ошибка смены email' };
