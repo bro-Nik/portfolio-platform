@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Form } from 'antd';
+import { toDatetimeLocal } from 'src/utils/format';
 
 export const useTransactionForm = (transaction, type) => {
   const [form] = Form.useForm();
@@ -13,7 +14,7 @@ export const useTransactionForm = (transaction, type) => {
       ...(transaction && { ...transaction }),
       type: transaction?.type || type,
       order: transaction?.order || false,
-      date: transaction?.date ? new Date(transaction.date).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
+      date: toDatetimeLocal(transaction?.date || new Date()),
     };
 
     form.setFieldsValue(initialValues);

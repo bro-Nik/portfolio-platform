@@ -7,7 +7,7 @@ const AssetStatistic = ({ portfolio, asset }) => {
   const statCards = [
     {
       title: 'Количество',
-      value: `${asset.quantity || 0} ${asset.symbol}`,
+      value: `${asset.quantity || 0} ${asset.symbol?.toUpperCase()}`,
     },
     {
       title: 'Средняя цена',

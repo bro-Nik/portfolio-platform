@@ -73,6 +73,24 @@ export const formatNumber = (number, options = {}) => {
   return formatter.format(number);
 };
 
+export const formatDateTime = (date) => {
+  if (!date) return '-';
+  return new Date(date).toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+export const toDatetimeLocal = (date) => {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 export const getTradingViewUrl = (symbol, market) => {
   if (market === 'crypto') {
     return `https://www.tradingview.com/chart/?symbol=${symbol}USDT`

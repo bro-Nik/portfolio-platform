@@ -1,4 +1,4 @@
-import { formatCurrency, formatPercentage, formatProfit, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatPercentage, formatProfit, formatDateTime, getColorClass } from 'src/utils/format';
 import {
   getTransactionTypeColor,
   getAdjustedTransactionType,
@@ -171,7 +171,7 @@ export const createTransactionLinkColumn = (isCounterTransaction, onClick, disab
             {record.order ? ' (Ордер)' : ''}
           </span>
           <br />
-          <span style={{ ...smallTextStyle, ...mutedStyle }}>{record.date}</span>
+          <span style={{ ...smallTextStyle, ...mutedStyle }}>{formatDateTime(record.date)}</span>
         </div>
         {actions && <div className="row-actions" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{actions(record)}</div>}
       </div>
@@ -225,7 +225,7 @@ export const createTransactionQuantityColumn = (isCounterTransaction) => ({
     const adjustedType = getAdjustedTransactionType(record, isCounterTransaction);
     return (
       <span className={isCounterTransaction(record) && isTradeTransaction(record) ? '' : getTransactionTypeColor(adjustedType)}>
-        {isOutgoingTransaction(adjustedType) ? '-' : '+'}{record.quantity} {record.tickerSymbol}
+        {isOutgoingTransaction(adjustedType) ? '-' : '+'}{record.quantity} {record.tickerSymbol?.toUpperCase()}
       </span>
     );
   },

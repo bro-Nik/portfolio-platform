@@ -2,7 +2,7 @@ import React, { memo, useMemo, useCallback } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useModalStore } from '@portfolio/shared';
-import { Folder, Wallet } from 'lucide-react'
+import { Briefcase, Wallet } from 'lucide-react'
 import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 import TransactionActionsDropdown from 'src/modules/transaction/components/TransactionActionsDropdown'
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
@@ -48,7 +48,7 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
           const portfolio = getPortfolio(record.portfolioId);
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={() => portfolio && openItem(portfolio, 'portfolio')}>
-              <Folder size={14} />{portfolio?.name || 'Портфель удален'}
+              <Briefcase size={14} />{portfolio?.name || 'Портфель удален'}
             </div>
           );
         }

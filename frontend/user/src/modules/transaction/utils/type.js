@@ -28,7 +28,7 @@ export const getTransactionTypeLabel = (transaction, isCounterTransaction) => {
   }
 
   if (isCounterTransaction(transaction) && isTradeTransaction(transaction.type)) {
-    label += ' ' + transaction.tickerSymbol;
+    label += ' ' + transaction.tickerSymbol?.toUpperCase();
   }
   return label;
 };

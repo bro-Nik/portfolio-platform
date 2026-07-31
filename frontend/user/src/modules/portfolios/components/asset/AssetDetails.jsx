@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { Card, Row, Col, Progress, Tooltip, Typography, Space } from 'antd';
+import { Card, Row, Col, Typography, Space } from 'antd';
 import { PieChart, Wallet } from 'lucide-react';
+import RichTooltip from 'src/components/RichTooltip';
 import { formatCurrency, formatPercentage } from 'src/utils/format';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
@@ -90,7 +91,7 @@ const AssetDetail = ({ data }) => {
   const SegmentedProgress = ({ segments, totalAmount }) => {
     if (!segments.length) {
       return (
-        <Tooltip
+        <RichTooltip
           title={
             <div style={{ maxWidth: 300 }}>
               <Text strong style={{ display: 'block', marginBottom: 8 }}>
@@ -101,12 +102,6 @@ const AssetDetail = ({ data }) => {
               </Text>
             </div>
           }
-          color="white"
-          styles={{ root: {
-            maxWidth: 350,
-            boxShadow: '0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05)'
-          }}}
-          placement="top"
         >
           <div style={{ position: 'relative', cursor: 'pointer' }}>
             <div style={{
@@ -128,7 +123,7 @@ const AssetDetail = ({ data }) => {
               />
             </div>
           </div>
-        </Tooltip>
+        </RichTooltip>
       );
     }
 
@@ -145,7 +140,7 @@ const AssetDetail = ({ data }) => {
     });
 
     return (
-      <Tooltip
+      <RichTooltip
         title={
           <div style={{ maxWidth: 300 }} >
             <Text strong style={{ display: 'block', marginBottom: 8 }}>
@@ -169,19 +164,13 @@ const AssetDetail = ({ data }) => {
                     {formatCurrency(segment.costNow)} ({formatPercentage(segment.percent)})
                   </Text>
                   <Text type="secondary" style={{ fontSize: 11 }}>
-                    {segment.quantity} {data.symbol}
+                    {segment.quantity} {data.symbol?.toUpperCase()}
                   </Text>
                 </Space>
               </div>
             ))}
           </div>
         }
-        color="white"
-        styles={{ root: { 
-          maxWidth: 350,
-          boxShadow: '0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08), 0 9px 28px 8px rgba(0,0,0,0.05)'
-        }}}
-        placement="top"
       >
         <div style={{ position: 'relative', cursor: 'pointer' }}>
           
@@ -215,7 +204,7 @@ const AssetDetail = ({ data }) => {
             ))}
           </div>
         </div>
-      </Tooltip>
+      </RichTooltip>
     );
   };
 

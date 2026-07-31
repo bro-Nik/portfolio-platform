@@ -38,6 +38,7 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
   const handleSubmit = async (values) => {
     const submitData = {
       ...values,
+      ...(values.date && { date: new Date(values.date).toISOString() }),
       ...(transaction && { id: transaction.id }), // Добавляем ID если редактируем
       ...(isTrade && { priceUsd: form.getFieldValue('price') * quoteTicker?.price }),
       tickerId: baseTicker?.id,
