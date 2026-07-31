@@ -98,7 +98,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
                 <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4, flexShrink: 0 }}>{record.symbol}</span>
                 {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 4, marginTop: 1 }}>Архивный</span>}
               </span>
-              <TagBadges tags={record.tags} />
+              <TagBadges tags={record.tags} entityType="portfolio_asset" entityId={record.id} parentId={portfolio.id} assignedTags={record.tags} />
             </div>
           </div>
           <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>

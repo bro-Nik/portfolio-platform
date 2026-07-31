@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Select } from 'antd';
+import { Select, Tooltip } from 'antd';
+import AntTag from 'antd/es/tag';
 import { useTagsQuery } from '../hooks/useTagsQuery';
 
 const TagFilter = ({ onChange }) => {
@@ -16,18 +17,40 @@ const TagFilter = ({ onChange }) => {
   return (
     <Select
       mode="multiple"
+      maxTagCount={3}
       placeholder="Теги"
       value={selectedIds}
       onChange={handleChange}
       allowClear
       style={{ minWidth: 150 }}
+      tagRender={({ value, label, closable, onClose, isMaxTag }) => {
+        if (isMaxTag) {
+          return (
+            <AntTag style={{ marginRight: 4, fontSize: 12, lineHeight: '18px' }}>
+              {label}
+            </AntTag>
+          );
+        }
+        const tag = allTags.find(t => t.id === value);
+        return (
+          <AntTag color={tag?.color || '#1890ff'} closable={closable} onClose={onClose} style={{ marginRight: 4, fontSize: 12, lineHeight: '18px' }}>
+            {tag?.name || value}
+          </AntTag>
+        );
+      }}
+      maxTagPlaceholder={(omittedValues) => {
+        const names = omittedValues
+          .map(v => allTags.find(t => t.id === v.value)?.name)
+          .filter(Boolean)
+          .join(', ');
+        return <Tooltip title={names}>+{omittedValues.length}</Tooltip>;
+      }}
       options={allTags.map(tag => ({
         value: tag.id,
         label: (
-          <span>
-            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', backgroundColor: tag.color || '#1890ff', marginRight: 6 }} />
+          <AntTag color={tag.color || '#1890ff'} style={{ margin: 0, fontSize: 12, lineHeight: '18px' }}>
             {tag.name}
-          </span>
+          </AntTag>
         ),
       }))}
     />

@@ -7,13 +7,11 @@ import {
   Copy,
   Trash2,
   ExternalLink,
-  Tag,
 } from 'lucide-react'
 import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import PortfolioEditModal from './modals/PortfolioEdit';
 import PortfolioDeleteModal from './modals/PortfolioDelete';
-import TagManagementModal from './modals/TagManagementModal';
-import TagAssignPopover from './TagAssignPopover';
+import TagManagerSelect from './TagManagerSelect';
 import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
 
 const PortfolioActionsDropdown = ({ portfolio, onUpdate }) => {
@@ -52,14 +50,8 @@ const PortfolioActionsDropdown = ({ portfolio, onUpdate }) => {
       type: 'divider',
     },
     {
-      key: 'assignTags',
-      label: <TagAssignPopover entityType="portfolio" entityId={portfolio?.id} assignedTags={portfolio?.tags} onUpdate={onUpdate} menuItem />,
-    },
-    {
-      key: 'manageTags',
-      icon: <Tag size={16} />,
-      label: 'Управление тегами',
-      onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
+      key: 'tags',
+      label: <TagManagerSelect trigger="menu" entityType="portfolio" entityId={portfolio?.id} assignedTags={portfolio?.tags} />,
     },
     {
       type: 'divider',

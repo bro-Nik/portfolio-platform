@@ -3,6 +3,7 @@ import { theme } from 'antd';
 const sharedTokens = {
   borderRadius: 8,
   fontSize: 14,
+  colorBgSpotlight: '#6366f1',
 };
 
 const sharedComponents = {

@@ -20,6 +20,118 @@ const updateTagInPortfolios = (old, tagId, updater) => {
   };
 };
 
+const updateTagInWallets = (old, tagId, updater) => {
+  if (!old?.wallets) return old;
+  return {
+    ...old,
+    wallets: old.wallets.map(w => ({
+      ...w,
+      tags: w.tags ? updater(w.tags) : w.tags,
+      assets: w.assets?.map(a => ({
+        ...a,
+        tags: a.tags ? updater(a.tags) : a.tags,
+      })),
+    })),
+  };
+};
+
+const updateTagInOverview = (old, tagId, updater) => {
+  return updateTagInWallets(updateTagInPortfolios(old, tagId, updater), tagId, updater);
+};
+
+const applyTagChangeToStore = (old, { tag, tagId, entityType, entityId, parentId, action }) => {
+  if (!old) return old;
+
+  const updateTags = (tags) =>
+    action === 'attach'
+      ? (tags.some(t => t.id === tag.id) ? tags : [...tags, tag])
+      : tags.filter(t => t.id !== tagId);
+
+  const updateEntity = (entity) => {
+    if (entityType === 'portfolio' && entity.id === entityId) {
+      return { ...entity, tags: updateTags(entity.tags || []) };
+    }
+    if (entityType === 'portfolio_asset' && entity.id === parentId) {
+      return {
+        ...entity,
+        assets: entity.assets?.map(a =>
+          a.id === entityId ? { ...a, tags: updateTags(a.tags || []) } : a
+        ),
+      };
+    }
+    if (entityType === 'wallet' && entity.id === entityId) {
+      return { ...entity, tags: updateTags(entity.tags || []) };
+    }
+    if (entityType === 'wallet_asset' && entity.id === parentId) {
+      return {
+        ...entity,
+        assets: entity.assets?.map(a =>
+          a.id === entityId ? { ...a, tags: updateTags(a.tags || []) } : a
+        ),
+      };
+    }
+    return entity;
+  };
+
+  if (entityType === 'portfolio' || entityType === 'portfolio_asset') {
+    if (!old.portfolios) return old;
+    return { ...old, portfolios: old.portfolios.map(updateEntity) };
+  }
+  if (entityType === 'wallet' || entityType === 'wallet_asset') {
+    if (!old.wallets) return old;
+    return { ...old, wallets: old.wallets.map(updateEntity) };
+  }
+  return old;
+};
+
+const optimisticTagChange = async (queryClient, { tagId, entityType, entityId, parentId, action }) => {
+  await Promise.all([
+    queryClient.cancelQueries({ queryKey: ['portfolios'] }),
+    queryClient.cancelQueries({ queryKey: ['wallets'] }),
+    queryClient.cancelQueries({ queryKey: ['overview'] }),
+  ]);
+
+  const previous = {
+    portfolios: queryClient.getQueryData(['portfolios']),
+    wallets: queryClient.getQueryData(['wallets']),
+    overview: queryClient.getQueryData(['overview']),
+  };
+
+  const isPortfolioEntity = ['portfolio', 'portfolio_asset'].includes(entityType);
+  const isWalletEntity = ['wallet', 'wallet_asset'].includes(entityType);
+  if (!isPortfolioEntity && !isWalletEntity) return { previous };
+
+  const tag = action === 'attach'
+    ? queryClient.getQueryData(['tags'])?.find(t => t.id === tagId)
+    : null;
+  if (action === 'attach' && !tag) return { previous };
+
+  const change = { tag, tagId, entityType, entityId, parentId, action };
+
+  if (isPortfolioEntity) {
+    queryClient.setQueryData(['portfolios'], (old) => applyTagChangeToStore(old, change));
+  }
+  if (isWalletEntity) {
+    queryClient.setQueryData(['wallets'], (old) => applyTagChangeToStore(old, change));
+  }
+  queryClient.setQueryData(['overview'], (old) => applyTagChangeToStore(old, change));
+
+  return { previous };
+};
+
+const rollbackTagChange = (queryClient, previous) => {
+  if (!previous) return;
+  if (previous.portfolios !== undefined) {
+    queryClient.setQueryData(['portfolios'], previous.portfolios);
+  }
+  if (previous.wallets !== undefined) {
+    queryClient.setQueryData(['wallets'], previous.wallets);
+  }
+  if (previous.overview !== undefined) {
+    queryClient.setQueryData(['overview'], previous.overview);
+  }
+};
+
 export const useTagMutations = () => {
   const queryClient = useQueryClient();
 
@@ -51,10 +163,6 @@ export const useTagMutations = () => {
         queryClient.setQueryData(['tags'], context.previous);
       }
     },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
-    },
   });
 
   const updateTag = useMutation({
@@ -64,22 +172,26 @@ export const useTagMutations = () => {
       await Promise.all([
         queryClient.cancelQueries({ queryKey: ['tags'] }),
         queryClient.cancelQueries({ queryKey: ['portfolios'] }),
+        queryClient.cancelQueries({ queryKey: ['wallets'] }),
+        queryClient.cancelQueries({ queryKey: ['overview'] }),
       ]);
       const previousTags = queryClient.getQueryData(['tags']);
       const previousPortfolios = queryClient.getQueryData(['portfolios']);
+      const previousWallets = queryClient.getQueryData(['wallets']);
+      const previousOverview = queryClient.getQueryData(['overview']);
 
       queryClient.setQueryData(['tags'], (old) => {
         if (!old) return old;
         return old.map(t => t.id === tagId ? { ...t, ...data } : t);
       });
 
-      queryClient.setQueryData(['portfolios'], (old) => {
-        return updateTagInPortfolios(old, tagId, (tags) =>
-          tags.map(t => t.id === tagId ? { ...t, ...data } : t)
-        );
-      });
+      const updater = (tags) => tags.map(t => t.id === tagId ? { ...t, ...data } : t);
 
-      return { previousTags, previousPortfolios };
+      queryClient.setQueryData(['portfolios'], (old) => updateTagInPortfolios(old, tagId, updater));
+      queryClient.setQueryData(['wallets'], (old) => updateTagInWallets(old, tagId, updater));
+      queryClient.setQueryData(['overview'], (old) => updateTagInOverview(old, tagId, updater));
+
+      return { previousTags, previousPortfolios, previousWallets, previousOverview };
     },
 
     onSuccess: (serverTag, { tagId }) => {
@@ -87,11 +199,12 @@ export const useTagMutations = () => {
         if (!old) return old;
         return old.map(t => t.id === tagId ? serverTag : t);
       });
-      queryClient.setQueryData(['portfolios'], (old) => {
-        return updateTagInPortfolios(old, tagId, (tags) =>
-          tags.map(t => t.id === tagId ? serverTag : t)
-        );
-      });
+
+      const updater = (tags) => tags.map(t => t.id === tagId ? serverTag : t);
+
+      queryClient.setQueryData(['portfolios'], (old) => updateTagInPortfolios(old, tagId, updater));
+      queryClient.setQueryData(['wallets'], (old) => updateTagInWallets(old, tagId, updater));
+      queryClient.setQueryData(['overview'], (old) => updateTagInOverview(old, tagId, updater));
     },
 
     onError: (_err, _vars, context) => {
@@ -100,6 +213,12 @@ export const useTagMutations = () => {
       }
       if (context?.previousPortfolios) {
         queryClient.setQueryData(['portfolios'], context.previousPortfolios);
+      }
+      if (context?.previousWallets) {
+        queryClient.setQueryData(['wallets'], context.previousWallets);
+      }
+      if (context?.previousOverview) {
+        queryClient.setQueryData(['overview'], context.previousOverview);
       }
     },
   });
@@ -111,22 +230,26 @@ export const useTagMutations = () => {
       await Promise.all([
         queryClient.cancelQueries({ queryKey: ['tags'] }),
         queryClient.cancelQueries({ queryKey: ['portfolios'] }),
+        queryClient.cancelQueries({ queryKey: ['wallets'] }),
+        queryClient.cancelQueries({ queryKey: ['overview'] }),
       ]);
       const previousTags = queryClient.getQueryData(['tags']);
       const previousPortfolios = queryClient.getQueryData(['portfolios']);
+      const previousWallets = queryClient.getQueryData(['wallets']);
+      const previousOverview = queryClient.getQueryData(['overview']);
 
       queryClient.setQueryData(['tags'], (old) => {
         if (!old) return old;
         return old.filter(t => t.id !== tagId);
       });
 
-      queryClient.setQueryData(['portfolios'], (old) => {
-        return updateTagInPortfolios(old, tagId, (tags) =>
-          tags.filter(t => t.id !== tagId)
-        );
-      });
+      const updater = (tags) => tags.filter(t => t.id !== tagId);
 
-      return { previousTags, previousPortfolios };
+      queryClient.setQueryData(['portfolios'], (old) => updateTagInPortfolios(old, tagId, updater));
+      queryClient.setQueryData(['wallets'], (old) => updateTagInWallets(old, tagId, updater));
+      queryClient.setQueryData(['overview'], (old) => updateTagInOverview(old, tagId, updater));
+
+      return { previousTags, previousPortfolios, previousWallets, previousOverview };
     },
 
     onError: (_err, _vars, context) => {
@@ -136,6 +259,12 @@ export const useTagMutations = () => {
       if (context?.previousPortfolios) {
         queryClient.setQueryData(['portfolios'], context.previousPortfolios);
       }
+      if (context?.previousWallets) {
+        queryClient.setQueryData(['wallets'], context.previousWallets);
+      }
+      if (context?.previousOverview) {
+        queryClient.setQueryData(['overview'], context.previousOverview);
+      }
     },
   });
 
@@ -143,52 +272,11 @@ export const useTagMutations = () => {
     mutationFn: ({ tagId, entityType, entityId }) =>
       tagApi.attachTag(tagId, entityType, entityId),
 
-    onMutate: async ({ tagId, entityType, entityId, parentId }) => {
-      if (!['portfolio', 'portfolio_asset'].includes(entityType)) return {};
-
-      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
-      const previous = queryClient.getQueryData(['portfolios']);
-
-      const tags = queryClient.getQueryData(['tags']);
-      const tag = tags?.find(t => t.id === tagId);
-      if (!tag) return { previous };
-
-      queryClient.setQueryData(['portfolios'], (old) => {
-        if (!old?.portfolios) return old;
-        return {
-          ...old,
-          portfolios: old.portfolios.map(p => {
-            if (entityType === 'portfolio' && p.id === entityId) {
-              const hasTag = p.tags?.some(t => t.id === tagId);
-              return hasTag ? p : { ...p, tags: [...(p.tags || []), tag] };
-            }
-            if (entityType === 'portfolio_asset' && p.id === parentId) {
-              return {
-                ...p,
-                assets: p.assets?.map(a =>
-                  a.id === entityId
-                    ? { ...a, tags: a.tags?.some(t => t.id === tagId) ? a.tags : [...(a.tags || []), tag] }
-                    : a
-                ),
-              };
-            }
-            return p;
-          }),
-        };
-      });
-
-      return { previous };
-    },
+    onMutate: ({ tagId, entityType, entityId, parentId }) =>
+      optimisticTagChange(queryClient, { tagId, entityType, entityId, parentId, action: 'attach' }),
 
     onError: (_err, _vars, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(['portfolios'], context.previous);
-      }
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallets'] });
-      queryClient.invalidateQueries({ queryKey: ['overview'] });
+      rollbackTagChange(queryClient, context?.previous);
     },
   });
 
@@ -196,47 +284,11 @@ export const useTagMutations = () => {
     mutationFn: ({ tagId, entityType, entityId }) =>
       tagApi.detachTag(tagId, entityType, entityId),
 
-    onMutate: async ({ tagId, entityType, entityId, parentId }) => {
-      if (!['portfolio', 'portfolio_asset'].includes(entityType)) return {};
-
-      await queryClient.cancelQueries({ queryKey: ['portfolios'] });
-      const previous = queryClient.getQueryData(['portfolios']);
-
-      queryClient.setQueryData(['portfolios'], (old) => {
-        if (!old?.portfolios) return old;
-        return {
-          ...old,
-          portfolios: old.portfolios.map(p => {
-            if (entityType === 'portfolio' && p.id === entityId) {
-              return { ...p, tags: p.tags?.filter(t => t.id !== tagId) };
-            }
-            if (entityType === 'portfolio_asset' && p.id === parentId) {
-              return {
-                ...p,
-                assets: p.assets?.map(a =>
-                  a.id === entityId
-                    ? { ...a, tags: a.tags?.filter(t => t.id !== tagId) }
-                    : a
-                ),
-              };
-            }
-            return p;
-          }),
-        };
-      });
-
-      return { previous };
-    },
+    onMutate: ({ tagId, entityType, entityId, parentId }) =>
+      optimisticTagChange(queryClient, { tagId, entityType, entityId, parentId, action: 'detach' }),
 
     onError: (_err, _vars, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(['portfolios'], context.previous);
-      }
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallets'] });
-      queryClient.invalidateQueries({ queryKey: ['overview'] });
+      rollbackTagChange(queryClient, context?.previous);
     },
   });
 

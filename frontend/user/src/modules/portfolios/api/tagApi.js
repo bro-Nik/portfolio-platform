@@ -11,11 +11,7 @@ export const tagApi = {
 
   deleteTag: (tagId) => api.del(`/${tagId}`),
 
-  attachTag: (tagId, entityType, entityId) => api.post('/attach', {
-    tag_id: tagId,
-    entity_type: entityType,
-    entity_id: entityId,
-  }),
+  attachTag: (tagId, entityType, entityId) => api.post('/attach', { tagId, entityType, entityId }),
 
   detachTag: (tagId, entityType, entityId) => api.del(`/detach?tag_id=${tagId}&entity_type=${entityType}&entity_id=${entityId}`),
 };

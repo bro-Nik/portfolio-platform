@@ -7,13 +7,11 @@ import {
   Copy,
   Trash2,
   ExternalLink,
-  Tag,
 } from 'lucide-react'
 import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import WalletEditModal from './modals/WalletEdit';
 import WalletDeleteModal from './modals/WalletDelete';
-import TagManagementModal from 'src/modules/portfolios/components/modals/TagManagementModal';
-import TagAssignPopover from 'src/modules/portfolios/components/TagAssignPopover';
+import TagManagerSelect from 'src/modules/portfolios/components/TagManagerSelect';
 import { useWalletMutations } from 'src/modules/wallets/hooks/useWalletMutations';
 
 const WalletActionsDropdown = ({ wallet, onUpdate }) => {
@@ -52,14 +50,8 @@ const WalletActionsDropdown = ({ wallet, onUpdate }) => {
       type: 'divider',
     },
     {
-      key: 'assignTags',
-      label: <TagAssignPopover entityType="wallet" entityId={wallet?.id} assignedTags={wallet?.tags} onUpdate={onUpdate} menuItem />,
-    },
-    {
-      key: 'manageTags',
-      icon: <Tag size={16} />,
-      label: 'Управление тегами',
-      onClick: () => openModal(TagManagementModal, { onTagsChange: onUpdate }),
+      key: 'tags',
+      label: <TagManagerSelect trigger="menu" entityType="wallet" entityId={wallet?.id} assignedTags={wallet?.tags} />,
     },
     {
       type: 'divider',

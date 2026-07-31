@@ -28,7 +28,7 @@ export const createNameColumn = (openItem, itemType, actions) => ({
         </span>
         <span style={{ ...mutedStyle, ...smallTextStyle, textTransform: 'capitalize' }}>{record.market}</span>
         <span style={{ ...mutedStyle, ...smallTextStyle }}>{record.assets?.length || 0} активов</span>
-        <TagBadges tags={record.tags} />
+        <TagBadges tags={record.tags} entityType={itemType} entityId={record.id} assignedTags={record.tags} />
       </div>
       {actions && <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{actions(record)}</div>}
     </div>
@@ -50,7 +50,7 @@ export const createAssetNameColumn = (openItem, itemType, parentId) => ({
           <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4, flexShrink: 0 }}>{record.symbol}</span>
           {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 4, marginTop: 1 }}>Архивный</span>}
         </span>
-        <TagBadges tags={record.tags} />
+        <TagBadges tags={record.tags} entityType={itemType} entityId={record.id} parentId={parentId} assignedTags={record.tags} />
       </div>
     </div>
   ),
