@@ -102,7 +102,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
               <TagBadges tags={record.tags} entityType="wallet_asset" entityId={record.id} parentId={wallet.id} assignedTags={record.tags} />
             </div>
           </div>
-          <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
+          <div className="row-actions" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
             <AssetActionsDropdown wallet={wallet} asset={record} onUpdate={onRefresh} />
           </div>
         </div>

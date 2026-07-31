@@ -65,8 +65,9 @@ const TagRow = ({ tag, checked, entityType, onToggle }) => {
     setEditOpen(false);
   };
 
-  const handleClick = () => {
+  const handleClick = (e) => {
     if (!entityType || !onToggle) return;
+    e.stopPropagation();
     onToggle(tag.id);
   };
 
@@ -160,7 +161,7 @@ const TagPanel = ({ entityType, entityId, assignedTags, parentId }) => {
   const hasItems = selected.length > 0 || unselected.length > 0;
 
   return (
-    <div style={{ width: 260, maxHeight: 400 }}>
+    <div style={{ width: 260, maxHeight: 400 }} onClick={e => e.stopPropagation()}>
       <style>{`.tag-row-actions { opacity: 0; } .tag-row:hover { background-color: var(--ant-table-row-hover-bg, rgba(0,0,0,0.04)); } .tag-row:hover .tag-row-actions, .tag-row-actions.visible { opacity: 1; }`}</style>
       <Input
         placeholder="Поиск..."

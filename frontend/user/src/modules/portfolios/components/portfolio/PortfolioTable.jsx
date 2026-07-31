@@ -101,7 +101,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
               <TagBadges tags={record.tags} entityType="portfolio_asset" entityId={record.id} parentId={portfolio.id} assignedTags={record.tags} />
             </div>
           </div>
-          <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
+          <div className="row-actions" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
             <AssetActionsDropdown portfolio={portfolio} asset={record} onUpdate={onRefresh} />
           </div>
         </div>

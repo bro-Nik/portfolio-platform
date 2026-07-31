@@ -30,7 +30,7 @@ export const createNameColumn = (openItem, itemType, actions) => ({
         <span style={{ ...mutedStyle, ...smallTextStyle }}>{record.assets?.length || 0} активов</span>
         <TagBadges tags={record.tags} entityType={itemType} entityId={record.id} assignedTags={record.tags} />
       </div>
-      {actions && <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{actions(record)}</div>}
+      {actions && <div className="row-actions" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{actions(record)}</div>}
     </div>
   ),
   maxWidth: 300,
@@ -173,7 +173,7 @@ export const createTransactionLinkColumn = (isCounterTransaction, onClick, disab
           <br />
           <span style={{ ...smallTextStyle, ...mutedStyle }}>{record.date}</span>
         </div>
-        {actions && <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{actions(record)}</div>}
+        {actions && <div className="row-actions" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{actions(record)}</div>}
       </div>
     );
   },
