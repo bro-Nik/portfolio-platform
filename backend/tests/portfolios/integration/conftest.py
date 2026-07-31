@@ -19,6 +19,7 @@ from app.common.schemas import UserRole
 
 import app.modules.auth.models  # noqa: F401
 import app.modules.portfolios.models  # noqa: F401
+import app.modules.tags.models  # noqa: F401
 
 
 @pytest.fixture(scope='session')

@@ -2,8 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import NotFoundError
 
-from app.modules.portfolios.models import Tag
-from app.modules.portfolios.repositories import TagRepository, TaggableRepository
+from app.modules.tags.models import Tag
+from app.modules.tags.repositories import TagRepository, TaggableRepository
 from app.common.schemas import Context
 
 

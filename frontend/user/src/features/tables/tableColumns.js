@@ -6,7 +6,7 @@ import {
   isTradeTransaction,
   isOutgoingTransaction,
 } from 'src/modules/transaction/utils/type';
-import TagBadges from 'src/modules/portfolios/components/TagBadges';
+import TagBadges from 'src/modules/tags/components/TagBadges';
 
 const DEFAULT_VALUE = '-';
 

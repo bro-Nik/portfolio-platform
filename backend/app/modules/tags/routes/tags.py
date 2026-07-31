@@ -4,10 +4,10 @@ from app.common.exceptions import handle_errors
 from app.core.rate_limit import limiter
 
 from app.core import settings
-from app.modules.portfolios.dependencies import (
+from app.modules.tags.dependencies import (
     TagServiceDep, require_user,
 )
-from app.modules.portfolios.schemas import (
+from app.modules.tags.schemas import (
     TagAttachRequest, TagCreate, TagResponse, TagUpdate,
 )
 

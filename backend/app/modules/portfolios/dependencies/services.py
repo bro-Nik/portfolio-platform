@@ -10,7 +10,6 @@ from app.queries.transaction_read import TransactionReadQuery
 from app.queries.wallet_read import WalletReadQuery
 from app.modules.portfolios.services.portfolio import PortfolioService
 from app.modules.portfolios.services.portfolio_asset import PortfolioAssetService
-from app.modules.portfolios.services.tag import TagService
 from app.modules.portfolios.services.transaction import TransactionService
 from app.modules.portfolios.services.wallet import WalletService
 from app.modules.portfolios.services.wallet_asset import WalletAssetService
@@ -30,10 +29,6 @@ def get_wallet_service(session: DBSession, ctx: Ctx) -> WalletService:
 
 def get_wallet_asset_service(session: DBSession, ctx: Ctx) -> WalletAssetService:
     return WalletAssetService(ctx, session)
-
-
-def get_tag_service(session: DBSession, ctx: Ctx) -> TagService:
-    return TagService(session, ctx)
 
 
 def get_transaction_service(session: DBSession, ctx: Ctx) -> TransactionService:
@@ -60,7 +55,6 @@ PortfolioServiceDep = Annotated[PortfolioService, Depends(get_portfolio_service)
 PortfolioAssetServiceDep = Annotated[PortfolioAssetService, Depends(get_portfolio_asset_service)]
 WalletServiceDep = Annotated[WalletService, Depends(get_wallet_service)]
 WalletAssetServiceDep = Annotated[WalletAssetService, Depends(get_wallet_asset_service)]
-TagServiceDep = Annotated[TagService, Depends(get_tag_service)]
 TransactionServiceDep = Annotated[TransactionService, Depends(get_transaction_service)]
 PortfolioReadQueryDep = Annotated[PortfolioReadQuery, Depends(get_portfolio_read_query)]
 WalletReadQueryDep = Annotated[WalletReadQuery, Depends(get_wallet_read_query)]

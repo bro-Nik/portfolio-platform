@@ -12,7 +12,7 @@ import {
   createNameColumn
 } from 'src/features/tables/tableColumns';
 import PortfolioActionsDropdown from '../PortfolioActionsDropdown'
-import TagFilter from '../TagFilter';
+import TagFilter from 'src/modules/tags/components/TagFilter';
 import { useQueryClient } from '@tanstack/react-query';
 
 const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, showingArchivedFallback }) => {

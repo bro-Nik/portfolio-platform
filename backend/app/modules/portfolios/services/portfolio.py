@@ -5,8 +5,9 @@ from app.common.exceptions import ConflictError, NotFoundError, PermissionDenied
 
 from app.modules.portfolios.models import Portfolio, PortfolioAsset, Transaction
 from app.modules.portfolios.repositories import (
-    PortfolioRepository, TaggableRepository, TransactionRepository,
+    PortfolioRepository, TransactionRepository,
 )
+from app.modules.tags.repositories import TaggableRepository
 from app.modules.portfolios.schemas import (
     PortfolioAssetCreateRequest,
     PortfolioCreate, PortfolioCreateRequest, PortfolioUpdate, PortfolioUpdateRequest,

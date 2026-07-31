@@ -15,7 +15,6 @@ from .portfolio import (
     PortfolioUpdate,
     PortfolioUpdateRequest,
 )
-from .tag import TagAttachRequest, TagCreate, TagResponse, TagUpdate
 from .transaction import (
     TransactionBase,
     TransactionCreate,
@@ -56,10 +55,6 @@ __all__ = [
     'PortfolioResponse',
     'PortfolioUpdate',
     'PortfolioUpdateRequest',
-    'TagAttachRequest',
-    'TagCreate',
-    'TagResponse',
-    'TagUpdate',
     'TransactionBase',
     'TransactionCreate',
     'TransactionCreateRequest',

@@ -11,7 +11,7 @@ import {
 import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import PortfolioEditModal from './modals/PortfolioEdit';
 import PortfolioDeleteModal from './modals/PortfolioDelete';
-import TagManagerSelect from './TagManagerSelect';
+import TagManagerSelect from 'src/modules/tags/components/TagManagerSelect';
 import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
 
 const PortfolioActionsDropdown = ({ portfolio, onUpdate }) => {

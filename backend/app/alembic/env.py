@@ -13,6 +13,7 @@ from app.core.database import Base
 import app.modules.auth.models  # noqa: F401
 import app.modules.portfolios.models  # noqa: F401
 import app.modules.market.models  # noqa: F401
+import app.modules.tags.models  # noqa: F401
 
 config = context.config
 target_metadata = Base.metadata

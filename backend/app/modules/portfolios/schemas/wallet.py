@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
-from .tag import TagResponse
+from app.modules.tags.schemas import TagResponse
 
 
 class WalletBase(BaseModel):

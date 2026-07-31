@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.common.schemas import Context
 from app.modules.market.repositories.ticker import TickerRepository
 from app.modules.portfolios.models import Portfolio, PortfolioAsset
-from app.modules.portfolios.repositories import TaggableRepository, TransactionRepository
+from app.modules.portfolios.repositories import TransactionRepository
+from app.modules.tags.repositories import TaggableRepository
 from app.modules.portfolios.services.portfolio import PortfolioService
 
 IMAGES_URL = '/market/static/images/tickers'

@@ -11,7 +11,7 @@ import {
 import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import WalletEditModal from './modals/WalletEdit';
 import WalletDeleteModal from './modals/WalletDelete';
-import TagManagerSelect from 'src/modules/portfolios/components/TagManagerSelect';
+import TagManagerSelect from 'src/modules/tags/components/TagManagerSelect';
 import { useWalletMutations } from 'src/modules/wallets/hooks/useWalletMutations';
 
 const WalletActionsDropdown = ({ wallet, onUpdate }) => {

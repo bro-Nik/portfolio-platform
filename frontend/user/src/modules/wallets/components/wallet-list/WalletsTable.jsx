@@ -5,7 +5,7 @@ import { Alert } from '@portfolio/shared';
 import { Checkbox, Input } from 'antd';
 import { createCostColumn, createShareColumn, createBuyOrdersColumn, createNameColumn } from 'src/features/tables/tableColumns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
-import TagFilter from 'src/modules/portfolios/components/TagFilter';
+import TagFilter from 'src/modules/tags/components/TagFilter';
 import { useQueryClient } from '@tanstack/react-query';
 
 const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArchivedFallback }) => {

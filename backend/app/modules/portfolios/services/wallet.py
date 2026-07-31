@@ -4,8 +4,9 @@ from app.common.exceptions import ConflictError, NotFoundError, PermissionDenied
 
 from app.modules.portfolios.models import Wallet, Transaction
 from app.modules.portfolios.repositories import (
-    TransactionRepository, WalletRepository, TaggableRepository,
+    TransactionRepository, WalletRepository,
 )
+from app.modules.tags.repositories import TaggableRepository
 from app.modules.portfolios.schemas import (
     WalletCreate, WalletCreateRequest, WalletUpdate, WalletUpdateRequest,
 )

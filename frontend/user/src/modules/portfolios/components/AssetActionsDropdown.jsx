@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import AssetDeleteModal from './modals/AssetDelete';
-import TagManagerSelect from './TagManagerSelect';
+import TagManagerSelect from 'src/modules/tags/components/TagManagerSelect';
 import { getTradingViewUrl } from 'src/utils/format';
 import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
 

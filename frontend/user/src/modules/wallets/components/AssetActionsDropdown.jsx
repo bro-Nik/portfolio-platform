@@ -9,7 +9,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
-import TagManagerSelect from 'src/modules/portfolios/components/TagManagerSelect';
+import TagManagerSelect from 'src/modules/tags/components/TagManagerSelect';
 import { getTradingViewUrl } from 'src/utils/format';
 import { useWalletMutations } from 'src/modules/wallets/hooks/useWalletMutations';
 

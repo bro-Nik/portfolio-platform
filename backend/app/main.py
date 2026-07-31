@@ -11,6 +11,7 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.core import settings
 from app.modules.auth.routes import router as auth_router
 from app.modules.portfolios.routes import router as portfolios_router
+from app.modules.tags.routes import router as tags_router
 from app.modules.market.routes import router as market_router
 from app.modules.market.dependencies import container
 
@@ -56,11 +57,7 @@ async def service_info() -> dict:
         'redoc': '/redoc',
     }
 
-# Auth routes
 app.include_router(auth_router, prefix='/auth', tags=['Auth'])
-
-# Portfolios routes
 app.include_router(portfolios_router, prefix='/api', tags=['Portfolios'])
-
-# Market routes
+app.include_router(tags_router, prefix='/api', tags=['Tags'])
 app.include_router(market_router, prefix='/market', tags=['Market'])

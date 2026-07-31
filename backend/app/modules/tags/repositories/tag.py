@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
 
-from app.modules.portfolios.models import Tag, Taggable
+from app.modules.tags.models import Tag, Taggable
 
 
 class TagRepository(BaseRepository[Tag]):

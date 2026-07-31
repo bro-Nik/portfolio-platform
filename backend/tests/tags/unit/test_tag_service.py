@@ -3,8 +3,8 @@ from unittest.mock import patch
 import pytest
 
 from app.common.exceptions import NotFoundError
-from app.modules.portfolios.repositories import TagRepository
-from app.modules.portfolios.services.tag import TagService
+from app.modules.tags.repositories import TagRepository
+from app.modules.tags.services.tag import TagService
 
 user_id = 1
 
