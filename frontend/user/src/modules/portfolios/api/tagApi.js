@@ -5,7 +5,7 @@ const api = createApi('/api/tags', { useAuth: true });
 export const tagApi = {
   getTags: () => api.get(''),
 
-  createTag: (name, color) => api.post('', { name, color }),
+  createTag: (name, color, scope) => api.post('', { name, color, scope }),
 
   updateTag: (tagId, data) => api.put(`/${tagId}`, data),
 

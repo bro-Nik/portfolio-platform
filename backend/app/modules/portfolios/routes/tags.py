@@ -33,7 +33,7 @@ async def create_tag(
     data: TagCreate,
     tag_service: TagServiceDep,
 ) -> TagResponse:
-    return await tag_service.create(data.name, data.color)
+    return await tag_service.create(data.name, data.color, data.scope)
 
 
 @router.post('/tags/attach')

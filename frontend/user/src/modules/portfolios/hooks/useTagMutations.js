@@ -89,6 +89,7 @@ const optimisticTagChange = async (queryClient, { tagId, entityType, entityId, p
     queryClient.cancelQueries({ queryKey: ['portfolios'] }),
     queryClient.cancelQueries({ queryKey: ['wallets'] }),
     queryClient.cancelQueries({ queryKey: ['overview'] }),
+    queryClient.cancelQueries({ queryKey: ['tags'] }),
   ]);
 
   const previous = {
@@ -136,7 +137,7 @@ export const useTagMutations = () => {
   const queryClient = useQueryClient();
 
   const createTag = useMutation({
-    mutationFn: ({ name, color }) => tagApi.createTag(name, color),
+    mutationFn: ({ name, color, scope }) => tagApi.createTag(name, color, scope),
 
     onMutate: async ({ name, color }) => {
       await queryClient.cancelQueries({ queryKey: ['tags'] });

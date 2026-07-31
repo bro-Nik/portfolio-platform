@@ -173,7 +173,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
           allowClear
           style={{ width: 160 }}
         />
-        <TagFilter onChange={setTagFilterIds} />
+        <TagFilter onChange={setTagFilterIds} scope="asset" />
         <Checkbox checked={hideCheap} onChange={(e) => setHideCheap(e.target.checked)}>
           Спрятать дешевле $1
         </Checkbox>

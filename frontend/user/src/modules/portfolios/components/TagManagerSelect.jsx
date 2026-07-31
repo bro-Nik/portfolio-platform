@@ -3,6 +3,7 @@ import { Popover, Input, Button, Space, Tag as AntTag } from 'antd';
 import { Tag, Plus, MoreVertical, Trash2 } from 'lucide-react';
 import { useTagsQuery } from '../hooks/useTagsQuery';
 import { useTagMutations } from '../hooks/useTagMutations';
+import { getTagScope } from '../utils/tagScope';
 import { useNotifications } from '@portfolio/shared';
 
 const PRESET_COLORS = [
@@ -103,6 +104,7 @@ const TagRow = ({ tag, checked, entityType, onToggle }) => {
 
 const TagPanel = ({ entityType, entityId, assignedTags, parentId }) => {
   const { success, error } = useNotifications();
+  const scope = getTagScope(entityType);
   const { data: allTags = [] } = useTagsQuery();
   const { createTag, attachTag, detachTag } = useTagMutations();
   const [search, setSearch] = useState('');
@@ -135,14 +137,15 @@ const TagPanel = ({ entityType, entityId, assignedTags, parentId }) => {
   }, [attachTag, detachTag, entityType, entityId, parentId, error]);
 
   const handleCreate = async ({ name, color }) => {
-    await createTag.mutateAsync({ name, color });
+    await createTag.mutateAsync({ name, color, scope });
     success('Тег создан');
   };
 
   const filtered = useMemo(() => {
-    if (!search) return allTags;
-    return allTags.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
-  }, [allTags, search]);
+    const scoped = scope ? allTags.filter(t => t.scope === scope) : allTags;
+    if (!search) return scoped;
+    return scoped.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
+  }, [allTags, scope, search]);
 
   const selected = useMemo(() => {
     if (!entityType) return [];

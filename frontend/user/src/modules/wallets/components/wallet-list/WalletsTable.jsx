@@ -51,7 +51,7 @@ const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArc
           allowClear
           style={{ width: 160 }}
         />
-        <TagFilter onChange={setTagFilterIds} />
+        <TagFilter onChange={setTagFilterIds} scope="wallet" />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Checkbox checked={showArchived} onChange={(e) => onToggleArchived(e.target.checked)}>
             Показывать архивные

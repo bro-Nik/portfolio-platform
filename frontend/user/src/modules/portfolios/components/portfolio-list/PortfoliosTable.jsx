@@ -60,7 +60,7 @@ const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, show
           allowClear
           style={{ width: 160 }}
         />
-        <TagFilter onChange={setTagFilterIds} />
+        <TagFilter onChange={setTagFilterIds} scope="portfolio" />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Checkbox checked={showArchived} onChange={(e) => onToggleArchived(e.target.checked)}>
             Показывать архивные

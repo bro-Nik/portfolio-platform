@@ -17,8 +17,8 @@ class TagService:
     async def get_all(self) -> list[Tag]:
         return await self.repo.get_by_user(self.ctx.actor.id)
 
-    async def create(self, name: str, color: str | None = None) -> Tag:
-        tag = await self.repo.create({'name': name, 'color': color, 'user_id': self.ctx.actor.id})
+    async def create(self, name: str, color: str | None = None, scope: str = 'asset') -> Tag:
+        tag = await self.repo.create({'name': name, 'color': color, 'scope': scope, 'user_id': self.ctx.actor.id})
         await self._session.flush()
         return tag
 

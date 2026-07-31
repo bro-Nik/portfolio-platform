@@ -90,6 +90,7 @@ class Tag(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     color: Mapped[str | None] = mapped_column(String(7))
+    scope: Mapped[str] = mapped_column(String(32), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
 
     user: Mapped['User'] = relationship(back_populates='tags')
