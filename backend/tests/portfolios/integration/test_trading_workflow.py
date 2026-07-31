@@ -28,7 +28,7 @@ class TestTradingWorkflow:
 
         funding_transaction = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 'USD',
+            'ticker_id': 7,
             'quantity': '100000.0',
             'type': 'Input',
             'wallet_id': wallet_id,
@@ -38,10 +38,10 @@ class TestTradingWorkflow:
         funding_response = await client.post('/api/transactions/', json=funding_transaction, headers=auth_headers)
         assert funding_response.status_code == status.HTTP_201_CREATED
 
-        tickers = ['AAPL', 'GOOGL', 'MSFT']
+        tickers = {'AAPL': 4, 'GOOGL': 5, 'MSFT': 6}
 
-        for ticker in tickers:
-            asset_data = {'ticker_id': ticker, 'portfolio_id': portfolio_id}
+        for ticker_id in tickers.values():
+            asset_data = {'ticker_id': ticker_id, 'portfolio_id': portfolio_id}
             response = await client.post(f'/api/portfolios/{portfolio_id}/assets', json=asset_data, headers=auth_headers)
             assert response.status_code == status.HTTP_201_CREATED
 
@@ -54,8 +54,8 @@ class TestTradingWorkflow:
         for trade in trades:
             transaction_data = {
                 'date': datetime.now(UTC).isoformat(),
-                'ticker_id': trade['ticker'],
-                'ticker2_id': 'USD',
+                'ticker_id': tickers[trade['ticker']],
+                'ticker2_id': 7,
                 'quantity': str(trade['quantity']),
                 'quantity2': str(trade['quantity'] * trade['price']),
                 'price': str(trade['price']),

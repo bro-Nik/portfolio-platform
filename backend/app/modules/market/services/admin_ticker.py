@@ -62,7 +62,9 @@ class TickerAdminService:
         dump = data.model_dump(exclude_unset=True)
         if not dump:
             raise BusinessRuleError('Нет полей для обновления')
-        return await self.repo.update(ticker_id, dump)
+        updated = await self.repo.update(ticker_id, dump)
+        await self.session.commit()
+        return updated
 
     async def delete(self, ticker_id: int) -> None:
         ticker = await self.repo.get(ticker_id)
@@ -79,6 +81,7 @@ class TickerAdminService:
             self._delete_image_files(ticker.image, ticker.market)
 
         await self.repo.delete(ticker_id)
+        await self.session.commit()
 
     async def merge(self, source_id: int, target_id: int) -> Ticker:
         if source_id == target_id:
@@ -95,7 +98,7 @@ class TickerAdminService:
         await self._merge_update_references(source_id, target_id)
 
         await self.repo.delete(source_id)
-        await self.session.flush()
+        await self.session.commit()
 
         merged = await self.repo.get(target_id, relations=['external_ids', 'identifiers'])
         return TickerAdminResponse.model_validate(merged)

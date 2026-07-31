@@ -110,7 +110,7 @@ class ProviderService:
         if data.is_active:
             await self._validate_can_be_active(data.name, data.api_key)
         provider = await self.repo.create(ProviderCreate(**data.model_dump()).model_dump())
-        await self.session.flush()
+        await self.session.commit()
         return provider
 
     async def update(self, name: str, data: ProviderUpdateRequest) -> Provider:
@@ -119,11 +119,14 @@ class ProviderService:
             data.api_key = provider.api_key
         if data.is_active:
             await self._validate_can_be_active(name, data.api_key)
-        return await self.repo.update(provider.id, ProviderUpdate(**data.model_dump()).model_dump())
+        updated = await self.repo.update(provider.id, ProviderUpdate(**data.model_dump()).model_dump())
+        await self.session.commit()
+        return updated
 
     async def delete(self, name: str) -> None:
         provider = await self.get_db_record(name)
         await self.repo.delete(provider.id)
+        await self.session.commit()
 
     async def reset_counters(self, name: str) -> None:
         async for key in self.redis.scan_iter(match=f'counter:{name}:*'):

@@ -39,7 +39,7 @@ class TaskService:
             raise ConflictError(f'API задача с именем "{data.name}" уже существует')
         await self._validate_provider_active(data.provider_name)
         task = await self.repo.create(TaskCreate(**data.model_dump()).model_dump())
-        await self.session.flush()
+        await self.session.commit()
         return task
 
     async def update(self, id: int, data: TaskUpdateRequest) -> Task:
@@ -49,7 +49,10 @@ class TaskService:
                 raise ConflictError(f'API задача с именем "{data.name}" уже существует')
         if data.provider_name and data.provider_name != task.provider_name:
             await self._validate_provider_active(data.provider_name)
-        return await self.repo.update(id, TaskUpdate(**data.model_dump()).model_dump())
+        updated = await self.repo.update(id, TaskUpdate(**data.model_dump()).model_dump())
+        await self.session.commit()
+        return updated
 
     async def delete(self, id: int) -> None:
         await self.repo.delete(id)
+        await self.session.commit()

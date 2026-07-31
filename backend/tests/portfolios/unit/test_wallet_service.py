@@ -72,7 +72,7 @@ class TestWalletService:
             assert result.name == 'New Wallet'
             service.repo.exists_by_name_and_user.assert_called_once_with('New Wallet', user_id)
             service.repo.create.assert_called_once()
-            service.session.flush.assert_called_once()
+            service.session.commit.assert_called_once()
 
     async def test_create_duplicate_name(self, service, data):
         wallet_data = data(name='Existing Wallet')
@@ -85,7 +85,7 @@ class TestWalletService:
 
     async def test_update_success(self, service, mock, data):
         wallet_data = data(name='Updated Name')
-        existing_wallet = mock(id=1, name='Old Name', user_id=user_id)
+        existing_wallet = mock(id=1, name='Old Name', user_id=user_id, is_archived=False)
         updated_wallet = mock(id=1, name='Updated Name', user_id=user_id)
 
         with (
@@ -104,6 +104,7 @@ class TestWalletService:
 
         with (
             patch.object(service.repo, 'get', return_value=wallet),
+            patch.object(service.transaction_repo, 'exists_for_wallet', return_value=False),
             patch.object(service.repo, 'delete', return_value=True),
         ):
             await service.delete(wallet.id)

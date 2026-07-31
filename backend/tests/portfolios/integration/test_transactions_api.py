@@ -8,8 +8,8 @@ class TestTransactionsAPI:
     async def test_create_transaction_buy_crypto(self, client, auth_headers, db_session, portfolio, wallet):
         transaction_data = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 'BTC',
-            'ticker2_id': 'USDT',
+            'ticker_id': 1,
+            'ticker2_id': 2,
             'quantity': '0.1',
             'quantity2': '6000.0',
             'price': '60000.0',
@@ -30,22 +30,22 @@ class TestTransactionsAPI:
         assert len(data['portfolio_assets']) > 0
 
         data_portfolio = (await client.get(f'/api/portfolios/{portfolio.id}', headers=auth_headers)).json()
-        btc = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 'BTC'), {})
-        usdt = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 'USDT'), {})
+        btc = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 1), {})
+        usdt = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 2), {})
         assert Decimal(btc['quantity']) == Decimal('0.1')
         assert Decimal(usdt['quantity']) == Decimal('-6000.0')
 
         data_wallet = (await client.get(f'/api/wallets/{wallet.id}', headers=auth_headers)).json()
-        btc = next((a for a in data_wallet['assets'] if a['ticker_id'] == 'BTC'), {})
-        usdt = next((a for a in data_wallet['assets'] if a['ticker_id'] == 'USDT'), {})
+        btc = next((a for a in data_wallet['assets'] if a['ticker_id'] == 1), {})
+        usdt = next((a for a in data_wallet['assets'] if a['ticker_id'] == 2), {})
         assert Decimal(btc['quantity']) == Decimal('0.1')
         assert Decimal(usdt['quantity']) == Decimal('-6000.0')
 
     async def test_create_transaction_sell_crypto(self, client, auth_headers, portfolio, wallet, portfolio_asset):
         sell_transaction = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 'ETH',
-            'ticker2_id': 'USDT',
+            'ticker_id': 3,
+            'ticker2_id': 2,
             'quantity': '2.5',
             'quantity2': '7500.0',
             'price': '3000.0',
@@ -61,22 +61,22 @@ class TestTransactionsAPI:
         assert response.status_code == status.HTTP_201_CREATED
 
         data_portfolio = (await client.get(f'/api/portfolios/{portfolio.id}', headers=auth_headers)).json()
-        eth = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 'ETH'), {})
-        usdt = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 'USDT'), {})
+        eth = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 3), {})
+        usdt = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 2), {})
         assert Decimal(eth['quantity']) == Decimal('-2.5')
         assert Decimal(usdt['quantity']) == Decimal('7500.0')
 
         data_wallet = (await client.get(f'/api/wallets/{wallet.id}', headers=auth_headers)).json()
-        eth = next((a for a in data_wallet['assets'] if a['ticker_id'] == 'ETH'), {})
-        usdt = next((a for a in data_wallet['assets'] if a['ticker_id'] == 'USDT'), {})
+        eth = next((a for a in data_wallet['assets'] if a['ticker_id'] == 3), {})
+        usdt = next((a for a in data_wallet['assets'] if a['ticker_id'] == 2), {})
         assert Decimal(eth['quantity']) == Decimal('-2.5')
         assert Decimal(usdt['quantity']) == Decimal('7500.0')
 
     async def test_update_transaction(self, client, auth_headers, portfolio, wallet, transaction):
         update_data = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 'BTC',
-            'ticker2_id': 'USDT',
+            'ticker_id': 1,
+            'ticker2_id': 2,
             'quantity': '2.0',
             'type': 'Buy',
             'portfolio_id': portfolio.id,
@@ -94,7 +94,7 @@ class TestTransactionsAPI:
         data_portfolio = (await client.get(f'/api/portfolios/{portfolio.id}', headers=auth_headers)).json()
         assets = data_portfolio['assets']
         assert len(assets) == 2
-        btc = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 'BTC'), {})
+        btc = next((a for a in data_portfolio['assets'] if a['ticker_id'] == 1), {})
         assert Decimal(btc['quantity']) == Decimal('0.5')
 
     async def test_delete_transaction(self, client, auth_headers, portfolio, wallet, transaction):
@@ -114,7 +114,7 @@ class TestTransactionsAPI:
     async def test_create_transaction_invalid_type(self, client, auth_headers, portfolio):
         transaction_data = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 'AAPL',
+            'ticker_id': 1,
             'quantity': '10.0',
             'type': 'InvalidType',
             'portfolio_id': portfolio.id,
@@ -127,7 +127,7 @@ class TestTransactionsAPI:
     async def test_create_transaction_missing_required_fields(self, client, auth_headers):
         transaction_data = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 'AAPL',
+            'ticker_id': 1,
             'quantity': '10.0',
         }
 

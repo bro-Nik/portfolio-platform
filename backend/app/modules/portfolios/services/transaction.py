@@ -39,6 +39,7 @@ class TransactionService:
         t = await self.repo.create(TransactionCreate(**data.model_dump(exclude_unset=True), user_id=self.actor.id).model_dump())
         await self.session.flush()
         await self._notify_services(t)
+        await self.session.commit()
         return t
 
     async def update(self, id: int, data: TransactionUpdateRequest) -> tuple[Transaction, Transaction]:
@@ -46,14 +47,16 @@ class TransactionService:
         old = await self.get(id)
         await self._ensure_not_archived(old)
         await self._notify_services(old, cancel=True)
-        updated = await self.repo.update(old.id, TransactionUpdate(**data.model_dump(exclude_unset=True)).model_dump())
+        updated = await self.repo.update(old.id, TransactionUpdate(**data.model_dump(exclude_unset=True)).model_dump(exclude_unset=True))
         await self._notify_services(updated)
+        await self.session.commit()
         return updated, old
 
     async def delete(self, id: int) -> Transaction:
         t = await self.get(id)
         await self._notify_services(t, cancel=True)
         await self.repo.delete(id)
+        await self.session.commit()
         return t
 
     async def build_response_with_assets(self, *transactions: Transaction) -> TransactionResponseWithAssets:

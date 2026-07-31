@@ -77,7 +77,7 @@ class TestPortfolioAssetService:
             assert result == asset
 
     async def test_create_success(self, service, mock, data):
-        asset_data = data(ticker_id='BTC', portfolio_id=1)
+        asset_data = data(ticker_id=1, portfolio_id=1)
         with (
             patch.object(service.repo, 'get_by_ticker_and_portfolio', return_value=None),
             patch.object(service.repo, 'create', return_value=mock()),

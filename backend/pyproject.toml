@@ -1,0 +1,93 @@
+[tool.ruff]
+select = ["ALL"]
+line-length = 100
+target-version = "py313"
+
+ignore = [
+    # Игнорировать проверку кириллических символов
+    "RUF001", "RUF002", "RUF003",
+
+    # Игнорировать проверку статичных словарей
+    "RUF012",
+
+    # Игнорировать docstring
+    "D101",  # Отсутствие docstring в class
+    "D107",  # Отсутствие docstring в __init__
+    "D100",  # Отсутствие docstring в public module
+    "D104",  # Отсутствие docstring в public package
+    "D102",  # Отсутствие docstring в public method
+
+    # Игнорировать строгие проверки для обработки ошибок
+    "EM101", "EM102",  # Слишком широкие/узкие исключения
+    "TRY003",         # Неправильный тип исключения
+
+    # Игнорировать строгие проверки для TODO комментариев
+    "TD002", "TD003",
+
+    # Игнорировать предупреждения о переопределении встроенных имен
+    "A001", "A002",
+
+    # Игнорировать предупреждения о типизации
+    "ANN003",
+]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"      # Одинарные кавычки для inline строк
+multiline-quotes = "double"   # Двойные кавычки для многострочных строк
+docstring-quotes = "double"   # Двойные кавычки для docstring
+
+[tool.ruff.lint.isort]
+known-local-folder = ["app"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+lines-between-types = 1               # Пустые строки между типами импортов
+combine-as-imports = true             # Объединять as-импорты
+force-sort-within-sections = true     # Сортировка внутри секций
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+# Правила в роутах
+"app/modules/*/routes/**/*.py" = [
+    "PLR0913",  # Максимальное количество аргументов
+    "ARG001",   # Неиспользуемый аргумент (для request в rate limiting)
+]
+
+# Правила в тестах
+"tests/**/*.py" = [
+    "S101",     # использование assert
+    "ANN201",   # отсутствует аннотация типа возврата
+    "ANN001",   # отсутствует аннотация типа
+    "ANN202",   # отсутствует аннотация типа возврата
+    "ANN003",   # отсутствует аннотация типа для *args/**kwargs
+    "S105",     # жестко заданный пароль в коде
+    "S106",     # жестко заданный пароль в коде
+    "PLR2004",  # магические числа
+    "SLF001",   # обращение к приватным членам
+    "D101",     # отсутствует docstring в публичном классе
+    "D102",     # отсутствует docstring в публичном методе
+    "D103",     # отсутствует docstring в публичной функции
+    "E501",     # слишком длинная строка
+]
+
+# Правила для Alembic миграций
+"app/alembic/versions/*.py" = ["ALL"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+pythonpath = ["."]
+
+[tool.pyright]
+include = ["app"]
+typeCheckingMode = "basic"
+pythonVersion = "3.13"

@@ -126,9 +126,7 @@ async def reset_password(
     request: Request,
     auth: AuthServiceDep,
 ) -> RegisterResponse:
-    user_id = await auth.user_service.reset_password(data.token, data.password)
-    user = await auth.user_service.get_for_auth(id=user_id)
-    await auth.logout_all(user_id)
+    user = await auth.reset_password(data.token, data.password)
     await send_password_reset_confirmation_email.kiq(user.email)
     return RegisterResponse(message='Пароль успешно сброшен')
 
@@ -221,9 +219,7 @@ async def delete_session(
 async def delete_account(
     data: DeleteAccountRequest,
     request: Request,
-    user_service: UserServiceDep,
     auth: AuthServiceDep,
     current_user: Annotated[AuthUser, require_user],
 ) -> None:
-    await user_service.delete_account(current_user.id, data)
-    await auth.logout_all(current_user.id)
+    await auth.delete_account(current_user.id, data)

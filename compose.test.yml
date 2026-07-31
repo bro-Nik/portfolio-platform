@@ -27,4 +27,5 @@ services:
     tmpfs: /tmp
     volumes:
       - ./backend/tests:/app/tests
+      - ./backend/pyproject.toml:/app/pyproject.toml:ro
     command: pytest tests/ -v --cov=app

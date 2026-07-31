@@ -102,17 +102,16 @@ class TestPortfoliosAPI:
         assert db_portfolio is None
 
     async def test_add_asset_to_portfolio(self, client, auth_headers, portfolio, db_session):
-        asset_data = {'ticker_id': 'BTC', 'portfolio_id': portfolio.id}
+        asset_data = {'ticker_id': 1, 'portfolio_id': portfolio.id}
 
         response = await client.post(f'/api/portfolios/{portfolio.id}/assets', json=asset_data, headers=auth_headers)
 
         assert response.status_code == status.HTTP_201_CREATED
         data = response.json()
-        assert len(data['assets']) == 1
-        asset = data['assets'][0]
-        assert asset['ticker_id'] == 'BTC'
+        assert data['ticker_id'] == 1
+        assert data['portfolio_id'] == portfolio.id
 
-        asset = await db_session.get(PortfolioAsset, asset['id'])
+        asset = await db_session.get(PortfolioAsset, data['id'])
         assert asset is not None
         assert asset.ticker_id == asset_data['ticker_id']
 
@@ -123,7 +122,7 @@ class TestPortfoliosAPI:
         data = response.json()
         assert isinstance(data, list)
         assert len(data) > 0
-        assert data[0]['ticker_id'] == 'BTC'
+        assert data[0]['ticker_id'] == 1
 
     async def test_get_asset_distribution(self, client, auth_headers, portfolio_asset, portfolio):
         response = await client.get(f'/api/portfolios/assets/{portfolio_asset.id}/distribution', headers=auth_headers)

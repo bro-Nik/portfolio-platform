@@ -73,7 +73,7 @@ class TestPortfolioService:
             assert result.name == 'New Portfolio'
             service.repo.exists_by_name_and_user.assert_called_once_with('New Portfolio', 1)
             service.repo.create.assert_called_once()
-            service.session.flush.assert_called_once()
+            service.session.commit.assert_called_once()
 
     async def test_create_duplicate_name(self, service, data):
         portfolio_data = data(name='Existing Portfolio')
@@ -86,7 +86,7 @@ class TestPortfolioService:
 
     async def test_update_success(self, service, mock, data):
         portfolio_data = data(name='Updated Name')
-        existing_portfolio = mock(id=1, name='Old Name', user_id=user_id)
+        existing_portfolio = mock(id=1, name='Old Name', user_id=user_id, is_archived=False)
         updated_portfolio = mock(id=1, name='Updated Name', user_id=user_id)
 
         with (
@@ -105,6 +105,7 @@ class TestPortfolioService:
 
         with (
             patch.object(service.repo, 'get', return_value=portfolio),
+            patch.object(service.transaction_repo, 'exists_for_portfolio', return_value=False),
             patch.object(service.repo, 'delete', return_value=True),
         ):
             await service.delete(portfolio.id)
@@ -113,8 +114,8 @@ class TestPortfolioService:
             service.repo.delete.assert_called_once_with(portfolio.id)
 
     async def test_add_asset_success(self, service, mock, data):
-        asset_data = data(ticker_id='AAPL')
-        portfolio = mock(id=1, name='Test Portfolio', user_id=user_id)
+        asset_data = data(ticker_id=1)
+        portfolio = mock(id=1, name='Test Portfolio', user_id=user_id, is_archived=False)
         asset = mock(id=123)
 
         with (

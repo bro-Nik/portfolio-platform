@@ -104,7 +104,7 @@ class TestWalletsAPI:
         data = response.json()
         assert isinstance(data, list)
         assert len(data) > 0
-        assert data[0]['ticker_id'] == 'BTC'
+        assert data[0]['ticker_id'] == 1
 
     async def test_get_asset_distribution(self, client, auth_headers, wallet_asset, wallet):
         response = await client.get(f'/api/wallets/assets/{wallet_asset.id}/distribution', headers=auth_headers)

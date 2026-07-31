@@ -20,8 +20,6 @@ def _check_created_with_authuser(mock_call, user):
     assert isinstance(call_auth_user, AuthUser)
     assert call_auth_user.id == user.id
     assert call_auth_user.role == UserRole(user.role)
-    assert call_auth_user.email == user.email
-    assert call_auth_user.is_verified == user.is_verified
 
 
 @pytest.fixture

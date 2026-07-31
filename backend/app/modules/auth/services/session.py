@@ -26,6 +26,7 @@ class SessionService:
             **session_info,
         )
         await self.repo.create(session_to_db.model_dump())
+        await self.session.commit()
 
     async def update(self, refresh_token_id: int) -> None:
         db_session = await self.repo.get_by_token_id(refresh_token_id)
@@ -33,6 +34,7 @@ class SessionService:
             return
         session_to_db = LoginSessionUpdate(ip_address=self.ctx.client_ip, last_activity_at=datetime.now(UTC))
         await self.repo.update(db_session.id, session_to_db.model_dump())
+        await self.session.commit()
 
     async def get_user_sessions(self, user_id: int) -> list:
         return await self.repo.get_all_by_user_id(user_id)
@@ -44,6 +46,7 @@ class SessionService:
         if db_session.refresh_token_id:
             await self.token_repo.delete(db_session.refresh_token_id)
         await self.repo.delete(session_id)
+        await self.session.commit()
 
     async def delete_all_other_sessions(self, user_id: int, current_token_id: int) -> None:
         sessions = await self.repo.get_all_by_user_id(user_id)
@@ -52,6 +55,7 @@ class SessionService:
                 if s.refresh_token_id:
                     await self.token_repo.delete(s.refresh_token_id)
                 await self.repo.delete(s.id)
+        await self.session.commit()
 
     @staticmethod
     def _parse_user_agent(user_agent_string: str) -> dict:

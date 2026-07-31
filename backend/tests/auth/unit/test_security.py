@@ -39,7 +39,7 @@ class TestSecurityService:
         assert service.verify_password(special_password, hashed) is True
 
     def test_create_token_pair_success(self, service, mock):
-        user = mock(id=2, email='test@example.com', role='user', is_verified=False)
+        user = mock(id=2, email='test@example.com', role='user', is_verified=False, login='test')
 
         tokens = service.create_token_pair(user)
 
@@ -50,7 +50,7 @@ class TestSecurityService:
         assert isinstance(tokens.refresh_expires_at, int)
 
     def test_verify_valid_token(self, service, mock):
-        user = mock(id=2, email='test@example.com', role='user', is_verified=False)
+        user = mock(id=2, email='test@example.com', role='user', is_verified=False, login='test')
         tokens = service.create_token_pair(user)
         payload = service.verify_token(tokens.access_token)
 
@@ -59,7 +59,7 @@ class TestSecurityService:
         assert payload['type'] == 'access'
 
     def test_verify_expired_token(self, service, mock):
-        user = mock(id=2, email='test@example.com', role='user', is_verified=False)
+        user = mock(id=2, email='test@example.com', role='user', is_verified=False, login='test')
 
         with freeze_time('2026-01-01 12:00:00'):
             tokens = service.create_token_pair(user)
@@ -77,7 +77,7 @@ class TestSecurityService:
             service.verify_token(invalid_token)
 
     def test_token_types_different(self, service, mock):
-        user = mock(id=2, email='test@example.com', role='user', is_verified=False)
+        user = mock(id=2, email='test@example.com', role='user', is_verified=False, login='test')
         tokens = service.create_token_pair(user)
 
         assert tokens.access_token != tokens.refresh_token
@@ -120,7 +120,7 @@ class TestSecurityService:
         assert decoded_new_email == new_email
 
     def test_verify_email_token_wrong_type(self, service, mock):
-        user = mock(id=2, email='test@example.com', role='user', is_verified=False)
+        user = mock(id=2, email='test@example.com', role='user', is_verified=False, login='test')
         access_token = service._create_access_token(user)
 
         with pytest.raises(AuthenticationError, match='Невалидный токен подтверждения'):

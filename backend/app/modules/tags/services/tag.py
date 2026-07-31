@@ -19,7 +19,7 @@ class TagService:
 
     async def create(self, name: str, color: str | None = None, scope: str = 'asset') -> Tag:
         tag = await self.repo.create({'name': name, 'color': color, 'scope': scope, 'user_id': self.ctx.actor.id})
-        await self._session.flush()
+        await self._session.commit()
         return tag
 
     async def update(self, tag_id: int, name: str | None = None, color: str | None = None) -> Tag:
@@ -33,6 +33,7 @@ class TagService:
             update_data['color'] = color
         if update_data:
             tag = await self.repo.update(tag_id, update_data)
+            await self._session.commit()
         return tag
 
     async def delete(self, tag_id: int) -> None:
@@ -40,12 +41,15 @@ class TagService:
         if not tag or tag.user_id != self.ctx.actor.id:
             raise NotFoundError('Тег не найден')
         await self.repo.delete(tag_id)
+        await self._session.commit()
 
     async def add_to_entity(self, tag_id: int, entity_type: str, entity_id: int) -> None:
         tag = await self.repo.get(tag_id)
         if not tag or tag.user_id != self.ctx.actor.id:
             raise NotFoundError('Тег не найден')
         await self.taggable_repo.add(tag_id, entity_type, entity_id)
+        await self._session.commit()
 
     async def remove_from_entity(self, tag_id: int, entity_type: str, entity_id: int) -> None:
         await self.taggable_repo.remove(tag_id, entity_type, entity_id)
+        await self._session.commit()

@@ -32,7 +32,8 @@ class TestTransactionService:
     async def test_create_success(self, service, mock, data):
         transaction_data = data(
             date=datetime.now(UTC), type='Buy', portfolio_id=1, wallet_id=1,
-            ticker_id='AAPL', ticker2_id='USD', quantity=Decimal(10),
+            portfolio2_id=None, wallet2_id=None,
+            ticker_id=1, ticker2_id=2, quantity=Decimal(10),
         )
         transaction = mock(
             id=1, type='Buy', user_id=user_id,
@@ -41,6 +42,8 @@ class TestTransactionService:
 
         with (
             patch.object(service.repo, 'create', return_value=transaction),
+            patch.object(service.portfolio_service, 'get', return_value=mock(is_archived=False)),
+            patch.object(service.wallet_service, 'get', return_value=mock(is_archived=False)),
         ):
             result = await service.create(transaction_data)
 

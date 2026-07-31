@@ -97,7 +97,7 @@ class TestUserService:
             assert user_create['password_hash'] == password_hash
             assert user_create['role'] == USER
 
-        service.session.flush.assert_called_once()
+        service.session.commit.assert_called_once()
         assert result == user
 
     async def test_create_success_with_actor_admin(self, service, mock, data):
