@@ -52,6 +52,35 @@ class TestWalletService:
             assert len(result.assets) == 1
             service.repo.get_with_assets.assert_called_once_with(wallet.id)
 
+    async def test_archive_bulk(self, service, mock):
+        wallet = mock(
+            id=1, user_id=user_id,
+            assets=[mock(id=10, is_archived=False), mock(id=11, is_archived=True)],
+        )
+
+        with (
+            patch.object(service.repo, 'get_with_assets', return_value=wallet),
+            patch.object(service.repo, 'update', return_value=wallet),
+            patch.object(service.session, 'commit'),
+        ):
+            await service.archive(wallet.id)
+
+            service.repo.get_with_assets.assert_awaited_once_with(wallet.id)
+            service.asset_service.archive_many.assert_awaited_once_with([10])
+            service.asset_service.archive.assert_not_awaited()
+
+    async def test_archive_no_unarchived_assets(self, service, mock):
+        wallet = mock(id=1, user_id=user_id, assets=[])
+
+        with (
+            patch.object(service.repo, 'get_with_assets', return_value=wallet),
+            patch.object(service.repo, 'update', return_value=wallet),
+            patch.object(service.session, 'commit'),
+        ):
+            await service.archive(wallet.id)
+
+            service.asset_service.archive_many.assert_not_awaited()
+
     async def test_get_with_assets_not_found(self, service):
         with (
             patch.object(service.repo, 'get', return_value=None),

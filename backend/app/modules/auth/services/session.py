@@ -46,15 +46,6 @@ class SessionService:
         await self.repo.delete(session_id)
         await self.session.commit()
 
-    async def delete_all_other_sessions(self, user_id: int, current_token_id: int) -> None:
-        sessions = await self.repo.get_all_by_user_id(user_id)
-        for s in sessions:
-            if s.refresh_token_id != current_token_id:
-                if s.refresh_token_id:
-                    await self.token_repo.delete(s.refresh_token_id)
-                await self.repo.delete(s.id)
-        await self.session.commit()
-
     @staticmethod
     def _parse_user_agent(user_agent_string: str) -> dict:
         if not user_agent_string:

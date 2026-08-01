@@ -83,7 +83,9 @@ exec service cmd:
 
 # Запустить тесты
 tests *args:
-    @docker compose -f compose.test.yml run --rm backend-tests {{ args }}
+    @docker compose -f compose.test.yml run --rm backend-tests {{ args }}; status=$$?; \
+    docker compose -f compose.test.yml down --remove-orphans > /dev/null 2>&1; \
+    exit $$status
 
 # Создать локальное окружение для автодополнения (LSP)
 build-local-env:

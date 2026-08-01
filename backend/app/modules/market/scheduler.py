@@ -69,21 +69,25 @@ class DBScheduleSource(ScheduleSource):
         if redis is None:
             return
 
-        for task in tasks:
-            if task.status != TaskStatus.RUNNING.value:
-                continue
-            lock_exists = await redis.exists(f'task:run:{task.id}')
-            if lock_exists:
-                continue
-            async with self._session_factory() as session:
-                repo = TaskRepository(session)
-                db_task = await repo.get(task.id)
+        running = [t for t in tasks if t.status == TaskStatus.RUNNING.value]
+        if not running:
+            return
+        locks = await redis.mget([f'task:run:{t.id}' for t in running])
+        stale = [t for t, lock in zip(running, locks, strict=True) if not lock]
+        if not stale:
+            return
+        async with self._session_factory() as session:
+            repo = TaskRepository(session)
+            db_tasks = await repo.get_all_by_ids([t.id for t in stale])
+            db_by_id = {db.id: db for db in db_tasks}
+            for t in stale:
+                db_task = db_by_id.get(t.id)
                 if db_task and db_task.status == TaskStatus.RUNNING.value:
                     db_task.status = TaskStatus.FAILED.value
                     db_task.last_error = 'Stale: worker crashed?'
-                    task.status = TaskStatus.FAILED.value
-                    logger.warning('Сброшен stale статус задачи %s', task.id)
-                await session.commit()
+                    t.status = TaskStatus.FAILED.value
+                    logger.warning('Сброшен stale статус задачи %s', t.id)
+            await session.commit()
 
     async def _get_redis(self) -> Redis | None:
         if self._redis is None:

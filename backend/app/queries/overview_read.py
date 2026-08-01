@@ -47,12 +47,15 @@ class OverviewReadQuery:
         for a in all_portfolio_assets:
             pid = portfolio_per_asset[a.id]
             assets_by_portfolio.setdefault(pid, []).append(a)
-
-        for pid, assets in assets_by_portfolio.items():
-            ticker_ids = list(set(a.ticker_id for a in assets))
-            txn_tickers = await self.transaction_repo.portfolio_tickers_with_transactions(pid, ticker_ids)
-            for a in assets:
-                a.has_transactions = a.ticker_id in txn_tickers
+        portfolio_tickers = {
+            pid: [a.ticker_id for a in assets]
+            for pid, assets in assets_by_portfolio.items()
+        }
+        txn_pairs = await self.transaction_repo.portfolios_tickers_with_transactions(
+            portfolio_tickers,
+        )
+        for a in all_portfolio_assets:
+            a.has_transactions = (portfolio_per_asset[a.id], a.ticker_id) in txn_pairs
 
         wallet_ids = [w.id for w in wallets]
         wallet_txn_ids = await self.transaction_repo.wallets_with_transactions(wallet_ids)
@@ -65,12 +68,13 @@ class OverviewReadQuery:
         for a in all_wallet_assets:
             wid = wallet_per_asset[a.id]
             assets_by_wallet.setdefault(wid, []).append(a)
-
-        for wid, assets in assets_by_wallet.items():
-            ticker_ids = list(set(a.ticker_id for a in assets))
-            txn_tickers = await self.transaction_repo.wallet_tickers_with_transactions(wid, ticker_ids)
-            for a in assets:
-                a.has_transactions = a.ticker_id in txn_tickers
+        wallet_tickers = {
+            wid: [a.ticker_id for a in assets]
+            for wid, assets in assets_by_wallet.items()
+        }
+        txn_pairs = await self.transaction_repo.wallets_tickers_with_transactions(wallet_tickers)
+        for a in all_wallet_assets:
+            a.has_transactions = (wallet_per_asset[a.id], a.ticker_id) in txn_pairs
 
     async def get_all(self) -> tuple[list[Portfolio], list[Wallet]]:
         portfolios = await self.portfolio_service.get_all_with_assets()

@@ -43,7 +43,7 @@ class TestPortfolioService:
 
         with (
             patch.object(service.repo, 'get_with_assets', return_value=portfolio),
-            patch.object(service.taggable_repo, 'get_tags', return_value=[]),
+            patch.object(service.taggable_repo, 'bulk_get_tags', return_value={}),
         ):
             result = await service.get_with_assets(portfolio.id)
 
@@ -51,6 +51,36 @@ class TestPortfolioService:
             assert result.name == 'Test'
             assert len(result.assets) == 1
             service.repo.get_with_assets.assert_called_once_with(portfolio.id)
+            service.taggable_repo.bulk_get_tags.assert_awaited_once()
+
+    async def test_archive_bulk(self, service, mock):
+        portfolio = mock(
+            id=1, user_id=user_id,
+            assets=[mock(id=10, is_archived=False), mock(id=11, is_archived=True)],
+        )
+
+        with (
+            patch.object(service.repo, 'get_with_assets', return_value=portfolio),
+            patch.object(service.repo, 'update', return_value=portfolio),
+            patch.object(service.session, 'commit'),
+        ):
+            await service.archive(portfolio.id)
+
+            service.repo.get_with_assets.assert_awaited_once_with(portfolio.id)
+            service.asset_service.archive_many.assert_awaited_once_with([10])
+            service.asset_service.archive.assert_not_awaited()
+
+    async def test_archive_no_unarchived_assets(self, service, mock):
+        portfolio = mock(id=1, user_id=user_id, assets=[])
+
+        with (
+            patch.object(service.repo, 'get_with_assets', return_value=portfolio),
+            patch.object(service.repo, 'update', return_value=portfolio),
+            patch.object(service.session, 'commit'),
+        ):
+            await service.archive(portfolio.id)
+
+            service.asset_service.archive_many.assert_not_awaited()
 
     async def test_get_with_assets_not_found(self, service):
         with (

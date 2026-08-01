@@ -1,7 +1,7 @@
+from sqlalchemy import and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
-
 from app.modules.portfolios.models import WalletAsset
 
 
@@ -15,5 +15,9 @@ class WalletAssetRepository(BaseRepository[WalletAsset]):
     async def get_all_by_ticker_and_user_with_wallets(self, ticker_id: int, user_id: int) -> list[WalletAsset]:
         return await self.get_all(WalletAsset.ticker_id == ticker_id, WalletAsset.user_id == user_id, relations=('wallet',))
 
-    async def get_all_by_tickers_and_wallet(self, ticker_ids: list[int], wallet_id: int) -> list[WalletAsset]:
-        return await self.get_all(WalletAsset.wallet_id == wallet_id, WalletAsset.ticker_id.in_(ticker_ids))
+    async def get_all_by_wallet_tickers(self, wallet_tickers: dict[int, list[int]]) -> list[WalletAsset]:
+        conditions = [
+            and_(WalletAsset.wallet_id == wid, WalletAsset.ticker_id.in_(tickers))
+            for wid, tickers in wallet_tickers.items()
+        ]
+        return await self.get_all(or_(*conditions)) if conditions else []

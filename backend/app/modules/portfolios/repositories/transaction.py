@@ -1,8 +1,9 @@
+from collections.abc import Iterable
+
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
-
 from app.modules.portfolios.models import Transaction
 
 
@@ -72,43 +73,81 @@ class TransactionRepository(BaseRepository[Transaction]):
                 ids.add(row[1])
         return ids
 
-    async def portfolio_tickers_with_transactions(self, portfolio_id: int, ticker_ids: list[int]) -> set[int]:
-        if not ticker_ids:
+    async def portfolios_tickers_with_transactions(self, portfolio_tickers: dict[int, list[int]]) -> set[tuple[int, int]]:
+        tickers_by_portfolio = {pid: set(tids) for pid, tids in portfolio_tickers.items() if tids}
+        if not tickers_by_portfolio:
             return set()
-        condition = or_(
-            and_(Transaction.portfolio_id == portfolio_id, Transaction.ticker_id.in_(ticker_ids)),
-            and_(Transaction.portfolio2_id == portfolio_id, Transaction.ticker2_id.in_(ticker_ids)),
-            and_(Transaction.portfolio_id == portfolio_id, Transaction.ticker2_id.in_(ticker_ids)),
-            and_(Transaction.portfolio2_id == portfolio_id, Transaction.ticker_id.in_(ticker_ids)),
-        )
-        stmt = select(Transaction.ticker_id, Transaction.ticker2_id).where(condition)
+        conditions = []
+        for pid, ticker_ids in tickers_by_portfolio.items():
+            conditions.extend(
+                [
+                    and_(Transaction.portfolio_id == pid, Transaction.ticker_id.in_(ticker_ids)),
+                    and_(Transaction.portfolio2_id == pid, Transaction.ticker2_id.in_(ticker_ids)),
+                    and_(Transaction.portfolio_id == pid, Transaction.ticker2_id.in_(ticker_ids)),
+                    and_(Transaction.portfolio2_id == pid, Transaction.ticker_id.in_(ticker_ids)),
+                ],
+            )
+        stmt = select(
+            Transaction.portfolio_id,
+            Transaction.portfolio2_id,
+            Transaction.ticker_id,
+            Transaction.ticker2_id,
+        ).where(or_(*conditions))
         result = await self._session.execute(stmt)
-        tickers = set()
-        for row in result:
-            if row[0] is not None:
-                tickers.add(row[0])
-            if row[1] is not None:
-                tickers.add(row[1])
-        return tickers
+        return self._collect_portfolio_ticker_pairs(result, tickers_by_portfolio)
 
-    async def wallet_tickers_with_transactions(self, wallet_id: int, ticker_ids: list[int]) -> set[int]:
-        if not ticker_ids:
+    async def wallets_tickers_with_transactions(self, wallet_tickers: dict[int, list[int]]) -> set[tuple[int, int]]:
+        tickers_by_wallet = {wid: set(tids) for wid, tids in wallet_tickers.items() if tids}
+        if not tickers_by_wallet:
             return set()
-        condition = or_(
-            and_(Transaction.wallet_id == wallet_id, Transaction.ticker_id.in_(ticker_ids)),
-            and_(Transaction.wallet2_id == wallet_id, Transaction.ticker2_id.in_(ticker_ids)),
-            and_(Transaction.wallet_id == wallet_id, Transaction.ticker2_id.in_(ticker_ids)),
-            and_(Transaction.wallet2_id == wallet_id, Transaction.ticker_id.in_(ticker_ids)),
-        )
-        stmt = select(Transaction.ticker_id, Transaction.ticker2_id).where(condition)
+        conditions = []
+        for wid, ticker_ids in tickers_by_wallet.items():
+            conditions.extend(
+                [
+                    and_(Transaction.wallet_id == wid, Transaction.ticker_id.in_(ticker_ids)),
+                    and_(Transaction.wallet2_id == wid, Transaction.ticker2_id.in_(ticker_ids)),
+                    and_(Transaction.wallet_id == wid, Transaction.ticker2_id.in_(ticker_ids)),
+                    and_(Transaction.wallet2_id == wid, Transaction.ticker_id.in_(ticker_ids)),
+                ],
+            )
+        stmt = select(
+            Transaction.wallet_id,
+            Transaction.wallet2_id,
+            Transaction.ticker_id,
+            Transaction.ticker2_id,
+        ).where(or_(*conditions))
         result = await self._session.execute(stmt)
-        tickers = set()
-        for row in result:
-            if row[0] is not None:
-                tickers.add(row[0])
-            if row[1] is not None:
-                tickers.add(row[1])
-        return tickers
+        return self._collect_wallet_ticker_pairs(result, tickers_by_wallet)
+
+    @staticmethod
+    def _collect_portfolio_ticker_pairs(result: Iterable[tuple[int | None, int | None, int | None, int | None]],
+        tickers_by_portfolio: dict[int, set[int]],
+    ) -> set[tuple[int, int]]:
+        pairs: set[tuple[int, int]] = set()
+        for p1, p2, t1, t2 in result:
+            for pid, ticker in ((p1, t1), (p2, t2), (p1, t2), (p2, t1)):
+                if (
+                    pid is not None
+                    and ticker is not None
+                    and ticker in tickers_by_portfolio.get(pid, ())
+                ):
+                    pairs.add((pid, ticker))
+        return pairs
+
+    @staticmethod
+    def _collect_wallet_ticker_pairs(result: Iterable[tuple[int | None, int | None, int | None, int | None]],
+        tickers_by_wallet: dict[int, set[int]],
+    ) -> set[tuple[int, int]]:
+        pairs: set[tuple[int, int]] = set()
+        for w1, w2, t1, t2 in result:
+            for wid, ticker in ((w1, t1), (w2, t2), (w1, t2), (w2, t1)):
+                if (
+                    wid is not None
+                    and ticker is not None
+                    and ticker in tickers_by_wallet.get(wid, ())
+                ):
+                    pairs.add((wid, ticker))
+        return pairs
 
     async def exists_for_portfolio_ticker(self, portfolio_id: int, ticker_id: int) -> bool:
         condition = or_(

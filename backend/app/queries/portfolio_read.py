@@ -45,12 +45,15 @@ class PortfolioReadQuery:
         for a in all_assets:
             pid = portfolio_per_asset[a.id]
             assets_by_portfolio.setdefault(pid, []).append(a)
-
-        for pid, assets in assets_by_portfolio.items():
-            ticker_ids = list(set(a.ticker_id for a in assets))
-            txn_tickers = await self.transaction_repo.portfolio_tickers_with_transactions(pid, ticker_ids)
-            for a in assets:
-                a.has_transactions = a.ticker_id in txn_tickers
+        portfolio_tickers = {
+            pid: [a.ticker_id for a in assets]
+            for pid, assets in assets_by_portfolio.items()
+        }
+        txn_pairs = await self.transaction_repo.portfolios_tickers_with_transactions(
+            portfolio_tickers,
+        )
+        for a in all_assets:
+            a.has_transactions = (portfolio_per_asset[a.id], a.ticker_id) in txn_pairs
 
     async def enrich_single_asset(self, asset: PortfolioAsset) -> PortfolioAsset:
         tickers_list = await self.ticker_repo.get_all_by_ids([asset.ticker_id])

@@ -29,11 +29,6 @@ class PortfolioService:
         self.taggable_repo = taggable_repo
         self.transaction_repo = TransactionRepository(session)
 
-    async def _load_tags(self, portfolio: Portfolio) -> None:
-        portfolio.tags = await self.taggable_repo.get_tags(self.ENTITY_TYPE, portfolio.id)
-        for asset in portfolio.assets:
-            asset.tags = await self.taggable_repo.get_tags(self.ASSET_ENTITY_TYPE, asset.id)
-
     async def _bulk_load_tags(self, portfolios: list[Portfolio]) -> None:
         items = []
         for p in portfolios:
@@ -54,7 +49,7 @@ class PortfolioService:
     async def get_with_assets(self, id: int) -> Portfolio:
         portfolio = await self.repo.get_with_assets(id)
         self._verify(portfolio)
-        await self._load_tags(portfolio)
+        await self._bulk_load_tags([portfolio])
         return portfolio
 
     async def get_all_with_assets(self) -> list[Portfolio]:
@@ -87,11 +82,12 @@ class PortfolioService:
         await self.session.commit()
 
     async def archive(self, id: int) -> None:
-        portfolio = await self.get_with_assets(id)
+        portfolio = await self.repo.get_with_assets(id)
+        self._verify(portfolio)
         await self.repo.update(id, {'is_archived': True})
-        for asset in portfolio.assets:
-            if not asset.is_archived:
-                await self.asset_service.archive(asset.id)
+        unarchived_ids = [a.id for a in portfolio.assets if not a.is_archived]
+        if unarchived_ids:
+            await self.asset_service.archive_many(unarchived_ids)
         await self.session.commit()
 
     async def unarchive(self, id: int) -> None:

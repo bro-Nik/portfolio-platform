@@ -44,12 +44,13 @@ class WalletReadQuery:
         for a in all_assets:
             wid = wallet_per_asset[a.id]
             assets_by_wallet.setdefault(wid, []).append(a)
-
-        for wid, assets in assets_by_wallet.items():
-            ticker_ids = list(set(a.ticker_id for a in assets))
-            txn_tickers = await self.transaction_repo.wallet_tickers_with_transactions(wid, ticker_ids)
-            for a in assets:
-                a.has_transactions = a.ticker_id in txn_tickers
+        wallet_tickers = {
+            wid: [a.ticker_id for a in assets]
+            for wid, assets in assets_by_wallet.items()
+        }
+        txn_pairs = await self.transaction_repo.wallets_tickers_with_transactions(wallet_tickers)
+        for a in all_assets:
+            a.has_transactions = (wallet_per_asset[a.id], a.ticker_id) in txn_pairs
 
     async def get_with_assets(self, id: int) -> Wallet:
         wallet = await self.service.get_with_assets(id)

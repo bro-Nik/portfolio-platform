@@ -83,9 +83,9 @@ class WalletService:
         wallet = await self.repo.get_with_assets(id)
         self._verify(wallet)
         await self.repo.update(id, {'is_archived': True})
-        for asset in wallet.assets:
-            if not asset.is_archived:
-                await self.asset_service.archive(asset.id)
+        unarchived_ids = [a.id for a in wallet.assets if not a.is_archived]
+        if unarchived_ids:
+            await self.asset_service.archive_many(unarchived_ids)
         await self.session.commit()
 
     async def unarchive(self, id: int) -> None:

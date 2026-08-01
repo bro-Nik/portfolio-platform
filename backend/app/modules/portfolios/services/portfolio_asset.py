@@ -47,6 +47,10 @@ class PortfolioAssetService:
         await self.get(id)
         await self.repo.update(id, {'is_archived': True})
 
+    async def archive_many(self, ids: list[int]) -> None:
+        if ids:
+            await self.repo.update_all_by_ids(ids, {'is_archived': True})
+
     async def unarchive(self, id: int) -> None:
         await self.get(id)
         await self.repo.update(id, {'is_archived': False})
@@ -91,19 +95,25 @@ class PortfolioAssetService:
         assets_map = defaultdict(list)
         for portfolio_id, ticker_id in pairs:
             assets_map[portfolio_id].append(ticker_id)
-        results = [
-            await self.repo.get_all_by_tickers_and_portfolio(ticker_ids, pid)
-            for pid, ticker_ids in assets_map.items()
-        ]
-        return [a for r in results for a in r]
+        return await self.repo.get_all_by_portfolio_tickers(assets_map)
 
     async def _get_or_create(self, *pairs: tuple) -> tuple:
-        results = [
-            await self.repo.get_or_create(portfolio_id=p_id, ticker_id=t_id, user_id=self.actor.id)
-            for p_id, t_id in pairs if p_id is not None and t_id is not None
-        ]
+        valid = [(p_id, t_id) for p_id, t_id in pairs if p_id is not None and t_id is not None]
+        if not valid:
+            return ()
+        assets_map = defaultdict(list)
+        for p_id, t_id in valid:
+            assets_map[p_id].append(t_id)
+        existing = await self.repo.get_all_by_portfolio_tickers(assets_map)
+        existing_by_pair = {(a.portfolio_id, a.ticker_id): a for a in existing}
+        missing = [pair for pair in valid if pair not in existing_by_pair]
+        created = await self.repo.create_all([
+            {'portfolio_id': p_id, 'ticker_id': t_id, 'user_id': self.actor.id}
+            for p_id, t_id in missing
+        ])
+        created_by_pair = {(a.portfolio_id, a.ticker_id): a for a in created}
         await self.session.flush()
-        return tuple(results)
+        return tuple(existing_by_pair.get(pair) or created_by_pair[pair] for pair in valid)
 
     async def _handle_trade(self, t: Transaction, direction: int) -> None:
         a1, a2 = await self._get_or_create((t.portfolio_id, t.ticker_id), (t.portfolio_id, t.ticker2_id))

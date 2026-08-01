@@ -25,19 +25,14 @@ class TickerIdentifierRepository(BaseRepository[TickerIdentifier]):
         rows = await self.get_all(or_(*conditions))
         return {row.system: row for row in rows}
 
-    async def upsert(self, ticker_id: int, system: str, value: str) -> TickerIdentifier:
-        existing = await self.get_by(
-            self.model.system == system,
-            self.model.value == value,
-        )
-        if existing:
-            return existing
-        return await self.create({
-            'ticker_id': ticker_id,
-            'system': system,
-            'value': value,
-        })
-
     async def upsert_all(self, ticker_id: int, identifiers: dict[str, str]) -> None:
-        for system, value in identifiers.items():
-            await self.upsert(ticker_id, system, value)
+        if not identifiers:
+            return
+        existing = await self.find_by_identifiers(identifiers)
+        missing = [
+            {'ticker_id': ticker_id, 'system': system, 'value': value}
+            for system, value in identifiers.items()
+            if system not in existing
+        ]
+        if missing:
+            await self.create_all(missing)
