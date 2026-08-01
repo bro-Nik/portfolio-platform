@@ -15,7 +15,7 @@ const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArc
   const [search, setSearch] = useState('');
 
   const handleRefresh = useCallback(async () => {
-    queryClient.invalidateQueries({ queryKey: ['wallets'] });
+    queryClient.invalidateQueries({ queryKey: ['overview'] });
   }, [queryClient]);
 
   const filtered = useMemo(() => {

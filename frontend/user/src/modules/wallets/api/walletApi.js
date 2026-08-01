@@ -3,7 +3,6 @@ import { createApi } from '@portfolio/shared';
 const api = createApi('/api/wallets', { useAuth: true });
 
 export const walletApi = {
-  getAllWallets: () => api.get(''),
   saveWallet: (walletData) => {
     if (walletData.id) {
       return api.put(`/${walletData.id}`, walletData);

@@ -1,15 +1,14 @@
 import { useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { usePortfoliosQuery } from './usePortfoliosQuery';
+import { useOverviewQuery } from './useOverviewQuery';
 import { useTickerIds, extractTickerIds } from 'src/hooks/TickerContext';
 import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 
-export const usePortfoliosData = (showArchived = false, options = {}) => {
-  const { prices: externalPrices, pricesLoading: externalPricesLoading } = options;
+export const usePortfoliosData = (showArchived = false) => {
   const queryClient = useQueryClient();
   const { addTickerIds } = useTickerIds();
 
-  const { data, isLoading } = usePortfoliosQuery();
+  const { data, isLoading } = useOverviewQuery();
   const rawPortfolios = data?.portfolios || [];
 
   useEffect(() => {
@@ -21,12 +20,10 @@ export const usePortfoliosData = (showArchived = false, options = {}) => {
 
   const internalPricesQuery = useAssetPricesQuery();
   const prices = useMemo(() =>
-    externalPrices || internalPricesQuery.data?.prices || {},
-    [externalPrices, internalPricesQuery.data]
+    internalPricesQuery.data?.prices || {},
+    [internalPricesQuery.data]
   );
-  const pricesLoading = externalPricesLoading !== undefined
-    ? externalPricesLoading
-    : internalPricesQuery.isLoading;
+  const pricesLoading = internalPricesQuery.isLoading;
 
   const { portfoliosWithStats, overallStats } = useMemo(() => {
     if (!rawPortfolios || rawPortfolios.length === 0) return { portfoliosWithStats: [], overallStats: {} };
@@ -121,7 +118,7 @@ export const usePortfoliosData = (showArchived = false, options = {}) => {
   const getPortfolioAsset = (portfolio, id) => portfolio.assets?.find(a => a.id === id);
 
   const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['portfolios'] });
+    queryClient.invalidateQueries({ queryKey: ['overview'] });
   };
 
   return {

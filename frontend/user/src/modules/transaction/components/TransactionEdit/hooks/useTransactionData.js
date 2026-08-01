@@ -1,16 +1,14 @@
 import { useState, useCallback, useMemo } from 'react';
-import { usePortfoliosQuery } from 'src/modules/portfolios/hooks/usePortfoliosQuery';
-import { useWalletsQuery } from 'src/modules/wallets/hooks/useWalletsQuery';
+import { useOverviewQuery } from 'src/modules/portfolios/hooks/useOverviewQuery';
 import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import { isCounterTransactionFn } from 'src/modules/transaction/utils/type';
 
 export const useTransactionData = ({ tickerId, walletId, portfolioId, transaction, transactionType, form }) => {
-  const { data: portfoliosData } = usePortfoliosQuery();
-  const { data: walletsData } = useWalletsQuery();
-  const portfolios = portfoliosData?.portfolios || [];
-  const wallets = walletsData?.wallets || [];
+  const { data: overviewData } = useOverviewQuery();
+  const portfolios = overviewData?.portfolios || [];
+  const wallets = overviewData?.wallets || [];
 
   const { getWallet } = useWalletsData();
   const { getPortfolio } = usePortfoliosData();

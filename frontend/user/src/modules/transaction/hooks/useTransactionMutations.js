@@ -5,8 +5,6 @@ export const useTransactionMutations = () => {
   const queryClient = useQueryClient();
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['portfolios'] });
-    queryClient.invalidateQueries({ queryKey: ['wallets'] });
     queryClient.invalidateQueries({ queryKey: ['overview'] });
     queryClient.invalidateQueries({ queryKey: ['portfolioAssetTransactions'] });
     queryClient.invalidateQueries({ queryKey: ['walletAssetTransactions'] });

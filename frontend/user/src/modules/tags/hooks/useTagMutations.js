@@ -86,17 +86,11 @@ const applyTagChangeToStore = (old, { tag, tagId, entityType, entityId, parentId
 
 const optimisticTagChange = async (queryClient, { tagId, entityType, entityId, parentId, action }) => {
   await Promise.all([
-    queryClient.cancelQueries({ queryKey: ['portfolios'] }),
-    queryClient.cancelQueries({ queryKey: ['wallets'] }),
     queryClient.cancelQueries({ queryKey: ['overview'] }),
     queryClient.cancelQueries({ queryKey: ['tags'] }),
   ]);
 
-  const previous = {
-    portfolios: queryClient.getQueryData(['portfolios']),
-    wallets: queryClient.getQueryData(['wallets']),
-    overview: queryClient.getQueryData(['overview']),
-  };
+  const previous = queryClient.getQueryData(['overview']);
 
   const isPortfolioEntity = ['portfolio', 'portfolio_asset'].includes(entityType);
   const isWalletEntity = ['wallet', 'wallet_asset'].includes(entityType);
@@ -108,13 +102,6 @@ const optimisticTagChange = async (queryClient, { tagId, entityType, entityId, p
   if (action === 'attach' && !tag) return { previous };
 
   const change = { tag, tagId, entityType, entityId, parentId, action };
-
-  if (isPortfolioEntity) {
-    queryClient.setQueryData(['portfolios'], (old) => applyTagChangeToStore(old, change));
-  }
-  if (isWalletEntity) {
-    queryClient.setQueryData(['wallets'], (old) => applyTagChangeToStore(old, change));
-  }
   queryClient.setQueryData(['overview'], (old) => applyTagChangeToStore(old, change));
 
   return { previous };
@@ -122,15 +109,7 @@ const optimisticTagChange = async (queryClient, { tagId, entityType, entityId, p
 
 const rollbackTagChange = (queryClient, previous) => {
   if (!previous) return;
-  if (previous.portfolios !== undefined) {
-    queryClient.setQueryData(['portfolios'], previous.portfolios);
-  }
-  if (previous.wallets !== undefined) {
-    queryClient.setQueryData(['wallets'], previous.wallets);
-  }
-  if (previous.overview !== undefined) {
-    queryClient.setQueryData(['overview'], previous.overview);
-  }
+  queryClient.setQueryData(['overview'], previous);
 };
 
 export const useTagMutations = () => {
@@ -172,13 +151,9 @@ export const useTagMutations = () => {
     onMutate: async ({ tagId, data }) => {
       await Promise.all([
         queryClient.cancelQueries({ queryKey: ['tags'] }),
-        queryClient.cancelQueries({ queryKey: ['portfolios'] }),
-        queryClient.cancelQueries({ queryKey: ['wallets'] }),
         queryClient.cancelQueries({ queryKey: ['overview'] }),
       ]);
       const previousTags = queryClient.getQueryData(['tags']);
-      const previousPortfolios = queryClient.getQueryData(['portfolios']);
-      const previousWallets = queryClient.getQueryData(['wallets']);
       const previousOverview = queryClient.getQueryData(['overview']);
 
       queryClient.setQueryData(['tags'], (old) => {
@@ -187,12 +162,9 @@ export const useTagMutations = () => {
       });
 
       const updater = (tags) => tags.map(t => t.id === tagId ? { ...t, ...data } : t);
-
-      queryClient.setQueryData(['portfolios'], (old) => updateTagInPortfolios(old, tagId, updater));
-      queryClient.setQueryData(['wallets'], (old) => updateTagInWallets(old, tagId, updater));
       queryClient.setQueryData(['overview'], (old) => updateTagInOverview(old, tagId, updater));
 
-      return { previousTags, previousPortfolios, previousWallets, previousOverview };
+      return { previousTags, previousOverview };
     },
 
     onSuccess: (serverTag, { tagId }) => {
@@ -202,21 +174,12 @@ export const useTagMutations = () => {
       });
 
       const updater = (tags) => tags.map(t => t.id === tagId ? serverTag : t);
-
-      queryClient.setQueryData(['portfolios'], (old) => updateTagInPortfolios(old, tagId, updater));
-      queryClient.setQueryData(['wallets'], (old) => updateTagInWallets(old, tagId, updater));
       queryClient.setQueryData(['overview'], (old) => updateTagInOverview(old, tagId, updater));
     },
 
     onError: (_err, _vars, context) => {
       if (context?.previousTags) {
         queryClient.setQueryData(['tags'], context.previousTags);
-      }
-      if (context?.previousPortfolios) {
-        queryClient.setQueryData(['portfolios'], context.previousPortfolios);
-      }
-      if (context?.previousWallets) {
-        queryClient.setQueryData(['wallets'], context.previousWallets);
       }
       if (context?.previousOverview) {
         queryClient.setQueryData(['overview'], context.previousOverview);
@@ -230,13 +193,9 @@ export const useTagMutations = () => {
     onMutate: async (tagId) => {
       await Promise.all([
         queryClient.cancelQueries({ queryKey: ['tags'] }),
-        queryClient.cancelQueries({ queryKey: ['portfolios'] }),
-        queryClient.cancelQueries({ queryKey: ['wallets'] }),
         queryClient.cancelQueries({ queryKey: ['overview'] }),
       ]);
       const previousTags = queryClient.getQueryData(['tags']);
-      const previousPortfolios = queryClient.getQueryData(['portfolios']);
-      const previousWallets = queryClient.getQueryData(['wallets']);
       const previousOverview = queryClient.getQueryData(['overview']);
 
       queryClient.setQueryData(['tags'], (old) => {
@@ -245,23 +204,14 @@ export const useTagMutations = () => {
       });
 
       const updater = (tags) => tags.filter(t => t.id !== tagId);
-
-      queryClient.setQueryData(['portfolios'], (old) => updateTagInPortfolios(old, tagId, updater));
-      queryClient.setQueryData(['wallets'], (old) => updateTagInWallets(old, tagId, updater));
       queryClient.setQueryData(['overview'], (old) => updateTagInOverview(old, tagId, updater));
 
-      return { previousTags, previousPortfolios, previousWallets, previousOverview };
+      return { previousTags, previousOverview };
     },
 
     onError: (_err, _vars, context) => {
       if (context?.previousTags) {
         queryClient.setQueryData(['tags'], context.previousTags);
-      }
-      if (context?.previousPortfolios) {
-        queryClient.setQueryData(['portfolios'], context.previousPortfolios);
-      }
-      if (context?.previousWallets) {
-        queryClient.setQueryData(['wallets'], context.previousWallets);
       }
       if (context?.previousOverview) {
         queryClient.setQueryData(['overview'], context.previousOverview);

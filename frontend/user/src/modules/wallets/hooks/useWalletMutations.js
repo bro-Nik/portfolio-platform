@@ -15,30 +15,15 @@ export const useWalletMutations = () => {
     return { ...old, wallets: updated };
   };
 
-  const updateCache = (old, serverWallet) => {
-    if (!old?.wallets) return { wallets: [serverWallet] };
-    const idx = old.wallets.findIndex(w => w.id === serverWallet.id);
-    if (idx === -1) {
-      return { ...old, wallets: [...old.wallets, serverWallet] };
-    }
-    const updated = [...old.wallets];
-    updated[idx] = serverWallet;
-    return { ...old, wallets: updated };
-  };
-
   const editWallet = useMutation({
     mutationFn: (wallet) => walletApi.saveWallet(wallet),
 
     onMutate: async (wallet) => {
       if (!wallet.id) return {};
-      await queryClient.cancelQueries({ queryKey: ['wallets'] });
       await queryClient.cancelQueries({ queryKey: ['overview'] });
-      const previous = {
-        wallets: queryClient.getQueryData(['wallets']),
-        overview: queryClient.getQueryData(['overview']),
-      };
+      const previous = queryClient.getQueryData(['overview']);
 
-      queryClient.setQueryData(['wallets'], (old) => {
+      queryClient.setQueryData(['overview'], (old) => {
         if (!old?.wallets) return old;
         return {
           ...old,
@@ -53,9 +38,6 @@ export const useWalletMutations = () => {
 
     onSuccess: (serverWallet) => {
       if (!serverWallet?.id) return;
-      queryClient.setQueryData(['wallets'], (old) =>
-        updateCache(old, serverWallet)
-      );
       queryClient.setQueryData(['overview'], (old) =>
         updateOverviewWallet(old, serverWallet)
       );
@@ -63,8 +45,7 @@ export const useWalletMutations = () => {
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['wallets'], context.previous.wallets);
-        queryClient.setQueryData(['overview'], context.previous.overview);
+        queryClient.setQueryData(['overview'], context.previous);
       }
     },
   });
@@ -73,10 +54,10 @@ export const useWalletMutations = () => {
     mutationFn: (wallet) => walletApi.deleteWallet(wallet.id),
 
     onMutate: async (wallet) => {
-      await queryClient.cancelQueries({ queryKey: ['wallets'] });
-      const previous = queryClient.getQueryData(['wallets']);
+      await queryClient.cancelQueries({ queryKey: ['overview'] });
+      const previous = queryClient.getQueryData(['overview']);
 
-      queryClient.setQueryData(['wallets'], (old) => {
+      queryClient.setQueryData(['overview'], (old) => {
         if (!old?.wallets) return old;
         return {
           ...old,
@@ -89,7 +70,7 @@ export const useWalletMutations = () => {
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['wallets'], context.previous);
+        queryClient.setQueryData(['overview'], context.previous);
       }
     },
   });
@@ -98,12 +79,8 @@ export const useWalletMutations = () => {
     mutationFn: (walletId) => walletApi.archiveWallet(walletId),
 
     onMutate: async (walletId) => {
-      await queryClient.cancelQueries({ queryKey: ['wallets'] });
       await queryClient.cancelQueries({ queryKey: ['overview'] });
-      const previous = {
-        wallets: queryClient.getQueryData(['wallets']),
-        overview: queryClient.getQueryData(['overview']),
-      };
+      const previous = queryClient.getQueryData(['overview']);
 
       const updateFn = (old) => {
         if (!old?.wallets) return old;
@@ -120,7 +97,6 @@ export const useWalletMutations = () => {
           ),
         };
       };
-      queryClient.setQueryData(['wallets'], updateFn);
       queryClient.setQueryData(['overview'], updateFn);
 
       return { previous };
@@ -128,8 +104,7 @@ export const useWalletMutations = () => {
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['wallets'], context.previous.wallets);
-        queryClient.setQueryData(['overview'], context.previous.overview);
+        queryClient.setQueryData(['overview'], context.previous);
       }
     },
   });
@@ -138,12 +113,8 @@ export const useWalletMutations = () => {
     mutationFn: (walletId) => walletApi.unarchiveWallet(walletId),
 
     onMutate: async (walletId) => {
-      await queryClient.cancelQueries({ queryKey: ['wallets'] });
       await queryClient.cancelQueries({ queryKey: ['overview'] });
-      const previous = {
-        wallets: queryClient.getQueryData(['wallets']),
-        overview: queryClient.getQueryData(['overview']),
-      };
+      const previous = queryClient.getQueryData(['overview']);
 
       const updateFn = (old) => {
         if (!old?.wallets) return old;
@@ -154,7 +125,6 @@ export const useWalletMutations = () => {
           ),
         };
       };
-      queryClient.setQueryData(['wallets'], updateFn);
       queryClient.setQueryData(['overview'], updateFn);
 
       return { previous };
@@ -162,8 +132,7 @@ export const useWalletMutations = () => {
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['wallets'], context.previous.wallets);
-        queryClient.setQueryData(['overview'], context.previous.overview);
+        queryClient.setQueryData(['overview'], context.previous);
       }
     },
   });
@@ -172,12 +141,8 @@ export const useWalletMutations = () => {
     mutationFn: ({ walletId, assetId }) => walletApi.archiveWalletAsset(walletId, assetId),
 
     onMutate: async ({ walletId, assetId }) => {
-      await queryClient.cancelQueries({ queryKey: ['wallets'] });
       await queryClient.cancelQueries({ queryKey: ['overview'] });
-      const previous = {
-        wallets: queryClient.getQueryData(['wallets']),
-        overview: queryClient.getQueryData(['overview']),
-      };
+      const previous = queryClient.getQueryData(['overview']);
 
       const updateFn = (old) => {
         if (!old?.wallets) return old;
@@ -194,7 +159,6 @@ export const useWalletMutations = () => {
           }),
         };
       };
-      queryClient.setQueryData(['wallets'], updateFn);
       queryClient.setQueryData(['overview'], updateFn);
 
       return { previous };
@@ -202,8 +166,7 @@ export const useWalletMutations = () => {
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['wallets'], context.previous.wallets);
-        queryClient.setQueryData(['overview'], context.previous.overview);
+        queryClient.setQueryData(['overview'], context.previous);
       }
     },
   });
@@ -212,12 +175,8 @@ export const useWalletMutations = () => {
     mutationFn: ({ walletId, assetId }) => walletApi.unarchiveWalletAsset(walletId, assetId),
 
     onMutate: async ({ walletId, assetId }) => {
-      await queryClient.cancelQueries({ queryKey: ['wallets'] });
       await queryClient.cancelQueries({ queryKey: ['overview'] });
-      const previous = {
-        wallets: queryClient.getQueryData(['wallets']),
-        overview: queryClient.getQueryData(['overview']),
-      };
+      const previous = queryClient.getQueryData(['overview']);
 
       const updateFn = (old) => {
         if (!old?.wallets) return old;
@@ -234,7 +193,6 @@ export const useWalletMutations = () => {
           }),
         };
       };
-      queryClient.setQueryData(['wallets'], updateFn);
       queryClient.setQueryData(['overview'], updateFn);
 
       return { previous };
@@ -242,8 +200,7 @@ export const useWalletMutations = () => {
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['wallets'], context.previous.wallets);
-        queryClient.setQueryData(['overview'], context.previous.overview);
+        queryClient.setQueryData(['overview'], context.previous);
       }
     },
   });
@@ -252,12 +209,8 @@ export const useWalletMutations = () => {
     mutationFn: ({ walletId, assetId }) => walletApi.deleteWalletAsset(walletId, assetId),
 
     onMutate: async ({ walletId, assetId }) => {
-      await queryClient.cancelQueries({ queryKey: ['wallets'] });
       await queryClient.cancelQueries({ queryKey: ['overview'] });
-      const previous = {
-        wallets: queryClient.getQueryData(['wallets']),
-        overview: queryClient.getQueryData(['overview']),
-      };
+      const previous = queryClient.getQueryData(['overview']);
 
       const updateFn = (old) => {
         if (!old?.wallets) return old;
@@ -272,7 +225,6 @@ export const useWalletMutations = () => {
           }),
         };
       };
-      queryClient.setQueryData(['wallets'], updateFn);
       queryClient.setQueryData(['overview'], updateFn);
 
       return { previous };
@@ -280,8 +232,7 @@ export const useWalletMutations = () => {
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        queryClient.setQueryData(['wallets'], context.previous.wallets);
-        queryClient.setQueryData(['overview'], context.previous.overview);
+        queryClient.setQueryData(['overview'], context.previous);
       }
     },
   });

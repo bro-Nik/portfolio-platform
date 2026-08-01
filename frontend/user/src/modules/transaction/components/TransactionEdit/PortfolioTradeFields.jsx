@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Form, Button, InputNumber, Space, Segmented } from 'antd';
 import { useTransactionCalculations } from './hooks/useTransactionCalculations';
 import FormCheckbox from 'src/features/forms/FormCheckbox';
@@ -25,15 +25,14 @@ const PortfolioTradeFields = ({
   const { handleQuantityChange, handleAmountChange, handlePriceChange } = useTransactionCalculations(form, calculationType);
   const { isSell } = getTransactionTypeInfo(transactionType);
 
-  useEffect(() => {
-    form.setFieldsValue({ portfolioId: portfolio?.id });
-  }, [form, portfolio?.id]);
-
   const walletsToBuy = getWallets({});
   const walletsToSell = getWallets({ showTickerId: baseTicker?.id });
 
   return (
     <>
+
+    {/* Портфель */}
+    <Form.Item name="portfolioId" hidden initialValue={portfolio?.id} />
 
     {/* Ордер */}
     <FormCheckbox name="order" label="Ордер" checked={transaction?.order} />

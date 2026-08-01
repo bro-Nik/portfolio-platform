@@ -22,7 +22,7 @@ const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, show
   const [search, setSearch] = useState('');
 
   const handleRefresh = useCallback(async () => {
-    queryClient.invalidateQueries({ queryKey: ['portfolios'] });
+    queryClient.invalidateQueries({ queryKey: ['overview'] });
   }, [queryClient]);
 
   const filtered = useMemo(() => {

@@ -1,23 +1,20 @@
 import { useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useWalletsQuery } from './useWalletsQuery';
+import { useOverviewQuery } from 'src/modules/portfolios/hooks/useOverviewQuery';
 import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 
-export const useWalletsData = (showArchived = false, options = {}) => {
-  const { prices: externalPrices, pricesLoading: externalPricesLoading } = options;
+export const useWalletsData = (showArchived = false) => {
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useWalletsQuery();
+  const { data, isLoading } = useOverviewQuery();
   const rawWallets = data?.wallets || [];
 
   const internalPricesQuery = useAssetPricesQuery();
   const prices = useMemo(() =>
-    externalPrices || internalPricesQuery.data?.prices || {},
-    [externalPrices, internalPricesQuery.data]
+    internalPricesQuery.data?.prices || {},
+    [internalPricesQuery.data]
   );
-  const pricesLoading = externalPricesLoading !== undefined
-    ? externalPricesLoading
-    : internalPricesQuery.isLoading;
+  const pricesLoading = internalPricesQuery.isLoading;
 
   const getWallet = (walletId) => {
     return rawWallets?.find(wallet => wallet.id === walletId) || null;
@@ -84,7 +81,7 @@ export const useWalletsData = (showArchived = false, options = {}) => {
   const showingArchivedFallback = !showArchived && walletsWithStats.length > 0 && walletsWithStats.every(w => w.isArchived);
 
   const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['wallets'] });
+    queryClient.invalidateQueries({ queryKey: ['overview'] });
   };
 
   return {

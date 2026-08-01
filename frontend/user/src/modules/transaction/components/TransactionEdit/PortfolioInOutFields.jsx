@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Form } from 'antd';
 import FormSelect from 'src/features/forms/FormSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
@@ -13,17 +13,14 @@ const PortfolioInOutFields = ({
   handleWalletChange,
 }) => {
 
-  const form = Form.useFormInstance();
-
-  useEffect(() => {
-    form.setFieldsValue({ portfolioId: portfolio?.id });
-  }, [form, portfolio?.id]);
-
   const { isSpend } = getTransactionTypeInfo(transactionType);
   const wallets = getWallets({ showTickerId: baseTicker?.id });
 
   return (
     <>
+
+    {/* Портфель */}
+    <Form.Item name="portfolioId" hidden initialValue={portfolio?.id} />
 
     {/* Кошелек */}
     <FormSelect
