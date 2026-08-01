@@ -59,6 +59,8 @@ class TestAuthService:
             service.security.create_email_verification_token.assert_called_once_with(user.id)
             service.security.create_token_pair.assert_called_once()
             service.token_repo.create.assert_called_once()
+            service.session_service.create.assert_called_once_with(db_token.id, user.id)
+            service.user_service.update_activity.assert_called_once_with(user.id)
 
             assert isinstance(result, RegisterResult)
             assert result.email == user.email
@@ -85,6 +87,8 @@ class TestAuthService:
             service.security.verify_password.assert_called_once_with(login_data.password, user.password_hash)
             _check_created_with_authuser(service.security.create_token_pair, user)
             service.token_repo.create.assert_called_once()
+            service.session_service.create.assert_called_once_with(db_token.id, user.id)
+            service.user_service.update_activity.assert_called_once_with(user.id)
             assert isinstance(result, AuthResult)
 
     async def test_login_success_unverified(self, service, mock, data):
@@ -123,7 +127,7 @@ class TestAuthService:
         user = mock(id=1, role='user', email='test@example.com', is_verified=False)
         payload = {'id': '1', 'type': 'refresh', 'exp': 9999999999}
         token_data = data(token='valid.refresh.token')
-        updated_token = mock(token='new.refresh.token')
+        updated_token = mock(id=99, token='new.refresh.token')
         tokens = mock(access_token='access', refresh_token='refresh')
         db_token = mock(id=99)
 
@@ -142,6 +146,8 @@ class TestAuthService:
             service.token_repo.get_by_token_hash.assert_called_once_with('hashed_token')
             _check_created_with_authuser(service.security.create_token_pair, user)
             service.token_repo.update.assert_called_once()
+            service.session_service.update.assert_called_once_with(db_token.id)
+            service.user_service.update_activity.assert_called_once_with(user.id)
             assert isinstance(result, AuthResult)
 
     async def test_refresh_tokens_invalid_type(self, service, data):
@@ -179,7 +185,7 @@ class TestAuthService:
         user = mock(id=1, role='user', email='test@example.com', is_verified=False)
         token_data = data(token='used.refresh.token')
         payload = {'id': '1', 'type': 'refresh', 'exp': 9999999999}
-        updated_token = mock(token='new.refresh.token')
+        updated_token = mock(id=99, token='new.refresh.token')
         tokens = mock(access_token='access', refresh_token='refresh')
         db_token = mock(id=99)
 

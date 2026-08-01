@@ -148,10 +148,13 @@ class AuthService:
         if db_token:
             update = RefreshTokenUpdate(token_hash=token_hash, expires_at=token_data.refresh_expires_at)
             token = await self.token_repo.update(db_token.id, update.model_dump())
+            await self.session_service.update(token.id)
         else:
             create = RefreshTokenCreate(user_id=user.id, token_hash=token_hash, expires_at=token_data.refresh_expires_at)
             token = await self.token_repo.create(create.model_dump())
             await self.session.flush()
+            await self.session_service.create(token.id, user.id)
+        await self.user_service.update_activity(user.id)
 
         return AuthResult(
             tokens=TokensResponse(access_token=token_data.access_token, refresh_token=token_data.refresh_token),

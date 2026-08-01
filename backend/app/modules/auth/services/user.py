@@ -58,7 +58,6 @@ class UserService:
 
     async def update_activity(self, user_id: int) -> None:
         await self.repo.update_activity(user_id)
-        await self.session.commit()
 
     async def change_password(self, user_id: int, data: PasswordChangeRequest) -> None:
         user = await self.get(user_id)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Request
+from fastapi import APIRouter, Request
 
 from app.common.exceptions import handle_errors
 from app.core.rate_limit import limiter
@@ -30,12 +30,9 @@ router = APIRouter()
 async def register(
     data: UserRegister,
     request: Request,
-    bg_tasks: BackgroundTasks,
     auth: AuthServiceDep,
 ) -> TokensResponse:
     result = await auth.register(data)
-    bg_tasks.add_task(auth.session_service.create, result.refresh_token_id, result.user_id)
-    bg_tasks.add_task(auth.user_service.update_activity, result.user_id)
     await send_verification_email.kiq(result.email, result.verification_token)
     return result.tokens
 
@@ -46,12 +43,9 @@ async def register(
 async def login(
     data: UserLogin,
     request: Request,
-    bg_tasks: BackgroundTasks,
     auth: AuthServiceDep,
 ) -> TokensResponse:
     result = await auth.login(data)
-    bg_tasks.add_task(auth.session_service.create, result.refresh_token_id, result.user_id)
-    bg_tasks.add_task(auth.user_service.update_activity, result.user_id)
     return result.tokens
 
 
@@ -95,12 +89,9 @@ async def resend_verification(
 async def refresh_tokens(
     data: RefreshTokenRequest,
     request: Request,
-    bg_tasks: BackgroundTasks,
     auth: AuthServiceDep,
 ) -> TokensResponse:
     result = await auth.refresh_tokens(data)
-    bg_tasks.add_task(auth.session_service.update, result.refresh_token_id)
-    bg_tasks.add_task(auth.user_service.update_activity, result.user_id)
     return result.tokens
 
 
