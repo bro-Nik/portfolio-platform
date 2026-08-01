@@ -6,6 +6,7 @@ import pytest
 
 from app.common.exceptions import BusinessRuleError, NotFoundError
 
+from app.modules.market.repositories import TickerRepository
 from app.modules.portfolios.repositories import TransactionRepository
 from app.modules.portfolios.services.portfolio import PortfolioService
 from app.modules.portfolios.services.portfolio_asset import PortfolioAssetService
@@ -21,6 +22,7 @@ async def service(db_session, async_mock, data):
     ctx = data(actor=data(id=user_id))
     service = TransactionService(db_session, ctx)
     service.repo = async_mock(spec=TransactionRepository, session=db_session)
+    service.ticker_repo = async_mock(spec=TickerRepository, session=db_session)
     service.portfolio_service = async_mock(spec=PortfolioService, session=db_session)
     service.portfolio_asset_service = async_mock(spec=PortfolioAssetService, session=db_session)
     service.wallet_service = async_mock(spec=WalletService, session=db_session)
@@ -34,6 +36,7 @@ class TestTransactionService:
             date=datetime.now(UTC), type='Buy', portfolio_id=1, wallet_id=1,
             portfolio2_id=None, wallet2_id=None,
             ticker_id=1, ticker2_id=2, quantity=Decimal(10),
+            quantity2=Decimal(100), price=Decimal(10),
         )
         transaction = mock(
             id=1, type='Buy', user_id=user_id,
@@ -42,12 +45,14 @@ class TestTransactionService:
 
         with (
             patch.object(service.repo, 'create', return_value=transaction),
+            patch.object(service.ticker_repo, 'get_all_by_ids', return_value=[mock(id=1), mock(id=2)]),
             patch.object(service.portfolio_service, 'get', return_value=mock(is_archived=False)),
             patch.object(service.wallet_service, 'get', return_value=mock(is_archived=False)),
         ):
             result = await service.create(transaction_data)
 
             service.repo.create.assert_called_once()
+            service.ticker_repo.get_all_by_ids.assert_called_once_with([1, 2])
             service.portfolio_service.handle_transaction.assert_called_once_with(transaction, cancel=False)
             service.wallet_service.handle_transaction.assert_called_once_with(transaction, cancel=False)
             assert result == transaction
@@ -58,6 +63,85 @@ class TestTransactionService:
         )
 
         with pytest.raises(BusinessRuleError, match='Неизвестный тип транзакции'):
+            await service.create(transaction_data)
+
+    async def test_create_missing_trade_price(self, service, data):
+        transaction_data = data(
+            type='Buy', portfolio_id=1, wallet_id=1,
+            ticker_id=1, ticker2_id=2, quantity=Decimal(10), quantity2=Decimal(100),
+        )
+
+        with pytest.raises(BusinessRuleError, match='price'):
+            await service.create(transaction_data)
+
+    async def test_create_missing_wallet_for_earning(self, service, data):
+        transaction_data = data(
+            type='Earning', portfolio_id=1,
+            ticker_id=1, quantity=Decimal(10),
+        )
+
+        with pytest.raises(BusinessRuleError, match='wallet_id'):
+            await service.create(transaction_data)
+
+    async def test_create_missing_portfolio_for_input(self, service, data):
+        transaction_data = data(
+            type='Input', wallet_id=1,
+            ticker_id=1, quantity=Decimal(10),
+        )
+
+        with pytest.raises(BusinessRuleError, match='portfolio_id'):
+            await service.create(transaction_data)
+
+    async def test_create_negative_quantity(self, service, data):
+        transaction_data = data(
+            type='Input', portfolio_id=1, wallet_id=1,
+            ticker_id=1, quantity=Decimal(-5),
+        )
+
+        with pytest.raises(BusinessRuleError, match='quantity'):
+            await service.create(transaction_data)
+
+    async def test_create_zero_price(self, service, data):
+        transaction_data = data(
+            type='Buy', portfolio_id=1, wallet_id=1,
+            ticker_id=1, ticker2_id=2, quantity=Decimal(10),
+            quantity2=Decimal(100), price=Decimal(0),
+        )
+
+        with pytest.raises(BusinessRuleError, match='price'):
+            await service.create(transaction_data)
+
+    async def test_create_same_tickers(self, service, data):
+        transaction_data = data(
+            type='Buy', portfolio_id=1, wallet_id=1,
+            ticker_id=1, ticker2_id=1, quantity=Decimal(10),
+            quantity2=Decimal(100), price=Decimal(10),
+        )
+
+        with pytest.raises(BusinessRuleError, match='должны различаться'):
+            await service.create(transaction_data)
+
+    async def test_create_mixed_transfer(self, service, data):
+        transaction_data = data(
+            type='TransferOut', portfolio_id=1, portfolio2_id=2,
+            wallet_id=3, wallet2_id=4,
+            ticker_id=1, quantity=Decimal(10),
+        )
+
+        with pytest.raises(BusinessRuleError, match='двумя портфелями или двумя кошельками'):
+            await service.create(transaction_data)
+
+    async def test_create_unknown_ticker(self, service, mock, data):
+        transaction_data = data(
+            type='Buy', portfolio_id=1, wallet_id=1,
+            ticker_id=1, ticker2_id=2, quantity=Decimal(10),
+            quantity2=Decimal(100), price=Decimal(10),
+        )
+
+        with (
+            patch.object(service.ticker_repo, 'get_all_by_ids', return_value=[mock(id=2)]),
+            pytest.raises(BusinessRuleError, match='Тикер не найден: 1'),
+        ):
             await service.create(transaction_data)
 
     async def test_get_success(self, service, mock):

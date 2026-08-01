@@ -1,7 +1,10 @@
+from decimal import Decimal
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 
+from app.modules.market.repositories import TickerRepository
 from app.modules.portfolios.models import Transaction
 from app.modules.portfolios.repositories import TransactionRepository
 from app.modules.portfolios.schemas import (
@@ -21,6 +24,7 @@ class TransactionService:
         self.actor = ctx.actor
         self.session = session
         self.repo = TransactionRepository(session)
+        self.ticker_repo = TickerRepository(session)
         self.portfolio_service = PortfolioService(session, ctx)
         self.portfolio_asset_service = PortfolioAssetService(ctx, session)
         self.wallet_service = WalletService(session, ctx)
@@ -33,6 +37,8 @@ class TransactionService:
 
     async def create(self, data: TransactionCreateRequest) -> Transaction:
         self._validate_required(data)
+        self._validate_values(data)
+        await self._validate_references(data)
         await self._ensure_not_archived(data)
         t = await self.repo.create(TransactionCreate(**data.model_dump(exclude_unset=True), user_id=self.actor.id).model_dump())
         await self.session.flush()
@@ -42,6 +48,8 @@ class TransactionService:
 
     async def update(self, id: int, data: TransactionUpdateRequest) -> tuple[Transaction, Transaction]:
         self._validate_required(data)
+        self._validate_values(data)
+        await self._validate_references(data)
         old = await self.get(id)
         await self._ensure_not_archived(old)
         await self._notify_services(old, cancel=True)
@@ -82,12 +90,11 @@ class TransactionService:
     def _validate_required(self, data) -> None:
         if hasattr(data, 'type') and data.type:
             required_map = {
-                ('Buy', 'Sell'): ['portfolio_id', 'wallet_id', 'ticker_id', 'ticker2_id', 'quantity'],
+                ('Buy', 'Sell'): ['portfolio_id', 'wallet_id', 'ticker_id', 'ticker2_id', 'quantity', 'quantity2', 'price'],
                 ('Earning',): ['portfolio_id', 'wallet_id', 'ticker_id', 'quantity'],
+                ('Input', 'Output'): ['portfolio_id', 'wallet_id', 'ticker_id', 'quantity'],
                 ('TransferIn', 'TransferOut'): ['portfolio_id', 'portfolio2_id', 'ticker_id', 'quantity']
                     if getattr(data, 'portfolio_id', None) else ['wallet_id', 'wallet2_id', 'ticker_id', 'quantity'],
-                ('Input', 'Output'): ['portfolio_id', 'ticker_id', 'quantity']
-                    if getattr(data, 'portfolio_id', None) else ['wallet_id', 'ticker_id', 'quantity'],
             }
             for types, fields in required_map.items():
                 if data.type in types:
@@ -96,6 +103,38 @@ class TransactionService:
                         raise BusinessRuleError(f'Отсутствуют обязательные поля: {", ".join(missing)}')
                     return
             raise BusinessRuleError(f'Неизвестный тип транзакции: {data.type}')
+
+    def _validate_values(self, data) -> None:
+        for field in ('quantity', 'quantity2', 'price', 'price_usd'):
+            value = getattr(data, field, None)
+            if value is not None and Decimal(value) <= 0:
+                raise BusinessRuleError(f'Поле {field} должно быть больше нуля')
+
+        ticker_id = getattr(data, 'ticker_id', None)
+        ticker2_id = getattr(data, 'ticker2_id', None)
+        if ticker_id is not None and ticker2_id is not None and ticker_id == ticker2_id:
+            raise BusinessRuleError('Тикеры транзакции должны различаться')
+
+        if hasattr(data, 'type') and data.type in ('TransferIn', 'TransferOut'):
+            has_portfolio = data.portfolio_id is not None or data.portfolio2_id is not None
+            has_wallet = data.wallet_id is not None or data.wallet2_id is not None
+            if has_portfolio and has_wallet:
+                raise BusinessRuleError(
+                    'Перевод должен быть между двумя портфелями или двумя кошельками',
+                )
+
+    async def _validate_references(self, data) -> None:
+        ticker_ids = []
+        for field in ('ticker_id', 'ticker2_id'):
+            value = getattr(data, field, None)
+            if value is not None:
+                ticker_ids.append(value)
+        if not ticker_ids:
+            return
+        existing = await self.ticker_repo.get_all_by_ids(ticker_ids)
+        missing = sorted(set(ticker_ids) - {t.id for t in existing})
+        if missing:
+            raise BusinessRuleError(f'Тикер не найден: {", ".join(map(str, missing))}')
 
     def _verify(self, t: Transaction) -> None:
         if not t:

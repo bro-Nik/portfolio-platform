@@ -1,9 +1,11 @@
 from datetime import UTC, datetime
 
 from fastapi import status
+import pytest
 
 
 class TestTradingWorkflow:
+    @pytest.mark.usefixtures('tickers')
     async def test_complete_trading_workflow(self, client, auth_headers):
         auth_headers = {**auth_headers, 'X-Forwarded-For': '192.168.1.10'}
 
@@ -31,6 +33,7 @@ class TestTradingWorkflow:
             'ticker_id': 7,
             'quantity': '100000.0',
             'type': 'Input',
+            'portfolio_id': portfolio_id,
             'wallet_id': wallet_id,
             'comment': 'Начальное пополнение',
         }

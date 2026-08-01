@@ -2,10 +2,12 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from fastapi import status
+import pytest
 
 
 class TestTransactionsAPI:
-    async def test_create_transaction_buy_crypto(self, client, auth_headers, db_session, portfolio, wallet):
+    @pytest.mark.usefixtures('tickers')
+    async def test_create_transaction_buy_crypto(self, client, auth_headers, portfolio, wallet):
         transaction_data = {
             'date': datetime.now(UTC).isoformat(),
             'ticker_id': 1,
@@ -41,6 +43,7 @@ class TestTransactionsAPI:
         assert Decimal(btc['quantity']) == Decimal('0.1')
         assert Decimal(usdt['quantity']) == Decimal('-6000.0')
 
+    @pytest.mark.usefixtures('tickers')
     async def test_create_transaction_sell_crypto(self, client, auth_headers, portfolio, wallet, portfolio_asset):
         sell_transaction = {
             'date': datetime.now(UTC).isoformat(),
@@ -72,12 +75,15 @@ class TestTransactionsAPI:
         assert Decimal(eth['quantity']) == Decimal('-2.5')
         assert Decimal(usdt['quantity']) == Decimal('7500.0')
 
+    @pytest.mark.usefixtures('tickers')
     async def test_update_transaction(self, client, auth_headers, portfolio, wallet, transaction):
         update_data = {
             'date': datetime.now(UTC).isoformat(),
             'ticker_id': 1,
             'ticker2_id': 2,
             'quantity': '2.0',
+            'quantity2': '20000.0',
+            'price': '15000.0',
             'type': 'Buy',
             'portfolio_id': portfolio.id,
             'wallet_id': wallet.id,
@@ -134,3 +140,75 @@ class TestTransactionsAPI:
         response = await client.post('/api/transactions/', json=transaction_data, headers=auth_headers)
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+    @pytest.mark.usefixtures('tickers')
+    async def test_create_transaction_negative_quantity(self, client, auth_headers, portfolio, wallet):
+        transaction_data = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 1,
+            'ticker2_id': 2,
+            'quantity': '-5.0',
+            'quantity2': '50000.0',
+            'price': '10000.0',
+            'type': 'Buy',
+            'portfolio_id': portfolio.id,
+            'wallet_id': wallet.id,
+        }
+
+        response = await client.post('/api/transactions/', json=transaction_data, headers=auth_headers)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'больше нуля' in response.json()['detail']
+
+    async def test_create_transaction_unknown_ticker(self, client, auth_headers, portfolio, wallet):
+        transaction_data = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 999,
+            'ticker2_id': 2,
+            'quantity': '1.0',
+            'quantity2': '10000.0',
+            'price': '10000.0',
+            'type': 'Buy',
+            'portfolio_id': portfolio.id,
+            'wallet_id': wallet.id,
+        }
+
+        response = await client.post('/api/transactions/', json=transaction_data, headers=auth_headers)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'Тикер не найден' in response.json()['detail']
+
+    @pytest.mark.usefixtures('tickers')
+    async def test_create_transaction_missing_price_for_buy(self, client, auth_headers, portfolio, wallet):
+        transaction_data = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 1,
+            'ticker2_id': 2,
+            'quantity': '1.0',
+            'quantity2': '10000.0',
+            'type': 'Buy',
+            'portfolio_id': portfolio.id,
+            'wallet_id': wallet.id,
+        }
+
+        response = await client.post('/api/transactions/', json=transaction_data, headers=auth_headers)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'price' in response.json()['detail']
+
+    @pytest.mark.usefixtures('tickers')
+    async def test_create_transaction_mixed_transfer(self, client, auth_headers, portfolio, wallet):
+        transaction_data = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 1,
+            'quantity': '1.0',
+            'type': 'TransferOut',
+            'portfolio_id': portfolio.id,
+            'portfolio2_id': portfolio.id,
+            'wallet2_id': wallet.id,
+        }
+
+        response = await client.post('/api/transactions/', json=transaction_data, headers=auth_headers)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'двумя портфелями или двумя кошельками' in response.json()['detail']

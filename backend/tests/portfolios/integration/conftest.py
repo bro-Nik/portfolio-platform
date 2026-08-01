@@ -5,22 +5,27 @@ from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 import jwt
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.common.dependencies import get_session
+from app.common.schemas import UserRole
 from app.core.config import settings
 from app.core.database import Base
 from app.core.rate_limit import limiter
-from app.common.dependencies import get_session
-
-import app.modules.auth.models  # noqa: F401
-import app.modules.portfolios.models  # noqa: F401
-import app.modules.tags.models  # noqa: F401
-
-from app.main import app
+from app.main import app as fastapi_app
+import app.modules.auth.models
 from app.modules.auth.models import User
-from app.modules.portfolios.models import Portfolio, PortfolioAsset, Transaction, Wallet, WalletAsset
-from app.common.schemas import UserRole
+from app.modules.market.models import Ticker
+import app.modules.portfolios.models
+from app.modules.portfolios.models import (
+    Portfolio,
+    PortfolioAsset,
+    Transaction,
+    Wallet,
+    WalletAsset,
+)
+import app.modules.tags.models  # noqa: F401
 
 
 @pytest.fixture(scope='session')
@@ -60,7 +65,6 @@ async def clean_tables(test_engine):
     tables = ', '.join(f'"{t.name}"' for t in Base.metadata.sorted_tables)
     async with test_engine.begin() as conn:
         await conn.execute(text(f'TRUNCATE {tables} RESTART IDENTITY CASCADE'))
-    yield
 
 
 @pytest.fixture
@@ -72,18 +76,26 @@ async def user(db_session, save):
 
 
 @pytest.fixture
+async def tickers(db_session, save):
+    return [
+        await save(db_session, Ticker(id=i, name=f'Ticker {i}', symbol=f'T{i}', market='crypto'))
+        for i in range(1, 8)
+    ]
+
+
+@pytest.fixture
 async def client(db_session):
-    app.dependency_overrides[get_session] = lambda: db_session
+    fastapi_app.dependency_overrides[get_session] = lambda: db_session
     limiter.enabled = False
 
-    async with LifespanManager(app) as manager, AsyncClient(
+    async with LifespanManager(fastapi_app) as manager, AsyncClient(
         transport=ASGITransport(app=manager.app),
         base_url='http://testserver',
         follow_redirects=True,
     ) as client:
         yield client
 
-    app.dependency_overrides.clear()
+    fastapi_app.dependency_overrides.clear()
 
 
 @pytest.fixture
