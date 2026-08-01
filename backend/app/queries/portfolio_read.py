@@ -14,10 +14,10 @@ class PortfolioReadQuery:
     def __init__(self, session: AsyncSession, ctx: Context) -> None:
         self.session = session
         self.ctx = ctx
-        self.service = PortfolioService(session, ctx)
+        self.taggable_repo = TaggableRepository(session)
+        self.service = PortfolioService(session, ctx, taggable_repo=self.taggable_repo)
         self.ticker_repo = TickerRepository(session)
         self.transaction_repo = TransactionRepository(session)
-        self.taggable_repo = TaggableRepository(session)
 
     async def _enrich(self, portfolios: list[Portfolio]) -> None:
         all_assets = [a for p in portfolios for a in p.assets]

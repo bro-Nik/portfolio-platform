@@ -14,10 +14,9 @@ user_id = 1
 @pytest.fixture
 async def service(db_session, async_mock, data):
     ctx = data(actor=data(id=user_id))
-    service = PortfolioService(db_session, ctx)
+    service = PortfolioService(db_session, ctx, taggable_repo=async_mock())
     service.repo = async_mock(spec=PortfolioRepository, session=db_session)
     service.asset_service = async_mock(spec=PortfolioAssetService, session=db_session)
-    service.taggable_repo = async_mock()
     return service
 
 

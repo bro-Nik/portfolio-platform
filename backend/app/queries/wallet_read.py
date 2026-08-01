@@ -5,6 +5,7 @@ from app.modules.market.repositories.ticker import TickerRepository
 from app.modules.portfolios.models import Wallet
 from app.modules.portfolios.repositories import TransactionRepository
 from app.modules.portfolios.services.wallet import WalletService
+from app.modules.tags.repositories import TaggableRepository
 
 IMAGES_URL = '/market/static/images/tickers'
 
@@ -13,7 +14,7 @@ class WalletReadQuery:
     def __init__(self, session: AsyncSession, ctx: Context) -> None:
         self.session = session
         self.ctx = ctx
-        self.service = WalletService(session, ctx)
+        self.service = WalletService(session, ctx, taggable_repo=TaggableRepository(session))
         self.ticker_repo = TickerRepository(session)
         self.transaction_repo = TransactionRepository(session)
 

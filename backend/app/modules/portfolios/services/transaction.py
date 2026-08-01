@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
 
-from app.modules.market.repositories import TickerRepository
 from app.modules.portfolios.models import Transaction
+from app.modules.portfolios.protocols import TickerReader
 from app.modules.portfolios.repositories import TransactionRepository
 from app.modules.portfolios.schemas import (
     TransactionCreate, TransactionCreateRequest,
@@ -19,15 +19,23 @@ from app.common.schemas import Context
 
 
 class TransactionService:
-    def __init__(self, session: AsyncSession, ctx: Context) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        ctx: Context,
+        *,
+        ticker_repo: TickerReader,
+        portfolio_service: PortfolioService,
+        wallet_service: WalletService,
+    ) -> None:
         self.ctx = ctx
         self.actor = ctx.actor
         self.session = session
         self.repo = TransactionRepository(session)
-        self.ticker_repo = TickerRepository(session)
-        self.portfolio_service = PortfolioService(session, ctx)
+        self.ticker_repo = ticker_repo
+        self.portfolio_service = portfolio_service
         self.portfolio_asset_service = PortfolioAssetService(ctx, session)
-        self.wallet_service = WalletService(session, ctx)
+        self.wallet_service = wallet_service
         self.wallet_asset_service = WalletAssetService(ctx, session)
 
     async def get(self, id: int) -> Transaction:

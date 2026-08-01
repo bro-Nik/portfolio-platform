@@ -4,10 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.common.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 
 from app.modules.portfolios.models import Portfolio, PortfolioAsset, Transaction
+from app.modules.portfolios.protocols import TagReader
 from app.modules.portfolios.repositories import (
     PortfolioRepository, TransactionRepository,
 )
-from app.modules.tags.repositories import TaggableRepository
 from app.modules.portfolios.schemas import (
     PortfolioAssetCreateRequest,
     PortfolioCreate, PortfolioCreateRequest, PortfolioUpdate, PortfolioUpdateRequest,
@@ -20,13 +20,13 @@ class PortfolioService:
     ENTITY_TYPE = 'portfolio'
     ASSET_ENTITY_TYPE = 'portfolio_asset'
 
-    def __init__(self, session: AsyncSession, ctx: Context) -> None:
+    def __init__(self, session: AsyncSession, ctx: Context, *, taggable_repo: TagReader) -> None:
         self.ctx = ctx
         self.actor = ctx.actor
         self.session = session
         self.repo = PortfolioRepository(session)
         self.asset_service = PortfolioAssetService(ctx, session)
-        self.taggable_repo = TaggableRepository(session)
+        self.taggable_repo = taggable_repo
         self.transaction_repo = TransactionRepository(session)
 
     async def _load_tags(self, portfolio: Portfolio) -> None:

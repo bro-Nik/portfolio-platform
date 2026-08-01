@@ -20,12 +20,15 @@ user_id = 1
 @pytest.fixture
 async def service(db_session, async_mock, data):
     ctx = data(actor=data(id=user_id))
-    service = TransactionService(db_session, ctx)
+    service = TransactionService(
+        db_session,
+        ctx,
+        ticker_repo=async_mock(spec=TickerRepository, session=db_session),
+        portfolio_service=async_mock(spec=PortfolioService, session=db_session),
+        wallet_service=async_mock(spec=WalletService, session=db_session),
+    )
     service.repo = async_mock(spec=TransactionRepository, session=db_session)
-    service.ticker_repo = async_mock(spec=TickerRepository, session=db_session)
-    service.portfolio_service = async_mock(spec=PortfolioService, session=db_session)
     service.portfolio_asset_service = async_mock(spec=PortfolioAssetService, session=db_session)
-    service.wallet_service = async_mock(spec=WalletService, session=db_session)
     service.wallet_asset_service = async_mock(spec=WalletAssetService, session=db_session)
     return service
 

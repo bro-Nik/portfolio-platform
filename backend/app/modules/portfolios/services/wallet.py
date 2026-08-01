@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.common.exceptions import ConflictError, NotFoundError, PermissionDeniedError
 
 from app.modules.portfolios.models import Wallet, Transaction
+from app.modules.portfolios.protocols import TagReader
 from app.modules.portfolios.repositories import (
     TransactionRepository, WalletRepository,
 )
-from app.modules.tags.repositories import TaggableRepository
 from app.modules.portfolios.schemas import (
     WalletCreate, WalletCreateRequest, WalletUpdate, WalletUpdateRequest,
 )
@@ -18,13 +18,13 @@ class WalletService:
     ENTITY_TYPE = 'wallet'
     ASSET_ENTITY_TYPE = 'wallet_asset'
 
-    def __init__(self, session: AsyncSession, ctx: Context) -> None:
+    def __init__(self, session: AsyncSession, ctx: Context, *, taggable_repo: TagReader) -> None:
         self.ctx = ctx
         self.actor = ctx.actor
         self.session = session
         self.repo = WalletRepository(session)
         self.asset_service = WalletAssetService(ctx, session)
-        self.taggable_repo = TaggableRepository(session)
+        self.taggable_repo = taggable_repo
         self.transaction_repo = TransactionRepository(session)
 
     async def _bulk_load_tags(self, wallets: list[Wallet]) -> None:
