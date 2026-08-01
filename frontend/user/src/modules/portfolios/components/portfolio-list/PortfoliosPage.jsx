@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocalStorage } from 'src/hooks/useLocalStorage';
+import { usePersistedState } from '@portfolio/shared';
 import { useModalStore } from '@portfolio/shared';
 import LoadingSpinner from 'src/components/ui/LoadingSpinner';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
@@ -11,7 +11,7 @@ import PortfoliosTable from './PortfoliosTable';
 import { Briefcase } from 'lucide-react';
 
 const PortfoliosPage = () => {
-  const [showArchived, setShowArchived] = useLocalStorage('portfolios-show-archived', false);
+  const [showArchived, setShowArchived] = usePersistedState('portfolios-show-archived', false);
   const { portfolios, allPortfolios, overallStats, loading, showingArchivedFallback } = usePortfoliosData(showArchived);
   const { openModal } = useModalStore();
 

@@ -14,7 +14,7 @@ import {
   MoonOutlined,
   StockOutlined
 } from '@ant-design/icons';
-import { useAuthStore, useModalStore, authService, useThemeStore } from '@portfolio/shared';
+import { useAuthStore, useModalStore, authService, useThemeStore, usePersistedState } from '@portfolio/shared';
 import { ExternalApiModule } from './modules/externalApi/ExternalApiModule';
 import { TickersModule } from './modules/tickers/TickersModule';
 import { UsersModule } from './modules/users/UsersModule';
@@ -36,16 +36,15 @@ export type { SubTabItem } from './utils/headerContext';
 
 const AdminPage = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState<MenuKey>((localStorage.getItem('lastPage') as MenuKey) || 'api-services');
-  const [headerExtra, setHeaderExtra] = useState<React.ReactNode>(null);
   const { user, logout: storeLogout } = useAuthStore();
   const { logout } = authService();
   const { theme, toggleTheme } = useThemeStore();
+  const [selectedMenu, setSelectedMenu] = usePersistedState<MenuKey>('lastPage', 'api-services');
+  const [headerExtra, setHeaderExtra] = useState<React.ReactNode>(null);
 
   const setPage = (key: MenuKey): void => {
     setSelectedMenu(key);
     setHeaderExtra(null);
-    localStorage.setItem('lastPage', key);
   };
 
   const handleLogout = async (): Promise<void> => {

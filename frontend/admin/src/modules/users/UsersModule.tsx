@@ -7,7 +7,7 @@ import { UserFilterPanel } from './components/UserFilterPanel';
 import { UserStatsCards } from './components/UserStatsCards';
 import { useUsers } from './hooks/useUsers';
 import { useUserModals } from './hooks/useUserModals';
-import { usePersistedState } from '../../hooks/usePersistedState';
+import { usePersistedState } from '@portfolio/shared';
 import { UserFilters } from '../../types/user';
 import { QueryError } from '../../components/QueryError';
 

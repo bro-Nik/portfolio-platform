@@ -6,7 +6,7 @@ import { TaskFilterPanel, TaskFilters } from './components/TaskFilterPanel';
 import { TaskStatsCards } from './components/TaskStatsCards';
 import { useTasks } from './hooks/useTasks';
 import { useTaskModals } from './hooks/useTaskModals';
-import { usePersistedState } from '../../../hooks/usePersistedState';
+import { usePersistedState } from '@portfolio/shared';
 import { QueryError } from '../../../components/QueryError';
 
 export const TasksModule: React.FC = () => {

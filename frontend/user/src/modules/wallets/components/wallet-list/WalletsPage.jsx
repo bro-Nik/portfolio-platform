@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocalStorage } from 'src/hooks/useLocalStorage';
+import { usePersistedState } from '@portfolio/shared';
 import { useModalStore } from '@portfolio/shared';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import LoadingSpinner from 'src/components/ui/LoadingSpinner';
@@ -11,7 +11,7 @@ import WalletsTable from './WalletsTable';
 import { Wallet } from 'lucide-react';
 
 const WalletsPage = () => {
-  const [showArchived, setShowArchived] = useLocalStorage('wallets-show-archived', false);
+  const [showArchived, setShowArchived] = usePersistedState('wallets-show-archived', false);
   const { wallets, allWallets, overallStats, loading, showingArchivedFallback } = useWalletsData(showArchived);
   const { openModal } = useModalStore();
 

@@ -2,7 +2,7 @@ import React, { memo, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import TickerAvatar from 'src/components/TickerAvatar';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { useLocalStorage } from 'src/hooks/useLocalStorage';
+import { usePersistedState } from '@portfolio/shared';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
@@ -17,8 +17,8 @@ const smallTextStyle = { fontSize: '12px' };
 const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const { openItem } = useNavigation();
 
-  const [hideCheap, setHideCheap] = useLocalStorage('portfolio-hide-cheap', false);
-  const [showArchived, setShowArchived] = useLocalStorage('portfolio-archive', false);
+  const [hideCheap, setHideCheap] = usePersistedState('portfolio-hide-cheap', false);
+  const [showArchived, setShowArchived] = usePersistedState('portfolio-archive', false);
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
 

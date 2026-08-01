@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useHeaderExtra, SubTabsBar, SubTabItem } from '../utils/headerContext';
+import { usePersistedState } from '@portfolio/shared';
 
 interface UseSubTabsOptions<T extends string> {
   tabs: SubTabItem[];
@@ -8,28 +9,13 @@ interface UseSubTabsOptions<T extends string> {
 }
 
 export const useSubTabs = <T extends string>({ tabs, defaultKey, storageKey }: UseSubTabsOptions<T>) => {
-  const [activeTab, setActiveTab] = useState<T>(() => {
-    if (storageKey) {
-      try {
-        const stored = localStorage.getItem(storageKey);
-        if (stored) return stored as T;
-      } catch {}
-    }
-    return defaultKey;
-  });
+  const [activeTab, setActiveTab] = usePersistedState<T>(storageKey, defaultKey);
   const { setHeaderExtra } = useHeaderExtra();
 
-  const handleChange = (key: string) => {
-    setActiveTab(key as T);
-    if (storageKey) {
-      localStorage.setItem(storageKey, key);
-    }
-  };
-
   useEffect(() => {
-    setHeaderExtra(<SubTabsBar tabs={tabs} activeKey={activeTab} onChange={handleChange} />);
+    setHeaderExtra(<SubTabsBar tabs={tabs} activeKey={activeTab} onChange={(key) => setActiveTab(key as T)} />);
     return () => setHeaderExtra(null);
-  }, [activeTab, setHeaderExtra, tabs]);
+  }, [activeTab, setHeaderExtra, tabs, setActiveTab]);
 
-  return { activeTab, setActiveTab: handleChange };
+  return { activeTab, setActiveTab };
 };

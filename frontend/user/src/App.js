@@ -18,18 +18,24 @@ import { TickerIdsProvider } from './hooks/TickerContext';
 import { lightTheme, darkTheme } from './theme';
 
 function App() {
-  const { isAuthenticated, initializeAuth } = useAuthStore();
+  const { user, initializeAuth } = useAuthStore();
   const { theme } = useThemeStore();
-  const prevAuth = useRef(isAuthenticated);
+  const prevUserId = useRef(user?.id);
 
   useEffect(() => {
-    if (prevAuth.current && !isAuthenticated) {
+    const userId = user?.id ?? null;
+    if (prevUserId.current !== userId) {
       queryClient.clear();
-      useNavigationStore.getState().actions.resetNavigation();
-      useNavigationStore.persist.clearStorage();
+      if (userId !== null) {
+        const { userId: storedUserId } = useNavigationStore.getState();
+        if (storedUserId !== userId) {
+          useNavigationStore.setState({ userId });
+          useNavigationStore.getState().actions.resetNavigation();
+        }
+      }
     }
-    prevAuth.current = isAuthenticated;
-  }, [isAuthenticated]);
+    prevUserId.current = userId;
+  }, [user?.id]);
 
   useEffect(() => {
     initializeAuth();

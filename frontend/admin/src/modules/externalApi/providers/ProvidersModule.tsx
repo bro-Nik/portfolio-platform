@@ -5,7 +5,7 @@ import { ProviderTable } from './components/ProviderTable';
 import { ProviderFilterPanel, ProviderFilters } from './components/ProviderFilterPanel';
 import { ProviderStatsCards } from './components/ProviderStatsCards';
 import { useProviders } from './hooks/useProviders';
-import { usePersistedState } from '../../../hooks/usePersistedState';
+import { usePersistedState } from '@portfolio/shared';
 import { QueryError } from '../../../components/QueryError';
 
 export const ProvidersModule: React.FC = () => {

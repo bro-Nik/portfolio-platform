@@ -22,5 +22,7 @@ export { createApi } from './factories/api.js';
 
 export { useNotifications } from './hooks/useNotifications.js';
 
+export { usePersistedState } from './hooks/usePersistedState.js';
+
 export { Alert } from './components/Alert.js';
 export type { AlertProps } from './components/Alert.js';

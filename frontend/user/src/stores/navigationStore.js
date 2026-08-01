@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 const store = (set, get) => ({
+  // Пользователь, которому принадлежит состояние навигации
+  userId: null,
+
   // Активный раздел
   activeSection: 'portfolios',
 
@@ -269,6 +272,7 @@ const useNavigationStore = create(
   persist(store, {
     name: 'user-navigation',
     partialize: (state) => ({
+      userId: state.userId,
       activeSection: state.activeSection,
       openedItems: state.openedItems,
     }),

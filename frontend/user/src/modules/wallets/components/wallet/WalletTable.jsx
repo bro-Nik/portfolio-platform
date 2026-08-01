@@ -2,7 +2,7 @@ import React, { memo, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import TickerAvatar from 'src/components/TickerAvatar';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { useLocalStorage } from 'src/hooks/useLocalStorage';
+import { usePersistedState } from '@portfolio/shared';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
@@ -18,8 +18,8 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
   const { openItem } = useNavigation();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
-  const [hideCheap, setHideCheap] = useLocalStorage('wallet-hide-cheap', false);
-  const [showArchived, setShowArchived] = useLocalStorage('wallet-archive', false);
+  const [hideCheap, setHideCheap] = usePersistedState('wallet-hide-cheap', false);
+  const [showArchived, setShowArchived] = usePersistedState('wallet-archive', false);
 
   const preparedAssets = useMemo(() => {
     if (!assets) return [];

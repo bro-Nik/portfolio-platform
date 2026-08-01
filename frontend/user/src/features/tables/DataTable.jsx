@@ -1,16 +1,16 @@
 import React, { memo } from 'react';
 import Table from 'src/components/Table';
-import { useLocalStorage } from 'src/hooks/useLocalStorage';
+import { usePersistedState } from '@portfolio/shared';
 
 const DataTable = memo(({
   data,
+  fallbackData,
   columnsConfig,
-  fallbackData = [],
   storageKey,
   rowClassName,
 }) => {
   const sourceData = data ?? fallbackData;
-  const [sortState, setSortState] = useLocalStorage(storageKey || '', null);
+  const [sortState, setSortState] = usePersistedState(storageKey, null);
 
   const columns = columnsConfig.map(col => {
     const isSorted = sortState && sortState.field === col.dataIndex;
