@@ -1,4 +1,4 @@
-import React, { memo, Suspense } from 'react';
+import React, { memo, Suspense, useMemo } from 'react';
 import Sidebar from './components/Sidebar';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useAuthStore, useModalStore } from '@portfolio/shared';
@@ -30,12 +30,29 @@ const AppPage = () => {
     'settings': SettingsPage,
   }
 
+  // Если активная секция не имеет контента (например, все элементы закрыты),
+  // показываем портфели вместо пустой страницы
+  const displayedSection = useMemo(() => {
+    if (mainSections[activeSection]) return activeSection;
+
+    const isItemOpen = (sectionItems) => sectionItems?.some(item => (
+      `${item.type}-${item.id}` === activeSection
+      || item.openedAssets?.some(asset => `${asset.type}-${asset.id}` === activeSection)
+    ));
+
+    if (isItemOpen(openedItems.portfolios)) return activeSection;
+    if (isItemOpen(openedItems.wallets)) return activeSection;
+    if (isItemOpen(openedItems.wishlist)) return activeSection;
+
+    return 'portfolios';
+  }, [activeSection, openedItems]);
+
   // Рендер основных разделов
   const renderMainSection = () => {
     return Object.entries(mainSections).map(([sectionName, SectionComponent]) => (
       <div 
         key={sectionName} 
-        style={{ display: activeSection === sectionName ? 'block' : 'none' }}
+        style={{ display: displayedSection === sectionName ? 'block' : 'none' }}
       >
         <Suspense>
           <SectionComponent />
@@ -54,7 +71,7 @@ const AppPage = () => {
       if (!portfolioData) return;
 
       renderItems.push(
-        <div key={`portfolio-${portfolio.id}`} style={{ display: activeSection === `portfolio-${portfolio.id}` ? '' : 'none' }}>
+        <div key={`portfolio-${portfolio.id}`} style={{ display: displayedSection === `portfolio-${portfolio.id}` ? '' : 'none' }}>
           <PortfolioPage portfolio={portfolioData} onRefresh={refresh} />
         </div>
       );
@@ -64,7 +81,7 @@ const AppPage = () => {
         if (!assetData) return;
 
         renderItems.push(
-          <div key={`portfolio_asset-${asset.id}`} style={{ display: activeSection === `portfolio_asset-${asset.id}` ? '' : 'none' }}>
+          <div key={`portfolio_asset-${asset.id}`} style={{ display: displayedSection === `portfolio_asset-${asset.id}` ? '' : 'none' }}>
             <PortfolioAssetPage portfolio={portfolioData} asset={assetData} />
           </div>
         );
@@ -77,7 +94,7 @@ const AppPage = () => {
       if (!walletData) return;
 
       renderItems.push(
-        <div key={`wallet-${wallet.id}`} style={{ display: activeSection === `wallet-${wallet.id}` ? '' : 'none' }}>
+        <div key={`wallet-${wallet.id}`} style={{ display: displayedSection === `wallet-${wallet.id}` ? '' : 'none' }}>
           <WalletPage wallet={walletData} onRefresh={refresh} />
         </div>
       );
@@ -87,7 +104,7 @@ const AppPage = () => {
         if (!assetData) return;
 
         renderItems.push(
-          <div key={`wallet_asset-${asset.id}`} style={{ display: activeSection === `wallet_asset-${asset.id}` ? '' : 'none' }}>
+          <div key={`wallet_asset-${asset.id}`} style={{ display: displayedSection === `wallet_asset-${asset.id}` ? '' : 'none' }}>
             <WalletAssetPage wallet={walletData} asset={assetData} />
           </div>
         );

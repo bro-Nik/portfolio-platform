@@ -48,7 +48,8 @@ const store = (set, get) => ({
 
       // Если закрыли активный элемент, переключаемся
       if (get().activeSection === `${itemType}-${itemId}`) {
-        set({ activeSection: closingItem.openFrom || section });
+        const fallback = closingItem.openFrom || section;
+        set({ activeSection: get().actions.isOpen(fallback) ? fallback : section });
       }
     },
 
@@ -64,7 +65,8 @@ const store = (set, get) => ({
       // Если закрыли активный элемент, переключаемся
       if (get().activeSection === `${itemType}-${itemId}`) {
         const item = get().actions.getItem(section, itemId, itemType, parentId);
-        set({ activeSection: item.openFrom || section });
+        const fallback = item.openFrom || section;
+        set({ activeSection: get().actions.isOpen(fallback) ? fallback : section });
       } else {
         set({ activeSection: `${itemType}-${itemId}` });
       }
@@ -234,6 +236,17 @@ const store = (set, get) => ({
 
       const parent = state.openedItems[section].find(i => i.id === parentId);
       return parent?.openedAssets.find(a => a.id === itemId);
+    },
+
+    // Проверяет, что секция или элемент всё ещё открыт
+    isOpen: (key) => {
+      if (['portfolios', 'wallets', 'wishlist', 'settings'].includes(key)) return true;
+
+      const { openedItems } = get();
+      return Object.values(openedItems).some(items => items?.some(item =>
+        `${item.type}-${item.id}` === key
+        || item.openedAssets?.some(asset => `${asset.type}-${asset.id}` === key)
+      ));
     },
 
     // Для сайдбара

@@ -109,7 +109,8 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
   const transactionPortfolio = prepareSelectedPortfolio(transaction ? transaction.portfolioId : portfolioId);
 
   const getPortfolios = useCallback(({ excludeId = null, showTickerId = null }) => {
-    let result = portfolios;
+    const currentPortfolioId = transaction?.portfolioId || portfolioId;
+    let result = portfolios.filter(p => !p.isArchived || p.id === currentPortfolioId);
     if (excludeId) result = result.filter(p => p.id !== excludeId);
 
     if (showTickerId) {
@@ -117,10 +118,11 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     }
 
     return result;
-  }, [portfolios, getPortfolioAvailableBalanceByTicker]);
+  }, [portfolios, portfolioId, transaction?.portfolioId, getPortfolioAvailableBalanceByTicker]);
 
   const getWallets = useCallback(({ excludeId = null, showTickerId = null }) => {
-    let result = wallets;
+    const currentWalletId = transaction?.walletId || walletId;
+    let result = wallets.filter(w => !w.isArchived || w.id === currentWalletId);
     if (excludeId) result = result.filter(w => w.id !== excludeId);
 
     if (showTickerId) {
@@ -128,7 +130,7 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     }
 
     return result;
-  }, [wallets, getWalletAvailableBalanceByTicker]);
+  }, [wallets, walletId, transaction?.walletId, getWalletAvailableBalanceByTicker]);
 
   const handleWalletChange = useCallback((walletId) => {
     setTransactionWallet(prepareSelectedWallet(walletId));
