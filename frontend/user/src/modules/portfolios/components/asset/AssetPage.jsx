@@ -10,8 +10,8 @@ import AssetTable from './AssetTable';
 import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 import { ArrowLeftRight } from 'lucide-react';
 
-const PortfolioAssetPage = ({ portfolio, asset }) => {
-  const { assetData, loading } = useAssetData(portfolio, asset);
+const PortfolioAssetPage = ({ portfolio, asset, active }) => {
+  const { assetData, loading } = useAssetData(portfolio, asset, { enabled: active });
   const { openModal } = useModalStore();
 
   if (loading) return <LoadingSpinner />;

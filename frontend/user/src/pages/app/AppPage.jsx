@@ -82,7 +82,7 @@ const AppPage = () => {
 
         renderItems.push(
           <div key={`portfolio_asset-${asset.id}`} style={{ display: displayedSection === `portfolio_asset-${asset.id}` ? '' : 'none' }}>
-            <PortfolioAssetPage portfolio={portfolioData} asset={assetData} />
+            <PortfolioAssetPage portfolio={portfolioData} asset={assetData} active={displayedSection === `portfolio_asset-${asset.id}`} />
           </div>
         );
       });
@@ -105,7 +105,7 @@ const AppPage = () => {
 
         renderItems.push(
           <div key={`wallet_asset-${asset.id}`} style={{ display: displayedSection === `wallet_asset-${asset.id}` ? '' : 'none' }}>
-            <WalletAssetPage wallet={walletData} asset={assetData} />
+            <WalletAssetPage wallet={walletData} asset={assetData} active={displayedSection === `wallet_asset-${asset.id}`} />
           </div>
         );
       });
