@@ -1,5 +1,3 @@
-import asyncio
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
@@ -60,10 +58,8 @@ class TransactionService:
         return t
 
     async def build_response_with_assets(self, *transactions: Transaction) -> TransactionResponseWithAssets:
-        pa, wa = await asyncio.gather(
-            self.portfolio_asset_service.get_affected(*transactions),
-            self.wallet_asset_service.get_affected(*transactions),
-        )
+        pa = await self.portfolio_asset_service.get_affected(*transactions)
+        wa = await self.wallet_asset_service.get_affected(*transactions)
         return TransactionResponseWithAssets(transaction=transactions[0], portfolio_assets=pa, wallet_assets=wa)
 
     async def _ensure_not_archived(self, obj) -> None:

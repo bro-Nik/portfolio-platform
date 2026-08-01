@@ -44,6 +44,7 @@ class TestWalletService:
 
         with (
             patch.object(service.repo, 'get_with_assets', return_value=wallet),
+            patch.object(service.taggable_repo, 'bulk_get_tags', return_value={}),
         ):
             result = await service.get_with_assets(wallet.id)
 

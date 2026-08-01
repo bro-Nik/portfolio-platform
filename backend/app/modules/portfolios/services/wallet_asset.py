@@ -1,5 +1,4 @@
 from collections import defaultdict
-import asyncio
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -81,17 +80,17 @@ class WalletAssetService:
         assets_map = defaultdict(list)
         for wallet_id, ticker_id in pairs:
             assets_map[wallet_id].append(ticker_id)
-        results = await asyncio.gather(*[
-            self.repo.get_all_by_tickers_and_wallet(ticker_ids, wid)
+        results = [
+            await self.repo.get_all_by_tickers_and_wallet(ticker_ids, wid)
             for wid, ticker_ids in assets_map.items()
-        ])
+        ]
         return [a for r in results for a in r]
 
     async def _get_or_create(self, *pairs: tuple) -> tuple:
-        results = await asyncio.gather(*[
-            self.repo.get_or_create(wallet_id=w_id, ticker_id=t_id, user_id=self.actor.id)
+        results = [
+            await self.repo.get_or_create(wallet_id=w_id, ticker_id=t_id, user_id=self.actor.id)
             for w_id, t_id in pairs if w_id is not None and t_id is not None
-        ])
+        ]
         await self.session.flush()
         return tuple(results)
 

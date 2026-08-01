@@ -47,6 +47,7 @@ class WalletService:
     async def get_with_assets(self, id: int) -> Wallet:
         wallet = await self.repo.get_with_assets(id)
         self._verify(wallet)
+        await self._bulk_load_tags([wallet])
         return wallet
 
     async def get_all_with_assets(self) -> list[Wallet]:

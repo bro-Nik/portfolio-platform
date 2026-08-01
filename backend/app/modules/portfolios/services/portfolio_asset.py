@@ -1,5 +1,4 @@
 from collections import defaultdict
-import asyncio
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -92,17 +91,17 @@ class PortfolioAssetService:
         assets_map = defaultdict(list)
         for portfolio_id, ticker_id in pairs:
             assets_map[portfolio_id].append(ticker_id)
-        results = await asyncio.gather(*[
-            self.repo.get_all_by_tickers_and_portfolio(ticker_ids, pid)
+        results = [
+            await self.repo.get_all_by_tickers_and_portfolio(ticker_ids, pid)
             for pid, ticker_ids in assets_map.items()
-        ])
+        ]
         return [a for r in results for a in r]
 
     async def _get_or_create(self, *pairs: tuple) -> tuple:
-        results = await asyncio.gather(*[
-            self.repo.get_or_create(portfolio_id=p_id, ticker_id=t_id, user_id=self.actor.id)
+        results = [
+            await self.repo.get_or_create(portfolio_id=p_id, ticker_id=t_id, user_id=self.actor.id)
             for p_id, t_id in pairs if p_id is not None and t_id is not None
-        ])
+        ]
         await self.session.flush()
         return tuple(results)
 

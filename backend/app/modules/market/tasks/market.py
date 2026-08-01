@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @broker.task(task_name='update_market_data')
-@inject
+@inject(patch_module=True)
 @handle_task_errors()
 async def update_market_data(
     tracker: TaskTrackerServiceDep,
