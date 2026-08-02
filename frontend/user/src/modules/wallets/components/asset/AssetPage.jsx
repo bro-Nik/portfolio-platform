@@ -1,18 +1,13 @@
-import React from 'react';
 import LoadingSpinner from 'src/components/ui/LoadingSpinner';
-import { useModalStore } from '@portfolio/shared';
 import { useAssetData } from 'src/modules/wallets/hooks/useAssetData';
 import EmptyState from 'src/components/EmptyState';
 import AssetHeader from './AssetHeader';
 import AssetStatistic from './AssetStatistic';
-// import AssetDetails from './AssetDetails';
 import AssetTable from './AssetTable';
-import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 import { ArrowLeftRight } from 'lucide-react';
 
 const WalletAssetPage = ({ wallet, asset, active }) => {
   const { assetData, loading } = useAssetData(wallet, asset, { enabled: active });
-  const { openModal } = useModalStore();
 
   if (loading) return <LoadingSpinner />;
 
@@ -23,8 +18,7 @@ const WalletAssetPage = ({ wallet, asset, active }) => {
         <EmptyState
           icon={ArrowLeftRight}
           title="В активе пока нет транзакций"
-          description="Добавьте первую транзакцию, чтобы начать отслеживать движение средств"
-          action={!assetData.isArchived ? { text: 'Добавить транзакцию', onClick: () => openModal(TransactionEditModal, { tickerId: assetData.tickerId, walletId: wallet.id }) } : undefined}
+          description="Здесь будут отображаться транзакции актива"
         />
       </div>
     );
@@ -34,7 +28,6 @@ const WalletAssetPage = ({ wallet, asset, active }) => {
     <div className="asset-detail">
       <AssetHeader wallet={wallet} asset={assetData} />
       <AssetStatistic wallet={wallet} asset={assetData} />
-      {/* <AssetDetails data={assetData} /> */}
       <AssetTable wallet={wallet} asset={assetData} transactions={assetData.transactions} />
     </div>
   );
