@@ -49,7 +49,7 @@ const TagForm = ({ initialName, initialColor, onSave, saveLabel, onDelete, onCan
   );
 };
 
-const TagRow = ({ tag, checked, entityType, onToggle }) => {
+const TagRow = ({ tag, entityType, onToggle }) => {
   const [editOpen, setEditOpen] = useState(false);
   const { success } = useNotifications();
   const { updateTag, deleteTag } = useTagMutations();
@@ -116,16 +116,18 @@ const TagPanel = ({ entityType, entityId, assignedTags, parentId }) => {
 
   useEffect(() => { selectedIdsRef.current = selectedIds; }, [selectedIds]);
 
-  useEffect(() => {
+  const [prevAssignedTags, setPrevAssignedTags] = useState(assignedTags);
+  if (prevAssignedTags !== assignedTags) {
+    setPrevAssignedTags(assignedTags);
     if (assignedTags) setSelectedIds(new Set(assignedTags.map(t => t.id)));
-  }, [assignedTags]);
+  }
 
   const handleToggle = useCallback(async (tagId) => {
     const current = selectedIdsRef.current;
     const isChecked = current.has(tagId);
     const prev = new Set(current);
     const next = new Set(current);
-    isChecked ? next.delete(tagId) : next.add(tagId);
+    if (isChecked) next.delete(tagId); else next.add(tagId);
     setSelectedIds(next);
 
     const mutation = isChecked ? detachTag : attachTag;

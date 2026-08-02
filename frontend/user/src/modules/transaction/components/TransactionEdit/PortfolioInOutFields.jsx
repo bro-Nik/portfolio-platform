@@ -30,7 +30,7 @@ const PortfolioInOutFields = ({
       onChange={handleWalletChange}
       fieldNames={{label: 'name', value: 'id'}}
       options={wallets}
-      optionRender={(o, { index }) => (<>
+      optionRender={(o) => (<>
         {o.data.name}
         {o.data.free !== undefined ? <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span> : null}
       </>)}

@@ -6,8 +6,8 @@ type AnyComponent = ComponentType<any>;
 
 interface ModalState {
   currentModal: AnyComponent | null;
-  modalProps: any;
-  openModal: (modalComponent: AnyComponent, modalProps?: Record<string, any>) => void;
+  modalProps: Record<string, unknown>;
+  openModal: (modalComponent: AnyComponent, modalProps?: Record<string, unknown>) => void;
   closeModal: () => void;
 }
 
@@ -29,3 +29,7 @@ export const useModalStore = create<ModalState>((set) => ({
     });
   },
 }));
+
+// Пропсы модалки типизируются на стороне потребителя (стор хранит их обобщённо)
+export const useModalProps = <P extends object>(): P =>
+  useModalStore((state) => state.modalProps) as P;

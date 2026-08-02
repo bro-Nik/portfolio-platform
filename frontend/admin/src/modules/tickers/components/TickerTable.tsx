@@ -3,7 +3,7 @@ import { Tag, Dropdown, Button, Switch } from 'antd';
 import Table from 'src/components/Table';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
-import { DeleteOutlined, EditOutlined, MergeCellsOutlined, MoreOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, MoreOutlined } from '@ant-design/icons';
 import { Ticker } from '../../../types/ticker';
 import { formatRelativeTime } from '../../../utils/date';
 import { useTickerModals } from '../hooks/useTickerModals';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Input, Select, Space, Typography, Row, Col, Card, Statistic } from 'antd';
+import { Button, Input, Select, Space, Row, Col, Card, Statistic } from 'antd';
 import { MergeCellsOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { TickerTable } from './components/TickerTable';
 import { useTickers } from './hooks/useTickers';
@@ -15,7 +15,7 @@ export const TickersModule: React.FC = () => {
 
   const debouncedSearch = useDebounce(search, 300);
   const { data, isLoading, error } = useTickers({ search: debouncedSearch, market, page, pageSize });
-  const { editModal, mergeModal } = useTickerModals();
+  const { mergeModal } = useTickerModals();
 
   if (error) return <QueryError title='Ошибка загрузки тикеров' error={error} />;
 

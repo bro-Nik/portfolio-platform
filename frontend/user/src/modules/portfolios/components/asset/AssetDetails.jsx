@@ -8,6 +8,125 @@ import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosDat
 
 const { Text } = Typography;
 
+const SegmentedProgress = ({ segments, totalAmount, symbol }) => {
+  if (!segments.length) {
+    return (
+      <RichTooltip
+        title={
+          <div style={{ maxWidth: 300 }}>
+            <Text strong style={{ display: 'block', marginBottom: 8 }}>
+              Всего: {formatCurrency(0)}
+            </Text>
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              Актива нигде нет
+            </Text>
+          </div>
+        }
+      >
+        <div style={{ position: 'relative', cursor: 'pointer' }}>
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 12,
+            borderRadius: 8,
+            overflow: 'hidden',
+            display: 'flex'
+          }}>
+            <div
+              style={{
+                width: '100%',
+                backgroundColor: '#ababab',
+                opacity: '0.5'
+              }}
+            />
+          </div>
+        </div>
+      </RichTooltip>
+    );
+  }
+
+  // Вычисляем позиции для сегментов
+  const positionedSegments = segments.reduce((acc, segment) => {
+    const start = acc.length ? acc[acc.length - 1].end : 0;
+    acc.push({
+      ...segment,
+      start,
+      end: start + segment.percent,
+    });
+    return acc;
+  }, []);
+
+  return (
+    <RichTooltip
+      title={
+        <div style={{ maxWidth: 300 }} >
+          <Text strong style={{ display: 'block', marginBottom: 8 }}>
+            Всего: {formatCurrency(totalAmount)}
+          </Text>
+          {positionedSegments.map((segment, index) => (
+            <div key={index} style={{ marginBottom: 6 }}>
+              <Space align="center" style={{ marginBottom: 4 }}>
+                <div 
+                  style={{
+                    width: 10,
+                    height: 10,
+                    backgroundColor: segment.color,
+                    borderRadius: 2
+                  }}
+                />
+                <Text strong style={{ fontSize: 13 }}>{segment.name}</Text>
+              </Space>
+              <Space orientation="vertical" size={0} style={{ marginLeft: 16 }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  {formatCurrency(segment.costNow)} ({formatPercentage(segment.percent)})
+                </Text>
+                <Text type="secondary" style={{ fontSize: 11 }}>
+                  {segment.quantity} {symbol?.toUpperCase()}
+                </Text>
+              </Space>
+            </div>
+          ))}
+        </div>
+      }
+    >
+      <div style={{ position: 'relative', cursor: 'pointer' }}>
+        
+        {/* Отображаем сегменты */}
+        <div style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          height: 12,
+          borderRadius: 8,
+          overflow: 'hidden',
+          display: 'flex'
+        }}>
+          {positionedSegments.map((segment, index) => (
+            <div
+              key={index}
+              style={{
+                width: `${segment.percent}%`,
+                backgroundColor: segment.color,
+                transition: 'opacity 0.2s',
+                opacity: '0.5'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '0.5';
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </RichTooltip>
+  );
+};
+
 const AssetDetail = ({ data }) => {
   const { portfolios } = usePortfoliosData();
   const { wallets } = useWalletsData();
@@ -88,126 +207,6 @@ const AssetDetail = ({ data }) => {
   );
 
   // Функция для создания прогресс-бара с сегментами
-  const SegmentedProgress = ({ segments, totalAmount }) => {
-    if (!segments.length) {
-      return (
-        <RichTooltip
-          title={
-            <div style={{ maxWidth: 300 }}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Всего: {formatCurrency(0)}
-              </Text>
-              <Text type="secondary" style={{ fontSize: 13 }}>
-                Актива нигде нет
-              </Text>
-            </div>
-          }
-        >
-          <div style={{ position: 'relative', cursor: 'pointer' }}>
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 12,
-              borderRadius: 8,
-              overflow: 'hidden',
-              display: 'flex'
-            }}>
-              <div
-                style={{
-                  width: '100%',
-                  backgroundColor: '#ababab',
-                  opacity: '0.5'
-                }}
-              />
-            </div>
-          </div>
-        </RichTooltip>
-      );
-    }
-
-    // Вычисляем позиции для сегментов
-    let currentPosition = 0;
-    const positionedSegments = segments.map(segment => {
-      const segmentData = {
-        ...segment,
-        start: currentPosition,
-        end: currentPosition + segment.percent
-      };
-      currentPosition += segment.percent;
-      return segmentData;
-    });
-
-    return (
-      <RichTooltip
-        title={
-          <div style={{ maxWidth: 300 }} >
-            <Text strong style={{ display: 'block', marginBottom: 8 }}>
-              Всего: {formatCurrency(totalAmount)}
-            </Text>
-            {positionedSegments.map((segment, index) => (
-              <div key={index} style={{ marginBottom: 6 }}>
-                <Space align="center" style={{ marginBottom: 4 }}>
-                  <div 
-                    style={{
-                      width: 10,
-                      height: 10,
-                      backgroundColor: segment.color,
-                      borderRadius: 2
-                    }}
-                  />
-                  <Text strong style={{ fontSize: 13 }}>{segment.name}</Text>
-                </Space>
-                <Space orientation="vertical" size={0} style={{ marginLeft: 16 }}>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {formatCurrency(segment.costNow)} ({formatPercentage(segment.percent)})
-                  </Text>
-                  <Text type="secondary" style={{ fontSize: 11 }}>
-                    {segment.quantity} {data.symbol?.toUpperCase()}
-                  </Text>
-                </Space>
-              </div>
-            ))}
-          </div>
-        }
-      >
-        <div style={{ position: 'relative', cursor: 'pointer' }}>
-          
-          {/* Отображаем сегменты */}
-          <div style={{ 
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            height: 12,
-            borderRadius: 8,
-            overflow: 'hidden',
-            display: 'flex'
-          }}>
-            {positionedSegments.map((segment, index) => (
-              <div
-                key={index}
-                style={{
-                  width: `${segment.percent}%`,
-                  backgroundColor: segment.color,
-                  transition: 'opacity 0.2s',
-                  opacity: '0.5'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '0.9';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '0.5';
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </RichTooltip>
-    );
-  };
-
   return (
     <Row gutter={[24, 24]} style={{ marginBottom: 24 }}>
       <Col xs={24} md={12}>
@@ -222,7 +221,7 @@ const AssetDetail = ({ data }) => {
               <Text>Распределение по портфелям</Text>
             </Space>
 
-            <SegmentedProgress segments={portfolioSegments} totalAmount={totalPortfolioCost} />
+            <SegmentedProgress segments={portfolioSegments} totalAmount={totalPortfolioCost} symbol={data.symbol} />
           </Space>
         </Card>
       </Col>
@@ -239,7 +238,7 @@ const AssetDetail = ({ data }) => {
               <Text>Распределение по кошелькам</Text>
             </Space>
 
-            <SegmentedProgress segments={walletSegments} totalAmount={totalWalletCost} />
+            <SegmentedProgress segments={walletSegments} totalAmount={totalWalletCost} symbol={data.symbol} />
           </Space>
         </Card>
       </Col>

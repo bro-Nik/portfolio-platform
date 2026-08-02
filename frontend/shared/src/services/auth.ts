@@ -2,11 +2,7 @@ import { getToken, getRefreshToken, setTokens, decodeToken, isTokenExpired, clea
 import { apiService } from './api.js';
 import { createApi } from '../factories/api.js';
 
-declare const process: {
-  env: {
-    REACT_APP_AUTH_SERVICE_URL?: string;
-  };
-};
+const AUTH_SERVICE_URL = import.meta.env.VITE_AUTH_SERVICE_URL;
 
 export const authService = () => {
   const computeLogin = (email: string): string => email.split('@')[0] ?? '';
@@ -31,7 +27,7 @@ export const authService = () => {
 
   const getValidToken = async (): Promise<string | undefined> => {
     let token = getToken();
-    let decodedToken = decodeToken(token);
+    const decodedToken = decodeToken(token);
     if (!decodedToken) return;
 
     if (!isTokenExpired(decodedToken)) return token ?? undefined;
@@ -47,8 +43,8 @@ export const authService = () => {
     }
   };
 
-  const api = apiService(process.env.REACT_APP_AUTH_SERVICE_URL);
-  const authApi = createApi(process.env.REACT_APP_AUTH_SERVICE_URL, { useAuth: true });
+  const api = apiService(AUTH_SERVICE_URL);
+  const authApi = createApi(AUTH_SERVICE_URL, { useAuth: true });
 
   const getCurrentUser = async (): Promise<{ id: string; login: string; role: string } | undefined> => {
     const token = await getValidToken();

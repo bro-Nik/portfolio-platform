@@ -14,7 +14,7 @@ const DEFAULT_VALUES: Partial<ProviderFormData> = {
 
 export const ProviderFormModal: React.FC = () => {
   const { modalProps, closeModal } = useModalStore();
-  const { provider }: ProviderFormModalProps = modalProps;
+  const { provider } = modalProps as ProviderFormModalProps;
   const { createProvider, updateProvider, isCreating, isUpdating } = useProviderActions();
 
   const [form] = Form.useForm();

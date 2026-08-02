@@ -1,6 +1,6 @@
 import { Space, Tag, Tooltip, Dropdown, Button, Progress } from 'antd';
 import Table from 'src/components/Table';
-import { ApiOutlined, EditOutlined, DeleteOutlined, MoreOutlined, ReloadOutlined, EyeOutlined, SettingOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { ApiOutlined, DeleteOutlined, MoreOutlined, ReloadOutlined, EyeOutlined, SettingOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { getStatusTag, getUtilizationColor } from '../utils';
@@ -74,8 +74,8 @@ export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) =
       key: 'usage',
       width: 260,
       render: (_: unknown, record: Provider) => {
-        const dayPercent = record.requestsPerDay ? Math.min((record.dayCounter / record.requestsPerDay) * 100, 100) : 0;
-        const monthPercent = record.requestsPerMonth ? Math.min((record.monthCounter / record.requestsPerMonth) * 100, 100) : 0;
+        const dayPercent = record.requestsPerDay ? Math.min(((record.dayCounter ?? 0) / record.requestsPerDay) * 100, 100) : 0;
+        const monthPercent = record.requestsPerMonth ? Math.min(((record.monthCounter ?? 0) / record.requestsPerMonth) * 100, 100) : 0;
 
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

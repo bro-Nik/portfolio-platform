@@ -1,7 +1,7 @@
 import { createApi } from '@portfolio/shared';
 import { Ticker, TickerListResponse, TickerUpdateData } from '../../types/ticker';
 
-const baseUrl = `${process.env.REACT_APP_MARKET_SERVICE_URL}/admin/tickers`;
+const baseUrl = `${import.meta.env.VITE_MARKET_SERVICE_URL}/admin/tickers`;
 const api = createApi(baseUrl, { useAuth: true });
 
 export const tickersApi = {

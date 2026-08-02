@@ -1,7 +1,7 @@
 import { createApi } from '@portfolio/shared';
 import { CreateProviderData, Provider, ProviderLog, ProviderPreset, ProviderStats, ProviderWithMethods, UpdateProviderData } from '../../../types/provider';
 
-const baseUrl = `${process.env.REACT_APP_MARKET_SERVICE_URL}/admin/providers`;
+const baseUrl = `${import.meta.env.VITE_MARKET_SERVICE_URL}/admin/providers`;
 const api = createApi(baseUrl, { useAuth: true });
 
 export const providersApi = {

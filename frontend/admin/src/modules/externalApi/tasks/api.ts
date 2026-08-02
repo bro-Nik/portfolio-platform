@@ -1,7 +1,7 @@
 import { createApi } from '@portfolio/shared';
 import { CreateTaskData, Task, UpdateTaskData } from '../../../types/task';
 
-const baseUrl = `${process.env.REACT_APP_MARKET_SERVICE_URL}/admin/tasks`;
+const baseUrl = `${import.meta.env.VITE_MARKET_SERVICE_URL}/admin/tasks`;
 const api = createApi(baseUrl, { useAuth: true });
 
 export const tasksApi = {

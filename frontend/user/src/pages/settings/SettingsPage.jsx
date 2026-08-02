@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Card, Tag, Space, Modal, Typography, Avatar, Spin, App } from 'antd';
-import { AlertTriangle, Monitor, Smartphone, Tablet, Globe, Trash2, LogOut, KeyRound, Mail, ShieldCheck, Smartphone as DeviceIcon } from 'lucide-react';
+import { Button, Card, Tag, Typography, Avatar, Spin, App } from 'antd';
+import { AlertTriangle, Monitor, Smartphone, Tablet, Trash2, LogOut, KeyRound, Mail, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
 import { useNavigation } from 'src/hooks/useNavigation';

@@ -1,11 +1,14 @@
 import { Modal, Divider, Card, Descriptions, Tag } from 'antd';
 import { ApiOutlined } from '@ant-design/icons';
 import { getTaskTypeTag, getStatusBadge } from '../utils';
-import { useModalStore } from '@portfolio/shared';
+import { useModalProps, useModalStore } from '@portfolio/shared';
+import { Task } from '../../../../types/task';
+
+interface TaskDetailsModalProps { task: Task }
 
 export const TaskDetailsModal: React.FC = () => {
-  const { modalProps, closeModal } = useModalStore();
-  const { task } = modalProps;
+  const { closeModal } = useModalStore();
+  const { task } = useModalProps<TaskDetailsModalProps>();
 
   if (!task) return null;
 

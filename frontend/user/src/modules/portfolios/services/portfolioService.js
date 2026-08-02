@@ -1,9 +1,9 @@
 export const portfolioService = {
-  validateEdit(portfolio) {
+  validateEdit() {
     return { isValid: true };
   },
 
-  validateDelete(portfolio) {
+  validateDelete() {
     // ToDo Дополнительные проверки:
     // - есть ли право у пользователя
 

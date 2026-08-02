@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Button, Space } from 'antd';
+import { Modal, Form, Input, Space } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { useWalletOperations } from '../../hooks/useWalletOperations';
 import ShowMore from 'src/components/ui/ShowMore';

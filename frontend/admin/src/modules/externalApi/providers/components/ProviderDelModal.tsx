@@ -1,13 +1,13 @@
 import { Modal } from 'antd';
-import { useModalStore } from '@portfolio/shared';
+import { useModalProps, useModalStore } from '@portfolio/shared';
 import { useProviderActions } from '../hooks/useProviderActions';
 import { Provider } from '../../../../types/provider';
 
 interface ProviderDelModalProps { provider: Provider }
 
 export const ProviderDelModal: React.FC = () => {
-  const { modalProps, closeModal } = useModalStore();
-  const { provider }: ProviderDelModalProps = modalProps;
+  const { closeModal } = useModalStore();
+  const { provider } = useModalProps<ProviderDelModalProps>();
   const { deleteProvider, isDeleting } = useProviderActions();
 
   if (!provider) return null;

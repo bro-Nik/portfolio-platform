@@ -28,7 +28,7 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
 
   const {
     transactionPortfolio,
-    wallets, handleWalletChange, transactionWallet,
+    handleWalletChange, transactionWallet,
     handleQuoteTickerChange, baseTicker, quoteTicker,
     isCounterTransaction,
     getPortfolios,

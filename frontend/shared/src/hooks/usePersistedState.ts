@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuthStore } from '../stores/authStore.js';
 
 const readValue = <T>(key: string, defaultValue: T): T => {
@@ -21,9 +21,11 @@ export const usePersistedState = <T>(
     scopedKey ? readValue(scopedKey, defaultValue) : defaultValue,
   );
 
-  useEffect(() => {
-    if (scopedKey) setState(readValue(scopedKey, defaultValue));
-  }, [scopedKey]);
+  const [prevScopedKey, setPrevScopedKey] = useState(scopedKey);
+  if (prevScopedKey !== scopedKey) {
+    setPrevScopedKey(scopedKey);
+    setState(scopedKey ? readValue(scopedKey, defaultValue) : defaultValue);
+  }
 
   const setPersistedState = useCallback(
     (value: T | ((prev: T) => T)) => {

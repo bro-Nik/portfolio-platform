@@ -14,7 +14,7 @@ import PortfolioDeleteModal from './modals/PortfolioDelete';
 import TagManagerSelect from 'src/modules/tags/components/TagManagerSelect';
 import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
 
-const PortfolioActionsDropdown = ({ portfolio, onUpdate }) => {
+const PortfolioActionsDropdown = ({ portfolio }) => {
   const { openModal } = useModalStore();
   const { archivePortfolio, unarchivePortfolio } = usePortfolioMutations();
 

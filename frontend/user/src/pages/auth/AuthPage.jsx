@@ -14,7 +14,9 @@ const AuthPage = ({ type }) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
-  const [verifyStatus, setVerifyStatus] = React.useState(null);
+  const [verifyStatus, setVerifyStatus] = React.useState(() =>
+    searchParams.get('token') ? 'loading' : null,
+  );
 
   const { getCurrentUser } = authService();
   const { isAuthenticated, loading: authLoading, login: authLogin } = useAuthStore();
@@ -25,7 +27,6 @@ const AuthPage = ({ type }) => {
     const token = searchParams.get('token');
     if (!token) return;
 
-    setVerifyStatus('loading');
     verifyEmail.mutateAsync(token).then((result) => {
       setVerifyStatus(result.success ? 'success' : 'error');
       if (result.success) {

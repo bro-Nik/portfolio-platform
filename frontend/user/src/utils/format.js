@@ -37,7 +37,7 @@ export const formatCurrency = (number, currency = 'USD', locale = 'ru-RU', dontR
       : getCachedFormatter(locale, currency, null);
     return formatter.format(number);
 
-  } catch (error) {
+  } catch {
     const formatter = getCachedNumberFormatter(locale, formatOptions);
     return `${formatter.format(number)} ${currency.toUpperCase()}`;
   }

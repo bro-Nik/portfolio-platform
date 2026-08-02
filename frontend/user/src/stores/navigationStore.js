@@ -25,7 +25,7 @@ const store = (set, get) => ({
       const section = getMainSectionByItemType(itemType);
 
       // Проверяем, не открыт ли уже
-      if (!!get().actions.getItem(section, item.id, itemType, parentId)) {
+      if (get().actions.getItem(section, item.id, itemType, parentId)) {
         get().actions.toggleMinimizeItem(item.id, itemType, parentId);
         return;
       }
@@ -139,7 +139,7 @@ const store = (set, get) => ({
     },
 
     // Закрываем родительский элемент
-    closeParentItem: (section, itemId, itemType) => {
+    closeParentItem: (section, itemId) => {
       set(state => {
         const sectionItems = [...state.openedItems[section]];
 
@@ -176,7 +176,7 @@ const store = (set, get) => ({
       });
     },
 
-    toggleMinimizeParentItem: (section, itemId, itemType) => {
+    toggleMinimizeParentItem: (section, itemId) => {
       set(state => {
         const sectionItems = [...state.openedItems[section]];
         

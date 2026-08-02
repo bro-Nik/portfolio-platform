@@ -11,10 +11,19 @@ function App() {
     initializeAuth();
   }, [initializeAuth]);
 
+  // Редирект по ролям
+  useEffect(() => {
+    if (loading) return;
+    if (!isAuthenticated) {
+      window.location.href = '/login';
+    } else if (!isAdmin()) {
+      window.location.href = '/portfolios';
+    }
+  }, [loading, isAuthenticated, isAdmin]);
+
   if (loading) return '';
 
-  if (!isAuthenticated) window.location.href = '/login';
-  if (!isAdmin()) window.location.href = '/portfolios';
+  if (!isAuthenticated || !isAdmin()) return null;
 
   return <AntApp style={{ height: '100%', display: 'contents' }}><AdminPage /></AntApp>;
 }

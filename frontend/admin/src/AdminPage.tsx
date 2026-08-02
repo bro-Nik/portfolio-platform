@@ -68,16 +68,21 @@ const AdminPage = () => {
   const currentModuleLabel = sidebarMenu.find(item => item.key === selectedMenu)?.label || '';
 
   const renderContent = () => {
+    let content;
     switch (selectedMenu) {
       case 'api-services':
-        return <ExternalApiModule />;
+        content = <ExternalApiModule />;
+        break;
       case 'tickers':
-        return <TickersModule />;
+        content = <TickersModule />;
+        break;
       case 'users':
-        return <UsersModule />;
+        content = <UsersModule />;
+        break;
       default:
-        return <ExternalApiModule />;
+        content = <ExternalApiModule />;
     }
+    return <>{content}</>;
   };
 
   return (

@@ -12,7 +12,6 @@ import { formatCurrency, formatProfit, formatPercentage, getColorClass } from 's
 
 const DEFAULT_VALUE = '-';
 const mutedStyle = { color: 'var(--text-muted)' };
-const smallTextStyle = { fontSize: '12px' };
 
 const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const { openItem } = useNavigation();

@@ -1,12 +1,9 @@
 import React from 'react';
-import { Button, Space } from 'antd';
-import { useModalStore } from '@portfolio/shared';
+import { Space } from 'antd';
 import CloseMinimizeBtns from 'src/components/ui/CloseMinimizeBtns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
 
 const WalletHeader = ({ wallet, onRefresh }) => {
-  const { openModal } = useModalStore();
-
   return (
     <div className="portfolio-header" style={{ marginBottom: 24 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>

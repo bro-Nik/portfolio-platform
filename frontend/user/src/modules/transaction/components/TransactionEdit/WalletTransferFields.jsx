@@ -26,7 +26,7 @@ const WalletTransferFields = ({
       hidden={isCounterTransaction}
       options={wallets}
       fieldNames={{label: 'name', value: 'id'}}
-      optionRender={(o, { index }) => (<>
+      optionRender={(o) => (<>
         {o.data.name}
         <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span>
       </>)}

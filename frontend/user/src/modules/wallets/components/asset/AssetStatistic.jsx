@@ -2,7 +2,7 @@ import React from 'react';
 import { formatCurrency } from 'src/utils/format';
 import StatisticCards from 'src/features/statistics/StatisticCards';
 
-const AssetStatistic = ({ portfolio, asset }) => {
+const AssetStatistic = ({ asset }) => {
 
   const statCards = [
     {

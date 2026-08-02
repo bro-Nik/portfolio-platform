@@ -1,4 +1,3 @@
-import { useModalStore } from '@portfolio/shared';
 import { Tooltip } from 'antd';
 import {
   Inbox,
@@ -13,8 +12,7 @@ import TagManagerSelect from 'src/modules/tags/components/TagManagerSelect';
 import { getTradingViewUrl } from 'src/utils/format';
 import { useWalletMutations } from 'src/modules/wallets/hooks/useWalletMutations';
 
-const AssetActionsDropdown = ({ wallet, asset, onUpdate }) => {
-  const { openModal } = useModalStore();
+const AssetActionsDropdown = ({ wallet, asset }) => {
   const { archiveWalletAsset, unarchiveWalletAsset } = useWalletMutations();
 
   const handleArchive = async () => {

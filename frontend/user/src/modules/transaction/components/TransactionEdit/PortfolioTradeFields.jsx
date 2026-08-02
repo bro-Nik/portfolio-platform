@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Button, InputNumber, Space, Segmented } from 'antd';
+import { Form, InputNumber, Space, Segmented } from 'antd';
 import { useTransactionCalculations } from './hooks/useTransactionCalculations';
 import FormCheckbox from 'src/features/forms/FormCheckbox';
 import FormSelect from 'src/features/forms/FormSelect';
@@ -45,7 +45,7 @@ const PortfolioTradeFields = ({
       onChange={handleWalletChange}
       fieldNames={{label: 'name', value: 'id'}}
       options={isSell ? walletsToSell : walletsToBuy}
-      optionRender={(o, { index }) => (<>
+      optionRender={(o) => (<>
         {o.data.name}
         {o.data.free !== undefined ? <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span> : null}
       </>)}
@@ -65,7 +65,7 @@ const PortfolioTradeFields = ({
           disabled={!wallet?.assets?.length}
           fieldNames={{label: 'symbol', value: 'tickerId'}}
           options={wallet?.assets}
-          optionRender={(o, { index }) => (<>
+          optionRender={(o) => (<>
             {o.data.symbol}
             {o.data.free !== undefined ? <span className='option-subtext'>({o.data.free} {o.data.symbol})</span> : null}
           </>)}

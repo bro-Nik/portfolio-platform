@@ -1,9 +1,9 @@
 export const transactionService = {
-  validateEdit(transaction) {
+  validateEdit() {
     return { isValid: true };
   },
 
-  validateDelete(transaction) {
+  validateDelete() {
     // ToDo Дополнительные проверки:
     // - есть ли право у пользователя
 

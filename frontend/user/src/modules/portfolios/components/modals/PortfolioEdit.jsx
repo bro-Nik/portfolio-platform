@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, Space } from 'antd';
+import { Modal, Form, Input, Space } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
 import FormComment from 'src/features/forms/FormComment';

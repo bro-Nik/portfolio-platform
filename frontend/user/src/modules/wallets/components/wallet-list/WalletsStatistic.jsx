@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatCurrency, formatPercentage } from 'src/utils/format';
+import { formatCurrency } from 'src/utils/format';
 import StatisticCards from 'src/features/statistics/StatisticCards';
 
 export const WalletsStatistic = ({ stats }) => {

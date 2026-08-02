@@ -54,7 +54,7 @@ const AssetAddModal = () => {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const getAssetImage = (ticker) => {
-    return process.env.REACT_APP_IMAGE_BASE_URL + ticker.market + '/24/' + ticker.image;
+    return import.meta.env.VITE_IMAGE_BASE_URL + ticker.market + '/24/' + ticker.image;
   };
 
   const handleSelect = async (ticker) => {

@@ -1,4 +1,4 @@
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
@@ -50,7 +50,7 @@ export interface ProviderLog {
   responseTime?: number;
   wasSuccessful: boolean;
   errorMessage?: string;
-  requestParams: Record<string, any>;
+  requestParams: Record<string, unknown>;
   taskId: number;
   createdAt: string;
 }
@@ -71,13 +71,13 @@ export interface ParameterSchemaField {
   type: 'string' | 'number' | 'select' | 'boolean';
   options?: Record<string, string>;
   required?: boolean;
-  default?: any;
+  default?: unknown;
 }
 
 export interface ProviderMethod {
   method: string;
   name: string;
-  exampleParams?: Record<string, any>;
+  exampleParams?: Record<string, unknown>;
   parametersSchema?: ParameterSchemaField[];
 }
 

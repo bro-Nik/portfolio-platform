@@ -2,7 +2,9 @@ packages:
   - 'shared'
   - 'user'
   - 'admin'
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - 'core-js'
-  - 'core-js-pure'
+allowBuilds:
+  '@parcel/watcher': true
+  core-js: true
+  core-js-pure: true
+autoInstallPeers: true
+strictPeerDependencies: false

@@ -7,8 +7,6 @@ export const useTickerActions = () => {
   const queryClient = useQueryClient();
   const { error, success } = useNotifications();
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['tickers'] });
-
   const snapshotTickers = () =>
     queryClient.getQueriesData<TickerListResponse>({ queryKey: ['tickers'] });
 
@@ -42,14 +40,6 @@ export const useTickerActions = () => {
       });
     });
   };
-
-  const simpleMutation = (successMsg: string, errorMsg: string) => ({
-    onSuccess: () => {
-      success(successMsg);
-      invalidate();
-    },
-    onError: (err: Error) => error(err?.message || errorMsg),
-  });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: TickerUpdateData }) => tickersApi.update(id, data),

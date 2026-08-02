@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Button, Card, Row, Col, Tag, Space, Avatar, Divider, Tabs, Descriptions, Timeline, Statistic } from 'antd';
 import {
   CheckCircleOutlined,
@@ -12,7 +12,7 @@ import {
 import dayjs from 'dayjs';
 import { getUserRoleTag, getUserAvatar, getUserStatusTag } from '../utils';
 import { formatRelativeTime, formatTimeSum } from '../../../utils/date';
-import { useModalStore } from '@portfolio/shared';
+import { useModalProps, useModalStore } from '@portfolio/shared';
 import { useUserActions } from '../hooks/useUserActions';
 import { useUserModals } from '../hooks/useUserModals';
 import { User } from '../../../types/user';
@@ -20,16 +20,17 @@ import { User } from '../../../types/user';
 interface UserDetailsModalProps { user: User }
 
 export const UserDetailsModal: React.FC = () => {
-  const { modalProps, closeModal } = useModalStore();
-  const { user }: UserDetailsModalProps = modalProps;
+  const { closeModal } = useModalStore();
+  const { user } = useModalProps<UserDetailsModalProps>();
   const { updateUserStatus, logoutAllDevices } = useUserActions();
   const { userFormModal, userDeleteConfirmModal } = useUserModals();
 
-  if (!user) return null;
+  const [userTotalActivity] = useState(() => {
+    if (!user || !user.totalActiveTime || !user.createdAt) return '0';
+    return ((user.totalActiveTime / ((Date.now() - new Date(user.createdAt).getTime()) / 1000)) * 100).toFixed(2);
+  });
 
-  const userTotalActivity = user.totalActiveTime && user.createdAt
-    ? ((user.totalActiveTime / ((Date.now() - new Date(user.createdAt).getTime()) / 1000)) * 100).toFixed(2)
-    : '0';
+  if (!user) return null;
 
   return (
     <Modal

@@ -12,8 +12,9 @@ import {
 } from '@ant-design/icons';
 import { getStatusTag } from '../utils';
 import { providersApi } from '../api';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useModalStore } from '@portfolio/shared';
+import { useModalProps, useModalStore } from '@portfolio/shared';
 import { LoadingSpinner } from '../../../../components/LoadingSpinner';
 import { Provider } from '../../../../types/provider';
 import { useProviderActions } from '../hooks/useProviderActions';
@@ -24,8 +25,8 @@ interface ProviderStatsTabProps { providerName: string }
 interface ProviderLogsTabProps { providerName: string }
 
 export const ProviderDetailsModal: React.FC = () => {
-  const { modalProps, closeModal } = useModalStore();
-  const { provider }: ProviderDetailsModalProps = modalProps;
+  const { closeModal } = useModalStore();
+  const { provider } = useModalProps<ProviderDetailsModalProps>();
 
   if (!provider) return null;
 
@@ -79,7 +80,7 @@ const ProviderInfoTab: React.FC<ProviderInfoTabProps> = ({ provider }) => {
       </Descriptions.Item>
 
       <Descriptions.Item label="Статус">
-        {getStatusTag(provider.isActive)}
+        {getStatusTag(provider.isActive ?? false)}
       </Descriptions.Item>
     </Descriptions>
   );
@@ -143,9 +144,10 @@ const ProviderStatsTab: React.FC<ProviderStatsTabProps> = ({ providerName }) => 
                 percent={Math.round(p)}
                 status={p > 80 ? 'exception' : 'normal'}
                 format={() => {
-                  const counter = stats[`${key}Counter`];
-                  const limit = stats[`${key}Limit`];
-                  return `${counter}/${limit}`;
+                  const statsRecord = stats as unknown as Record<string, number | undefined>;
+                  const counter = statsRecord[`${key}Counter`];
+                  const limit = statsRecord[`${key}Limit`];
+                  return `${counter ?? '-'}/${limit ?? '-'}`;
                 }}
               />
             </div>
@@ -178,7 +180,7 @@ const ProviderStatsTab: React.FC<ProviderStatsTabProps> = ({ providerName }) => 
 
 
 const ProviderLogsTab: React.FC<ProviderLogsTabProps> = ({ providerName }) => {
-  const [hours, setHours] = useState(24);
+  const [hours] = useState(24);
   const { data: logs, isLoading, error } = useQuery({
     queryKey: ['providerLogs', providerName, hours],
     queryFn: () => providersApi.getProviderLogs(providerName),

@@ -1,7 +1,7 @@
-import React, { memo, Suspense, useMemo } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import Sidebar from './components/Sidebar';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { useAuthStore, useModalStore } from '@portfolio/shared';
+import { useModalStore } from '@portfolio/shared';
 import './styles/App.css';
 import PortfoliosPage from 'src/modules/portfolios/components/portfolio-list/PortfoliosPage'
 import PortfolioPage from 'src/modules/portfolios/components/portfolio/PortfolioPage';

@@ -1,9 +1,9 @@
 export const walletService = {
-  validateEdit(wallet) {
+  validateEdit() {
     return { isValid: true };
   },
 
-  validateDelete(wallet) {
+  validateDelete() {
     return { isValid: true };
   },
   

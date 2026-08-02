@@ -4,7 +4,7 @@ export interface Task {
   providerName: string;
   taskType: string;
   schedule: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   isActive: boolean;
   lastRun?: string;
   nextRun?: string;
@@ -17,7 +17,7 @@ export interface TaskFormData {
   taskType: string;
   schedule: string;
   isActive: boolean;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
 }
 
 export type CreateTaskData = TaskFormData;

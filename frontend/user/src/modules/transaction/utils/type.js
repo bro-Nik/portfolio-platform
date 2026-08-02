@@ -18,7 +18,7 @@ export const getAdjustedTransactionType = (transaction, isCounterTransaction) =>
 };
 
 export const getTransactionTypeLabel = (transaction, isCounterTransaction) => {
-  let label = '';
+  let label;
   if (isTradeTransaction(transaction.type)) {
     label = TYPE_NAME_MAP[transaction.type];
   } else if (isTransferTransaction(transaction.type)) {

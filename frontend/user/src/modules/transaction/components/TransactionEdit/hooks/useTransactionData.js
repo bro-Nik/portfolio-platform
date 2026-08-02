@@ -5,7 +5,7 @@ import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import { isCounterTransactionFn } from 'src/modules/transaction/utils/type';
 
-export const useTransactionData = ({ tickerId, walletId, portfolioId, transaction, transactionType, form }) => {
+export const useTransactionData = ({ tickerId, walletId, portfolioId, transaction, form }) => {
   const { data: overviewData } = useOverviewQuery();
   const portfolios = overviewData?.portfolios || [];
   const wallets = overviewData?.wallets || [];

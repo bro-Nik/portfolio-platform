@@ -9,7 +9,7 @@ interface UserFormModalProps { user?: User }
 
 export const UserFormModal: React.FC = () => {
   const { modalProps, closeModal } = useModalStore();
-  const { user }: UserFormModalProps = modalProps;
+  const { user } = modalProps as UserFormModalProps;
   const { createUser, updateUser, isCreating, isUpdating } = useUserActions();
 
   const [form] = Form.useForm();

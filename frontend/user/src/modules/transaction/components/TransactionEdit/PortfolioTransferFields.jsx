@@ -26,7 +26,7 @@ const PortfolioTransferFields = ({
       hidden={isCounterTransaction}
       fieldNames={{label: 'name', value: 'id'}}
       options={portfolios}
-      optionRender={(o, { index }) => (<>
+      optionRender={(o) => (<>
         {o.data.name}
         <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span>
       </>)}

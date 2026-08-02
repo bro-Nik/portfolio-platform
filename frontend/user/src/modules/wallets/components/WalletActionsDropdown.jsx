@@ -14,7 +14,7 @@ import WalletDeleteModal from './modals/WalletDelete';
 import TagManagerSelect from 'src/modules/tags/components/TagManagerSelect';
 import { useWalletMutations } from 'src/modules/wallets/hooks/useWalletMutations';
 
-const WalletActionsDropdown = ({ wallet, onUpdate }) => {
+const WalletActionsDropdown = ({ wallet }) => {
   const { openModal } = useModalStore();
   const { archiveWallet, unarchiveWallet } = useWalletMutations();
 

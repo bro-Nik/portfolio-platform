@@ -15,7 +15,7 @@ import { getTradingViewUrl } from 'src/utils/format';
 import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
 
 
-const AssetActionsDropdown = ({ portfolio, asset, onUpdate }) => {
+const AssetActionsDropdown = ({ portfolio, asset }) => {
   const { openModal } = useModalStore();
   const { archiveAsset, unarchiveAsset } = usePortfolioMutations();
   const entityType = portfolio ? 'portfolio_asset' : 'wallet_asset';

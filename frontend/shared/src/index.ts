@@ -15,7 +15,7 @@ export { apiService } from './services/api.js';
 export type { ApiService } from './services/api.js';
 
 export { useAuthStore } from './stores/authStore.js';
-export { useModalStore } from './stores/modalStore.js';
+export { useModalStore, useModalProps } from './stores/modalStore.js';
 export { useThemeStore } from './stores/themeStore.js';
 
 export { createApi } from './factories/api.js';
