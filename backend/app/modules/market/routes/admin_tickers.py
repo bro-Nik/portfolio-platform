@@ -11,11 +11,11 @@ admin_tickers_router = AppRouter(prefix='/tickers', tags=['Admin | Tickers'])
 async def list_tickers(
     service: TickerServiceDep,
     search: str | None = None,
-    market: str | None = None,
+    markets: list[str] | None = None,
     page: int = 1,
     page_size: int = 20,
 ) -> TickerListResponse:
-    return await service.get_all_admin(search=search, market=market, page=page, page_size=page_size)
+    return await service.get_all_admin(search=search, markets=markets, page=page, page_size=page_size)
 
 
 @admin_tickers_router.get('/{ticker_id}')

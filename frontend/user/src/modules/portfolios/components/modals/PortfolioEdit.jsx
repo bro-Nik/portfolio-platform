@@ -53,7 +53,7 @@ const PortfolioEditModal = () => {
   const markets = [
     {value: 'crypto', label: 'Крипто'},
     {value: 'stocks', label: 'Акции'},
-    {value: 'currency', label: 'Валюта', disabled: true},
+    {value: 'currency', label: 'Валюта'},
   ];
 
   return (

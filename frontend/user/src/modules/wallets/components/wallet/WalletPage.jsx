@@ -6,7 +6,6 @@ import WalletTable from './WalletTable';
 import { Coins } from 'lucide-react';
 
 const WalletPage = memo(({ wallet, onRefresh }) => {
-
   if (!wallet.assets?.length) {
     return (
       <>

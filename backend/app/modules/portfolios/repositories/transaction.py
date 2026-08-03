@@ -14,6 +14,8 @@ class TransactionRepository(BaseRepository[Transaction]):
     async def get_all_by_ticker_and_portfolio(self, ticker_id: int, portfolio_id: int) -> list[Transaction]:
         condition = or_(
             and_(Transaction.ticker_id == ticker_id, Transaction.portfolio_id == portfolio_id),
+            and_(Transaction.ticker2_id == ticker_id, Transaction.portfolio_id == portfolio_id),
+            and_(Transaction.ticker_id == ticker_id, Transaction.portfolio2_id == portfolio_id),
             and_(Transaction.ticker2_id == ticker_id, Transaction.portfolio2_id == portfolio_id),
         )
         return await self.get_all(condition, order=[Transaction.date.desc()])
@@ -21,6 +23,8 @@ class TransactionRepository(BaseRepository[Transaction]):
     async def get_all_by_ticker_and_wallet(self, ticker_id: int, wallet_id: int) -> list[Transaction]:
         condition = or_(
             and_(Transaction.ticker_id == ticker_id, Transaction.wallet_id == wallet_id),
+            and_(Transaction.ticker2_id == ticker_id, Transaction.wallet_id == wallet_id),
+            and_(Transaction.ticker_id == ticker_id, Transaction.wallet2_id == wallet_id),
             and_(Transaction.ticker2_id == ticker_id, Transaction.wallet2_id == wallet_id),
         )
         return await self.get_all(condition, order=[Transaction.date.desc()])

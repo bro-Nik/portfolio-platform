@@ -74,10 +74,11 @@ export const createAveragePriceColumn = (hideCondition) => ({
   title: 'Средняя цена',
   render: (value, record) => {
     if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
+    if (value == null) return DEFAULT_VALUE;
     return formatCurrency(value);
   },
   width: 200,
-  sorter: (a, b) => a.averagePrice - b.averagePrice,
+  sorter: (a, b) => (a.averagePrice ?? 0) - (b.averagePrice ?? 0),
 });
 
 export const createQuantityColumn = (getTicker, hideCondition) => ({
@@ -108,6 +109,7 @@ export const createProfitColumn = (hideCondition) => ({
   title: 'Прибыль',
   render: (value, record) => {
     if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
+    if (value == null) return DEFAULT_VALUE;
     return (
       <span className={getColorClass(value)}>
         {formatProfit(value, record.invested, record.totalInvested)}
@@ -115,7 +117,7 @@ export const createProfitColumn = (hideCondition) => ({
     );
   },
   width: 120,
-  sorter: (a, b) => a.profit - b.profit,
+  sorter: (a, b) => (a.profit ?? 0) - (b.profit ?? 0),
 });
 
 export const createInvestedColumn = (hideCondition) => ({

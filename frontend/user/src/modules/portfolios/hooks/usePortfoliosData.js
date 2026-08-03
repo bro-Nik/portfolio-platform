@@ -51,21 +51,22 @@ export const usePortfoliosData = (showArchived = false) => {
         const price = prices[asset.tickerId] || 0;
         const assetCostNow = assetQuantity * price;
         const assetInvested = Math.max(0, assetAmount);
-        const assetAveragePrice = assetQuantity > 0 ? assetInvested / assetQuantity : 0;
-        const assetProfit = assetCostNow - assetInvested + assetRealizedProfit;
+        const hasBasis = assetInvested > 0 || assetRealizedProfit !== 0;
+        const assetAveragePrice = hasBasis && assetQuantity > 0 ? assetInvested / assetQuantity : null;
+        const assetProfit = hasBasis ? assetCostNow - assetInvested + assetRealizedProfit : null;
 
         costNow += assetCostNow;
-        invested += Math.max(0, assetAmount);
+        invested += assetInvested;
         buyOrders += assetBuyOrders;
-        profit += assetProfit;
+        profit += assetProfit ?? 0;
         capitalDeployed += assetTotalInvested;
 
         return {
           ...asset,
           costNow: assetCostNow,
           averagePrice: assetAveragePrice,
-          invested: Math.max(0, assetAmount),
-          totalInvested: assetTotalInvested || Math.max(0, assetAmount),
+          invested: assetInvested,
+          totalInvested: assetTotalInvested || assetInvested,
           realizedProfit: assetRealizedProfit,
           profit: assetProfit,
           price

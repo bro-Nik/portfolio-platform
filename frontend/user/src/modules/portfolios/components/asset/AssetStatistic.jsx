@@ -11,7 +11,7 @@ const AssetStatistic = ({ asset }) => {
     },
     {
       title: 'Средняя цена',
-      value: formatCurrency(asset.averagePrice || 0),
+      value: asset.averagePrice == null ? '-' : formatCurrency(asset.averagePrice || 0),
     },
     {
       title: 'Стоимость',
@@ -19,7 +19,7 @@ const AssetStatistic = ({ asset }) => {
     },
     {
       title: 'Вложено',
-      value: formatCurrency(asset.invested || 0),
+      value: asset.invested ? formatCurrency(asset.invested || 0) : '-',
     },
     {
       title: 'В ордерах на покупку',
@@ -31,7 +31,7 @@ const AssetStatistic = ({ asset }) => {
     },
     {
       title: 'Прибыль',
-      value: formatProfit(asset.profit || 0, asset.invested || 0, asset.totalInvested),
+      value: asset.profit == null ? '-' : formatProfit(asset.profit || 0, asset.invested || 0, asset.totalInvested),
       class: getColorClass(asset.profit),
     }
   ];

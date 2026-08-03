@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from fastapi import status
@@ -116,6 +116,131 @@ class TestTransactionsAPI:
 
         if len(assets) > 0:
             assert Decimal(assets[0]['quantity']) == Decimal('-1.5')
+
+    @pytest.mark.usefixtures('tickers')
+    async def test_output_reduces_cost_basis_proportionally(self, client, auth_headers, portfolio, wallet):
+        buy = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 1,
+            'ticker2_id': 2,
+            'quantity': '2.0',
+            'quantity2': '40000.0',
+            'price': '20000.0',
+            'price_usd': '20000.0',
+            'type': 'Buy',
+            'portfolio_id': portfolio.id,
+            'wallet_id': wallet.id,
+        }
+        response = await client.post('/api/transactions/', json=buy, headers=auth_headers)
+        assert response.status_code == status.HTTP_201_CREATED
+
+        output = {
+            'date': (datetime.now(UTC) + timedelta(minutes=1)).isoformat(),
+            'ticker_id': 1,
+            'quantity': '1.0',
+            'type': 'Output',
+            'portfolio_id': portfolio.id,
+            'wallet_id': wallet.id,
+        }
+        response = await client.post('/api/transactions/', json=output, headers=auth_headers)
+        assert response.status_code == status.HTTP_201_CREATED
+
+        sell = {
+            'date': (datetime.now(UTC) + timedelta(minutes=2)).isoformat(),
+            'ticker_id': 1,
+            'ticker2_id': 2,
+            'quantity': '1.0',
+            'quantity2': '25000.0',
+            'price': '25000.0',
+            'price_usd': '25000.0',
+            'type': 'Sell',
+            'portfolio_id': portfolio.id,
+            'wallet_id': wallet.id,
+        }
+        response = await client.post('/api/transactions/', json=sell, headers=auth_headers)
+        assert response.status_code == status.HTTP_201_CREATED
+
+        data_portfolio = (await client.get(f'/api/portfolios/{portfolio.id}', headers=auth_headers)).json()
+        btc = next(a for a in data_portfolio['assets'] if a['ticker_id'] == 1)
+        assert Decimal(btc['quantity']) == Decimal('0')
+        assert Decimal(btc['amount']) == Decimal('0')
+        assert Decimal(btc['realized_profit']) == Decimal('5000.0')
+
+    @pytest.mark.usefixtures('tickers')
+    async def test_trade_transactions_visible_on_quote_portfolio_asset(self, client, auth_headers, portfolio, wallet):
+        transaction_data = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 1,
+            'ticker2_id': 2,
+            'quantity': '0.1',
+            'quantity2': '6000.0',
+            'price': '60000.0',
+            'price_usd': '59500.0',
+            'type': 'Buy',
+            'portfolio_id': portfolio.id,
+            'wallet_id': wallet.id,
+        }
+        response = await client.post('/api/transactions/', json=transaction_data, headers=auth_headers)
+        assert response.status_code == status.HTTP_201_CREATED
+
+        data_portfolio = (await client.get(f'/api/portfolios/{portfolio.id}', headers=auth_headers)).json()
+        usdt = next(a for a in data_portfolio['assets'] if a['ticker_id'] == 2)
+
+        data_asset = (await client.get(f'/api/portfolios/assets/{usdt["id"]}/transactions', headers=auth_headers)).json()
+        assert len(data_asset) == 1
+        assert data_asset[0]['type'] == 'Buy'
+        assert data_asset[0]['ticker_id'] == 1
+
+    @pytest.mark.usefixtures('tickers')
+    async def test_trade_transactions_visible_on_quote_wallet_asset(self, client, auth_headers, portfolio, wallet):
+        transaction_data = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 1,
+            'ticker2_id': 2,
+            'quantity': '0.1',
+            'quantity2': '6000.0',
+            'price': '60000.0',
+            'price_usd': '59500.0',
+            'type': 'Buy',
+            'portfolio_id': portfolio.id,
+            'wallet_id': wallet.id,
+        }
+        response = await client.post('/api/transactions/', json=transaction_data, headers=auth_headers)
+        assert response.status_code == status.HTTP_201_CREATED
+
+        data_wallet = (await client.get(f'/api/wallets/{wallet.id}', headers=auth_headers)).json()
+        usdt = next(a for a in data_wallet['assets'] if a['ticker_id'] == 2)
+
+        data_asset = (await client.get(f'/api/wallets/assets/{usdt["id"]}/transactions', headers=auth_headers)).json()
+        assert len(data_asset) == 1
+        assert data_asset[0]['type'] == 'Buy'
+        assert data_asset[0]['ticker_id'] == 1
+
+    @pytest.mark.usefixtures('tickers')
+    async def test_transfer_visible_on_destination_portfolio_asset(self, client, auth_headers, portfolio):
+        portfolio2 = (await client.post(
+            '/api/portfolios/',
+            json={'name': 'Портфель 2', 'market': 'crypto'},
+            headers=auth_headers,
+        )).json()
+        transfer_data = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 1,
+            'quantity': '1.0',
+            'type': 'TransferOut',
+            'portfolio_id': portfolio.id,
+            'portfolio2_id': portfolio2['id'],
+        }
+        response = await client.post('/api/transactions/', json=transfer_data, headers=auth_headers)
+        assert response.status_code == status.HTTP_201_CREATED
+
+        data_portfolio2 = (await client.get(f'/api/portfolios/{portfolio2["id"]}', headers=auth_headers)).json()
+        btc = next(a for a in data_portfolio2['assets'] if a['ticker_id'] == 1)
+
+        data_asset = (await client.get(f'/api/portfolios/assets/{btc["id"]}/transactions', headers=auth_headers)).json()
+        assert len(data_asset) == 1
+        assert data_asset[0]['type'] == 'TransferOut'
+        assert data_asset[0]['portfolio2_id'] == portfolio2['id']
 
     async def test_create_transaction_invalid_type(self, client, auth_headers, portfolio):
         transaction_data = {

@@ -1,3 +1,8 @@
+export const getTickerImage = (ticker) => {
+  if (!ticker?.image) return null;
+  return import.meta.env.VITE_IMAGE_BASE_URL + ticker.market + '/24/' + ticker.image;
+};
+
 export const sortTransactions = (transactions) => {
   if (!transactions) return [];
   

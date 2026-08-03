@@ -1,10 +1,12 @@
 import React from 'react';
-import { Form, InputNumber, Space, Segmented } from 'antd';
+import { Form, InputNumber, Space, Segmented, Button } from 'antd';
+import { useModalStore } from '@portfolio/shared';
 import { useTransactionCalculations } from './hooks/useTransactionCalculations';
 import FormCheckbox from 'src/features/forms/FormCheckbox';
 import FormSelect from 'src/features/forms/FormSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 import FormSumInput from 'src/features/forms/FormSumInput';
+import WalletFundingModal from 'src/modules/wallets/components/modals/WalletFundingModal';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
 
 const PortfolioTradeFields = ({
@@ -22,8 +24,10 @@ const PortfolioTradeFields = ({
 }) => {
 
   const form = Form.useFormInstance();
+  const { openModal } = useModalStore();
   const { handleQuantityChange, handleAmountChange, handlePriceChange } = useTransactionCalculations(form, calculationType);
   const { isSell } = getTransactionTypeInfo(transactionType);
+  const walletIdValue = Form.useWatch('walletId', form);
 
   const walletsToBuy = getWallets({});
   const walletsToSell = getWallets({ showTickerId: baseTicker?.id });
@@ -50,6 +54,16 @@ const PortfolioTradeFields = ({
         {o.data.free !== undefined ? <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span> : null}
       </>)}
     />
+
+    <Button
+      type="link"
+      size="small"
+      style={{ padding: 0, height: 'auto', marginTop: -8, marginBottom: 8 }}
+      disabled={!walletIdValue}
+      onClick={() => openModal(WalletFundingModal, { walletId: walletIdValue, portfolioId: portfolio?.id })}
+    >
+      Пополнить
+    </Button>
 
     {/* Цена */}
     <Form.Item label="Цена">

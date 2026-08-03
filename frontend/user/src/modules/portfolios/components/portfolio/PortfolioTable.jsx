@@ -31,7 +31,9 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
       const assetRealizedProfit = Number(asset.realizedProfit) || 0;
       const assetTotalInvested = Number(asset.totalInvested) || 0;
       const assetBuyOrders = Number(asset.buyOrders) || 0;
-      const assetAveragePrice = assetQuantity > 0 ? assetAmount / assetQuantity : 0;
+      const hasBasis = assetAmount > 0;
+      const assetAveragePrice = hasBasis && assetQuantity > 0 ? assetAmount / assetQuantity : null;
+      const assetProfit = hasBasis ? (asset.profit ?? asset.costNow - assetAmount + assetRealizedProfit) : null;
       const share = portfolio.costNow > 0 ? (asset.costNow / portfolio.costNow) * 100 : 0;
       const symbol = asset.symbol?.toUpperCase();
 
@@ -44,11 +46,12 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         totalInvested: assetTotalInvested || Math.max(0, assetAmount),
         realizedProfit: assetRealizedProfit,
         buyOrders: assetBuyOrders,
+        profit: assetProfit,
         _quantity: assetQuantity > 0 ? `${assetQuantity}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
-        _avgPrice: formatCurrency(assetAveragePrice),
+        _avgPrice: assetAveragePrice == null ? DEFAULT_VALUE : formatCurrency(assetAveragePrice),
         _cost: formatCurrency(asset.costNow),
-        _invested: formatCurrency(Math.max(0, assetAmount)),
-        _profit: formatProfit(asset.profit ?? asset.costNow - assetAmount + assetRealizedProfit, Math.max(0, assetAmount), assetTotalInvested),
+        _invested: hasBasis ? formatCurrency(Math.max(0, assetAmount)) : DEFAULT_VALUE,
+        _profit: hasBasis ? formatProfit(assetProfit, Math.max(0, assetAmount), assetTotalInvested) : DEFAULT_VALUE,
         _share: formatPercentage(share),
         _buyOrders: formatCurrency(assetBuyOrders || 0),
         _hide: !assetQuantity,

@@ -5,6 +5,7 @@ import TickerAvatar from 'src/components/TickerAvatar';
 import { useModalStore } from '@portfolio/shared';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
 import { useTickersQuery } from 'src/modules/assets/hooks/useTickersQuery';
+import { getTickerImage } from 'src/modules/assets/utils/assetUtils';
 import { useNotifications } from '@portfolio/shared';
 
 const AssetAddModal = () => {
@@ -33,7 +34,7 @@ const AssetAddModal = () => {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useTickersQuery(portfolio.market, debouncedSearch);
+  } = useTickersQuery([portfolio.market, 'currency'], debouncedSearch);
 
   const tickers = useMemo(
     () => data?.pages.flatMap(p => p.data) ?? [],
@@ -54,7 +55,7 @@ const AssetAddModal = () => {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const getAssetImage = (ticker) => {
-    return import.meta.env.VITE_IMAGE_BASE_URL + ticker.market + '/24/' + ticker.image;
+    return getTickerImage(ticker);
   };
 
   const handleSelect = async (ticker) => {

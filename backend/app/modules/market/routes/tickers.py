@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import Query
 
 from app.common.exceptions import handle_errors
@@ -18,11 +20,11 @@ user_router = AppRouter(prefix='/api/tickers', tags=['User | Tickers'], dependen
 async def search_tickers(
     ticker_service: TickerServiceDep,
     search: str | None = Query(None),
-    market: str | None = Query(None),
+    markets: Annotated[list[str] | None, Query()] = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
 ) -> TickerSearchResponse:
-    result = await ticker_service.search(search, market, page, page_size)
+    result = await ticker_service.search(search, markets, page, page_size)
     return TickerSearchResponse(**result)
 
 

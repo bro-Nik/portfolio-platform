@@ -46,7 +46,7 @@ class TickerService:
     async def search(
         self,
         search: str | None = None,
-        market: str | None = None,
+        markets: list[str] | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> dict:
@@ -56,8 +56,8 @@ class TickerService:
         if search:
             term = f'%{search}%'
             where.append(or_(Ticker.name.ilike(term), Ticker.symbol.ilike(term)))
-        if market:
-            where.append(Ticker.market == market)
+        if markets:
+            where.append(Ticker.market.in_(markets))
         if where:
             query = query.where(*where)
             count_query = count_query.where(*where)
@@ -83,11 +83,11 @@ class TickerService:
     async def get_all_admin(
         self,
         search: str | None = None,
-        market: str | None = None,
+        markets: list[str] | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> TickerListResponse:
-        result = await self.search(search=search, market=market, page=page, page_size=page_size)
+        result = await self.search(search=search, markets=markets, page=page, page_size=page_size)
         return TickerListResponse(
             data=[TickerDetailResponse.model_validate(t) for t in result['data']],
             has_more=result['has_more'],

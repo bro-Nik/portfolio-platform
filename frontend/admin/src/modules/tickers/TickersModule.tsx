@@ -14,7 +14,7 @@ export const TickersModule: React.FC = () => {
   const pageSize = 20;
 
   const debouncedSearch = useDebounce(search, 300);
-  const { data, isLoading, error } = useTickers({ search: debouncedSearch, market, page, pageSize });
+  const { data, isLoading, error } = useTickers({ search: debouncedSearch, markets: market ? [market] : undefined, page, pageSize });
   const { mergeModal } = useTickerModals();
 
   if (error) return <QueryError title='Ошибка загрузки тикеров' error={error} />;

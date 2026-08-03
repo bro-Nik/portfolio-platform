@@ -48,6 +48,7 @@ export const formatPercentage = (value, decimals = 0) => {
 };
 
 export const formatProfit = (profit, invested, totalInvested) => {
+  if (profit == null) return;
   profit = Number(profit);
   invested = Number(invested);
   if (isNaN(profit) || isNaN(invested)) return;
