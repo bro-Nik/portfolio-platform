@@ -1,9 +1,11 @@
 from collections.abc import AsyncIterator, Callable
 import logging
-
-from app.modules.market.services.ticker import TickerService
+from typing import TYPE_CHECKING
 
 from .base import MethodBase
+
+if TYPE_CHECKING:
+    from app.modules.market.services.ticker import TickerService
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +29,17 @@ class TickerLoader(MethodBase):
         'new': '_sync_new',
     }
 
-    async def run(self, market: str, fetch_all_tickers: Callable, strategy: str = 'all', *,
-                  provider_name: str, extract_identifiers: Callable[[dict], dict[str, str]] | None = None,
-                  session=None, **_) -> dict:
+    async def run(
+        self,
+        market: str,
+        fetch_all_tickers: Callable,
+        strategy: str = 'all',
+        *,
+        provider_name: str,
+        ticker_service: 'TickerService',
+        extract_identifiers: Callable[[dict], dict[str, str]] | None = None,
+        **_,
+    ) -> dict:
         logger.info('Старт загрузки тикеров, стратегия: %s', strategy)
         if strategy not in self.STRATEGIES:
             logger.warning('Неизвестная стратегия "%s", возврат к "all"', strategy)
@@ -37,35 +47,44 @@ class TickerLoader(MethodBase):
         raw_data = fetch_all_tickers()
         method_name = self.STRATEGIES[strategy]
         return await getattr(self, method_name)(
-            market, raw_data,
+            market,
+            raw_data,
             provider_name=provider_name,
             extract_identifiers=extract_identifiers,
-            session=session,
+            ticker_service=ticker_service,
         )
 
-    async def _sync_all(self, market: str, raw_data: AsyncIterator[list[dict]], provider_name: str,
-                        extract_identifiers: Callable[[dict], dict[str, str]] | None = None,
-                        session=None) -> dict:
-        ticker_service = TickerService(session)
-        result = await ticker_service.sync_tickers(
-            market, raw_data, strategy='all',
+    async def _sync_all(
+        self,
+        market: str,
+        raw_data: AsyncIterator[list[dict]],
+        provider_name: str,
+        ticker_service: 'TickerService',
+        extract_identifiers: Callable[[dict], dict[str, str]] | None = None,
+    ) -> dict:
+        return await ticker_service.sync_tickers(
+            market,
+            raw_data,
+            strategy='all',
             provider_name=provider_name,
             extract_identifiers=extract_identifiers,
         )
-        await session.flush()
-        return result
 
-    async def _sync_new(self, market: str, raw_data: AsyncIterator[list[dict]], provider_name: str,
-                        extract_identifiers: Callable[[dict], dict[str, str]] | None = None,
-                        session=None) -> dict:
-        ticker_service = TickerService(session)
-        result = await ticker_service.sync_tickers(
-            market, raw_data, strategy='new',
+    async def _sync_new(
+        self,
+        market: str,
+        raw_data: AsyncIterator[list[dict]],
+        provider_name: str,
+        ticker_service: 'TickerService',
+        extract_identifiers: Callable[[dict], dict[str, str]] | None = None,
+    ) -> dict:
+        return await ticker_service.sync_tickers(
+            market,
+            raw_data,
+            strategy='new',
             provider_name=provider_name,
             extract_identifiers=extract_identifiers,
         )
-        await session.flush()
-        return result
 
 
 ticker_loader = TickerLoader()

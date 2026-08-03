@@ -1,15 +1,13 @@
 import logging
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.modules.market.repositories.ticker_identifier import TickerIdentifierRepository
+from app.modules.market.repositories import TickerIdentifierRepository
 
 logger = logging.getLogger(__name__)
 
 
 class TickerIdentifierService:
-    def __init__(self, session: AsyncSession) -> None:
-        self.repo = TickerIdentifierRepository(session)
+    def __init__(self, repo: TickerIdentifierRepository) -> None:
+        self.repo = repo
 
     async def find_matching_ticker(self, identifiers: dict[str, str], market: str) -> int | None:
         if not identifiers:

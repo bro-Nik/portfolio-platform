@@ -1,12 +1,14 @@
 from collections.abc import Awaitable, Callable
 import logging
-
-from app.modules.market.models import Ticker
-from app.modules.market.repositories import TickerRepository
-from app.modules.market.services.ticker import TickerService
-from app.modules.market.services.ticker_external_id import TickerExternalIdService
+from typing import TYPE_CHECKING
 
 from .base import MethodBase
+from app.modules.market.models import Ticker
+from app.modules.market.repositories import TickerExternalIdRepository, TickerRepository
+from app.modules.market.services.ticker_external_id import TickerExternalIdService
+
+if TYPE_CHECKING:
+    from app.modules.market.services.ticker import TickerService
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +16,14 @@ logger = logging.getLogger(__name__)
 class BasePriceUpdater(MethodBase):
     NAME = 'Обновление цен'
 
-    async def _save_prices(self, market: str, prices: dict, session, provider_name: str) -> int:
-        ticker_service = TickerService(session)
+    async def _save_prices(
+        self,
+        market: str,
+        prices: dict,
+        *,
+        provider_name: str,
+        ticker_service: 'TickerService',
+    ) -> int:
         return await ticker_service.save_prices(market, prices, provider_name=provider_name)
 
 
@@ -50,13 +58,24 @@ class SelectivePriceUpdater(BasePriceUpdater):
         'used': '_fetch_used_coins',
     }
 
-    async def run(self, market: str, get_prices: Callable[[list[str]], Awaitable[dict]], strategy: str = 'used', limit: int | None = None, *, provider_name: str, session=None, **_) -> dict:
+    async def run(
+        self,
+        market: str,
+        get_prices: Callable[[list[str]], Awaitable[dict]],
+        strategy: str = 'used',
+        limit: int | None = None,
+        *,
+        provider_name: str,
+        ticker_service: 'TickerService',
+        session=None,
+        **_,
+    ) -> dict:
         logger.info('Старт обновления цен со стратегией: %s', strategy)
         ticker_ids = await self._fetch_ticker_ids(market, strategy, limit, session)
         if not ticker_ids:
             return {'status': 'error', 'message': 'Нет тикеров для обновления'}
 
-        ext_id_service = TickerExternalIdService(session)
+        ext_id_service = TickerExternalIdService(TickerExternalIdRepository(session))
         ext_id_map = await ext_id_service.resolve_to_external(ticker_ids, provider_name)
 
         ext_ids = [ext_id_map[tid] for tid in ticker_ids if tid in ext_id_map]
@@ -66,7 +85,9 @@ class SelectivePriceUpdater(BasePriceUpdater):
         prices = await get_prices(ext_ids)
         prices = await ext_id_service.resolve_to_internal(provider_name, prices)
 
-        updated_count = await self._save_prices(market, prices, session=session, provider_name=provider_name)
+        updated_count = await self._save_prices(
+            market, prices, provider_name=provider_name, ticker_service=ticker_service,
+        )
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
     async def _fetch_ticker_ids(self, market: str, strategy: str, limit: int | None, session) -> list[int]:
@@ -115,13 +136,24 @@ class SelectivePriceUpdater(BasePriceUpdater):
 class FullPriceUpdater(BasePriceUpdater):
     PARAMETERS_SCHEMA: list[dict] = []
 
-    async def run(self, market: str, fetch_prices: Callable[[], Awaitable[dict]], *, provider_name: str, session=None, **_) -> dict:
+    async def run(
+        self,
+        market: str,
+        fetch_prices: Callable[[], Awaitable[dict]],
+        *,
+        provider_name: str,
+        ticker_service: 'TickerService',
+        session=None,
+        **_,
+    ) -> dict:
         prices = await fetch_prices()
         if not prices:
             return {'status': 'error', 'message': 'Нет данных от провайдера'}
-        ext_id_service = TickerExternalIdService(session)
+        ext_id_service = TickerExternalIdService(TickerExternalIdRepository(session))
         prices = await ext_id_service.resolve_to_internal(provider_name, prices)
-        updated_count = await self._save_prices(market, prices, session=session, provider_name=provider_name)
+        updated_count = await self._save_prices(
+            market, prices, provider_name=provider_name, ticker_service=ticker_service
+        )
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
 

@@ -1,15 +1,13 @@
 import logging
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.modules.market.repositories import TickerExternalIdRepository
 
 logger = logging.getLogger(__name__)
 
 
 class TickerExternalIdService:
-    def __init__(self, session: AsyncSession) -> None:
-        self.repo = TickerExternalIdRepository(session)
+    def __init__(self, repo: TickerExternalIdRepository) -> None:
+        self.repo = repo
 
     async def resolve_to_external(self, ticker_ids: list[int], provider_name: str) -> dict[int, str]:
         return await self.repo.get_ext_id_map(ticker_ids, provider_name)

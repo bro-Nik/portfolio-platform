@@ -1,3 +1,4 @@
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
@@ -5,6 +6,7 @@ from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 import jwt
 import pytest
+from redis.exceptions import ConnectionError as RedisConnectionError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -67,6 +69,14 @@ async def clean_tables(test_engine):
         await conn.execute(text(f'TRUNCATE {tables} RESTART IDENTITY CASCADE'))
 
 
+@pytest.fixture(autouse=True)
+async def clean_redis():
+    from app.common.redis import get_redis
+
+    with suppress(RedisConnectionError, OSError):
+        await get_redis().flushdb()
+
+
 @pytest.fixture
 async def user(db_session, save):
     return await save(
@@ -78,8 +88,7 @@ async def user(db_session, save):
 @pytest.fixture
 async def tickers(db_session, save):
     return [
-        await save(db_session, Ticker(id=i, name=f'Ticker {i}', symbol=f'T{i}', market='crypto'))
-        for i in range(1, 8)
+        await save(db_session, Ticker(id=i, name=f'Ticker {i}', symbol=f'T{i}', market='crypto')) for i in range(1, 8)
     ]
 
 
@@ -88,11 +97,14 @@ async def client(db_session):
     fastapi_app.dependency_overrides[get_session] = lambda: db_session
     limiter.enabled = False
 
-    async with LifespanManager(fastapi_app) as manager, AsyncClient(
-        transport=ASGITransport(app=manager.app),
-        base_url='http://testserver',
-        follow_redirects=True,
-    ) as client:
+    async with (
+        LifespanManager(fastapi_app) as manager,
+        AsyncClient(
+            transport=ASGITransport(app=manager.app),
+            base_url='http://testserver',
+            follow_redirects=True,
+        ) as client,
+    ):
         yield client
 
     fastapi_app.dependency_overrides.clear()
@@ -185,4 +197,5 @@ def save():
         await db_session.flush()
         await db_session.refresh(obj)
         return obj
+
     return _create

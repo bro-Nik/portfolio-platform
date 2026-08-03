@@ -1,17 +1,17 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.schemas import Context
-from app.modules.market.repositories.ticker import TickerRepository
+from app.modules.market.services.ticker import TickerService
 from app.modules.portfolios.models import Transaction
 from app.modules.portfolios.services.portfolio_asset import PortfolioAssetService
 from app.modules.portfolios.services.wallet_asset import WalletAssetService
 
 
 class TransactionReadQuery:
-    def __init__(self, session: AsyncSession, ctx: Context) -> None:
+    def __init__(self, session: AsyncSession, ctx: Context, ticker_service: TickerService) -> None:
         self.session = session
         self.ctx = ctx
-        self.ticker_repo = TickerRepository(session)
+        self.ticker_service = ticker_service
         self.portfolio_asset_service = PortfolioAssetService(ctx, session)
         self.wallet_asset_service = WalletAssetService(ctx, session)
 
@@ -24,13 +24,12 @@ class TransactionReadQuery:
                 ticker_ids.add(t.ticker_id)
             if t.ticker2_id:
                 ticker_ids.add(t.ticker2_id)
-        tickers_list = await self.ticker_repo.get_all_by_ids(list(ticker_ids))
-        ticker_map = {tkr.id: tkr for tkr in tickers_list}
+        info_map = await self.ticker_service.get_info(list(ticker_ids))
         for t in transactions:
-            tk = ticker_map.get(t.ticker_id)
+            tk = info_map.get(t.ticker_id)
             if tk:
                 t.ticker_symbol = tk.symbol
-            tk2 = ticker_map.get(t.ticker2_id)
+            tk2 = info_map.get(t.ticker2_id)
             if tk2:
                 t.ticker2_symbol = tk2.symbol
 

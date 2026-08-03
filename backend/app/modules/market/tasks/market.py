@@ -8,6 +8,7 @@ from app.modules.market.dependencies.di import (
     ProviderFactoryDep,
     SessionDep,
     TaskTrackerServiceDep,
+    TickerServiceDep,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ async def update_market_data(
     tracker: TaskTrackerServiceDep,
     provider_factory: ProviderFactoryDep,
     session: SessionDep,
+    ticker_service: TickerServiceDep,
     provider_name: str,
     method: str,
     db_task_id: int,
@@ -28,4 +30,10 @@ async def update_market_data(
     logger.info('Запуск задачи %s: %s.%s', db_task_id, provider_name, method)
     provider = await provider_factory(provider_name, db_task_id)
     async with tracker.task_context(db_task_id):
-        return await provider.execute(method, session=session, provider_name=provider_name, **kwargs)
+        return await provider.execute(
+            method,
+            session=session,
+            ticker_service=ticker_service,
+            provider_name=provider_name,
+            **kwargs,
+        )

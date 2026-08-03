@@ -1,13 +1,11 @@
-import logging
 from datetime import UTC, datetime
+import logging
 
 from croniter import croniter
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-
 from taskiq import ScheduledTask, ScheduleSource
 
-from app.core import settings
 from app.core.database import AsyncSessionLocal
 from app.modules.market.enums import TaskStatus
 from app.modules.market.models import Task
@@ -92,8 +90,9 @@ class DBScheduleSource(ScheduleSource):
     async def _get_redis(self) -> Redis | None:
         if self._redis is None:
             try:
-                import redis.asyncio as redis
-                self._redis = await redis.from_url(settings.redis_url)
+                from app.common.redis import get_redis
+
+                self._redis = get_redis()
             except Exception:
                 logger.exception('Не удалось подключиться к Redis')
                 return None
@@ -110,7 +109,8 @@ class DBScheduleSource(ScheduleSource):
                 task_name='update_market_data',
                 cron=None if force_run else task.schedule,
                 time=datetime.now(UTC) if force_run else None,
-                args=[], kwargs={
+                args=[],
+                kwargs={
                     'provider_name': task.provider_name,
                     'method': task.task_type,
                     'db_task_id': str(task.id),

@@ -1,14 +1,13 @@
-from app.common.dependencies import require_admin, require_user
 from .di import (
     AppProvider,
     ProviderServiceDep,
     TaskProvider,
     TaskServiceDep,
     TaskTrackerServiceDep,
-    TickerAdminServiceDep,
     TickerServiceDep,
     container,
 )
+from app.common.dependencies import require_admin, require_user
 
 __all__ = [
     'AppProvider',
@@ -16,7 +15,6 @@ __all__ = [
     'TaskProvider',
     'TaskServiceDep',
     'TaskTrackerServiceDep',
-    'TickerAdminServiceDep',
     'TickerServiceDep',
     'container',
     'require_admin',

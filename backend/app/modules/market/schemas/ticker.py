@@ -14,7 +14,7 @@ class TickerResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class TickerAdminResponse(TickerResponse):
+class TickerDetailResponse(TickerResponse):
     is_active: bool
     price_updated_by: str | None = None
     updated_at: datetime | None = None
@@ -23,6 +23,13 @@ class TickerAdminResponse(TickerResponse):
 class TickerSearchResponse(BaseModel):
     data: list[TickerResponse]
     has_more: bool
+    total: int
+
+
+class TickerListResponse(BaseModel):
+    data: list[TickerDetailResponse]
+    has_more: bool
+    total: int
 
 
 class PricesResponse(BaseModel):
@@ -33,8 +40,14 @@ class ImagesResponse(BaseModel):
     images: dict[int, str]
 
 
+class TickerInfo(BaseModel):
+    name: str
+    symbol: str
+    image: str | None = None
+
+
 class TickerInfoListResponse(BaseModel):
-    info: dict[int, dict]
+    info: dict[int, TickerInfo]
 
 
 class TickerUpdateRequest(BaseModel):

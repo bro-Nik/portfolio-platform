@@ -1,20 +1,28 @@
 from typing import Annotated
 
 from fastapi import Depends
+from redis.asyncio import Redis
 
 from app.common.dependencies import Ctx, DBSession
-
-from app.queries.overview_read import OverviewReadQuery
-from app.queries.portfolio_read import PortfolioReadQuery
-from app.queries.transaction_read import TransactionReadQuery
-from app.queries.wallet_read import WalletReadQuery
-from app.modules.market.repositories import TickerRepository
+from app.common.redis import get_redis
+from app.modules.market.repositories import (
+    TickerExternalIdRepository,
+    TickerIdentifierRepository,
+    TickerRepository,
+)
+from app.modules.market.services.ticker import TickerService
+from app.modules.market.services.ticker_external_id import TickerExternalIdService
+from app.modules.market.services.ticker_identifier import TickerIdentifierService
 from app.modules.portfolios.services.portfolio import PortfolioService
 from app.modules.portfolios.services.portfolio_asset import PortfolioAssetService
 from app.modules.portfolios.services.transaction import TransactionService
 from app.modules.portfolios.services.wallet import WalletService
 from app.modules.portfolios.services.wallet_asset import WalletAssetService
 from app.modules.tags.repositories import TaggableRepository
+from app.queries.overview_read import OverviewReadQuery
+from app.queries.portfolio_read import PortfolioReadQuery
+from app.queries.transaction_read import TransactionReadQuery
+from app.queries.wallet_read import WalletReadQuery
 
 
 def get_portfolio_service(session: DBSession, ctx: Ctx) -> PortfolioService:
@@ -48,20 +56,49 @@ def get_transaction_service(
     )
 
 
-def get_portfolio_read_query(session: DBSession, ctx: Ctx) -> PortfolioReadQuery:
-    return PortfolioReadQuery(session, ctx)
+def get_ticker_service(
+    session: DBSession,
+    redis: Annotated[Redis, Depends(get_redis)],
+) -> TickerService:
+    return TickerService(
+        session,
+        repo=TickerRepository(session),
+        ext_id_service=TickerExternalIdService(TickerExternalIdRepository(session)),
+        identifier_service=TickerIdentifierService(TickerIdentifierRepository(session)),
+        redis=redis,
+    )
 
 
-def get_wallet_read_query(session: DBSession, ctx: Ctx) -> WalletReadQuery:
-    return WalletReadQuery(session, ctx)
+def get_portfolio_read_query(
+    session: DBSession,
+    ctx: Ctx,
+    ticker_service: Annotated[TickerService, Depends(get_ticker_service)],
+) -> PortfolioReadQuery:
+    return PortfolioReadQuery(session, ctx, ticker_service=ticker_service)
 
 
-def get_transaction_read_query(session: DBSession, ctx: Ctx) -> TransactionReadQuery:
-    return TransactionReadQuery(session, ctx)
+def get_wallet_read_query(
+    session: DBSession,
+    ctx: Ctx,
+    ticker_service: Annotated[TickerService, Depends(get_ticker_service)],
+) -> WalletReadQuery:
+    return WalletReadQuery(session, ctx, ticker_service=ticker_service)
 
 
-def get_overview_read_query(session: DBSession, ctx: Ctx) -> OverviewReadQuery:
-    return OverviewReadQuery(session, ctx)
+def get_transaction_read_query(
+    session: DBSession,
+    ctx: Ctx,
+    ticker_service: Annotated[TickerService, Depends(get_ticker_service)],
+) -> TransactionReadQuery:
+    return TransactionReadQuery(session, ctx, ticker_service=ticker_service)
+
+
+def get_overview_read_query(
+    session: DBSession,
+    ctx: Ctx,
+    ticker_service: Annotated[TickerService, Depends(get_ticker_service)],
+) -> OverviewReadQuery:
+    return OverviewReadQuery(session, ctx, ticker_service=ticker_service)
 
 
 PortfolioServiceDep = Annotated[PortfolioService, Depends(get_portfolio_service)]

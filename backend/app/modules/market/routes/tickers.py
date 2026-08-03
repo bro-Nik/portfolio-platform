@@ -1,15 +1,14 @@
-
 from fastapi import Query
 
 from app.common.exceptions import handle_errors
-
 from app.modules.market.dependencies import TickerServiceDep, require_user
-from app.modules.market.schemas import (
-    ImagesResponse, PricesResponse,
-    TickerInfoListResponse, TickerSearchResponse,
-)
 from app.modules.market.routes.app_router import AppRouter
-
+from app.modules.market.schemas import (
+    ImagesResponse,
+    PricesResponse,
+    TickerInfoListResponse,
+    TickerSearchResponse,
+)
 
 user_router = AppRouter(prefix='/api/tickers', tags=['User | Tickers'], dependencies=[require_user])
 

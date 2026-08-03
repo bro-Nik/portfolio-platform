@@ -1,21 +1,19 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.schemas import Context
-from app.modules.market.repositories.ticker import TickerRepository
+from app.modules.market.services.ticker import TickerService
 from app.modules.portfolios.models import Wallet
 from app.modules.portfolios.repositories import TransactionRepository
 from app.modules.portfolios.services.wallet import WalletService
 from app.modules.tags.repositories import TaggableRepository
 
-IMAGES_URL = '/market/static/images/tickers'
-
 
 class WalletReadQuery:
-    def __init__(self, session: AsyncSession, ctx: Context) -> None:
+    def __init__(self, session: AsyncSession, ctx: Context, ticker_service: TickerService) -> None:
         self.session = session
         self.ctx = ctx
+        self.ticker_service = ticker_service
         self.service = WalletService(session, ctx, taggable_repo=TaggableRepository(session))
-        self.ticker_repo = TickerRepository(session)
         self.transaction_repo = TransactionRepository(session)
 
     async def _enrich(self, wallets: list[Wallet]) -> None:
@@ -23,14 +21,13 @@ class WalletReadQuery:
         if not all_assets:
             return
         ticker_ids = list(set(a.ticker_id for a in all_assets))
-        tickers_list = await self.ticker_repo.get_all_by_ids(ticker_ids)
-        ticker_map = {t.id: t for t in tickers_list}
+        info_map = await self.ticker_service.get_info(ticker_ids)
         for asset in all_assets:
-            t = ticker_map.get(asset.ticker_id)
-            if t:
-                asset.name = t.name
-                asset.symbol = t.symbol
-                asset.image = f'{IMAGES_URL}/{t.market}/24/{t.image}' if t.image else None
+            info = info_map.get(asset.ticker_id)
+            if info:
+                asset.name = info.name
+                asset.symbol = info.symbol
+                asset.image = info.image
 
     async def _add_has_transactions(self, wallets: list[Wallet]) -> None:
         wallet_ids = [w.id for w in wallets]
@@ -44,10 +41,7 @@ class WalletReadQuery:
         for a in all_assets:
             wid = wallet_per_asset[a.id]
             assets_by_wallet.setdefault(wid, []).append(a)
-        wallet_tickers = {
-            wid: [a.ticker_id for a in assets]
-            for wid, assets in assets_by_wallet.items()
-        }
+        wallet_tickers = {wid: [a.ticker_id for a in assets] for wid, assets in assets_by_wallet.items()}
         txn_pairs = await self.transaction_repo.wallets_tickers_with_transactions(wallet_tickers)
         for a in all_assets:
             a.has_transactions = (wallet_per_asset[a.id], a.ticker_id) in txn_pairs
