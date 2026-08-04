@@ -9,6 +9,7 @@
     "@tanstack/react-query-devtools": "^5.101.2",
     "antd": "^6.0.0",
     "axios": "^1.10.0",
+    "dayjs": "^1.11.21",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^1.24.0",
     "react": "^19.1.0",

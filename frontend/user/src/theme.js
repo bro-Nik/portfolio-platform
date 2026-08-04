@@ -21,12 +21,15 @@ const sharedComponents = {
   },
   Input: {
     borderRadius: 8,
+    controlHeight: 36,
   },
   InputNumber: {
     borderRadius: 8,
+    controlHeight: 36,
   },
   Select: {
     borderRadius: 8,
+    controlHeight: 36,
   },
   Menu: {
     borderRadius: 8,
@@ -40,6 +43,9 @@ const sharedComponents = {
   Alert: {
     lineWidth: 0,
   },
+  TimePicker: {
+    controlHeight: 36,
+  },
 };
 
 export const lightTheme = {
@@ -50,7 +56,16 @@ export const lightTheme = {
     colorBgLayout: '#ffffff',
     colorBgContainer: '#ffffff',
   },
-  components: sharedComponents,
+  components: {
+    ...sharedComponents,
+    Segmented: {
+      itemSelectedBg: '#e9e9ee',
+      itemSelectedColor: '#111111',
+      itemHoverBg: '#f0f0f4',
+      boxShadowTertiary: 'none',
+      controlHeight: 36,
+    },
+  },
 };
 
 export const darkTheme = {
@@ -62,5 +77,14 @@ export const darkTheme = {
     colorBgContainer: '#242a3d',
     colorBgElevated: '#2d3448',
   },
-  components: sharedComponents,
+  components: {
+    ...sharedComponents,
+    Segmented: {
+      itemSelectedBg: '#3a4052',
+      itemSelectedColor: '#ffffff',
+      itemHoverBg: 'rgba(255,255,255,0.06)',
+      boxShadowTertiary: 'none',
+      controlHeight: 36,
+    },
+  },
 };

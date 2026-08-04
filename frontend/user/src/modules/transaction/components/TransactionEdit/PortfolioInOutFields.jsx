@@ -20,7 +20,9 @@ const PortfolioInOutFields = ({
     <>
 
     {/* Портфель */}
-    <Form.Item name="portfolioId" hidden initialValue={portfolio?.id} />
+    <Form.Item name="portfolioId" hidden initialValue={portfolio?.id}>
+      <input />
+    </Form.Item>
 
     {/* Кошелек */}
     <FormSelect

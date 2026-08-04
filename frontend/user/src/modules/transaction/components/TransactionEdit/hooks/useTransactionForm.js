@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Form } from 'antd';
-import { toDatetimeLocal } from 'src/utils/format';
+import dayjs from 'dayjs';
 
 export const useTransactionForm = (transaction, type) => {
   const [form] = Form.useForm();
@@ -14,7 +14,7 @@ export const useTransactionForm = (transaction, type) => {
       ...(transaction && { ...transaction }),
       type: transaction?.type || type,
       order: transaction?.order || false,
-      date: toDatetimeLocal(transaction?.date || new Date()),
+      date: transaction?.date ? dayjs(transaction.date) : dayjs(),
     };
 
     form.setFieldsValue(initialValues);

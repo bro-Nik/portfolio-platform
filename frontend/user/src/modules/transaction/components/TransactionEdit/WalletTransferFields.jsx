@@ -16,7 +16,9 @@ const WalletTransferFields = ({
     <>
 
     {/* Кошелек отправитель */}
-    <Form.Item name="walletId" hidden initialValue={fromWallet?.id} />
+    <Form.Item name="walletId" hidden initialValue={fromWallet?.id}>
+      <input />
+    </Form.Item>
 
     {/* Кошелек получатель */}
     <FormSelect

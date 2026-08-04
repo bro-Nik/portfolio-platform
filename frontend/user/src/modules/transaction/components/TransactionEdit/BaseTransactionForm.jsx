@@ -3,18 +3,18 @@ import { Form } from 'antd';
 import { PORTFOLIO_TYPES, WALLET_TYPES } from 'src/modules/transaction/constants/transactionTypes';
 import { useTransactionForm } from './hooks/useTransactionForm';
 import { useTransactionData } from './hooks/useTransactionData';
-import FormComment from 'src/features/forms/FormComment';
-import FormDate from 'src/features/forms/FormDate';
 import FormRadioGroup from 'src/features/forms/FormRadioGroup';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
 import PortfolioTradeFields from './PortfolioTradeFields';
 import PortfolioTransferFields from './PortfolioTransferFields';
 import PortfolioInOutFields from './PortfolioInOutFields';
 import WalletTransferFields from './WalletTransferFields';
-import ShowMore from 'src/components/ui/ShowMore';
+import MetaRowGroup from 'src/components/ui/MetaRowGroup';
+import DateSubview from 'src/features/forms/DateSubview';
+import CommentSubview from 'src/features/forms/CommentSubview';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
 
-const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onCancel, onSubmit, loading }) => {
+const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onCancel, onSubmit, loading, subview, openSubview, closeSubview }) => {
 
   const availableTypes = portfolioId ? PORTFOLIO_TYPES : WALLET_TYPES;
 
@@ -38,7 +38,7 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
   const handleSubmit = async (values) => {
     const submitData = {
       ...values,
-      ...(values.date && { date: new Date(values.date).toISOString() }),
+      ...(values.date && { date: values.date.toISOString?.() || new Date(values.date).toISOString() }),
       ...(transaction && { id: transaction.id }), // Добавляем ID если редактируем
       ...(isTrade && { priceUsd: form.getFieldValue('price') * quoteTicker?.price }),
       tickerId: baseTicker?.id,
@@ -97,33 +97,39 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
       );
     }
   };
+  const date = Form.useWatch('date', { form, preserve: true });
 
   return (
     <Form
       form={form}
       onFinish={handleSubmit}
-      // requiredMark="optional"
+      layout="vertical"
       requiredMark={false}
       size="middle"
     >
-      {/* Тип транзакции */}
-      <FormRadioGroup name='type' btns={availableTypes} onChange={handleTypeChange}/>
+      {subview === 'date' ? (
+        <DateSubview onClose={closeSubview} />
+      ) : subview === 'comment' ? (
+        <CommentSubview onClose={closeSubview} />
+      ) : (
+        <>
+          {/* Тип транзакции */}
+          <FormRadioGroup name='type' btns={availableTypes} onChange={handleTypeChange}/>
 
-      {/* Специфические поля */}
-      {getFormFields()}
+          {/* Специфические поля */}
+          {getFormFields()}
 
-      {/* Дата */}
-      <FormDate />
+          {/* Дата / Комментарий */}
+          <MetaRowGroup
+            date={date}
+            onDate={() => openSubview('date')}
+            onComment={() => openSubview('comment')}
+          />
 
-      {/* Кнопка "Еще" */}
-      <ShowMore content={<FormComment />} show={transaction?.comment}/>
-
-      {/* Кнопки действий */}
-      <FormActionBtns
-        title={transaction ? 'Сохранить' : 'Добавить'} 
-        onCancel={handleCancel}
-        loading={loading}
-      />
+          {/* Кнопки действий */}
+          <FormActionBtns title="Сохранить" onCancel={handleCancel} loading={loading} />
+        </>
+      )}
     </Form>
   );
 };

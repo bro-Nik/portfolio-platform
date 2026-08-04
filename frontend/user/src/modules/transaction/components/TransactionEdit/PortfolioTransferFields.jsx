@@ -16,7 +16,9 @@ const PortfolioTransferFields = ({
     <>
 
     {/* Портфель отправитель */}
-    <Form.Item name="portfolioId" hidden initialValue={fromPortfolio?.id} />
+    <Form.Item name="portfolioId" hidden initialValue={fromPortfolio?.id}>
+      <input />
+    </Form.Item>
 
     {/* Портфель получатель */}
     <FormSelect

@@ -1,14 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { Form, Modal, Space, InputNumber, Button } from 'antd';
 import { useModalStore, useNotifications } from '@portfolio/shared';
-import FormDate from 'src/features/forms/FormDate';
-import FormComment from 'src/features/forms/FormComment';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
-import ShowMore from 'src/components/ui/ShowMore';
 import AssetSelect from 'src/features/forms/AssetSelect';
+import MetaRowGroup from 'src/components/ui/MetaRowGroup';
+import DateSubview from 'src/features/forms/DateSubview';
+import CommentSubview from 'src/features/forms/CommentSubview';
 import { useOverviewData } from 'src/modules/portfolios/hooks/useOverviewData';
 import { useTransactionOperations } from 'src/modules/transaction/hooks/useTransactionOperations';
-import { toDatetimeLocal } from 'src/utils/format';
+import { useSubview } from 'src/hooks/useSubview';
+import dayjs from 'dayjs';
 
 const WalletFundingModal = () => {
   const { success, error } = useNotifications();
@@ -19,6 +20,7 @@ const WalletFundingModal = () => {
 
   const [form] = Form.useForm();
   const [selectedTicker, setSelectedTicker] = useState(null);
+  const { subview, openSubview, closeSubview } = useSubview();
 
   const wallet = useMemo(() => (allWallets || []).find(w => w.id === walletId), [allWallets, walletId]);
   const portfolio = getPortfolio(portfolioId);
@@ -28,12 +30,14 @@ const WalletFundingModal = () => {
       ? ['currency']
       : [portfolio.market, 'currency'];
 
+  const date = Form.useWatch('date', { form, preserve: true });
+
   const handleSubmit = async (values) => {
     const submitData = {
       ...values,
       walletId,
       portfolioId,
-      date: new Date(values.date).toISOString(),
+      date: values.date.toISOString?.() || new Date(values.date).toISOString(),
       type: 'Input',
     };
     const result = await editTransaction(null, submitData);
@@ -53,9 +57,10 @@ const WalletFundingModal = () => {
 
   return (
     <Modal
-      title="Пополнить кошелёк"
+      title={subview ? null : "Пополнить кошелёк"}
       open={true}
       onCancel={handleCancel}
+      closable={!subview}
       footer={null}
       width={500}
       destroyOnHidden
@@ -63,50 +68,59 @@ const WalletFundingModal = () => {
       <Form
         form={form}
         onFinish={handleSubmit}
+        layout="vertical"
         requiredMark={false}
         size="middle"
         initialValues={{
-          date: toDatetimeLocal(new Date()),
+          date: dayjs(),
         }}
       >
-        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
-          <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-            Кошелёк: {wallet?.name || '—'} · Портфель: {portfolio?.name || '—'}
-          </div>
+        {subview === 'date' ? (
+          <DateSubview onClose={closeSubview} />
+        ) : subview === 'comment' ? (
+          <CommentSubview onClose={closeSubview} />
+        ) : (
+          <>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: 24 }}>
+              Кошелёк: {wallet?.name || '—'} · Портфель: {portfolio?.name || '—'}
+            </div>
 
-          <AssetSelect
-            name="tickerId"
-            rules={[{ required: true, message: 'Выберите актив' }]}
-            markets={markets}
-            onTickerChange={setSelectedTicker}
-          />
+            <AssetSelect
+              name="tickerId"
+              rules={[{ required: true, message: 'Выберите актив' }]}
+              markets={markets}
+              onTickerChange={setSelectedTicker}
+            />
 
-          <Form.Item
-            label="Количество"
-            name="quantity"
-            rules={[{ required: true, message: 'Введите количество' }]}
-          >
-            <Space.Compact style={{ width: '100%' }}>
-              <Button style={{ pointerEvents: 'none' }}>{selectedTicker?.symbol || '—'}</Button>
-              <InputNumber
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-                style={{ width: '100%' }}
-              />
-            </Space.Compact>
-          </Form.Item>
+            <Form.Item
+              label="Количество"
+              name="quantity"
+              rules={[{ required: true, message: 'Введите количество' }]}
+            >
+              <Space.Compact style={{ width: '100%' }}>
+                <Button style={{ pointerEvents: 'none' }}>{selectedTicker?.symbol || '—'}</Button>
+                <InputNumber
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  style={{ width: '100%' }}
+                />
+              </Space.Compact>
+            </Form.Item>
 
-          <FormDate />
+            <MetaRowGroup
+              date={date}
+              onDate={() => openSubview('date')}
+              onComment={() => openSubview('comment')}
+            />
 
-          <ShowMore content={<FormComment />} />
-
-          <FormActionBtns
-            title="Пополнить"
-            onCancel={handleCancel}
-            loading={loading}
-          />
-        </Space>
+            <FormActionBtns
+              title="Пополнить"
+              onCancel={handleCancel}
+              loading={loading}
+            />
+          </>
+        )}
       </Form>
     </Modal>
   );

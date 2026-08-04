@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Space } from 'antd';
+import { Modal, Form, Input } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
-import FormComment from 'src/features/forms/FormComment';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
 import FormSelect from 'src/features/forms/FormSelect';
-import ShowMore from 'src/components/ui/ShowMore';
+import MetaRowGroup from 'src/components/ui/MetaRowGroup';
+import CommentSubview from 'src/features/forms/CommentSubview';
+import { useSubview } from 'src/hooks/useSubview';
 import { useNotifications } from '@portfolio/shared';
 
 const PortfolioEditModal = () => {
@@ -18,6 +19,7 @@ const PortfolioEditModal = () => {
 
   const [form] = Form.useForm();
   const { editPortfolio, loading } = usePortfolioOperations();
+  const { subview, openSubview, closeSubview } = useSubview();
 
   useEffect(() => {
     form.setFieldsValue({
@@ -58,9 +60,10 @@ const PortfolioEditModal = () => {
 
   return (
     <Modal
-      title={title}
+      title={subview ? null : title}
       open={true}
       onCancel={handleCancel}
+      closable={!subview}
       footer={null}
       width={500}
       destroyOnHidden
@@ -68,47 +71,45 @@ const PortfolioEditModal = () => {
       <Form
         form={form}
         onFinish={handleSubmit}
+        layout="vertical"
         requiredMark={false}
         size="middle"
       >
-        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
-          {/* Основные поля */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <Form.Item
-              label="Название"
-              name="name"
-              rules={[
-                { required: true, message: 'Введите название портфеля' },
-                { min: 2, message: 'Минимум 2 символа' },
-                { max: 50, message: 'Максимум 50 символов' }
-              ]}
-            >
-              <Input 
-                placeholder="Мой портфель" 
-                autoFocus
+        {subview === 'comment' ? (
+          <CommentSubview onClose={closeSubview} />
+        ) : (
+          <>
+            {/* Основные поля */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <Form.Item
+                label="Название"
+                name="name"
+                rules={[
+                  { required: true, message: 'Введите название портфеля' },
+                  { min: 2, message: 'Минимум 2 символа' },
+                  { max: 50, message: 'Максимум 50 символов' }
+                ]}
+              >
+                <Input autoFocus />
+              </Form.Item>
+
+              <FormSelect
+                name="market"
+                label="Рынок"
+                rules={[{ required: true, message: 'Выберите рынок' }]}
+                options={markets}
+                disabled={!!portfolio}
               />
-            </Form.Item>
+            </div>
 
-            <FormSelect
-              name="market"
-              label="Рынок"
-              rules={[{ required: true, message: 'Выберите рынок' }]}
-              options={markets}
-              disabled={!!portfolio}
-            />
-          </div>
+            {/* Комментарий */}
+            <MetaRowGroup onComment={() => openSubview('comment')} />
 
-          {/* Кнопка "Еще" */}
-          <ShowMore content={<FormComment />} show={!!portfolio?.comment}/>
+            {/* Кнопки действий */}
+            <FormActionBtns title="Сохранить" onCancel={handleCancel} loading={loading} />
 
-          {/* Кнопки действий */}
-          <FormActionBtns
-            title={portfolio ? 'Сохранить' : 'Добавить'} 
-            onCancel={handleCancel}
-            loading={loading}
-          />
-
-        </Space>
+          </>
+        )}
       </Form>
     </Modal>
   );

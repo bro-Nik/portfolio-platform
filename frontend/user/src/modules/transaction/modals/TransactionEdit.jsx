@@ -4,12 +4,14 @@ import { Modal } from 'antd';
 import BaseTransactionForm from 'src/modules/transaction/components/TransactionEdit/BaseTransactionForm';
 import { useTransactionOperations } from 'src/modules/transaction/hooks/useTransactionOperations';
 import { useNotifications } from '@portfolio/shared';
+import { useSubview } from 'src/hooks/useSubview';
 
 const TransactionEditModal = () => {
   const { success, error } = useNotifications();
   const { modalProps, closeModal } = useModalStore();
   const { tickerId = null, portfolioId = null, walletId = null, transaction = null } = modalProps;
   const { editTransaction, loading } = useTransactionOperations();
+  const { subview, openSubview, closeSubview } = useSubview();
   const title = transaction?.id ? 'Изменить транзакцию' : 'Добавить транзакцию';
 
   const onSubmit = async (submitData) => {
@@ -25,9 +27,10 @@ const TransactionEditModal = () => {
 
   return (
     <Modal
-      title={title}
+      title={subview ? null : title}
       open={true}
       onCancel={closeModal}
+      closable={!subview}
       footer={null}
       width={500}
       destroyOnHidden
@@ -40,6 +43,9 @@ const TransactionEditModal = () => {
         onCancel={closeModal}
         onSubmit={onSubmit}
         loading={loading}
+        subview={subview}
+        openSubview={openSubview}
+        closeSubview={closeSubview}
       />
     </Modal>
   );

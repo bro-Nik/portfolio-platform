@@ -85,13 +85,6 @@ export const formatDateTime = (date) => {
   });
 };
 
-export const toDatetimeLocal = (date) => {
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return '';
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-};
-
 export const getTradingViewUrl = (symbol, market) => {
   if (market === 'crypto') {
     return `https://www.tradingview.com/chart/?symbol=${symbol}USDT`

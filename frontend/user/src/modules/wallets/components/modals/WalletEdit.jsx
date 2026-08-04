@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Space } from 'antd';
+import { Modal, Form, Input } from 'antd';
 import { useModalStore } from '@portfolio/shared';
 import { useWalletOperations } from '../../hooks/useWalletOperations';
-import ShowMore from 'src/components/ui/ShowMore';
-import FormComment from 'src/features/forms/FormComment';
+import MetaRowGroup from 'src/components/ui/MetaRowGroup';
+import CommentSubview from 'src/features/forms/CommentSubview';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
+import { useSubview } from 'src/hooks/useSubview';
 import { useNotifications } from '@portfolio/shared';
 
 const WalletEditModal = () => {
@@ -17,6 +18,7 @@ const WalletEditModal = () => {
 
   const [form] = Form.useForm();
   const { editWallet, loading } = useWalletOperations();
+  const { subview, openSubview, closeSubview } = useSubview();
 
   useEffect(() => {
     form.setFieldsValue({
@@ -50,9 +52,10 @@ const WalletEditModal = () => {
 
   return (
     <Modal
-      title={title}
+      title={subview ? null : title}
       open={true}
       onCancel={handleCancel}
+      closable={!subview}
       footer={null}
       width={500}
       destroyOnHidden
@@ -60,12 +63,15 @@ const WalletEditModal = () => {
       <Form
         form={form}
         onFinish={handleSubmit}
+        layout="vertical"
         requiredMark="optional"
         size="middle"
       >
-        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
-          {/* Основные поля */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        {subview === 'comment' ? (
+          <CommentSubview onClose={closeSubview} />
+        ) : (
+          <>
+            {/* Основные поля */}
             <Form.Item
               label="Название"
               name="name"
@@ -75,24 +81,17 @@ const WalletEditModal = () => {
                 { max: 50, message: 'Максимум 50 символов' }
               ]}
             >
-              <Input 
-                placeholder="Мой кошелек" 
-                autoFocus
-              />
+              <Input autoFocus />
             </Form.Item>
-          </div>
 
-          {/* Кнопка "Еще" */}
-          <ShowMore content={<FormComment />} show={!!wallet?.comment}/>
+            {/* Комментарий */}
+            <MetaRowGroup onComment={() => openSubview('comment')} />
 
-          {/* Кнопки действий */}
-          <FormActionBtns
-            title={wallet ? 'Сохранить' : 'Добавить'} 
-            onCancel={handleCancel}
-            loading={loading}
-          />
+            {/* Кнопки действий */}
+            <FormActionBtns title="Сохранить" onCancel={handleCancel} loading={loading} />
 
-        </Space>
+          </>
+        )}
       </Form>
     </Modal>
   );

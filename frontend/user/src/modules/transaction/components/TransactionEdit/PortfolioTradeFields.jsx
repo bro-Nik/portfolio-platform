@@ -36,7 +36,9 @@ const PortfolioTradeFields = ({
     <>
 
     {/* Портфель */}
-    <Form.Item name="portfolioId" hidden initialValue={portfolio?.id} />
+    <Form.Item name="portfolioId" hidden initialValue={portfolio?.id}>
+      <input />
+    </Form.Item>
 
     {/* Ордер */}
     <FormCheckbox name="order" label="Ордер" checked={transaction?.order} />
@@ -44,7 +46,21 @@ const PortfolioTradeFields = ({
     {/* Кошелек */}
     <FormSelect
       name="walletId"
-      label='Кошелек' 
+      label={(
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          Кошелек
+          {walletIdValue && (
+            <Button
+              type="link"
+              size="small"
+              style={{ padding: 0, height: 'auto', marginLeft: 12 }}
+              onClick={() => openModal(WalletFundingModal, { walletId: walletIdValue, portfolioId: portfolio?.id })}
+            >
+              Пополнить
+            </Button>
+          )}
+        </div>
+      )}
       rules={[{ required: true, message: 'Выберите кошелек' }]}
       onChange={handleWalletChange}
       fieldNames={{label: 'name', value: 'id'}}
@@ -55,22 +71,13 @@ const PortfolioTradeFields = ({
       </>)}
     />
 
-    <Button
-      type="link"
-      size="small"
-      style={{ padding: 0, height: 'auto', marginTop: -8, marginBottom: 8 }}
-      disabled={!walletIdValue}
-      onClick={() => openModal(WalletFundingModal, { walletId: walletIdValue, portfolioId: portfolio?.id })}
-    >
-      Пополнить
-    </Button>
-
     {/* Цена */}
     <Form.Item label="Цена">
-      <Space.Compact>
+      <Space.Compact style={{ width: '100%' }}>
         <FormSelect
           name="ticker2Id"
           noStyle
+          style={{ width: 110 }}
           rules={[{ required: true, message: 'Выберите валюту' }]}
           showSearch
           popupMatchSelectWidth={false}
@@ -95,6 +102,7 @@ const PortfolioTradeFields = ({
             onChange={handlePriceChange}
             step="0.01"
             min="0"
+            style={{ width: '100%' }}
             disabled={!wallet}
           />
         </Form.Item>
@@ -113,7 +121,7 @@ const PortfolioTradeFields = ({
 
     {/* Выбор активного поля транзакции (Сумма, Количество) */}
     <Form.Item>
-      <Segmented size="small" options={['Сумма', 'Количество']} onChange={toggleCalculationType} />
+      <Segmented options={['Сумма', 'Количество']} onChange={toggleCalculationType} />
     </Form.Item>
 
     {/* Сумма транзакции */}
