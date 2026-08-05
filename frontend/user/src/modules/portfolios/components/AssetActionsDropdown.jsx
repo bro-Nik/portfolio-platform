@@ -3,16 +3,16 @@ import { Tooltip } from 'antd';
 import {
   Inbox,
   Undo2,
-  Pencil,
-  Copy,
   Trash2,
   ExternalLink,
+  Plus,
 } from 'lucide-react'
 import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import AssetDeleteModal from './modals/AssetDelete';
 import TagManagerSelect from 'src/modules/tags/components/TagManagerSelect';
 import { getTradingViewUrl } from 'src/utils/format';
 import { usePortfolioMutations } from 'src/modules/portfolios/hooks/usePortfolioMutations';
+import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 
 
 const AssetActionsDropdown = ({ portfolio, asset }) => {
@@ -30,22 +30,11 @@ const AssetActionsDropdown = ({ portfolio, asset }) => {
 
   const menuItems = [
     {
-      key: 'edit',
-      icon: <Pencil size={16} />,
-      label: 'Редактировать',
-      disabled: true,
-    },
-    {
-      key: 'duplicate',
-      icon: <Copy size={16} />,
-      label: 'Переместить',
-      disabled: true,
-    },
-    {
-      key: 'export',
-      icon: <ExternalLink size={16} />,
-      label: 'Экспортировать',
-      disabled: true,
+      key: 'add-transaction',
+      icon: <Plus size={16} />,
+      label: 'Добавить транзакцию',
+      disabled: asset.isArchived,
+      onClick: () => openModal(TransactionEditModal, { tickerId: asset.tickerId, portfolioId: portfolio.id }),
     },
     {
       key: 'tradingview',

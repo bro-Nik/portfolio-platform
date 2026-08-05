@@ -1,18 +1,20 @@
 import { Tooltip } from 'antd';
+import { useModalStore } from '@portfolio/shared';
 import {
   Inbox,
   Undo2,
-  Pencil,
-  Copy,
   Trash2,
   ExternalLink,
+  Send,
 } from 'lucide-react'
 import ActionsDropdown from 'src/features/dropdowns/ActionsDropdown';
 import TagManagerSelect from 'src/modules/tags/components/TagManagerSelect';
 import { getTradingViewUrl } from 'src/utils/format';
 import { useWalletMutations } from 'src/modules/wallets/hooks/useWalletMutations';
+import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 
 const AssetActionsDropdown = ({ wallet, asset }) => {
+  const { openModal } = useModalStore();
   const { archiveWalletAsset, unarchiveWalletAsset } = useWalletMutations();
 
   const handleArchive = async () => {
@@ -25,28 +27,11 @@ const AssetActionsDropdown = ({ wallet, asset }) => {
 
   const menuItems = [
     {
-      key: 'edit',
-      icon: <Pencil size={16} />,
-      label: 'Редактировать',
-      disabled: true,
-    },
-    {
-      key: 'transfer',
-      icon: <Pencil size={16} />,
+      key: 'send',
+      icon: <Send size={16} />,
       label: 'Отправить',
       disabled: asset.isArchived,
-    },
-    {
-      key: 'duplicate',
-      icon: <Copy size={16} />,
-      label: 'Переместить',
-      disabled: true,
-    },
-    {
-      key: 'export',
-      icon: <ExternalLink size={16} />,
-      label: 'Экспортировать',
-      disabled: true,
+      onClick: () => openModal(TransactionEditModal, { tickerId: asset.tickerId, walletId: wallet.id }),
     },
     {
       key: 'tradingview',
