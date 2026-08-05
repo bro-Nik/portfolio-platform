@@ -66,7 +66,7 @@ const WalletForm = ({ wallet = null, submitText = 'Сохранить', onSucces
               { max: 50, message: 'Максимум 50 символов' }
             ]}
           >
-            <Input autoFocus />
+            <Input autoFocus variant="filled" />
           </Form.Item>
 
           <MetaRowGroup onComment={() => openSubview('comment')} />

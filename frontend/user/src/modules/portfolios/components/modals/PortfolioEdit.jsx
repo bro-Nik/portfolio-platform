@@ -90,7 +90,7 @@ const PortfolioEditModal = () => {
                   { max: 50, message: 'Максимум 50 символов' }
                 ]}
               >
-                <Input autoFocus />
+                <Input autoFocus variant="filled" />
               </Form.Item>
 
               <FormSelect
@@ -99,6 +99,7 @@ const PortfolioEditModal = () => {
                 rules={[{ required: true, message: 'Выберите рынок' }]}
                 options={markets}
                 disabled={!!portfolio}
+                variant="filled"
               />
             </div>
 

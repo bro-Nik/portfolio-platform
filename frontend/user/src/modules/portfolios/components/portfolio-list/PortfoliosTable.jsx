@@ -58,6 +58,7 @@ const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, show
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           allowClear
+          variant="filled"
           style={{ width: 160 }}
         />
         <TagFilter onChange={setTagFilterIds} scope="portfolio" />

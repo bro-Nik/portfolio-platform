@@ -24,6 +24,7 @@ const TagFilter = ({ onChange, scope }) => {
       value={selectedIds}
       onChange={handleChange}
       allowClear
+      variant="filled"
       style={{ minWidth: 150 }}
       tagRender={({ value, label, closable, onClose, isMaxTag }) => {
         if (isMaxTag) {

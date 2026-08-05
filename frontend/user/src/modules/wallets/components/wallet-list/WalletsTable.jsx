@@ -49,6 +49,7 @@ const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArc
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           allowClear
+          variant="filled"
           style={{ width: 160 }}
         />
         <TagFilter onChange={setTagFilterIds} scope="wallet" />

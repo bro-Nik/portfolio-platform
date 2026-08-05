@@ -180,6 +180,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           allowClear
+          variant="filled"
           style={{ width: 160 }}
         />
         <TagFilter onChange={setTagFilterIds} scope="asset" />

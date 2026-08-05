@@ -183,13 +183,13 @@ const AssetAddModal = () => {
     >
       <div style={{ marginBottom: 16, position: 'relative' }}>
         <Input
-          style={{ border: 'none' }}
           placeholder="Введите тикер или название актива..."
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
           prefix={<Search size={16} style={{ color: 'var(--text-muted-icon)' }} />}
           size="large"
           allowClear
+          variant="filled"
         />
       </div>
 

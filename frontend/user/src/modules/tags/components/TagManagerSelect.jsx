@@ -31,7 +31,7 @@ const TagForm = ({ initialName, initialColor, onSave, saveLabel, onDelete, onCan
 
   return (
     <div style={{ width: 220, display: 'flex', flexDirection: 'column', gap: 10 }} onMouseDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
-      <Input value={name} onChange={e => setName(e.target.value)} placeholder="Название тега" />
+      <Input value={name} onChange={e => setName(e.target.value)} placeholder="Название тега" variant="filled" />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>
         {PRESET_COLORS.map(c => (
           <div key={c} onClick={() => setColor(c)} style={{
@@ -170,6 +170,7 @@ const TagPanel = ({ entityType, entityId, assignedTags, parentId }) => {
         value={search}
         onChange={e => setSearch(e.target.value)}
         allowClear
+        variant="filled"
         style={{ marginBottom: 8 }}
         onClick={e => e.stopPropagation()}
       />
