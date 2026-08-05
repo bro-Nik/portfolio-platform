@@ -5,9 +5,9 @@ import dayjs from 'dayjs';
 export const useTransactionForm = (transaction, type) => {
   const [form] = Form.useForm();
   const [transactionType, setTransactionType] = useState(transaction?.type || type);
-  const [calculationType, setCalculationType] = useState('amount');
+  const [calculationType, setCalculationTypeState] = useState('amount');
 
-  const toggleCalculationType = useCallback(() => setCalculationType(prev => prev === 'amount' ? 'quantity' : 'amount'), []);
+  const setCalculationType = useCallback((value) => setCalculationTypeState(value), []);
 
   useEffect(() => {
     const initialValues = {
@@ -30,6 +30,6 @@ export const useTransactionForm = (transaction, type) => {
     transactionType,
     handleTypeChange,
     calculationType,
-    toggleCalculationType,
+    setCalculationType,
   };
 };

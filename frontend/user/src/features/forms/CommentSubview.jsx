@@ -17,6 +17,7 @@ const CommentSubview = ({ onClose }) => (
         showCount
         maxLength={500}
         autoFocus
+        variant="filled"
       />
     </Form.Item>
 

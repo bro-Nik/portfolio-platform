@@ -48,6 +48,16 @@ const AssetSelect = ({ markets, label = 'Актив', placeholder = 'Введи�
       notFoundContent={isFetching ? <Spin size="small" style={{ padding: 8 }} /> : <Empty description="Активы не найдены" style={{ padding: 8 }} />}
       fieldNames={{ label: 'symbol', value: 'id' }}
       options={tickers}
+      labelRender={({ label, value }) => {
+        const ticker = tickers.find(t => t.id === value);
+        if (!ticker) return label;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <TickerAvatar src={getTickerImage(ticker)} symbol={ticker.symbol} size={20} />
+            <span style={{ textTransform: 'uppercase' }}>{ticker.symbol}</span>
+          </div>
+        );
+      }}
       optionRender={(o) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <TickerAvatar src={getTickerImage(o.data)} symbol={o.data.symbol} size={20} />

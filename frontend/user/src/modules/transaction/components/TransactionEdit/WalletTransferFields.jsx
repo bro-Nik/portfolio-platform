@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form } from 'antd';
-import FormSelect from 'src/features/forms/FormSelect';
+import WalletSelect from 'src/features/forms/WalletSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 
 const WalletTransferFields = ({
@@ -8,8 +8,12 @@ const WalletTransferFields = ({
   fromWallet,
   baseTicker,
   isCounterTransaction,
+  onAddWallet,
 }) => {
 
+  const form = Form.useFormInstance();
+  const wallet2IdValue = Form.useWatch('wallet2Id', form);
+  const quantityValue = Form.useWatch('quantity', form);
   const wallets = getWallets({ excludeId: fromWallet?.id, showTickerId: baseTicker?.id });
 
   return (
@@ -21,12 +25,16 @@ const WalletTransferFields = ({
     </Form.Item>
 
     {/* Кошелек получатель */}
-    <FormSelect
+    <WalletSelect
       name='wallet2Id'
       label='Кошелек получатель'
       rules={[{ required: true, message: 'Выберите кошелек' }]}
       hidden={isCounterTransaction}
+      variant="filled"
+      status={!wallet2IdValue ? 'warning' : undefined}
+      placeholder="Выберите кошелек получатель"
       options={wallets}
+      onAddWallet={onAddWallet}
       fieldNames={{label: 'name', value: 'id'}}
       optionRender={(o) => (<>
         {o.data.name}
@@ -39,6 +47,7 @@ const WalletTransferFields = ({
       showFree={true}
       walletFree={fromWallet?.baseAssetFree}
       ticker={baseTicker?.symbol}
+      status={wallet2IdValue && !quantityValue ? 'warning' : undefined}
     />
     </>
   );

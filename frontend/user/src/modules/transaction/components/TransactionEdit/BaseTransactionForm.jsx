@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Form } from 'antd';
 import { PORTFOLIO_TYPES, WALLET_TYPES } from 'src/modules/transaction/constants/transactionTypes';
 import { useTransactionForm } from './hooks/useTransactionForm';
@@ -12,6 +12,9 @@ import WalletTransferFields from './WalletTransferFields';
 import MetaRowGroup from 'src/components/ui/MetaRowGroup';
 import DateSubview from 'src/features/forms/DateSubview';
 import CommentSubview from 'src/features/forms/CommentSubview';
+import WalletForm from 'src/modules/wallets/components/WalletForm';
+import WalletFundingForm from 'src/modules/wallets/components/WalletFundingForm';
+import SubviewHeader from 'src/components/ui/SubviewHeader';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
 
 const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onCancel, onSubmit, loading, subview, openSubview, closeSubview }) => {
@@ -21,7 +24,7 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
   const {
     form,
     transactionType, handleTypeChange,
-    calculationType, toggleCalculationType,
+    calculationType, setCalculationType,
   } = useTransactionForm(transaction, availableTypes[0].value);
 
   const { isTrade, isTransfer, isInOut, isEarning } = getTransactionTypeInfo(transactionType);
@@ -51,6 +54,24 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
     onCancel();
   };
 
+  const walletTargetRef = useRef('walletId');
+
+  const openWalletSubview = (field = 'walletId') => {
+    walletTargetRef.current = field;
+    openSubview('wallet');
+  };
+
+  const handleWalletCreated = (wallet) => {
+    const field = walletTargetRef.current;
+    form.setFieldValue(field, wallet.id);
+    if (field === 'walletId') {
+      handleWalletChange(wallet);
+    }
+    closeSubview();
+  };
+
+  const walletIdValue = Form.useWatch('walletId', { form, preserve: true });
+
   const getFormFields = () => {
     if (portfolioId) {
       if (isTrade) return (
@@ -62,10 +83,12 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
           baseTicker={baseTicker}
           portfolio={transactionPortfolio}
           calculationType={calculationType}
-          toggleCalculationType={toggleCalculationType}
+          setCalculationType={setCalculationType}
           quoteTicker={quoteTicker}
           handleQuoteTickerChange={handleQuoteTickerChange}
           transactionType={transactionType}
+          onAddWallet={() => openWalletSubview('walletId')}
+          onFundWallet={() => openSubview('funding')}
         />
       );
       if (isTransfer) return (
@@ -84,6 +107,7 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
           baseTicker={baseTicker}
           transactionType={transactionType}
           handleWalletChange={handleWalletChange}
+          onAddWallet={() => openWalletSubview('walletId')}
         />
       );
     } else if (walletId) {
@@ -93,11 +117,40 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
           fromWallet={transactionWallet}
           baseTicker={baseTicker}
           isCounterTransaction={isCounterTransaction}
+          onAddWallet={() => openWalletSubview('wallet2Id')}
         />
       );
     }
   };
   const date = Form.useWatch('date', { form, preserve: true });
+
+  if (subview === 'wallet') {
+    return (
+      <>
+        <SubviewHeader title="Добавить кошелек" onBack={closeSubview} />
+        <WalletForm
+          wallet={null}
+          submitText="Создать"
+          onSuccess={handleWalletCreated}
+          onCancel={closeSubview}
+        />
+      </>
+    );
+  }
+
+  if (subview === 'funding') {
+    return (
+      <>
+        <SubviewHeader title="Пополнение" onBack={closeSubview} />
+        <WalletFundingForm
+          walletId={walletIdValue}
+          portfolioId={transactionPortfolio?.id}
+          onSuccess={closeSubview}
+          onCancel={closeSubview}
+        />
+      </>
+    );
+  }
 
   return (
     <Form

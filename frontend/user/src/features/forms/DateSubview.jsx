@@ -36,12 +36,14 @@ const DateSubview = ({ onClose }) => {
           style={{ flex: 1 }}
           options={monthOptions}
           value={value.month()}
+          variant="filled"
           onChange={(month) => onChange(value.month(month))}
         />
         <Select
           style={{ flex: 1 }}
           options={yearOptions}
           value={year}
+          variant="filled"
           onChange={(numYear) => onChange(value.year(numYear))}
         />
       </div>
@@ -71,6 +73,7 @@ const DateSubview = ({ onClose }) => {
           value={date}
           onChange={handleTimeChange}
           placeholder="Время"
+          variant="filled"
         />
       </Form.Item>
 

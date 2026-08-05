@@ -11,6 +11,9 @@ const PortfolioTransferFields = ({
 }) => {
 
   const portfolios = getPortfolios({ excludeId: fromPortfolio?.id, showTickerId: baseTicker?.id });
+  const form = Form.useFormInstance();
+  const portfolio2IdValue = Form.useWatch('portfolio2Id', form);
+  const quantityValue = Form.useWatch('quantity', form);
 
   return (
     <>
@@ -26,6 +29,9 @@ const PortfolioTransferFields = ({
       label='Портфель получатель'
       rules={[{ required: true, message: 'Выберите портфель' }]}
       hidden={isCounterTransaction}
+      variant="filled"
+      status={!portfolio2IdValue ? 'warning' : undefined}
+      placeholder="Выберите портфель получатель"
       fieldNames={{label: 'name', value: 'id'}}
       options={portfolios}
       optionRender={(o) => (<>
@@ -39,6 +45,7 @@ const PortfolioTransferFields = ({
       showFree={true}
       portfolioFree={fromPortfolio?.baseAssetFree}
       ticker={baseTicker?.symbol}
+      status={portfolio2IdValue && !quantityValue ? 'warning' : undefined}
     />
     </>
   );

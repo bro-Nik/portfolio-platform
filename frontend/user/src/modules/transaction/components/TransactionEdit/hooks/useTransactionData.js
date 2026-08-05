@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useOverviewQuery } from 'src/modules/portfolios/hooks/useOverviewQuery';
 import { useAssetPricesQuery } from 'src/hooks/TickerContext';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
@@ -42,23 +42,25 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     };
   });
 
+  const lastTicker2IdRef = useRef(transaction?.ticker2Id ?? null);
+
   const calculatePortfolioAssetAvailableBalance = useCallback((asset, portfolio) => {
     if (!asset) return 0;
-    let free = asset?.quantity || 0;
+    let free = Number(asset?.quantity) || 0;
     if (transaction
         && (asset.tickerId === transaction.tickerId || asset.tickerId === transaction.ticker2Id)
         && (portfolio.id === transaction.portfolioId || portfolio.id === transaction.portfolio2Id)
-    ) free += +transaction.quantity * getTransactionQuantityDirection(transaction);
+    ) free += Number(transaction.quantity) * getTransactionQuantityDirection(transaction);
     return free;
   }, [transaction]);
 
   const calculateWalletAssetAvailableBalance = useCallback((asset, wallet) => {
     if (!asset) return 0;
-    let free = asset?.quantity || 0;
+    let free = Number(asset?.quantity) || 0;
     if (transaction
         && (asset.tickerId === transaction.tickerId || asset.tickerId === transaction.ticker2Id)
         && (wallet.id === transaction.walletId || wallet.id === transaction.wallet2Id)
-    ) free += +transaction.quantity * getTransactionQuantityDirection(transaction);
+    ) free += Number(transaction.quantity) * getTransactionQuantityDirection(transaction);
     return free;
   }, [transaction]);
 
@@ -76,15 +78,17 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     return 0;
   }, [calculatePortfolioAssetAvailableBalance]);
 
-  const prepareSelectedWallet = useCallback((walletId) => {
-    const wallet = walletId && getWallet(walletId);
+  const prepareSelectedWallet = useCallback((walletOrId) => {
+    const wallet = typeof walletOrId === 'object' && walletOrId
+      ? walletOrId
+      : (walletOrId && getWallet(walletOrId));
     if (!wallet) return;
 
     return {
       ...wallet,
       baseAssetFree: getWalletAvailableBalanceByTicker(wallet, baseId),
       quoteAssetFree: getWalletAvailableBalanceByTicker(wallet, quoteTicker?.id),
-      assets: wallet.assets.filter(a => a.tickerId !== baseId).map(a => ({
+      assets: (wallet.assets || []).filter(a => a.tickerId !== baseId).map(a => ({
         ...a,
         free: calculateWalletAssetAvailableBalance(a, wallet),
         symbol: a.symbol?.toUpperCase(),
@@ -102,9 +106,12 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     };
   }, [getPortfolio, getPortfolioAvailableBalanceByTicker, baseId]);
 
-  const [transactionWallet, setTransactionWallet] = useState(() => {
-    return prepareSelectedWallet(transaction ? transaction?.walletId : walletId)
-  });
+  const [selectedWalletId, setSelectedWalletId] = useState(() => transaction?.walletId || walletId);
+
+  const transactionWallet = useMemo(
+    () => prepareSelectedWallet(selectedWalletId),
+    [prepareSelectedWallet, selectedWalletId]
+  );
 
   const transactionPortfolio = prepareSelectedPortfolio(transaction ? transaction.portfolioId : portfolioId);
 
@@ -132,11 +139,38 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     return result;
   }, [wallets, walletId, transaction?.walletId, getWalletAvailableBalanceByTicker]);
 
-  const handleWalletChange = useCallback((walletId) => {
-    setTransactionWallet(prepareSelectedWallet(walletId));
-  }, [prepareSelectedWallet]);
+  const handleWalletChange = useCallback((walletOrId) => {
+    const walletId = typeof walletOrId === 'object' && walletOrId ? walletOrId.id : walletOrId;
+    const currentTicker2Id = form.getFieldValue('ticker2Id');
+    const nextWallet = prepareSelectedWallet(walletOrId);
+
+    if (nextWallet && currentTicker2Id && nextWallet.assets?.some(a => a.tickerId === currentTicker2Id)) {
+      lastTicker2IdRef.current = currentTicker2Id;
+      setSelectedWalletId(walletId);
+      return;
+    }
+
+    const rememberedAsset = nextWallet?.assets?.find(a => a.tickerId === lastTicker2IdRef.current);
+    if (nextWallet && rememberedAsset) {
+      form.setFieldValue('ticker2Id', rememberedAsset.tickerId);
+      setQuoteTicker({
+        id: rememberedAsset.tickerId,
+        symbol: rememberedAsset.symbol?.toUpperCase(),
+        price: prices[rememberedAsset.tickerId] || 0,
+      });
+      const newPrice = prices[rememberedAsset.tickerId] !== 0 ? baseTicker.price / (prices[rememberedAsset.tickerId] || 0) : 0;
+      form.setFieldValue('price', newPrice || '');
+      return;
+    }
+
+    setSelectedWalletId(walletId);
+    setQuoteTicker(null);
+    form.setFieldValue('ticker2Id', undefined);
+    form.setFieldValue('price', undefined);
+  }, [prepareSelectedWallet, form, prices, baseTicker.price]);
 
   const handleQuoteTickerChange = useCallback((tickerId) => {
+    lastTicker2IdRef.current = tickerId || null;
     const asset = transactionWallet?.assets?.find(a => a.tickerId === tickerId);
     const price = prices[tickerId] || 0;
     const newQuoteTicker = {
@@ -146,18 +180,13 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     };
     setQuoteTicker(newQuoteTicker);
 
-    const wallet = {
-      ...transactionWallet,
-      quoteAssetFree: getWalletAvailableBalanceByTicker(transactionWallet, tickerId),
-    };
-    setTransactionWallet(wallet);
-
     const newPrice = price !== 0 ? baseTicker.price / price : 0;
     form.setFieldValue('price', newPrice || '');
-  }, [transactionWallet, prices, getWalletAvailableBalanceByTicker, baseTicker.price, form]);
+  }, [transactionWallet, prices, baseTicker.price, form]);
 
   return {
     portfolios,
+    wallets,
     handleWalletChange,
     transactionWallet,
     transactionPortfolio,

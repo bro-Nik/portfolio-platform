@@ -26,10 +26,12 @@ const sharedComponents = {
   InputNumber: {
     borderRadius: 8,
     controlHeight: 36,
+    colorBorderDisabled: 'transparent',
   },
   Select: {
     borderRadius: 8,
     controlHeight: 36,
+    colorBorderDisabled: 'transparent',
   },
   Menu: {
     borderRadius: 8,
@@ -46,6 +48,9 @@ const sharedComponents = {
   TimePicker: {
     controlHeight: 36,
   },
+  Segmented: {
+    controlHeight: 36,
+  },
 };
 
 export const lightTheme = {
@@ -59,11 +64,8 @@ export const lightTheme = {
   components: {
     ...sharedComponents,
     Segmented: {
-      itemSelectedBg: '#e9e9ee',
-      itemSelectedColor: '#111111',
-      itemHoverBg: '#f0f0f4',
-      boxShadowTertiary: 'none',
       controlHeight: 36,
+      trackBg: '#f5f5f5',
     },
   },
 };
@@ -79,12 +81,5 @@ export const darkTheme = {
   },
   components: {
     ...sharedComponents,
-    Segmented: {
-      itemSelectedBg: '#3a4052',
-      itemSelectedColor: '#ffffff',
-      itemHoverBg: 'rgba(255,255,255,0.06)',
-      boxShadowTertiary: 'none',
-      controlHeight: 36,
-    },
   },
 };

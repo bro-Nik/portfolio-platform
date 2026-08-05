@@ -1,12 +1,11 @@
 import React from 'react';
 import { Form, InputNumber, Space, Segmented, Button } from 'antd';
-import { useModalStore } from '@portfolio/shared';
 import { useTransactionCalculations } from './hooks/useTransactionCalculations';
 import FormCheckbox from 'src/features/forms/FormCheckbox';
 import FormSelect from 'src/features/forms/FormSelect';
+import WalletSelect from 'src/features/forms/WalletSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 import FormSumInput from 'src/features/forms/FormSumInput';
-import WalletFundingModal from 'src/modules/wallets/components/modals/WalletFundingModal';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
 
 const PortfolioTradeFields = ({
@@ -18,16 +17,22 @@ const PortfolioTradeFields = ({
   baseTicker,
   quoteTicker,
   calculationType,
-  toggleCalculationType,
+  setCalculationType,
   handleQuoteTickerChange,
   transactionType,
+  onAddWallet,
+  onFundWallet,
 }) => {
 
   const form = Form.useFormInstance();
-  const { openModal } = useModalStore();
   const { handleQuantityChange, handleAmountChange, handlePriceChange } = useTransactionCalculations(form, calculationType);
   const { isSell } = getTransactionTypeInfo(transactionType);
-  const walletIdValue = Form.useWatch('walletId', form);
+  const walletIdValue = Form.useWatch('walletId', { form, preserve: true });
+  const ticker2IdValue = Form.useWatch('ticker2Id', form);
+  const quantityValue = Form.useWatch('quantity', form);
+  const amountValue = Form.useWatch('quantity2', form);
+
+  const nextStepDone = wallet && quoteTicker;
 
   const walletsToBuy = getWallets({});
   const walletsToSell = getWallets({ showTickerId: baseTicker?.id });
@@ -44,7 +49,7 @@ const PortfolioTradeFields = ({
     <FormCheckbox name="order" label="Ордер" checked={transaction?.order} />
 
     {/* Кошелек */}
-    <FormSelect
+    <WalletSelect
       name="walletId"
       label={(
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -54,7 +59,7 @@ const PortfolioTradeFields = ({
               type="link"
               size="small"
               style={{ padding: 0, height: 'auto', marginLeft: 12 }}
-              onClick={() => openModal(WalletFundingModal, { walletId: walletIdValue, portfolioId: portfolio?.id })}
+              onClick={onFundWallet}
             >
               Пополнить
             </Button>
@@ -63,8 +68,12 @@ const PortfolioTradeFields = ({
       )}
       rules={[{ required: true, message: 'Выберите кошелек' }]}
       onChange={handleWalletChange}
+      variant="filled"
+      status={!wallet ? 'warning' : undefined}
+      placeholder="Выберите кошелек"
       fieldNames={{label: 'name', value: 'id'}}
       options={isSell ? walletsToSell : walletsToBuy}
+      onAddWallet={onAddWallet}
       optionRender={(o) => (<>
         {o.data.name}
         {o.data.free !== undefined ? <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span> : null}
@@ -77,13 +86,15 @@ const PortfolioTradeFields = ({
         <FormSelect
           name="ticker2Id"
           noStyle
-          style={{ width: 110 }}
+          variant="filled"
+          style={{ width: 'auto', flex: '0 0 auto', minWidth: 110, maxWidth: '60%' }}
           rules={[{ required: true, message: 'Выберите валюту' }]}
           showSearch
           popupMatchSelectWidth={false}
-          placeholder="Валюта"
+          placeholder={!wallet ? undefined : !wallet?.assets?.length ? 'В кошельке нет активов' : 'Выберите актив'}
           onChange={handleQuoteTickerChange}
-          disabled={!wallet?.assets?.length}
+          disabled={!wallet || !wallet?.assets?.length}
+          status={wallet?.assets?.length && !ticker2IdValue ? 'warning' : undefined}
           fieldNames={{label: 'symbol', value: 'tickerId'}}
           options={wallet?.assets}
           optionRender={(o) => (<>
@@ -91,7 +102,7 @@ const PortfolioTradeFields = ({
             {o.data.free !== undefined ? <span className='option-subtext'>({o.data.free} {o.data.symbol})</span> : null}
           </>)}
         />
-        <Form.Item 
+        <Form.Item
           name="price"
           noStyle
           rules={[{ required: true, message: 'Введите цену' }]}
@@ -103,10 +114,20 @@ const PortfolioTradeFields = ({
             step="0.01"
             min="0"
             style={{ width: '100%' }}
-            disabled={!wallet}
+            disabled={!wallet || !wallet?.assets?.length}
+            variant="filled"
           />
         </Form.Item>
       </Space.Compact>
+    </Form.Item>
+
+    {/* Выбор активного поля транзакции (Сумма, Количество) */}
+    <Form.Item>
+      <Segmented
+        value={calculationType}
+        options={[{ label: 'Сумма', value: 'amount' }, { label: 'Количество', value: 'quantity' }]}
+        onChange={setCalculationType}
+      />
     </Form.Item>
 
     {/* Количество */}
@@ -117,20 +138,17 @@ const PortfolioTradeFields = ({
       ticker={baseTicker?.symbol}
       onChange={handleQuantityChange}
       disabled={calculationType !== 'quantity'}
+      status={calculationType === 'quantity' && nextStepDone && !quantityValue ? 'warning' : undefined}
     />
-
-    {/* Выбор активного поля транзакции (Сумма, Количество) */}
-    <Form.Item>
-      <Segmented options={['Сумма', 'Количество']} onChange={toggleCalculationType} />
-    </Form.Item>
 
     {/* Сумма транзакции */}
     <FormSumInput
       showFree={!isSell}
-      walletFree={wallet?.quoteAssetFree}
+      walletFree={quoteTicker ? wallet?.quoteAssetFree : undefined}
       ticker={quoteTicker?.symbol}
       onChange={handleAmountChange}
-      disabled={calculationType !== 'amount'}
+      disabled={calculationType !== 'amount' || !quoteTicker}
+      status={calculationType === 'amount' && nextStepDone && !amountValue ? 'warning' : undefined}
     />
     </>
   );
