@@ -28,6 +28,7 @@ class WalletReadQuery:
                 asset.name = info.name
                 asset.symbol = info.symbol
                 asset.image = info.image
+                asset.market = info.market
 
     async def _add_has_transactions(self, wallets: list[Wallet]) -> None:
         wallet_ids = [w.id for w in wallets]

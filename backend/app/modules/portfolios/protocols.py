@@ -2,6 +2,8 @@ from typing import Any, Protocol
 
 
 class TickerReader(Protocol):
+    async def get(self, id: int) -> Any | None: ...
+
     async def get_all_by_ids(self, ids: list[int]) -> list[Any]: ...
 
 

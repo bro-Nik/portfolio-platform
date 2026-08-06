@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form } from 'antd';
-import FormSelect from 'src/features/forms/FormSelect';
+import PortfolioSelect from 'src/features/forms/PortfolioSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 
 const PortfolioTransferFields = ({
@@ -8,9 +8,13 @@ const PortfolioTransferFields = ({
   fromPortfolio,
   baseTicker,
   isCounterTransaction,
+  onCreatePortfolio,
 }) => {
 
-  const portfolios = getPortfolios({ excludeId: fromPortfolio?.id, showTickerId: baseTicker?.id });
+  const allPortfolios = getPortfolios({ excludeId: fromPortfolio?.id, showTickerId: baseTicker?.id });
+  const portfolios = baseTicker?.market
+    ? allPortfolios.filter(p => p.market === baseTicker.market || baseTicker.market === 'currency')
+    : allPortfolios;
   const form = Form.useFormInstance();
   const portfolio2IdValue = Form.useWatch('portfolio2Id', form);
   const quantityValue = Form.useWatch('quantity', form);
@@ -24,7 +28,7 @@ const PortfolioTransferFields = ({
     </Form.Item>
 
     {/* Портфель получатель */}
-    <FormSelect
+    <PortfolioSelect
       name='portfolio2Id'
       label='Портфель получатель'
       rules={[{ required: true, message: 'Выберите портфель' }]}
@@ -34,6 +38,7 @@ const PortfolioTransferFields = ({
       placeholder="Выберите портфель получатель"
       fieldNames={{label: 'name', value: 'id'}}
       options={portfolios}
+      onCreatePortfolio={onCreatePortfolio}
       optionRender={(o) => (<>
         {o.data.name}
         <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span>

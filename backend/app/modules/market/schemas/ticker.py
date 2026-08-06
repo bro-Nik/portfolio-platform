@@ -44,6 +44,7 @@ class TickerInfo(BaseModel):
     name: str
     symbol: str
     image: str | None = None
+    market: str | None = None
 
 
 class TickerInfoListResponse(BaseModel):

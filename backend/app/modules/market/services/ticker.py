@@ -345,6 +345,7 @@ class TickerService:
             name=t.name,
             symbol=t.symbol,
             image=f'{BASE_IMAGES_URL}/{t.market}/24/{t.image}' if t.image else None,
+            market=t.market,
         )
 
     def _update_ticker_fields(self, ticker: Ticker, coin: dict) -> None:

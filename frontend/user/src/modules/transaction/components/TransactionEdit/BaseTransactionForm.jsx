@@ -13,6 +13,7 @@ import MetaRowGroup from 'src/components/ui/MetaRowGroup';
 import DateSubview from 'src/features/forms/DateSubview';
 import CommentSubview from 'src/features/forms/CommentSubview';
 import WalletForm from 'src/modules/wallets/components/WalletForm';
+import PortfolioForm from 'src/modules/portfolios/components/PortfolioForm';
 import WalletFundingForm from 'src/modules/wallets/components/WalletFundingForm';
 import SubviewHeader from 'src/components/ui/SubviewHeader';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
@@ -76,6 +77,18 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
     closeSubview();
   };
 
+  const portfolioTargetRef = useRef('portfolio2Id');
+
+  const openPortfolioSubview = (field = 'portfolio2Id') => {
+    portfolioTargetRef.current = field;
+    openSubview('portfolio');
+  };
+
+  const handlePortfolioCreated = (portfolio) => {
+    form.setFieldValue(portfolioTargetRef.current, portfolio.id);
+    closeSubview();
+  };
+
   const walletIdValue = Form.useWatch('walletId', { form, preserve: true });
 
   const getFormFields = () => {
@@ -103,6 +116,7 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
           fromPortfolio={transactionPortfolio}
           baseTicker={baseTicker}
           isCounterTransaction={isCounterTransaction}
+          onCreatePortfolio={() => openPortfolioSubview('portfolio2Id')}
         />
       );
       if (isInOut || isEarning) return (
@@ -139,6 +153,20 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
           wallet={null}
           submitText="Создать"
           onSuccess={handleWalletCreated}
+          onCancel={closeSubview}
+        />
+      </>
+    );
+  }
+
+  if (subview === 'portfolio') {
+    return (
+      <>
+        <SubviewHeader title="Добавить портфель" onBack={closeSubview} />
+        <PortfolioForm
+          initialMarket={transactionPortfolio?.market}
+          submitText="Создать"
+          onSuccess={handlePortfolioCreated}
           onCancel={closeSubview}
         />
       </>

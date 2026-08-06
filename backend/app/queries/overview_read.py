@@ -31,6 +31,7 @@ class OverviewReadQuery:
                 asset.name = info.name
                 asset.symbol = info.symbol
                 asset.image = info.image
+                asset.market = info.market
 
     async def _add_has_transactions(self, portfolios: list[Portfolio], wallets: list[Wallet]) -> None:
         portfolio_ids = [p.id for p in portfolios]

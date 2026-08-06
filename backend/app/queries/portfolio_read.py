@@ -29,6 +29,7 @@ class PortfolioReadQuery:
                 asset.name = info.name
                 asset.symbol = info.symbol
                 asset.image = info.image
+                asset.market = info.market
 
     async def _add_has_transactions(self, portfolios: list[Portfolio]) -> None:
         portfolio_ids = [p.id for p in portfolios]
@@ -55,6 +56,7 @@ class PortfolioReadQuery:
             asset.name = info.name
             asset.symbol = info.symbol
             asset.image = info.image
+            asset.market = info.market
         asset.tags = await self.taggable_repo.get_tags(self.service.ASSET_ENTITY_TYPE, asset.id)
         asset.has_transactions = False
         return asset

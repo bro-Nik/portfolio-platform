@@ -217,7 +217,7 @@ const TagPanel = ({ entityType, entityId, assignedTags, parentId }) => {
         placement="top"
         content={<TagForm onSave={handleCreate} saveLabel="Создать" onCancel={() => setCreateOpen(false)} />}
       >
-        <Button type="dashed" block size="small" icon={<Plus size={14} />} style={{ marginTop: 8 }} onClick={e => e.stopPropagation()}>
+        <Button type="dashed" block icon={<Plus size={14} />} style={{ marginTop: 8 }} onClick={e => e.stopPropagation()}>
           Создать тег
         </Button>
       </Popover>

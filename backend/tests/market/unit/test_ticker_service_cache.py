@@ -94,13 +94,14 @@ class TestTickerServiceCache:
                 name='Bitcoin',
                 symbol='BTC',
                 image='/market/static/images/tickers/crypto/24/1.png',
+                market='crypto',
             )
         }
         get_all_by_ids.assert_awaited_once_with([1])
         pipe = redis.pipeline.return_value.__aenter__.return_value
         pipe.set.assert_called_once_with(
             'ticker:info:1',
-            '{"name":"Bitcoin","symbol":"BTC","image":"/market/static/images/tickers/crypto/24/1.png"}',
+            '{"name":"Bitcoin","symbol":"BTC","image":"/market/static/images/tickers/crypto/24/1.png","market":"crypto"}',
             ex=INFO_CACHE_TTL,
         )
         pipe.execute.assert_awaited_once()
@@ -129,7 +130,7 @@ class TestTickerServiceCache:
         with patch.object(service.repo, 'get_all_by_ids', return_value=tickers):
             info = await service.get_info([1])
 
-        assert info == {1: TickerInfo(name='Bitcoin', symbol='BTC', image=None)}
+        assert info == {1: TickerInfo(name='Bitcoin', symbol='BTC', image=None, market='crypto')}
 
     async def test_save_prices_invalidates_price_keys(self, service, redis):
         with patch.object(service.repo, 'update_ticker_prices', return_value=2) as update_ticker_prices:

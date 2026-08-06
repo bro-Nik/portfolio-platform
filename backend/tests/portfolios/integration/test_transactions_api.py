@@ -4,6 +4,8 @@ from decimal import Decimal
 from fastapi import status
 import pytest
 
+from app.modules.market.models import Ticker
+
 
 class TestTransactionsAPI:
     @pytest.mark.usefixtures('tickers')
@@ -241,6 +243,50 @@ class TestTransactionsAPI:
         assert len(data_asset) == 1
         assert data_asset[0]['type'] == 'TransferOut'
         assert data_asset[0]['portfolio2_id'] == portfolio2['id']
+
+    @pytest.mark.usefixtures('tickers')
+    async def test_transfer_rejects_mismatched_market(self, client, auth_headers, portfolio):
+        portfolio2 = (await client.post(
+            '/api/portfolios/',
+            json={'name': 'Портфель акций', 'market': 'stocks'},
+            headers=auth_headers,
+        )).json()
+        transfer_data = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 1,
+            'quantity': '1.0',
+            'type': 'TransferOut',
+            'portfolio_id': portfolio.id,
+            'portfolio2_id': portfolio2['id'],
+        }
+        response = await client.post('/api/transactions/', json=transfer_data, headers=auth_headers)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'crypto' in response.json()['detail']
+        assert 'stocks' in response.json()['detail']
+
+    @pytest.mark.usefixtures('tickers')
+    async def test_transfer_allows_currency_to_any_market(self, client, auth_headers, portfolio, save, db_session):
+        await save(
+            db_session,
+            Ticker(id=100, name='US Dollar', symbol='USD', market='currency'),
+        )
+        portfolio2 = (await client.post(
+            '/api/portfolios/',
+            json={'name': 'Портфель акций', 'market': 'stocks'},
+            headers=auth_headers,
+        )).json()
+        transfer_data = {
+            'date': datetime.now(UTC).isoformat(),
+            'ticker_id': 100,
+            'quantity': '100.0',
+            'type': 'TransferOut',
+            'portfolio_id': portfolio.id,
+            'portfolio2_id': portfolio2['id'],
+        }
+        response = await client.post('/api/transactions/', json=transfer_data, headers=auth_headers)
+
+        assert response.status_code == status.HTTP_201_CREATED
 
     async def test_create_transaction_invalid_type(self, client, auth_headers, portfolio):
         transaction_data = {

@@ -47,6 +47,7 @@ class TransactionService:
         self._validate_required(data)
         self._validate_values(data)
         await self._validate_references(data)
+        await self._validate_transfer_market(data)
         await self._ensure_not_archived(data)
         t = await self.repo.create(TransactionCreate(**data.model_dump(exclude_unset=True), user_id=self.actor.id).model_dump())
         await self.session.flush()
@@ -58,6 +59,7 @@ class TransactionService:
         self._validate_required(data)
         self._validate_values(data)
         await self._validate_references(data)
+        await self._validate_transfer_market(data)
         old = await self.get(id)
         await self._ensure_not_archived(old)
         await self._notify_services(old, cancel=True)
@@ -143,6 +145,25 @@ class TransactionService:
         missing = sorted(set(ticker_ids) - {t.id for t in existing})
         if missing:
             raise BusinessRuleError(f'Тикер не найден: {", ".join(map(str, missing))}')
+
+    async def _validate_transfer_market(self, data) -> None:
+        if getattr(data, 'type', None) not in ('TransferIn', 'TransferOut'):
+            return
+        portfolio2_id = getattr(data, 'portfolio2_id', None)
+        ticker_id = getattr(data, 'ticker_id', None)
+        if not portfolio2_id or not ticker_id:
+            return
+
+        target = await self.portfolio_service.get(portfolio2_id)
+        ticker = await self.ticker_repo.get(ticker_id)
+        if not ticker:
+            return
+
+        if ticker.market != target.market and ticker.market != 'currency':
+            raise BusinessRuleError(
+                f'Актив рынка «{ticker.market}» нельзя перевести '
+                f'в портфель рынка «{target.market}»',
+            )
 
     def _verify(self, t: Transaction) -> None:
         if not t:

@@ -48,6 +48,7 @@ class WalletAssetResponse(WalletAssetBase):
     name: str | None = None
     symbol: str | None = None
     image: str | None = None
+    market: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 

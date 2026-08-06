@@ -26,11 +26,19 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
     return map;
   }, [portfolios, wallets]);
 
+  const marketMap = useMemo(() => {
+    const map = {};
+    portfolios.forEach(p => p.assets?.forEach(a => { map[a.tickerId] = a.market; }));
+    wallets.forEach(w => w.assets?.forEach(a => { map[a.tickerId] = a.market; }));
+    return map;
+  }, [portfolios, wallets]);
+
   const baseTicker = useMemo(() => ({
     id: baseId,
     symbol: (transaction?.tickerSymbol || symbolMap[baseId])?.toUpperCase(),
+    market: marketMap[baseId],
     price: prices[baseId] || 0,
-  }), [baseId, transaction?.tickerSymbol, symbolMap, prices]);
+  }), [baseId, transaction?.tickerSymbol, symbolMap, marketMap, prices]);
 
   const [quoteTicker, setQuoteTicker] = useState(() => {
     if (!transaction?.ticker2Id) return null;
