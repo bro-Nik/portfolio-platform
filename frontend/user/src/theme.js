@@ -50,6 +50,8 @@ const sharedComponents = {
   },
   Segmented: {
     controlHeight: 36,
+    itemHoverBg: 'transparent',
+    itemActiveBg: 'transparent',
   },
 };
 
@@ -64,7 +66,7 @@ export const lightTheme = {
   components: {
     ...sharedComponents,
     Segmented: {
-      controlHeight: 36,
+      ...sharedComponents.Segmented,
       trackBg: '#f5f5f5',
     },
   },

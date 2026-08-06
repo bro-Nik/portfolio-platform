@@ -11,7 +11,7 @@ import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import AppPage from './pages/app/AppPage';
 import { ROUTES } from './constants/routes';
-import { useAuthStore, useThemeStore } from '@portfolio/shared';
+import { useAuthStore, useResolvedTheme } from '@portfolio/shared';
 import useNavigationStore from './stores/navigationStore';
 import { queryClient } from './queryClient';
 import { TickerIdsProvider } from './hooks/TickerContext';
@@ -20,7 +20,7 @@ import ruRU from 'antd/es/locale/ru_RU';
 
 function App() {
   const { user, initializeAuth } = useAuthStore();
-  const { theme } = useThemeStore();
+  const theme = useResolvedTheme();
   const prevUserId = useRef(user?.id);
 
   useEffect(() => {
@@ -74,7 +74,7 @@ function App() {
 }
 
 function ThemeSetter() {
-  const { theme } = useThemeStore();
+  const theme = useResolvedTheme();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);

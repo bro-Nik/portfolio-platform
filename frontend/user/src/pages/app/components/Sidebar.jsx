@@ -1,9 +1,9 @@
-import React from 'react';
+import { useState } from 'react';
 import { useAuthStore, useThemeStore } from '@portfolio/shared';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
-import { Dropdown, Space, Avatar, Select, Button } from 'antd';
-import { User, Settings, LogOut, ChevronDown, Briefcase, Wallet, Star, X, Sun, Moon } from 'lucide-react';
+import { Dropdown, Space, Avatar, Select, Segmented } from 'antd';
+import { User, Settings, ChevronDown, Briefcase, Wallet, Star, X, Sun, Moon, Monitor } from 'lucide-react';
 import '../styles/Sidebar.scss';
 
 const Sidebar = () => {
@@ -82,8 +82,6 @@ const Sidebar = () => {
       </nav>
 
       <div className="user-panel">
-        <LocaleSelectors />
-        <hr />
         <UserDropdown user={user} logout={handleLogout} />
       </div>
     </div>
@@ -106,36 +104,76 @@ const SidebarItem = ({ item, onClick, onClose, activeSection, isParent = false }
   );
 };
 
-const LocaleSelectors = () => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-    <Select
-      size="small"
-      variant="borderless"
-      defaultValue="ru"
-      options={[
-        { value: 'ru', label: 'RU' },
-        { value: 'en', label: 'EN' },
-      ]}
-    />
-    <Select
-      size="small"
-      variant="borderless"
-      defaultValue="USD"
-      options={[
-        { value: 'USD', label: 'USD' },
-        { value: 'EUR', label: 'EUR' },
-        { value: 'RUB', label: 'RUB' },
-      ]}
-    />
-  </div>
-);
-
 const UserDropdown = ({ user, logout }) => {
   const { setActiveSection } = useNavigation();
+  const { theme, setTheme } = useThemeStore();
+  const [open, setOpen] = useState(false);
+
+  const stopPropagation = (event) => event.stopPropagation();
+
   const menuItems = [
     {
+      key: 'lang',
+      label: (
+        <div className="user-dropdown-row">
+          <span className="user-dropdown-label" onClick={stopPropagation}>Язык</span>
+          <Select
+            size="small"
+            variant="borderless"
+            defaultValue="ru"
+            onClick={stopPropagation}
+            options={[
+              { value: 'ru', label: 'RU' },
+              { value: 'en', label: 'EN' },
+            ]}
+          />
+        </div>
+      ),
+    },
+    {
+      key: 'currency',
+      label: (
+        <div className="user-dropdown-row">
+          <span className="user-dropdown-label" onClick={stopPropagation}>Валюта</span>
+          <Select
+            size="small"
+            variant="borderless"
+            defaultValue="USD"
+            onClick={stopPropagation}
+            options={[
+              { value: 'USD', label: 'USD' },
+              { value: 'EUR', label: 'EUR' },
+              { value: 'RUB', label: 'RUB' },
+            ]}
+          />
+        </div>
+      ),
+    },
+    {
+      key: 'theme',
+      label: (
+        <div className="user-dropdown-row">
+          <span className="user-dropdown-label" onClick={stopPropagation}>Тема</span>
+          <Segmented
+            size="small"
+            value={theme}
+            shape="round"
+            onChange={setTheme}
+            onClick={stopPropagation}
+            options={[
+              { value: 'light', icon: <Sun size={14} />, tooltip: 'Светлая' },
+              { value: 'dark', icon: <Moon size={14} />, tooltip: 'Тёмная' },
+              { value: 'system', icon: <Monitor size={14} />, tooltip: 'Системная' },
+            ]}
+          />
+        </div>
+      ),
+    },
+    {
+      type: 'divider',
+    },
+    {
       key: 'settings',
-      icon: <Settings size={16} />,
       label: 'Профиль',
       onClick: () => setActiveSection('settings')
     },
@@ -144,7 +182,6 @@ const UserDropdown = ({ user, logout }) => {
     },
     {
       key: 'logout',
-      icon: <LogOut size={16} />,
       label: 'Выход',
       danger: true,
       onClick: logout
@@ -153,7 +190,9 @@ const UserDropdown = ({ user, logout }) => {
 
   return (
     <Dropdown
-      menu={{ items: menuItems }}
+      open={open}
+      onOpenChange={setOpen}
+      menu={{ items: menuItems, className: 'user-dropdown-menu' }}
       trigger={['click']}
       placement="topRight"
       arrow
@@ -161,6 +200,7 @@ const UserDropdown = ({ user, logout }) => {
       <Space style={{ color: 'var(--text-muted)', cursor: 'pointer' }}>
         <Avatar 
           size="small" 
+          className="user-avatar"
           icon={<User size={16} />}
         />
         <span className="user-login" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -172,28 +212,16 @@ const UserDropdown = ({ user, logout }) => {
   );
 };
 
-const SidebarHeader = () => {
-  const { theme, toggleTheme } = useThemeStore();
-
-  return (
-    <>
-      <div className="header-box">
-        <a href="/" className="home-link link-body-emphasis">
-          <img style={{ marginRight: 8 }} src="/favicon.png" alt="Логотип" width="32" height="32" />
-          <span style={{ fontSize: 'calc(1.275rem + .3vw)' }}>Portfolios</span>
-        </a>
-        <Button
-          type="text"
-          size="small"
-          icon={theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-          onClick={toggleTheme}
-          title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
-          style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}
-        />
-      </div>
-      <hr />
-    </>
-  );
-};
+const SidebarHeader = () => (
+  <>
+    <div className="header-box">
+      <a href="/" className="home-link link-body-emphasis">
+        <img style={{ marginRight: 8 }} src="/favicon.png" alt="Логотип" width="32" height="32" />
+        <span style={{ fontSize: 'calc(1.275rem + .3vw)' }}>Portfolios</span>
+      </a>
+    </div>
+    <hr />
+  </>
+);
 
 export default Sidebar;

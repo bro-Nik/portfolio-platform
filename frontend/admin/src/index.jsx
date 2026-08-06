@@ -5,7 +5,7 @@ import './index.css';
 import App from './App';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useThemeStore } from '@portfolio/shared';
+import { useResolvedTheme } from '@portfolio/shared';
 import { darkTheme, lightTheme } from './theme';
 
 const queryClient = new QueryClient({
@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
 });
 
 const ThemedApp = () => {
-  const { theme: currentTheme } = useThemeStore();
+  const currentTheme = useResolvedTheme();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', currentTheme);

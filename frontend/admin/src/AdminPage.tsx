@@ -14,7 +14,7 @@ import {
   MoonOutlined,
   StockOutlined
 } from '@ant-design/icons';
-import { useAuthStore, useModalStore, authService, useThemeStore, usePersistedState } from '@portfolio/shared';
+import { useAuthStore, useModalStore, authService, useThemeStore, useResolvedTheme, usePersistedState } from '@portfolio/shared';
 import { ExternalApiModule } from './modules/externalApi/ExternalApiModule';
 import { TickersModule } from './modules/tickers/TickersModule';
 import { UsersModule } from './modules/users/UsersModule';
@@ -39,6 +39,7 @@ const AdminPage = () => {
   const { user, logout: storeLogout } = useAuthStore();
   const { logout } = authService();
   const { theme, toggleTheme } = useThemeStore();
+  const resolvedTheme = useResolvedTheme();
   const [selectedMenu, setSelectedMenu] = usePersistedState<MenuKey>('lastPage', 'api-services');
   const [headerExtra, setHeaderExtra] = useState<React.ReactNode>(null);
 
@@ -133,7 +134,7 @@ const AdminPage = () => {
               <Button type="text" icon={<BellOutlined />} shape="circle" />
               <Button
                 type="text"
-                icon={theme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+                icon={resolvedTheme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
                 onClick={toggleTheme}
                 title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
               />

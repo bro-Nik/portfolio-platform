@@ -109,15 +109,6 @@ const SettingsPage = () => {
             <Avatar
               size={64}
               className="profile-avatar"
-              style={{
-                backgroundColor: '#6366f1',
-                color: '#fff',
-                fontSize: 24,
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
             >
               {getInitials(profile?.email || user?.email)}
             </Avatar>

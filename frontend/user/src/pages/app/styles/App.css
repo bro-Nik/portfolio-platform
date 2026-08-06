@@ -139,3 +139,12 @@ hr {
 .me-2 {
   margin-right: .5rem !important;
 }
+
+.user-avatar.ant-avatar,
+.profile-avatar.ant-avatar {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

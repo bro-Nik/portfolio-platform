@@ -138,3 +138,30 @@ $sidebar-bg: #f8f9fa;
     gap: .5rem;
   }
 }
+
+.user-dropdown-menu {
+  min-width: 220px;
+}
+
+.user-dropdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.user-dropdown-row .ant-select-selection-item {
+  text-align: right;
+}
+
+.user-dropdown-row .ant-segmented-item-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-dropdown-row .ant-segmented-item-icon {
+  display: inline-flex;
+  align-items: center;
+}
