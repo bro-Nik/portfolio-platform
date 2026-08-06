@@ -47,6 +47,8 @@ class TagService:
         tag = await self.repo.get(tag_id)
         if not tag or tag.user_id != self.ctx.actor.id:
             raise NotFoundError('Тег не найден')
+        if await self.taggable_repo.exists(tag_id, entity_type, entity_id):
+            return
         await self.taggable_repo.add(tag_id, entity_type, entity_id)
         await self._session.commit()
 

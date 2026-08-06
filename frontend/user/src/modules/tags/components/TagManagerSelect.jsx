@@ -111,7 +111,7 @@ const TagPanel = ({ entityType, entityId, assignedTags, parentId }) => {
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
 
-  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [selectedIds, setSelectedIds] = useState(() => new Set((assignedTags || []).map(t => t.id)));
   const selectedIdsRef = useRef(selectedIds);
 
   useEffect(() => { selectedIdsRef.current = selectedIds; }, [selectedIds]);

@@ -30,6 +30,13 @@ class TaggableRepository(BaseRepository[Taggable]):
     async def add(self, tag_id: int, entity_type: str, entity_id: int) -> None:
         self._session.add(Taggable(tag_id=tag_id, entity_type=entity_type, entity_id=entity_id))
 
+    async def exists(self, tag_id: int, entity_type: str, entity_id: int) -> bool:
+        return await self._exists(
+            Taggable.tag_id == tag_id,
+            Taggable.entity_type == entity_type,
+            Taggable.entity_id == entity_id,
+        )
+
     async def remove(self, tag_id: int, entity_type: str, entity_id: int) -> None:
         await self.delete_by(
             Taggable.tag_id == tag_id,
