@@ -9,6 +9,7 @@ import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Checkbox, Input } from 'antd';
 import { formatCurrency, formatProfit, formatPercentage, getColorClass } from 'src/utils/format';
+import { calculatePortfolioAssetStats } from 'src/utils/assetStats';
 
 const DEFAULT_VALUE = '-';
 const mutedStyle = { color: 'var(--text-muted)' };
@@ -27,33 +28,26 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
 
     return assets.map(asset => {
       const assetQuantity = Number(asset.quantity) || 0;
-      const assetAmount = Number(asset.amount) || 0;
-      const assetRealizedProfit = Number(asset.realizedProfit) || 0;
-      const assetTotalInvested = Number(asset.totalInvested) || 0;
-      const assetBuyOrders = Number(asset.buyOrders) || 0;
-      const hasBasis = assetAmount > 0;
-      const assetAveragePrice = hasBasis && assetQuantity > 0 ? assetAmount / assetQuantity : null;
-      const assetProfit = hasBasis ? (asset.profit ?? asset.costNow - assetAmount + assetRealizedProfit) : null;
-      const share = portfolio.costNow > 0 ? (asset.costNow / portfolio.costNow) * 100 : 0;
+      const price = asset.price ?? null;
+      const stats = calculatePortfolioAssetStats(asset, price);
       const symbol = asset.symbol?.toUpperCase();
+      const share = portfolio.costNow > 0 ? ((asset.costNow || 0) / portfolio.costNow) * 100 : 0;
+      const hasBasis = stats.hasBasis;
 
       return {
         ...asset,
         share,
         symbol,
-        averagePrice: assetAveragePrice,
-        invested: Math.max(0, assetAmount),
-        totalInvested: assetTotalInvested || Math.max(0, assetAmount),
-        realizedProfit: assetRealizedProfit,
-        buyOrders: assetBuyOrders,
-        profit: assetProfit,
+        ...stats,
+        invested: stats.invested,
+        totalInvested: stats.totalInvested || stats.invested,
         _quantity: assetQuantity > 0 ? `${assetQuantity}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
-        _avgPrice: assetAveragePrice == null ? DEFAULT_VALUE : formatCurrency(assetAveragePrice),
-        _cost: formatCurrency(asset.costNow),
-        _invested: hasBasis ? formatCurrency(Math.max(0, assetAmount)) : DEFAULT_VALUE,
-        _profit: hasBasis ? formatProfit(assetProfit, Math.max(0, assetAmount), assetTotalInvested) : DEFAULT_VALUE,
+        _avgPrice: stats.averagePrice == null ? DEFAULT_VALUE : formatCurrency(stats.averagePrice),
+        _cost: stats.costNow == null ? DEFAULT_VALUE : formatCurrency(stats.costNow),
+        _invested: hasBasis ? formatCurrency(stats.invested) : DEFAULT_VALUE,
+        _profit: stats.profit == null ? DEFAULT_VALUE : formatProfit(stats.profit, stats.invested, stats.totalInvested),
         _share: formatPercentage(share),
-        _buyOrders: formatCurrency(assetBuyOrders || 0),
+        _buyOrders: formatCurrency(stats.buyOrders || 0),
         _hide: !assetQuantity,
       };
     });
@@ -62,7 +56,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;
     if (hideCheap) {
-      result = result.filter(asset => asset.costNow >= 1 || !asset.hasTransactions);
+      result = result.filter(asset => (asset.costNow || 0) >= 1 || !asset.hasTransactions);
     }
     if (!showArchived) {
       const active = result.filter(asset => !asset.isArchived);

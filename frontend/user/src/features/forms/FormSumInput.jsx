@@ -4,6 +4,7 @@ const exists = (value) => value !== undefined && value !== null && value !== fal
 
 const FormSumInput = ({ showFree, walletFree, ticker, onChange, disabled, status }) => {
   const form = Form.useFormInstance();
+  const amountValue = Form.useWatch('quantity2', form);
 
   const freeAmount = (() => {
     if (!showFree) return undefined;
@@ -72,7 +73,7 @@ const FormSumInput = ({ showFree, walletFree, ticker, onChange, disabled, status
             suffix={
               <Space size={4}>
                 <span>{ticker}</span>
-                {showFree && freeAmount > 0 && (
+                {showFree && freeAmount > 0 && amountValue !== freeAmount && (
                   <Button
                     type="link"
                     size="small"

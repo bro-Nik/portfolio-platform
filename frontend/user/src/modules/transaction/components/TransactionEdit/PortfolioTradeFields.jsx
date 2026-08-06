@@ -34,6 +34,9 @@ const PortfolioTradeFields = ({
 
   const nextStepDone = wallet && quoteTicker;
 
+  const marketPrice = baseTicker?.price && quoteTicker?.price ? baseTicker.price / quoteTicker.price : null;
+  const priceValue = Form.useWatch('price', form);
+
   const walletsToBuy = getWallets({});
   const walletsToSell = getWallets({ showTickerId: baseTicker?.id });
 
@@ -116,6 +119,18 @@ const PortfolioTradeFields = ({
             style={{ width: '100%' }}
             disabled={!wallet || !wallet?.assets?.length}
             variant="filled"
+            suffix={priceValue !== marketPrice && marketPrice != null ? (
+              <Button
+                type="link"
+                size="small"
+                onClick={() => {
+                  form.setFieldValue('price', marketPrice);
+                  form.validateFields(['price']);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                style={{ padding: 0, height: 'auto', pointerEvents: 'auto' }}
+              >Рыночная</Button>
+            ) : null}
           />
         </Form.Item>
       </Space.Compact>

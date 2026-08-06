@@ -16,6 +16,7 @@ import WalletForm from 'src/modules/wallets/components/WalletForm';
 import WalletFundingForm from 'src/modules/wallets/components/WalletFundingForm';
 import SubviewHeader from 'src/components/ui/SubviewHeader';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
+import { toUsd } from 'src/utils/currency';
 
 const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onCancel, onSubmit, loading, subview, openSubview, closeSubview }) => {
 
@@ -44,6 +45,11 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
       ...(values.date && { date: values.date.toISOString?.() || new Date(values.date).toISOString() }),
       ...(transaction && { id: transaction.id }), // Добавляем ID если редактируем
       ...(isTrade && { priceUsd: form.getFieldValue('price') * quoteTicker?.price }),
+      ...(transactionType === 'Input' && {
+        priceUsd: form.getFieldValue('inputPrice') == null
+          ? null
+          : toUsd(form.getFieldValue('inputPrice')),
+      }),
       tickerId: baseTicker?.id,
     };
     onSubmit(submitData);
@@ -105,6 +111,7 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
           wallet={transactionWallet}
           portfolio={transactionPortfolio}
           baseTicker={baseTicker}
+          transaction={transaction}
           transactionType={transactionType}
           handleWalletChange={handleWalletChange}
           onAddWallet={() => openWalletSubview('walletId')}

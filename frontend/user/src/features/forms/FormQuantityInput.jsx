@@ -4,6 +4,7 @@ const exists = (value) => value !== undefined && value !== null && value !== fal
 
 const FormQuantityInput = ({ showFree, walletFree, portfolioFree, ticker, onChange, disabled, status }) => {
   const form = Form.useFormInstance();
+  const quantityValue = Form.useWatch('quantity', form);
 
   const freeAmount = (() => {
     if (!showFree) return undefined;
@@ -86,7 +87,7 @@ const FormQuantityInput = ({ showFree, walletFree, portfolioFree, ticker, onChan
             suffix={
               <Space size={4}>
                 <span>{ticker || '—'}</span>
-                {showFree && freeAmount > 0 && (
+                {showFree && freeAmount > 0 && quantityValue !== freeAmount && (
                   <Button
                     type="link"
                     size="small"

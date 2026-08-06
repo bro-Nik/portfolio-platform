@@ -115,6 +115,51 @@ class TestPortfolioAssetService:
             assert asset.quantity == 2.0
             assert asset.amount == 20000.0
 
+    async def test_handle_input_with_price_adds_amount(self, service, mock):
+        transaction = mock(
+            portfolio_id=1, ticker_id='BTC', quantity=2.0, price_usd=100.0, type='Input',
+            user_id=user_id, get_direction=lambda cancel=False: 1 if not cancel else -1,
+        )
+        asset = mock(quantity=0.0, amount=0.0)
+
+        with (
+            patch.object(service, '_get_or_create', return_value=(asset,)),
+        ):
+            await service.handle_transaction(transaction)
+
+            assert asset.quantity == 2.0
+            assert asset.amount == 200.0
+
+    async def test_handle_input_cancel_restores_amount(self, service, mock):
+        transaction = mock(
+            portfolio_id=1, ticker_id='BTC', quantity=2.0, price_usd=100.0, type='Input',
+            user_id=user_id, get_direction=lambda cancel=False: 1 if not cancel else -1,
+        )
+        asset = mock(quantity=2.0, amount=200.0)
+
+        with (
+            patch.object(service, '_get_or_create', return_value=(asset,)),
+        ):
+            await service.handle_transaction(transaction, cancel=True)
+
+            assert asset.quantity == 0.0
+            assert asset.amount == 0.0
+
+    async def test_handle_input_without_price_keeps_zero_basis(self, service, mock):
+        transaction = mock(
+            portfolio_id=1, ticker_id='BTC', quantity=2.0, price_usd=None, type='Input',
+            user_id=user_id, get_direction=lambda cancel=False: 1 if not cancel else -1,
+        )
+        asset = mock(quantity=0.0, amount=0.0)
+
+        with (
+            patch.object(service, '_get_or_create', return_value=(asset,)),
+        ):
+            await service.handle_transaction(transaction)
+
+            assert asset.quantity == 2.0
+            assert asset.amount == 0.0
+
     async def test_archive_many(self, service):
         with patch.object(service.repo, 'update_all_by_ids') as update:
             await service.archive_many([1, 2, 3])

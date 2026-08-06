@@ -160,7 +160,9 @@ class PortfolioAssetService:
 
     async def _handle_input_output(self, t: Transaction, direction: int) -> None:
         (asset,) = await self._get_or_create((t.portfolio_id, t.ticker_id))
-        if t.type == 'Output' and t.quantity and asset.quantity:
+        if t.type == 'Input':
+            asset.amount += t.quantity * (t.price_usd or 0) * direction
+        elif t.type == 'Output' and t.quantity and asset.quantity:
             asset.amount += asset.amount / asset.quantity * t.quantity * direction
         asset.quantity += t.quantity * direction
 

@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useOverviewQuery } from './useOverviewQuery';
 import { useTickerIds, extractTickerIds } from 'src/hooks/TickerContext';
 import { useAssetPricesQuery } from 'src/hooks/TickerContext';
+import { calculatePortfolioAssetStats } from 'src/utils/assetStats';
 
 export const usePortfoliosData = (showArchived = false) => {
   const queryClient = useQueryClient();
@@ -42,34 +43,18 @@ export const usePortfoliosData = (showArchived = false) => {
       let capitalDeployed = 0;
 
       const assetsWithStats = portfolio.assets?.map(asset => {
-        const assetQuantity = Number(asset.quantity) || 0;
-        const assetAmount = Number(asset.amount) || 0;
-        const assetBuyOrders = Number(asset.buyOrders) || 0;
-        const assetRealizedProfit = Number(asset.realizedProfit) || 0;
-        const assetTotalInvested = Number(asset.totalInvested) || 0;
+        const price = prices[asset.tickerId];
+        const stats = calculatePortfolioAssetStats(asset, price);
 
-        const price = prices[asset.tickerId] || 0;
-        const assetCostNow = assetQuantity * price;
-        const assetInvested = Math.max(0, assetAmount);
-        const hasBasis = assetInvested > 0 || assetRealizedProfit !== 0;
-        const assetAveragePrice = hasBasis && assetQuantity > 0 ? assetInvested / assetQuantity : null;
-        const assetProfit = hasBasis ? assetCostNow - assetInvested + assetRealizedProfit : null;
-
-        costNow += assetCostNow;
-        invested += assetInvested;
-        buyOrders += assetBuyOrders;
-        profit += assetProfit ?? 0;
-        capitalDeployed += assetTotalInvested;
+        costNow += stats.costNow || 0;
+        invested += stats.invested;
+        buyOrders += stats.buyOrders;
+        profit += stats.profit ?? 0;
+        capitalDeployed += stats.totalInvested;
 
         return {
           ...asset,
-          costNow: assetCostNow,
-          averagePrice: assetAveragePrice,
-          invested: assetInvested,
-          totalInvested: assetTotalInvested || assetInvested,
-          realizedProfit: assetRealizedProfit,
-          profit: assetProfit,
-          price
+          ...stats,
         };
       }) || [];
 
