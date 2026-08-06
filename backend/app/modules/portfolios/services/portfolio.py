@@ -69,7 +69,14 @@ class PortfolioService:
             raise ConflictError('Нельзя редактировать архивный портфель')
         if data.name != portfolio.name:
             await self._validate_unique_name(data.name)
-        updated = await self.repo.update(id, PortfolioUpdate(**data.model_dump()).model_dump())
+
+        if data.market and data.market != portfolio.market:
+            portfolio_with_assets = await self.repo.get_with_assets(id)
+            if portfolio_with_assets.assets:
+                raise ConflictError('Нельзя изменить рынок портфеля с активами')
+
+        update_data = data.model_dump(exclude_unset=True)
+        updated = await self.repo.update(id, PortfolioUpdate(**update_data).model_dump(exclude_unset=True))
         await self.session.commit()
         return updated
 

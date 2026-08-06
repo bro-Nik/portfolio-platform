@@ -91,6 +91,26 @@ class TestPortfoliosAPI:
         db_portfolio = await db_session.get(Portfolio, data['id'])
         assert db_portfolio.name == update_data['name']
 
+    async def test_update_portfolio_market_empty_success(self, client, auth_headers, portfolio, db_session):
+        update_data = {'name': 'Тестовый портфель', 'market': 'stocks'}
+
+        response = await client.put(f'/api/portfolios/{portfolio.id}', json=update_data, headers=auth_headers)
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data['market'] == 'stocks'
+
+        db_portfolio = await db_session.get(Portfolio, portfolio.id)
+        assert db_portfolio.market == 'stocks'
+
+    async def test_update_portfolio_market_with_assets_rejected(self, client, auth_headers, portfolio, portfolio_asset):
+        update_data = {'name': 'Тестовый портфель', 'market': 'stocks'}
+
+        response = await client.put(f'/api/portfolios/{portfolio.id}', json=update_data, headers=auth_headers)
+
+        assert response.status_code == status.HTTP_409_CONFLICT
+        assert 'активами' in response.json()['detail'].lower()
+
     async def test_delete_portfolio_success(self, client, auth_headers, portfolio, db_session):
         response = await client.delete(f'/api/portfolios/{portfolio.id}', headers=auth_headers)
 

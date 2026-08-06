@@ -98,7 +98,7 @@ const PortfolioEditModal = () => {
                 label="Рынок"
                 rules={[{ required: true, message: 'Выберите рынок' }]}
                 options={markets}
-                disabled={!!portfolio}
+                disabled={!!portfolio && portfolio.assets?.length > 0}
                 variant="filled"
               />
             </div>

@@ -14,7 +14,7 @@ class PortfolioCreateRequest(PortfolioBase):
 
 
 class PortfolioUpdateRequest(PortfolioBase):
-    pass
+    market: str | None = None
 
 
 class PortfolioCreate(PortfolioBase):
@@ -23,7 +23,7 @@ class PortfolioCreate(PortfolioBase):
 
 
 class PortfolioUpdate(PortfolioBase):
-    pass
+    market: str | None = None
 
 
 class PortfolioAssetBase(BaseModel):

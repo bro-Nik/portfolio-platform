@@ -114,7 +114,7 @@ class TestPortfolioService:
             await service.create(portfolio_data)
 
     async def test_update_success(self, service, mock, data):
-        portfolio_data = data(name='Updated Name')
+        portfolio_data = data(name='Updated Name', market=None)
         existing_portfolio = mock(id=1, name='Old Name', user_id=user_id, is_archived=False)
         updated_portfolio = mock(id=1, name='Updated Name', user_id=user_id)
 
@@ -128,6 +128,39 @@ class TestPortfolioService:
             assert result.name == 'Updated Name'
             service.repo.get.assert_called_with(existing_portfolio.id)
             service.repo.exists_by_name_and_user.assert_called_once_with('Updated Name', existing_portfolio.id)
+            service.repo.get_with_assets.assert_not_awaited()
+
+    async def test_update_market_empty_success(self, service, mock, data):
+        portfolio_data = data(name='Old Name', market='stocks')
+        existing_portfolio = mock(id=1, name='Old Name', market='crypto', user_id=user_id, is_archived=False)
+        portfolio_with_assets = mock(id=1, name='Old Name', market='crypto', assets=[], user_id=user_id)
+        updated_portfolio = mock(id=1, name='Old Name', market='stocks', user_id=user_id)
+
+        with (
+            patch.object(service.repo, 'get', return_value=existing_portfolio),
+            patch.object(service.repo, 'get_with_assets', return_value=portfolio_with_assets),
+            patch.object(service.repo, 'update', return_value=updated_portfolio),
+        ):
+            result = await service.update(existing_portfolio.id, portfolio_data)
+
+            assert result.market == 'stocks'
+            service.repo.get_with_assets.assert_awaited_once_with(existing_portfolio.id)
+            service.repo.exists_by_name_and_user.assert_not_awaited()
+
+    async def test_update_market_with_assets_rejected(self, service, mock, data):
+        portfolio_data = data(name='Old Name', market='stocks')
+        existing_portfolio = mock(id=1, name='Old Name', market='crypto', user_id=user_id, is_archived=False)
+        portfolio_with_assets = mock(id=1, name='Old Name', market='crypto', assets=[mock(id=10)], user_id=user_id)
+
+        with (
+            patch.object(service.repo, 'get', return_value=existing_portfolio),
+            patch.object(service.repo, 'get_with_assets', return_value=portfolio_with_assets),
+            pytest.raises(ConflictError, match='активами'),
+        ):
+            await service.update(existing_portfolio.id, portfolio_data)
+
+            service.repo.get_with_assets.assert_awaited_once_with(existing_portfolio.id)
+            service.repo.update.assert_not_awaited()
 
     async def test_delete_success(self, service, mock):
         portfolio = mock(id=1, user_id=user_id)
