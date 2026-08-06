@@ -1,4 +1,4 @@
-import { formatCurrency, formatPercentage, formatProfit, formatDateTime, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatPercentage, formatProfit, formatDateTime, formatQuantity, getColorClass } from 'src/utils/format';
 import {
   getTransactionTypeColor,
   getAdjustedTransactionType,
@@ -87,7 +87,7 @@ export const createQuantityColumn = (getTicker, hideCondition) => ({
   render: (value, record) => {
     if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
     const ticker = getTicker ? getTicker(record) : '';
-    return `${value}${ticker ? ' ' : ''}${ticker}`;
+    return `${formatQuantity(value)}${ticker ? ' ' : ''}${ticker}`;
   },
   width: 200,
   sorter: (a, b) => a.quantity - b.quantity,
@@ -227,7 +227,7 @@ export const createTransactionQuantityColumn = (isCounterTransaction) => ({
     const adjustedType = getAdjustedTransactionType(record, isCounterTransaction);
     return (
       <span className={isCounterTransaction(record) && isTradeTransaction(record) ? '' : getTransactionTypeColor(adjustedType)}>
-        {isOutgoingTransaction(adjustedType) ? '-' : '+'}{record.quantity} {record.tickerSymbol?.toUpperCase()}
+        {isOutgoingTransaction(adjustedType) ? '-' : '+'}{formatQuantity(record.quantity)} {record.tickerSymbol?.toUpperCase()}
       </span>
     );
   },

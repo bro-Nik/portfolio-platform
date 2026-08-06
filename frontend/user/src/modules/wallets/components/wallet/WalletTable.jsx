@@ -8,7 +8,7 @@ import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Input, Checkbox } from 'antd';
-import { formatCurrency, formatProfit, formatPercentage, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
 
 const DEFAULT_VALUE = '-';
 const mutedStyle = { color: 'var(--text-muted)' };
@@ -35,6 +35,8 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
       const share = wallet.costNow > 0 ? (asset.costNow / wallet.costNow) * 100 : 0;
       const symbol = asset.symbol?.toUpperCase();
 
+      const profitValue = asset.profit ?? asset.costNow - assetAmount + assetRealizedProfit;
+
       return {
         ...asset,
         share,
@@ -45,12 +47,12 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
         realizedProfit: assetRealizedProfit,
         buyOrders: assetBuyOrders,
         sellOrders: assetSellOrders,
-        profit: hasBasis ? (asset.profit ?? asset.costNow - assetAmount + assetRealizedProfit) : null,
-        _quantity: assetQuantity > 0 ? `${assetQuantity}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
+        profit: hasBasis ? profitValue : null,
+        _quantity: assetQuantity > 0 ? `${formatQuantity(assetQuantity)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
         _avgPrice: assetAveragePrice == null ? DEFAULT_VALUE : formatCurrency(assetAveragePrice),
         _cost: formatCurrency(asset.costNow),
         _invested: hasBasis ? formatCurrency(Math.max(0, assetAmount)) : DEFAULT_VALUE,
-        _profit: hasBasis ? formatProfit(asset.profit ?? asset.costNow - assetAmount + assetRealizedProfit, Math.max(0, assetAmount), assetTotalInvested) : DEFAULT_VALUE,
+        _profit: hasBasis && Number(profitValue) !== 0 ? formatProfit(profitValue, Math.max(0, assetAmount), assetTotalInvested) : DEFAULT_VALUE,
         _share: formatPercentage(share),
         _buyOrders: formatCurrency(assetBuyOrders || 0),
         _sellOrders: formatCurrency(assetSellOrders || 0),

@@ -66,6 +66,12 @@ describe('calculatePortfolioAssetStats', () => {
     const stats = calculatePortfolioAssetStats({ quantity: 20, amount: 10 }, undefined);
     expect(stats.averagePrice).toBe(0.5);
   });
+
+  it('shows realized profit even without live price', () => {
+    const stats = calculatePortfolioAssetStats({ quantity: 0, amount: 0, realizedProfit: 50 }, undefined);
+    expect(stats.hasPrice).toBe(false);
+    expect(stats.profit).toBe(50);
+  });
 });
 
 describe('calculateWalletAssetStats', () => {

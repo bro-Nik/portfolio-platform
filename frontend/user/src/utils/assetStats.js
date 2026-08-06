@@ -11,7 +11,9 @@ export const calculatePortfolioAssetStats = (asset, price) => {
   const assetInvested = Math.max(0, assetAmount);
   const hasBasis = assetInvested > 0 || assetRealizedProfit !== 0;
   const assetAveragePrice = hasBasis && assetQuantity > 0 ? assetInvested / assetQuantity : null;
-  const assetProfit = hasBasis && hasPrice ? assetCostNow - assetInvested + assetRealizedProfit : null;
+  const assetProfit = hasBasis && hasPrice
+    ? assetCostNow - assetInvested + assetRealizedProfit
+    : (hasBasis && assetRealizedProfit !== 0 ? assetRealizedProfit : null);
 
   return {
     costNow: assetCostNow,

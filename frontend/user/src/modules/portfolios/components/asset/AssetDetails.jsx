@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Card, Row, Col, Typography, Space } from 'antd';
 import { PieChart, Wallet } from 'lucide-react';
 import RichTooltip from 'src/components/RichTooltip';
-import { formatCurrency, formatPercentage } from 'src/utils/format';
+import { formatCurrency, formatQuantity, formatPercentage } from 'src/utils/format';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 
@@ -83,7 +83,7 @@ const SegmentedProgress = ({ segments, totalAmount, symbol }) => {
                   {formatCurrency(segment.costNow)} ({formatPercentage(segment.percent)})
                 </Text>
                 <Text type="secondary" style={{ fontSize: 11 }}>
-                  {segment.quantity} {symbol?.toUpperCase()}
+                  {formatQuantity(segment.quantity)} {symbol?.toUpperCase()}
                 </Text>
               </Space>
             </div>

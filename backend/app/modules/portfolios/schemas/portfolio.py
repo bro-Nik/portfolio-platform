@@ -1,7 +1,6 @@
-from decimal import Decimal
-
 from pydantic import BaseModel, ConfigDict
 
+from app.common.utils.decimal import CleanDecimal
 from app.modules.tags.schemas import TagResponse
 
 
@@ -47,11 +46,11 @@ class PortfolioAssetUpdate(PortfolioAssetBase):
 
 class PortfolioAssetResponse(PortfolioAssetBase):
     id: int
-    quantity: Decimal
-    amount: Decimal
-    realized_profit: Decimal
-    total_invested: Decimal
-    buy_orders: Decimal
+    quantity: CleanDecimal
+    amount: CleanDecimal
+    realized_profit: CleanDecimal
+    total_invested: CleanDecimal
+    buy_orders: CleanDecimal
     is_archived: bool
     has_transactions: bool = False
     tags: list[TagResponse] = []

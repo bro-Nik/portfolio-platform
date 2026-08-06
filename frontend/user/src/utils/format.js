@@ -22,8 +22,9 @@ function getCachedNumberFormatter(locale, formatOptions) {
 }
 
 export const formatCurrency = (number, currency = 'USD', locale = 'ru-RU', dontRound=false) => {
+  if (number == null) return '-';
   number = Number(number);
-  if (isNaN(number)) return;
+  if (isNaN(number)) return '-';
 
   const formatOptions = {};
   if (dontRound) {
@@ -72,6 +73,13 @@ export const getColorClass = (number) => {
 export const formatNumber = (number, options = {}) => {
   const formatter = getCachedNumberFormatter('ru-RU', options);
   return formatter.format(number);
+};
+
+export const formatQuantity = (value) => {
+  const number = Number(value);
+  if (value == null || Number.isNaN(number)) return '0';
+  if (number === 0) return '0';
+  return number.toLocaleString('ru-RU', { maximumFractionDigits: 17 });
 };
 
 export const formatDateTime = (date) => {

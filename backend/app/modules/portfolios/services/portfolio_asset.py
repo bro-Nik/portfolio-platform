@@ -3,16 +3,17 @@ from collections import defaultdict
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import ConflictError, NotFoundError, PermissionDeniedError
-
+from app.common.schemas import Context
+from app.common.utils.decimal import clean_decimal
 from app.modules.portfolios.models import PortfolioAsset, Transaction
 from app.modules.portfolios.repositories import (
-    PortfolioAssetRepository, TransactionRepository,
+    PortfolioAssetRepository,
+    TransactionRepository,
 )
 from app.modules.portfolios.schemas import (
-    PortfolioAssetCreate, PortfolioAssetCreateRequest,
+    PortfolioAssetCreate,
+    PortfolioAssetCreateRequest,
 )
-from app.common.schemas import Context
-
 from app.modules.portfolios.services.transaction_analyzer import combine_ids_and_tickers
 
 
@@ -120,6 +121,8 @@ class PortfolioAssetService:
         handler = self._handle_trade_order if t.order else self._handle_trade_execution
         handler(a1, t, direction, is_base_asset=True)
         handler(a2, t, direction, is_base_asset=False)
+        self._clean_asset(a1)
+        self._clean_asset(a2)
 
     def _handle_trade_execution(self, asset: PortfolioAsset, t: Transaction, direction: int, *, is_base_asset: bool) -> None:
         if is_base_asset:
@@ -148,6 +151,7 @@ class PortfolioAssetService:
     async def _handle_earning(self, t: Transaction, direction: int) -> None:
         (asset,) = await self._get_or_create((t.portfolio_id, t.ticker_id))
         asset.quantity += t.quantity * direction
+        self._clean_asset(asset)
 
     async def _handle_transfer(self, t: Transaction, direction: int) -> None:
         a1, a2 = await self._get_or_create((t.portfolio_id, t.ticker_id), (t.portfolio2_id, t.ticker_id))
@@ -157,6 +161,8 @@ class PortfolioAssetService:
         qty = t.quantity * direction
         a1.quantity += qty
         a2.quantity -= qty
+        self._clean_asset(a1)
+        self._clean_asset(a2)
 
     async def _handle_input_output(self, t: Transaction, direction: int) -> None:
         (asset,) = await self._get_or_create((t.portfolio_id, t.ticker_id))
@@ -165,6 +171,12 @@ class PortfolioAssetService:
         elif t.type == 'Output' and t.quantity and asset.quantity:
             asset.amount += asset.amount / asset.quantity * t.quantity * direction
         asset.quantity += t.quantity * direction
+        self._clean_asset(asset)
+
+    def _clean_asset(self, asset: PortfolioAsset) -> None:
+        fields = ('quantity', 'amount', 'buy_orders', 'sell_orders', 'realized_profit', 'total_invested', 'percent')
+        for field in fields:
+            setattr(asset, field, clean_decimal(getattr(asset, field)))
 
     def _verify(self, asset) -> None:
         if not asset:

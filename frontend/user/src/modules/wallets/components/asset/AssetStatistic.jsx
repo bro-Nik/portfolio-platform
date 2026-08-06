@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatCurrency } from 'src/utils/format';
+import { formatCurrency, formatQuantity } from 'src/utils/format';
 import StatisticCards from 'src/features/statistics/StatisticCards';
 
 const AssetStatistic = ({ asset }) => {
@@ -7,7 +7,7 @@ const AssetStatistic = ({ asset }) => {
   const statCards = [
     {
       title: 'Количество',
-      value: `${asset.quantity || 0} ${asset.symbol?.toUpperCase()}`,
+      value: `${formatQuantity(asset.quantity)} ${asset.symbol?.toUpperCase()}`,
     },
     {
       title: 'Стоимость',

@@ -1,5 +1,4 @@
-import React from 'react';
-import { formatCurrency, formatProfit, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatProfit, formatQuantity, getColorClass } from 'src/utils/format';
 import StatisticCards from 'src/features/statistics/StatisticCards';
 
 const AssetStatistic = ({ asset }) => {
@@ -7,11 +6,11 @@ const AssetStatistic = ({ asset }) => {
   const statCards = [
     {
       title: 'Количество',
-      value: `${asset.quantity || 0} ${asset.symbol?.toUpperCase()}`,
+      value: `${formatQuantity(asset.quantity)} ${asset.symbol?.toUpperCase()}`,
     },
     {
       title: 'Средняя цена',
-      value: asset.averagePrice == null ? '-' : formatCurrency(asset.averagePrice || 0),
+      value: formatCurrency(asset.averagePrice || 0),
     },
     {
       title: 'Стоимость',
@@ -19,7 +18,7 @@ const AssetStatistic = ({ asset }) => {
     },
     {
       title: 'Вложено',
-      value: asset.invested ? formatCurrency(asset.invested || 0) : '-',
+      value: formatCurrency(asset.invested || 0),
     },
     {
       title: 'В ордерах на покупку',
@@ -31,7 +30,7 @@ const AssetStatistic = ({ asset }) => {
     },
     {
       title: 'Прибыль',
-      value: asset.profit == null ? '-' : formatProfit(asset.profit || 0, asset.invested || 0, asset.totalInvested),
+      value: formatProfit(asset.profit || 0, asset.invested || 0, asset.totalInvested),
       class: getColorClass(asset.profit),
     }
   ];

@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
 import TickerAvatar from 'src/components/TickerAvatar';
 import { useNavigation } from 'src/hooks/useNavigation';
@@ -8,7 +8,7 @@ import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Checkbox, Input } from 'antd';
-import { formatCurrency, formatProfit, formatPercentage, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
 import { calculatePortfolioAssetStats } from 'src/utils/assetStats';
 
 const DEFAULT_VALUE = '-';
@@ -41,11 +41,11 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         ...stats,
         invested: stats.invested,
         totalInvested: stats.totalInvested || stats.invested,
-        _quantity: assetQuantity > 0 ? `${assetQuantity}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
+        _quantity: assetQuantity > 0 ? `${formatQuantity(assetQuantity)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
         _avgPrice: stats.averagePrice == null ? DEFAULT_VALUE : formatCurrency(stats.averagePrice),
         _cost: stats.costNow == null ? DEFAULT_VALUE : formatCurrency(stats.costNow),
         _invested: hasBasis ? formatCurrency(stats.invested) : DEFAULT_VALUE,
-        _profit: stats.profit == null ? DEFAULT_VALUE : formatProfit(stats.profit, stats.invested, stats.totalInvested),
+        _profit: stats.profit == null || Number(stats.profit) === 0 ? DEFAULT_VALUE : formatProfit(stats.profit, stats.invested, stats.totalInvested),
         _share: formatPercentage(share),
         _buyOrders: formatCurrency(stats.buyOrders || 0),
         _hide: !assetQuantity,
@@ -137,7 +137,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
       key: 'profit',
       title: 'Прибыль',
       render: (_, record) => {
-        if (record._hide) return DEFAULT_VALUE;
+        if (record._profit === 0) return DEFAULT_VALUE;
         return <span className={getColorClass(record.profit)}>{record._profit}</span>;
       },
       width: 120,
