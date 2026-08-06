@@ -1,6 +1,7 @@
 from collections.abc import AsyncIterator
 import logging
 
+from ...constants import CURRENCY_CODES
 from ..core import BaseProvider, registry
 from ..methods import full_price_updater, ticker_loader
 
@@ -55,7 +56,7 @@ class CurrencyLayerProvider(BaseProvider):
 
         currencies = data.get('currencies', {})
         yield [{'id': code.lower(), 'name': name, 'symbol': code}
-               for code, name in currencies.items()]
+               for code, name in currencies.items() if code.upper() in CURRENCY_CODES]
 
     async def _fetch_live_rates(self) -> dict[str, float]:
         params = self._augment_params()
