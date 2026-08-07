@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, InputNumber, Space, Segmented, Button } from 'antd';
+import { Form, InputNumber, Space, Button } from 'antd';
 import { useTransactionCalculations } from './hooks/useTransactionCalculations';
 import FormCheckbox from 'src/features/forms/FormCheckbox';
 import FormSelect from 'src/features/forms/FormSelect';
@@ -16,8 +16,6 @@ const PortfolioTradeFields = ({
   handleWalletChange,
   baseTicker,
   quoteTicker,
-  calculationType,
-  setCalculationType,
   handleQuoteTickerChange,
   transactionType,
   onAddWallet,
@@ -25,7 +23,7 @@ const PortfolioTradeFields = ({
 }) => {
 
   const form = Form.useFormInstance();
-  const { handleQuantityChange, handleAmountChange, handlePriceChange } = useTransactionCalculations(form, calculationType);
+  const { handleQuantityChange, handleAmountChange, handlePriceChange } = useTransactionCalculations(form);
   const { isSell } = getTransactionTypeInfo(transactionType);
   const walletIdValue = Form.useWatch('walletId', { form, preserve: true });
   const ticker2IdValue = Form.useWatch('ticker2Id', form);
@@ -136,15 +134,6 @@ const PortfolioTradeFields = ({
       </Space.Compact>
     </Form.Item>
 
-    {/* Выбор активного поля транзакции (Сумма, Количество) */}
-    <Form.Item>
-      <Segmented
-        value={calculationType}
-        options={[{ label: 'Сумма', value: 'amount' }, { label: 'Количество', value: 'quantity' }]}
-        onChange={setCalculationType}
-      />
-    </Form.Item>
-
     {/* Количество */}
     <FormQuantityInput
       showFree={isSell}
@@ -152,8 +141,7 @@ const PortfolioTradeFields = ({
       portfolioFree={portfolio?.baseAssetFree}
       ticker={baseTicker?.symbol}
       onChange={handleQuantityChange}
-      disabled={calculationType !== 'quantity'}
-      status={calculationType === 'quantity' && nextStepDone && !quantityValue ? 'warning' : undefined}
+      status={nextStepDone && !quantityValue ? 'warning' : undefined}
     />
 
     {/* Сумма транзакции */}
@@ -162,8 +150,8 @@ const PortfolioTradeFields = ({
       walletFree={quoteTicker ? wallet?.quoteAssetFree : undefined}
       ticker={quoteTicker?.symbol}
       onChange={handleAmountChange}
-      disabled={calculationType !== 'amount' || !quoteTicker}
-      status={calculationType === 'amount' && nextStepDone && !amountValue ? 'warning' : undefined}
+      disabled={!quoteTicker}
+      status={nextStepDone && !amountValue ? 'warning' : undefined}
     />
     </>
   );

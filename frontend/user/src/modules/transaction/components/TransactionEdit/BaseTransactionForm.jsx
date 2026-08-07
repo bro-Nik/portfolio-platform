@@ -26,7 +26,6 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
   const {
     form,
     transactionType, handleTypeChange,
-    calculationType, setCalculationType,
   } = useTransactionForm(transaction, availableTypes[0].value);
 
   const { isTrade, isTransfer, isInOut, isEarning } = getTransactionTypeInfo(transactionType);
@@ -104,8 +103,6 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
           getWallets={getWallets}
           baseTicker={baseTicker}
           portfolio={transactionPortfolio}
-          calculationType={calculationType}
-          setCalculationType={setCalculationType}
           quoteTicker={quoteTicker}
           handleQuoteTickerChange={handleQuoteTickerChange}
           transactionType={transactionType}

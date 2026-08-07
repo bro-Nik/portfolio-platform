@@ -1,13 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Form } from 'antd';
 import dayjs from 'dayjs';
 
 export const useTransactionForm = (transaction, type) => {
   const [form] = Form.useForm();
   const [transactionType, setTransactionType] = useState(transaction?.type || type);
-  const [calculationType, setCalculationTypeState] = useState('amount');
-
-  const setCalculationType = useCallback((value) => setCalculationTypeState(value), []);
 
   useEffect(() => {
     const initialValues = {
@@ -21,7 +18,6 @@ export const useTransactionForm = (transaction, type) => {
   }, [transaction, form, type]);
 
   const handleTypeChange = (type) => {
-    // const type = e.target.value;
     setTransactionType(type);
   };
 
@@ -29,7 +25,5 @@ export const useTransactionForm = (transaction, type) => {
     form,
     transactionType,
     handleTypeChange,
-    calculationType,
-    setCalculationType,
   };
 };

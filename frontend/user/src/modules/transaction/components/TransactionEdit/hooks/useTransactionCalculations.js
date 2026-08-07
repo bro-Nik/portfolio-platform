@@ -1,12 +1,16 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Form } from 'antd';
 
 const exists = (value) => value !== undefined && value !== null && value !== '';
 
-export const useTransactionCalculations = (form, calculationType) => {
+export const useTransactionCalculations = (form) => {
   const price = Form.useWatch('price', form);
 
+  // Поле, которое пользователь редактировал последним — оно считается исходным
+  const lastEditedRef = useRef('amount');
+
   const handleQuantityChange = useCallback(() => {
+    lastEditedRef.current = 'quantity';
     const quantity = form.getFieldValue('quantity');
     const price = form.getFieldValue('price');
     const amount = (parseFloat(quantity) || 0) * (parseFloat(price) || 0);
@@ -14,6 +18,7 @@ export const useTransactionCalculations = (form, calculationType) => {
   }, [form]);
 
   const handleAmountChange = useCallback(() => {
+    lastEditedRef.current = 'amount';
     const amount = form.getFieldValue('quantity2');
     const price = form.getFieldValue('price');
     const quantity = (parseFloat(amount) || 0) / (parseFloat(price) || 1);
@@ -22,26 +27,27 @@ export const useTransactionCalculations = (form, calculationType) => {
 
   const handlePriceChange = useCallback(() => {
     const price = form.getFieldValue('price');
-    let quantity = form.getFieldValue('quantity');
-    let amount = form.getFieldValue('quantity2');
-
-    if (exists(quantity) && (!exists(amount) || calculationType === 'amount')) {
-      // Если не заполнена сумма или включен режим количество
-      amount = (parseFloat(quantity) || 0) * (parseFloat(price) || 0);
-      form.setFieldValue('quantity2', amount);
-    } else if (exists(amount) && (!exists(quantity) || calculationType === 'quantity')) {
-      // Если не заполнено количество или включен режим сумма
-      quantity = (parseFloat(amount) || 0) / (parseFloat(price) || 1);
-      form.setFieldValue('quantity', quantity);
+    if (lastEditedRef.current === 'amount') {
+      // Исходная сумма — пересчитываем количество
+      const amount = form.getFieldValue('quantity2');
+      if (exists(amount)) {
+        form.setFieldValue('quantity', (parseFloat(amount) || 0) / (parseFloat(price) || 1));
+      }
+    } else {
+      // Исходное количество — пересчитываем сумму
+      const quantity = form.getFieldValue('quantity');
+      if (exists(quantity)) {
+        form.setFieldValue('quantity2', (parseFloat(quantity) || 0) * (parseFloat(price) || 0));
+      }
     }
-  }, [form, calculationType]);
+  }, [form]);
 
   // Пересчитываем производное поле при изменении цены (в т.ч. программном — при выборе валюты цены)
   useEffect(() => {
     const priceValue = parseFloat(price) || 0;
     if (!priceValue) return;
 
-    if (calculationType === 'quantity') {
+    if (lastEditedRef.current === 'quantity') {
       const quantity = form.getFieldValue('quantity');
       if (exists(quantity)) {
         form.setFieldValue('quantity2', (parseFloat(quantity) || 0) * priceValue);
@@ -52,7 +58,7 @@ export const useTransactionCalculations = (form, calculationType) => {
         form.setFieldValue('quantity', (parseFloat(amount) || 0) / priceValue);
       }
     }
-  }, [price, calculationType, form]);
+  }, [price, form]);
 
   return {
     handleQuantityChange,
