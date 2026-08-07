@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class Settings(BaseSettings):
@@ -22,6 +26,7 @@ class Settings(BaseSettings):
     rate_limit_default: str = '10/minute'
     rate_limit_auth: str = '10/minute'
     rate_limit_public: str = '10/minute'
+    rate_limit_enabled: bool | None = None
 
     smtp_host: str = ''
     smtp_port: int = 587
@@ -34,13 +39,16 @@ class Settings(BaseSettings):
     password_reset_token_expire_minutes: int = 60
 
     model_config = SettingsConfigDict(
-        env_file='.env',
+        env_file=PROJECT_ROOT / '.env',
         env_file_encoding='utf-8',
         extra='ignore',
     )
 
     @model_validator(mode='after')
     def validate_production_settings(self):
+        if self.rate_limit_enabled is None:
+            self.rate_limit_enabled = self.env == 'production'
+
         if self.env != 'production':
             return self
 
