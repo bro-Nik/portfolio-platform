@@ -7,12 +7,7 @@ import MetaRowGroup from 'src/components/ui/MetaRowGroup';
 import CommentSubview from 'src/features/forms/CommentSubview';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
 import FormSelect from 'src/features/forms/FormSelect';
-
-const MARKETS = [
-  { value: 'crypto', label: 'Крипто' },
-  { value: 'stocks', label: 'Акции' },
-  { value: 'currency', label: 'Валюта' },
-];
+import { MARKETS } from 'src/constants/markets';
 
 const PortfolioForm = ({ initialMarket = 'crypto', submitText = 'Сохранить', onSuccess, onCancel, onSubviewChange }) => {
   const { success, error } = useNotifications();

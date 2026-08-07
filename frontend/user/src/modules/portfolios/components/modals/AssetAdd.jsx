@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Modal, Input, Spin, Empty, Tooltip } from 'antd';
+import { Modal, Input, Spin, Empty, Tooltip, Segmented } from 'antd';
 import { Search } from 'lucide-react';
 import TickerAvatar from 'src/components/TickerAvatar';
 import { useModalStore } from '@portfolio/shared';
@@ -7,6 +7,7 @@ import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
 import { useTickersQuery } from 'src/modules/assets/hooks/useTickersQuery';
 import { getTickerImage } from 'src/modules/assets/utils/assetUtils';
 import { useNotifications } from '@portfolio/shared';
+import { getMarketLabel } from 'src/constants/markets';
 
 const AssetAddModal = () => {
   const { success, error } = useNotifications();
@@ -19,6 +20,7 @@ const AssetAddModal = () => {
     [portfolio.assets]
   );
 
+  const [selectedMarket, setSelectedMarket] = useState(portfolio.market);
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const listRef = useRef();
@@ -28,13 +30,27 @@ const AssetAddModal = () => {
     return () => clearTimeout(timer);
   }, [searchValue]);
 
+  const marketOptions = useMemo(() => {
+    const options = [{ value: portfolio.market, label: getMarketLabel(portfolio.market) }];
+    if (portfolio.market !== 'currency') {
+      options.push({ value: 'currency', label: 'Валюта' });
+    }
+    return options;
+  }, [portfolio.market]);
+
+  const handleMarketChange = (value) => {
+    setSelectedMarket(value);
+    setSearchValue('');
+    setDebouncedSearch('');
+  };
+
   const {
     data,
     isFetching,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useTickersQuery([portfolio.market, 'currency'], debouncedSearch);
+  } = useTickersQuery([selectedMarket], debouncedSearch);
 
   const tickers = useMemo(
     () => data?.pages.flatMap(p => p.data) ?? [],
@@ -45,7 +61,7 @@ const AssetAddModal = () => {
     if (listRef.current) {
       listRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, selectedMarket]);
 
   const handleScroll = useCallback((e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
@@ -157,13 +173,6 @@ const AssetAddModal = () => {
               maximumFractionDigits: 2,
             })}
           </div>
-          <div style={{ 
-            fontSize: '12px',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.3,
-          }}>
-            {ticker.market}
-          </div>
         </div>
       </div>
       </Tooltip>
@@ -181,16 +190,24 @@ const AssetAddModal = () => {
       style={{ top: 20 }}
       destroyOnHidden
     >
-      <div style={{ marginBottom: 16, position: 'relative' }}>
-        <Input
-          placeholder="Введите тикер или название актива..."
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          prefix={<Search size={16} style={{ color: 'var(--text-muted-icon)' }} />}
-          size="large"
-          allowClear
-          variant="filled"
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <Segmented
+          options={marketOptions}
+          value={selectedMarket}
+          onChange={handleMarketChange}
+          style={{ flexShrink: 0 }}
         />
+
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Input
+            placeholder="Введите тикер или название актива..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            prefix={<Search size={16} style={{ color: 'var(--text-muted-icon)' }} />}
+            allowClear
+            variant="filled"
+          />
+        </div>
       </div>
 
       <div
