@@ -57,6 +57,11 @@ async def service_info() -> dict:
         'redoc': '/redoc',
     }
 
+
+@app.get('/health', tags=['health'])
+async def health() -> dict:
+    return {'status': 'ok'}
+
 app.include_router(auth_router, prefix='/auth', tags=['Auth'])
 app.include_router(portfolios_router, prefix='/api', tags=['Portfolios'])
 app.include_router(tags_router, prefix='/api', tags=['Tags'])

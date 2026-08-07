@@ -24,8 +24,16 @@ ENV NODE_ENV=development
 EXPOSE 3000
 
 FROM base AS production
-COPY --chown=appuser:appgroup . .
 ARG APP=@portfolio/user
+COPY --chown=appuser:appgroup . .
 USER appuser
 ENV NODE_ENV=production
 RUN pnpm --filter @portfolio/shared build && pnpm --filter ${APP} build
+
+FROM nginx:alpine AS serve-user
+COPY --from=production /app/user/build /usr/share/nginx/html
+COPY user/nginx.conf /etc/nginx/conf.d/default.conf
+
+FROM nginx:alpine AS serve-admin
+COPY --from=production /app/admin/build /usr/share/nginx/html/admin
+COPY admin/nginx.conf /etc/nginx/conf.d/default.conf

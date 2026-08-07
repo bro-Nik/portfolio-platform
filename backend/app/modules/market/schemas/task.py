@@ -10,6 +10,7 @@ class TaskBase(BaseModel):
     schedule: str
     is_active: bool = True
     parameters: dict[str, Any] = {}
+    next_run: datetime | None = None
 
 
 class TaskCreateRequest(TaskBase):

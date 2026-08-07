@@ -1,8 +1,4 @@
 services:
-  db:
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
-
   init:
     build:
       context: ./backend

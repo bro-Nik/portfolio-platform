@@ -38,7 +38,7 @@ def upgrade() -> None:
 
     op.add_column('ticker', sa.Column('id_new', sa.Integer(), nullable=True))
     op.execute("CREATE SEQUENCE IF NOT EXISTS ticker_id_new_seq")
-    op.execute("SELECT setval('ticker_id_new_seq', COALESCE((SELECT COUNT(*) FROM ticker), 0), true)")
+    op.execute("SELECT setval('ticker_id_new_seq', GREATEST(COALESCE((SELECT COUNT(*) FROM ticker), 0), 1), true)")
     op.execute("UPDATE ticker SET id_new = nextval('ticker_id_new_seq') WHERE id_new IS NULL")
     op.alter_column('ticker', 'id_new', nullable=False)
     op.execute("ALTER TABLE ticker ALTER COLUMN id_new SET DEFAULT nextval('ticker_id_new_seq')")

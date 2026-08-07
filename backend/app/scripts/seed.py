@@ -2,17 +2,20 @@ import argparse
 import asyncio
 import logging
 import os
+from datetime import UTC, datetime, timedelta
 
-from app.common.schemas import AuthUser, Context
 from app.common.schemas.auth import UserRole
 from app.core.database import AsyncSessionLocal
+import app.modules.auth.models
+
 from app.modules.auth.repositories import UserRepository
-from app.modules.auth.schemas import UserCreateRequest
-from app.modules.auth.services.user import UserService
+from app.modules.auth.security import SecurityService
+import app.modules.market.models
 from app.modules.market.repositories import ProviderRepository, TaskRepository
 from app.modules.market.schemas.provider import ProviderCreate
 from app.modules.market.schemas.task import TaskCreate
-
+import app.modules.portfolios.models
+import app.modules.tags.models
 
 logger = logging.getLogger(__name__)
 
@@ -27,16 +30,15 @@ async def run(admin_email: str, admin_password: str) -> None:
             return
 
         logger.info("Создание admin-пользователя: %s", admin_email)
-        user_data = UserCreateRequest(email=admin_email, password=admin_password, role=UserRole.ADMIN)
-        ctx = Context(_actor=AuthUser(id=0, role=UserRole.ADMIN, login=admin_email.split("@")[0]), client_ip="seed", request_id="seed")
-        user_service = UserService(session, ctx)
-        user = await user_service.create(user_data)
+        security = SecurityService()
+        await user_repo.create({
+            'email': admin_email,
+            'password_hash': security.get_password_hash(admin_password),
+            'role': UserRole.ADMIN,
+            'status': 'active',
+        })
+        await session.flush()
 
-        ctx = Context(
-            _actor=AuthUser(id=user.id, role=UserRole.ADMIN, login=admin_email.split("@")[0]),
-            client_ip="seed",
-            request_id="seed",
-        )
         provider_exists = await provider_repo.exists_by_name("CoinGecko")
         if not provider_exists:
             logger.info("Создание провайдера CoinGecko")
@@ -57,6 +59,7 @@ async def run(admin_email: str, admin_password: str) -> None:
                 task_type="selective_price_update",
                 schedule="0 0 * * *",
                 parameters={"strategy": "all"},
+                next_run=datetime.now(UTC) + timedelta(minutes=2),
             )
             await task_repo.create(price_task.model_dump())
         else:
@@ -70,6 +73,7 @@ async def run(admin_email: str, admin_password: str) -> None:
                 task_type="load_tickers",
                 schedule="0 0 1 * *",
                 parameters={"strategy": "all"},
+                next_run=datetime.now(UTC),
             )
             await task_repo.create(load_task.model_dump())
         else:
@@ -82,8 +86,8 @@ async def run(admin_email: str, admin_password: str) -> None:
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     parser = argparse.ArgumentParser(description="Seed initial data")
-    parser.add_argument("--admin-email", default=os.getenv("SEED_ADMIN_EMAIL", "admin@example.com"))
-    parser.add_argument("--admin-password", default=os.getenv("SEED_ADMIN_PASSWORD", "admin123"))
+    parser.add_argument("--admin-email", default=os.getenv("ADMIN_EMAIL", "admin@example.com"))
+    parser.add_argument("--admin-password", default=os.getenv("ADMIN_PASSWORD", "admin123"))
     args = parser.parse_args()
     asyncio.run(run(args.admin_email, args.admin_password))
 

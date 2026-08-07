@@ -1,0 +1,148 @@
+# Self-hosted deployment compose file for Portfolios Platform
+#
+# Usage (recommended via ./scripts/selfhost.sh):
+#   ./scripts/selfhost.sh init     # creates .env.selfhost with random secrets
+#   ./scripts/selfhost.sh up       # builds and starts everything
+#
+# Or directly:
+#   docker compose -f compose.selfhost.yml --env-file .env.selfhost up -d --build
+#
+# Env variables are read from the env file given via --env-file (default: .env.selfhost).
+# Postgres runs with trust auth on the internal docker network (no password, no published port).
+
+name: portfolios-selfhost
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4-alpine
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # Applies schema migrations and seeds initial data (admin, providers, tasks).
+  # Runs once: backend/worker/scheduler wait for it to finish successfully.
+  init:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      ENV: production
+    command: sh -c "cd app && alembic upgrade head && cd /app && python -m app.scripts.seed"
+    env_file:
+      - path: ./.env.selfhost
+        required: true
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      ENV: production
+    env_file:
+      - path: ./.env.selfhost
+        required: true
+    volumes:
+      - market_static:/app/static
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: worker
+    environment:
+      ENV: production
+    env_file:
+      - path: ./.env.selfhost
+        required: true
+    volumes:
+      - market_static:/app/static
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: scheduler
+    environment:
+      ENV: production
+    env_file:
+      - path: ./.env.selfhost
+        required: true
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  ui-user:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: serve-user
+      args:
+        APP: "@portfolio/user"
+    restart: unless-stopped
+
+  ui-admin:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: serve-admin
+      args:
+        APP: "@portfolio/admin"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    volumes:
+      - ./nginx/nginx.selfhost.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - ui-user
+      - ui-admin
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  market_static:
