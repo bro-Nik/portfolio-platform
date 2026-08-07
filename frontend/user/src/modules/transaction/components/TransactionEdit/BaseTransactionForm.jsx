@@ -41,9 +41,12 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
   } = useTransactionData({ tickerId, portfolioId, walletId, transaction, transactionType, form });
 
   const handleSubmit = async (values) => {
+    const dateValue = form.getFieldValue('date');
+    const commentValue = form.getFieldValue('comment');
     const submitData = {
       ...values,
-      ...(values.date && { date: values.date.toISOString?.() || new Date(values.date).toISOString() }),
+      ...(dateValue && { date: dateValue.toISOString?.() || new Date(dateValue).toISOString() }),
+      ...(commentValue != null && { comment: commentValue }),
       ...(transaction && { id: transaction.id }), // Добавляем ID если редактируем
       ...(isTrade && { priceUsd: form.getFieldValue('price') * quoteTicker?.price }),
       ...(transactionType === 'Input' && {
