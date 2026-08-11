@@ -1,6 +1,7 @@
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import logging
 from pathlib import Path
 
 import aiosmtplib
@@ -8,6 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from app.core import settings
 
+logger = logging.getLogger(__name__)
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / 'templates' / 'email'
 jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))
@@ -15,6 +17,13 @@ FAVICON_PATH = TEMPLATE_DIR / 'favicon.png'
 
 
 class EmailService:
+    @staticmethod
+    def _smtp_disabled(what: str, email: str) -> bool:
+        if settings.smtp_enabled:
+            return False
+        logger.info('SMTP не настроен — пропускаем %s для %s', what, email)
+        return True
+
     @staticmethod
     def build_verification_link(token: str) -> str:
         return f'{settings.frontend_url}/login?token={token}'
@@ -25,6 +34,8 @@ class EmailService:
 
     @staticmethod
     async def send_password_reset_confirmation_email(email: str) -> None:
+        if EmailService._smtp_disabled('письмо подтверждения смены пароля', email):
+            return
         subject = 'Пароль был изменён'
         context = {
             'email': email,
@@ -67,6 +78,8 @@ class EmailService:
 
     @staticmethod
     async def send_verification_email(email: str, token: str) -> None:
+        if EmailService._smtp_disabled('письмо подтверждения email', email):
+            return
         link = EmailService.build_verification_link(token)
         subject = 'Подтверждение регистрации'
         context = {
@@ -111,6 +124,8 @@ class EmailService:
 
     @staticmethod
     async def send_password_reset_email(email: str, token: str) -> None:
+        if EmailService._smtp_disabled('письмо сброса пароля', email):
+            return
         link = EmailService.build_password_reset_link(token)
         subject = 'Сброс пароля'
         context = {

@@ -55,7 +55,7 @@ clean           stop and remove ALL data
 - The stack listens on host port `80`. If that port is taken, set `NGINX_PORT` in `.env.selfhost` (e.g. `NGINX_PORT=8080`) and restart.
 - Worker and scheduler run by default.
 - On the very first launch the market catalog and prices are populated automatically (takes a few minutes, requires internet). The scheduler will immediately execute the first tasks; then they follow the cron schedule. Manual rerun is always possible: Admin → External API → Tasks → "Run Now". If the first run failed partway (e.g. no internet), fix the problem and re-run `./scripts/selfhost.sh reinit` — it reapplies migrations and seeds without destroying data.
-- Make a backup before maintenance or major changes: `./scripts/selfhost.sh backup`. Restore with `./scripts/selfhost.sh restore` (latest backup) or `./scripts/selfhost.sh restore path/to/file.sql`.
+- Make a backup before maintenance or major changes: `./scripts/selfhost.sh backup`. Restore with `./scripts/selfhost.sh restore` (latest backup) or `./scripts/selfhost.sh restore path/to/file.sql`. Restore wipes the current database (you'll be asked to confirm).
 
 ## 🚀 Development
 
@@ -63,19 +63,18 @@ clean           stop and remove ALL data
 
 ```bash
 # Clone and start in dev mode
-git clone git@github.com:bro-Nik/portfolio-platform.git
+git clone https://github.com/bro-Nik/portfolio-platform.git
 cd portfolio-platform
 just up -d     # build & start in the background
-
-# Access the application
-open http://localhost:8081
 ```
+
+Once started, open **http://localhost:8081** in your browser.
 
 On first start, migrations and seed data (admin user, providers, etc.) are applied automatically.
 Login: `admin@example.com` / `admin123`.
 
-> Configuration for development lives in `.env.example`. It already works as-is;
-> copy it to `.env` and tweak only if you need to change ports, secrets, or SMTP.
+> The `.env` file is optional for development — the app works with built-in defaults.
+> Copy `.env.example` to `.env` only if you need to change ports, secrets, or SMTP.
 
 ## 🛠 Development commands
 

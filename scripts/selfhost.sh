@@ -17,7 +17,8 @@
 #   ./scripts/selfhost.sh logs-f [svc]  Tail logs
 #   ./scripts/selfhost.sh backup        Dump the database to db_backups/
 #   ./scripts/selfhost.sh backup-list   List existing backups
-#   ./scripts/selfhost.sh restore [f]   Restore from a backup file (default: latest)
+#   ./scripts/selfhost.sh restore [f]   Restore from a backup file (default: latest),
+#                                        wipes the current database (asks for confirmation)
 #   ./scripts/selfhost.sh reinit        Re-run migrations and seed (idempotent)
 #   ./scripts/selfhost.sh passwd [email] Set a new password for a user
 #                                        (default: ADMIN_EMAIL), no mail needed
@@ -179,8 +180,22 @@ cmd_restore() {
   local db_user="$(env_value POSTGRES_USER postgres)"
   local db_name="$(env_value POSTGRES_DB postgres)"
 
+  log "This will WIPE the current database and replace it with: $file"
+  read -rp "Proceed? (y/N) " confirm
+  case "$confirm" in
+    y | Y | yes | YES) ;;
+    *) err "Aborted."; exit 1 ;;
+  esac
+
   log "Stopping app containers before restore..."
   "${COMPOSE[@]}" stop backend worker scheduler init > /dev/null 2>&1 || true
+
+  log "Dropping and recreating the public schema..."
+  if ! "${COMPOSE[@]}" exec -T db psql -U "$db_user" "$db_name" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" > /dev/null; then
+    err "Failed to clean the database. Restore aborted."
+    "${COMPOSE[@]}" up -d
+    exit 1
+  fi
 
   log "Restoring from $file..."
   if "${COMPOSE[@]}" exec -T db psql -U "$db_user" "$db_name" < "$file"; then
@@ -257,7 +272,7 @@ help_text() {
   echo "  logs-f [svc]   tail logs"
   echo "  backup         dump database to db_backups/"
   echo "  backup-list    list backups"
-  echo "  restore [file] restore DB from a backup file (default: latest)"
+  echo "  restore [file] restore DB from a backup file (default: latest, wipes current data)"
   echo "  reinit         re-run migrations and seed data"
   echo "  passwd [email] set a new password for a user (default: ADMIN_EMAIL)"
   echo "  clean          stop and remove all data"
