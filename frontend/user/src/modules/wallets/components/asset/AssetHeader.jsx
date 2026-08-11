@@ -28,7 +28,7 @@ const AssetHeader = ({ wallet, asset }) => {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <TickerAvatar src={asset.image?.replace('/24/', '/40/')} symbol={asset.symbol} size={40} />
-                <span style={{ fontSize: '2.5rem', fontWeight: 600 }}>{formatCurrencyFromUsd(asset.price)}</span>
+                <span style={{ fontSize: '2.5rem', fontWeight: 600 }}>{formatCurrencyFromUsd(asset.price, true)}</span>
               </div>
 
               <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>

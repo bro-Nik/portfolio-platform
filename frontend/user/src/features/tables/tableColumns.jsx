@@ -75,7 +75,7 @@ export const createAveragePriceColumn = (hideCondition) => ({
   render: (value, record) => {
     if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
     if (value == null) return DEFAULT_VALUE;
-    return formatCurrencyFromUsd(value);
+    return formatCurrencyFromUsd(value, true);
   },
   width: 200,
   sorter: (a, b) => (a.averagePrice ?? 0) - (b.averagePrice ?? 0),
@@ -189,10 +189,10 @@ export const createTransactionPriceColumn = () => ({
   render: (_, record) => {
     if (isTradeTransaction(record.type)) return (
       <>
-      {formatCurrencyFromUsd(record.priceUsd)}
+      {formatCurrencyFromUsd(record.priceUsd, true)}
       <br />
       <span style={{ ...smallTextStyle, ...mutedStyle }}>
-        {formatCurrency(record.price, record.ticker2Symbol)}
+        {formatCurrency(record.price, record.ticker2Symbol, undefined, true)}
       </span>
       </>
     );
@@ -211,7 +211,7 @@ export const createTransactionSumColumn = (isCounterTransaction) => ({
       {formatCurrencyFromUsd(record.priceUsd * record.quantity)}
       <br />
       <span style={{ ...smallTextStyle, ...(!isCounterTransaction(record) ? mutedStyle : { color: getTransactionTypeColor(getAdjustedTransactionType(record, isCounterTransaction)) }) }}>
-        {isOutgoingTransaction(record.type) ? '+' : '-'}{formatCurrency(record.quantity2, record.ticker2Symbol)}
+        {isOutgoingTransaction(record.type) ? '+' : '-'}{formatCurrency(record.quantity2, record.ticker2Symbol, undefined, true)}
       </span>
       </>
     );

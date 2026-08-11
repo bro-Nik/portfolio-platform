@@ -4,12 +4,9 @@ import { usePreferencesStore } from 'src/stores/preferencesStore';
 const currencyFormatCache = {};
 
 function getCachedFormatter(locale, currency, formatOptions) {
-  if (formatOptions && Object.keys(formatOptions).length > 0) {
-    return new Intl.NumberFormat(locale, { style: 'currency', currency, ...formatOptions });
-  }
-  const key = `${locale}:${currency}`;
+  const key = `${locale}:${currency}:${formatOptions ? JSON.stringify(formatOptions) : 'default'}`;
   if (!currencyFormatCache[key]) {
-    currencyFormatCache[key] = new Intl.NumberFormat(locale, { style: 'currency', currency });
+    currencyFormatCache[key] = new Intl.NumberFormat(locale, { style: 'currency', currency, ...(formatOptions || {}) });
   }
   return currencyFormatCache[key];
 }
@@ -28,17 +25,23 @@ export const formatCurrency = (number, currency = 'USD', locale = 'ru-RU', dontR
   if (number == null) return '-';
   number = Number(number);
   if (isNaN(number)) return '-';
+  if (number === 0) number = 0;
+
+  if (!dontRound) {
+    number = Math.floor(number);
+  }
 
   const formatOptions = {};
   if (dontRound) {
     formatOptions.minimumFractionDigits = 0;
     formatOptions.maximumFractionDigits = (number.toString().split('.')[1] || '').length;
+  } else {
+    formatOptions.minimumFractionDigits = 0;
+    formatOptions.maximumFractionDigits = 0;
   }
 
   try {
-    const formatter = formatOptions && Object.keys(formatOptions).length > 0
-      ? new Intl.NumberFormat(locale, { style: 'currency', currency, ...formatOptions })
-      : getCachedFormatter(locale, currency, null);
+    const formatter = getCachedFormatter(locale, currency, formatOptions);
     return formatter.format(number);
 
   } catch {
@@ -54,7 +57,10 @@ export const formatPercentage = (value, decimals = 0) => {
 export const formatCurrencyFromUsd = (number, dontRound = false) => {
   if (number == null) return formatCurrency(number);
   const { displayCurrency } = usePreferencesStore.getState();
-  return formatCurrency(fromUsd(number), displayCurrency, 'ru-RU', dontRound);
+  const value = fromUsd(number);
+  if (dontRound) return formatCurrency(value, displayCurrency, 'ru-RU', true);
+  const rounded = number >= 0 && number < 1 ? Math.floor(value) : Math.round(value);
+  return formatCurrency(rounded, displayCurrency, 'ru-RU', true);
 };
 
 export const formatProfit = (profit, invested, totalInvested) => {

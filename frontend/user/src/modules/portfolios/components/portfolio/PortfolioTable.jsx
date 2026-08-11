@@ -8,7 +8,7 @@ import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Checkbox, Input } from 'antd';
-import { formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
 import { calculatePortfolioAssetStats } from 'src/utils/assetStats';
 import { useDisplayCurrency } from 'src/utils/currency';
 
@@ -44,7 +44,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         invested: stats.invested,
         totalInvested: stats.totalInvested || stats.invested,
         _quantity: assetQuantity > 0 ? `${formatQuantity(assetQuantity)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
-        _avgPrice: stats.averagePrice == null ? DEFAULT_VALUE : formatCurrencyFromUsd(stats.averagePrice),
+        _avgPrice: stats.averagePrice == null ? DEFAULT_VALUE : formatCurrencyFromUsd(stats.averagePrice, true),
         _cost: stats.costNow == null ? DEFAULT_VALUE : formatCurrencyFromUsd(stats.costNow),
         _invested: hasBasis ? formatCurrencyFromUsd(stats.invested) : DEFAULT_VALUE,
         _profit: stats.profit == null || Number(stats.profit) === 0 ? DEFAULT_VALUE : formatProfit(stats.profit, stats.invested, stats.totalInvested),
@@ -174,7 +174,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         />
         <TagFilter onChange={setTagFilterIds} scope="asset" />
         <Checkbox checked={hideCheap} onChange={(e) => setHideCheap(e.target.checked)}>
-          Спрятать дешевле $1
+          Спрятать дешевле {formatCurrency(1, 'USD')}
         </Checkbox>
         <Checkbox checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)}>
           Показывать архивные

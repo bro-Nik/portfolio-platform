@@ -9,15 +9,29 @@ describe('format utils', () => {
   });
 
   it('formats currency', () => {
-    expect(formatCurrency(1234.5)).toContain('234,50');
+    expect(formatCurrency(1234.5)).toMatch(/1\s?234/);
     expect(formatCurrency(1234.5)).toContain('$');
+  });
+
+  it('floors to whole units by default', () => {
+    expect(formatCurrency(110.56)).toContain('110');
+    expect(formatCurrency(110.56)).not.toContain('111');
+    expect(formatCurrency(1.99)).toContain('1');
+    expect(formatCurrency(1.99)).not.toContain('2');
+    expect(formatCurrency(0.5)).toContain('0');
+  });
+
+  it('keeps exact digits with dontRound', () => {
+    expect(formatCurrency(110.56, 'USD', 'ru-RU', true)).toContain('110,56');
+    expect(formatCurrency(110.56, 'USD', 'ru-RU', true)).toContain('$');
   });
 
   it('returns dash for missing currency values', () => {
     expect(formatCurrency(null)).toBe('-');
     expect(formatCurrency(undefined)).toBe('-');
     expect(formatCurrency(NaN)).toBe('-');
-    expect(formatCurrency(0)).toContain('0,00');
+    expect(formatCurrency(0)).toContain('0');
+    expect(formatCurrency(0)).toContain('$');
   });
 
   it('converts from USD to display currency and back', () => {
@@ -40,8 +54,32 @@ describe('format utils', () => {
     usePreferencesStore.setState({ displayCurrency: 'RUB', rates: { RUB: 0.011 } });
     const formatted = formatCurrencyFromUsd(110);
     expect(formatted).toContain('₽');
-    expect(formatted).toContain('10');
+    expect(formatted).toMatch(/10\s?000/);
     expect(formatted).not.toContain('$');
+  });
+
+  it('rounds converted values, floors below 1 USD, keeps exact with dontRound', () => {
+    usePreferencesStore.setState({ displayCurrency: 'RUB', rates: { RUB: 0.011 } });
+    expect(formatCurrencyFromUsd(110.56)).toMatch(/10\s?051/);
+    expect(formatCurrencyFromUsd(110.56)).not.toMatch(/10\s?050/);
+    expect(formatCurrencyFromUsd(110.56, true)).toMatch(/10\s?050,90/);
+  });
+
+  it('floors values below 1 USD regardless of display currency', () => {
+    expect(formatCurrencyFromUsd(0.99)).toContain('0');
+    expect(formatCurrencyFromUsd(0.99)).not.toContain('1');
+    expect(formatCurrencyFromUsd(0.6)).toContain('0');
+    expect(formatCurrencyFromUsd(0.6)).not.toContain('1');
+    expect(formatCurrencyFromUsd(1.5)).toContain('2');
+    expect(formatCurrencyFromUsd(1.1)).toContain('1');
+  });
+
+  it('rounds negative values instead of flooring', () => {
+    expect(formatCurrencyFromUsd(-0.4)).toContain('0');
+    expect(formatCurrencyFromUsd(-0.4)).not.toContain('-0');
+    expect(formatCurrencyFromUsd(-0.4)).not.toContain('1');
+    expect(formatCurrencyFromUsd(-123.45)).toContain('123');
+    expect(formatCurrencyFromUsd(-123.45)).not.toContain('124');
   });
 
   it('formats percentage', () => {

@@ -25,7 +25,7 @@ const AssetStatistic = ({ asset }) => {
     },
     {
       title: 'Свободно',
-      value: formatCurrency(asset.free || 0, asset.symbol),
+      value: formatCurrency(asset.free || 0, asset.symbol, undefined, true),
     }
   ];
 

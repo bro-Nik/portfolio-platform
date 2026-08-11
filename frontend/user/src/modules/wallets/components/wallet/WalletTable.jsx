@@ -8,7 +8,7 @@ import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Input, Checkbox } from 'antd';
-import { formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
 import { useDisplayCurrency } from 'src/utils/currency';
 
 const DEFAULT_VALUE = '-';
@@ -51,7 +51,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
         sellOrders: assetSellOrders,
         profit: hasBasis ? profitValue : null,
         _quantity: assetQuantity > 0 ? `${formatQuantity(assetQuantity)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
-        _avgPrice: assetAveragePrice == null ? DEFAULT_VALUE : formatCurrencyFromUsd(assetAveragePrice),
+        _avgPrice: assetAveragePrice == null ? DEFAULT_VALUE : formatCurrencyFromUsd(assetAveragePrice, true),
         _cost: formatCurrencyFromUsd(asset.costNow),
         _invested: hasBasis ? formatCurrencyFromUsd(Math.max(0, assetAmount)) : DEFAULT_VALUE,
         _profit: hasBasis && Number(profitValue) !== 0 ? formatProfit(profitValue, Math.max(0, assetAmount), assetTotalInvested) : DEFAULT_VALUE,
@@ -189,7 +189,7 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
         />
         <TagFilter onChange={setTagFilterIds} scope="asset" />
         <Checkbox checked={hideCheap} onChange={(e) => setHideCheap(e.target.checked)}>
-          Спрятать дешевле $1
+          Спрятать дешевле {formatCurrency(1, 'USD')}
         </Checkbox>
         <Checkbox checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)}>
           Показывать архивные

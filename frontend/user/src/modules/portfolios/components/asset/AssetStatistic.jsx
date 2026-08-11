@@ -12,7 +12,7 @@ const AssetStatistic = ({ asset }) => {
     },
     {
       title: 'Средняя цена',
-      value: formatCurrencyFromUsd(asset.averagePrice || 0),
+      value: formatCurrencyFromUsd(asset.averagePrice || 0, true),
     },
     {
       title: 'Стоимость',

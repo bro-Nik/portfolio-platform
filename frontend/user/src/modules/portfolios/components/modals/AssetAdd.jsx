@@ -171,7 +171,7 @@ const AssetAddModal = () => {
             color: 'var(--text-primary)',
             lineHeight: 1.4,
           }}>
-            {formatCurrencyFromUsd(ticker.price)}
+            {formatCurrencyFromUsd(ticker.price, true)}
           </div>
         </div>
       </div>
