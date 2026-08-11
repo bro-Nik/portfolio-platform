@@ -46,6 +46,7 @@ backup          dump the database to db_backups/
 backup-list     list existing backups
 restore [file]  restore the DB from a backup file (default: latest)
 reinit          re-run migrations and seed data (idempotent)
+passwd [email]  set a new password for a user (default: ADMIN_EMAIL)
 clean           stop and remove ALL data
 ```
 

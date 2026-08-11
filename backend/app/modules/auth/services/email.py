@@ -62,7 +62,7 @@ class EmailService:
             port=settings.smtp_port,
             username=settings.smtp_user or None,
             password=settings.smtp_password or None,
-            start_tls=bool(settings.smtp_host not in ('', 'mailpit', 'localhost')),
+            start_tls=settings.smtp_enabled,
         )
 
     @staticmethod
@@ -106,7 +106,7 @@ class EmailService:
             port=settings.smtp_port,
             username=settings.smtp_user or None,
             password=settings.smtp_password or None,
-            start_tls=bool(settings.smtp_host not in ('', 'mailpit', 'localhost')),
+            start_tls=settings.smtp_enabled,
         )
 
     @staticmethod
@@ -150,5 +150,5 @@ class EmailService:
             port=settings.smtp_port,
             username=settings.smtp_user or None,
             password=settings.smtp_password or None,
-            start_tls=bool(settings.smtp_host not in ('', 'mailpit', 'localhost')),
+            start_tls=settings.smtp_enabled,
         )

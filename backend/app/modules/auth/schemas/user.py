@@ -30,6 +30,8 @@ class UserCreateRequest(BaseModel):
 
 
 class UserUpdateRequest(BaseModel):
+    email: EmailStr | None = None
+    password: str | None = None
     role: UserRole = UserRole.USER
     status: str = 'active'
 
@@ -104,8 +106,3 @@ class UserCreate(BaseModel):
     role: UserRole = UserRole.USER
     status: str = 'active'
     is_verified: bool = False
-
-
-class UserUpdate(BaseModel):
-    role: UserRole = UserRole.USER
-    status: str = 'active'

@@ -166,11 +166,11 @@ export const authService = () => {
     }
   };
 
-  const changeEmail = async (currentPassword: string, newEmail: string): Promise<{ success: boolean; error?: string }> => {
+  const changeEmail = async (currentPassword: string, newEmail: string): Promise<{ success: boolean; message?: string; error?: string }> => {
     try {
-      await authApi.put('/email', { currentPassword, newEmail });
+      const data = await authApi.put('/email', { currentPassword, newEmail }) as { message?: string };
       setStoredLogin(computeLogin(newEmail));
-      return { success: true };
+      return { success: true, message: data?.message };
     } catch (error) {
       return { success: false, error: (error as Error)?.message || 'Ошибка смены email' };
     }

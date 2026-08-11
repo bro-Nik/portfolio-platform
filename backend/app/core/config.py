@@ -58,6 +58,10 @@ class Settings(BaseSettings):
         return self
 
     @property
+    def smtp_enabled(self) -> bool:
+        return self.smtp_host not in ('', 'mailpit', 'localhost')
+
+    @property
     def sync_db_url(self) -> str:
         return self.db_url.replace('+asyncpg', '')
 

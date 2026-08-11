@@ -1,17 +1,20 @@
 import React from 'react';
 import { Modal, Form, Input, Button } from 'antd';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ChangeEmailModal = ({ open, onClose }) => {
   const { success, error } = useNotifications();
+  const queryClient = useQueryClient();
   const [form] = Form.useForm();
   const { changeEmail } = useAuthMutations();
 
   const handleSubmit = async (values) => {
     const result = await changeEmail.mutateAsync(values);
     if (result.success) {
-      success('Письмо с подтверждением отправлено на новый адрес');
+      success(result.message || 'Email успешно изменён');
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       form.resetFields();
       onClose();
     } else {

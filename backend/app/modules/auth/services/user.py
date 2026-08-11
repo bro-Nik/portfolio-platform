@@ -1,12 +1,24 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.exceptions import AuthenticationError, BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
+from app.common.exceptions import (
+    AuthenticationError,
+    BusinessRuleError,
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+)
 from app.common.schemas import Context
+from app.core import settings
 from app.modules.auth.models import User
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.schemas import (
-    DeleteAccountRequest, EmailChangeRequest, PasswordChangeRequest, UserCreate,
-    UserCreateRequest, UserUpdate, UserUpdateRequest, UserRole,
+    DeleteAccountRequest,
+    EmailChangeRequest,
+    PasswordChangeRequest,
+    UserCreate,
+    UserCreateRequest,
+    UserRole,
+    UserUpdateRequest,
 )
 from app.modules.auth.security import SecurityService
 
@@ -46,10 +58,23 @@ class UserService:
     async def update(self, id: int, data: UserUpdateRequest) -> User:
         user = await self.get(id)
         await self._validate_update_data(data, user)
-        user_to_db = UserUpdate(**data.model_dump())
-        updated = await self.repo.update(id, user_to_db.model_dump())
+
+        updates: dict = {}
+        if data.email is not None and data.email != user.email:
+            if await self.repo.exists_by(User.email == data.email):
+                raise ConflictError(f'Пользователь с email {data.email} уже существует')
+            updates['email'] = data.email
+            updates['is_verified'] = True
+        if data.password:
+            updates['password_hash'] = self.security.get_password_hash(data.password)
+        if data.role != user.role:
+            updates['role'] = data.role
+        if data.status != user.status:
+            updates['status'] = data.status
+
+        updated = await self.repo.update(id, updates) if updates else user
         await self.session.commit()
-        return updated
+        return updated or user
 
     async def delete(self, id: int) -> None:
         await self.get(id)
@@ -67,12 +92,16 @@ class UserService:
         await self.repo.update(user_id, {'password_hash': password_hash})
         await self.session.commit()
 
-    async def change_email(self, user_id: int, data: EmailChangeRequest) -> str:
+    async def change_email(self, user_id: int, data: EmailChangeRequest) -> str | None:
         user = await self.get(user_id)
         if not self.security.verify_password(data.current_password, user.password_hash):
             raise AuthenticationError('Неверный текущий пароль')
         if await self.repo.exists_by(User.email == data.new_email):
             raise ConflictError(f'Пользователь с email {data.new_email} уже существует')
+        if not settings.smtp_enabled:
+            await self.repo.update(user_id, {'email': data.new_email, 'is_verified': True})
+            await self.session.commit()
+            return None
         return self.security.create_email_verification_token(user_id, new_email=data.new_email)
 
     async def delete_account(self, user_id: int, data: DeleteAccountRequest) -> None:

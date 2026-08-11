@@ -2,8 +2,14 @@ from unittest.mock import patch
 
 import pytest
 
-from app.common.exceptions import AuthenticationError, BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
-
+from app.common.exceptions import (
+    AuthenticationError,
+    BusinessRuleError,
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+)
+from app.core import settings
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.schemas import UserRole
 from app.modules.auth.security import SecurityService
@@ -150,7 +156,7 @@ class TestUserService:
                 service.security.get_password_hash.assert_called_once_with(create_data.password)
 
     async def test_update_success(self, service, mock, data):
-        update_data = data(role=USER, status='active')
+        update_data = data(role=USER, status='active', email=None, password=None)
         user = mock(id=user_id, role=USER, email='user@example.com')
         updated_user = mock(role=USER, email='user@example.com')
 
@@ -165,7 +171,7 @@ class TestUserService:
             assert result == updated_user
 
     async def test_update_not_found(self, service, mock, data):
-        update_data = data(role=USER, status='active')
+        update_data = data(role=USER, status='active', email=None, password=None)
         service.ctx.actor = mock(id=3, role=USER, email='user@example.com')
 
         with (
@@ -188,7 +194,7 @@ class TestUserService:
         (ADMIN, ADMIN, True, 'other'),
     ])
     async def test_update_role_check(self, service, mock, data, current_role, target_role, should_raise, operation_for):
-        update_data = data(role=USER, status='active')
+        update_data = data(role=USER, status='active', email=None, password=None)
         service.ctx.actor.role = current_role
 
         target_id = 1 if operation_for == 'self' else 2
@@ -221,7 +227,7 @@ class TestUserService:
         (ADMIN, MODERATOR, False, ''),
     ])
     async def test_update_role_validation(self, service, mock, data, current_role, target_role, should_raise, operation_for):
-        update_data = data(role=target_role, status='active')
+        update_data = data(role=target_role, status='active', email=None, password=None)
         service.ctx.actor.role = current_role
 
         target_id = 1 if operation_for == 'self' else 2
@@ -240,6 +246,85 @@ class TestUserService:
                 result = await service.update(target_id, update_data)
 
                 assert result is not None
+
+    async def test_update_with_password_rehashes(self, service, mock, data):
+        update_data = data(role=USER, status='active', email=None, password='NewPass123')
+        user = mock(id=user_id, role=USER, email='user@example.com', status='active')
+        updated_user = mock(role=USER, email='user@example.com', status='active')
+
+        with (
+            patch.object(service.repo, 'get', return_value=user),
+            patch.object(service.security, 'get_password_hash', return_value='new_hashed'),
+            patch.object(service.repo, 'update', return_value=updated_user),
+        ):
+            result = await service.update(user_id, update_data)
+
+            service.repo.update.assert_called_once_with(user_id, {'password_hash': 'new_hashed'})
+            service.security.get_password_hash.assert_called_once_with('NewPass123')
+            assert result == updated_user
+
+    async def test_update_with_email_success(self, service, mock, data):
+        update_data = data(role=USER, status='active', email='new@example.com', password=None)
+        user = mock(id=user_id, role=USER, email='user@example.com', status='active')
+        updated_user = mock(role=USER, email='new@example.com', status='active', is_verified=True)
+
+        with (
+            patch.object(service.repo, 'get', return_value=user),
+            patch.object(service.repo, 'exists_by', return_value=False),
+            patch.object(service.repo, 'update', return_value=updated_user),
+        ):
+            result = await service.update(user_id, update_data)
+
+            service.repo.update.assert_called_once_with(
+                user_id, {'email': 'new@example.com', 'is_verified': True},
+            )
+            assert result == updated_user
+
+    async def test_update_with_email_conflict(self, service, mock, data):
+        update_data = data(role=USER, status='active', email='taken@example.com', password=None)
+        user = mock(id=user_id, role=USER, email='user@example.com', status='active')
+
+        with (
+            patch.object(service.repo, 'get', return_value=user),
+            patch.object(service.repo, 'exists_by', return_value=True),
+            pytest.raises(ConflictError, match='уже существует'),
+        ):
+            await service.update(user_id, update_data)
+
+    async def test_change_email_without_smtp_applies_immediately(self, service, mock, data):
+        user = mock(id=user_id, email='old@example.com', password_hash='hashed')
+        change_data = data(current_password='pass', new_email='new@example.com')
+
+        with (
+            patch.object(settings, 'smtp_host', ''),
+            patch.object(service.repo, 'get', return_value=user),
+            patch.object(service.repo, 'exists_by', return_value=False),
+            patch.object(service.security, 'verify_password', return_value=True),
+            patch.object(service.repo, 'update'),
+        ):
+            result = await service.change_email(user_id, change_data)
+
+            assert result is None
+            service.repo.update.assert_called_once_with(
+                user_id, {'email': 'new@example.com', 'is_verified': True},
+            )
+
+    async def test_change_email_with_smtp_returns_token(self, service, mock, data):
+        user = mock(id=user_id, email='old@example.com', password_hash='hashed')
+        change_data = data(current_password='pass', new_email='new@example.com')
+        token = 'verification.token'
+
+        with (
+            patch.object(settings, 'smtp_host', 'smtp.gmail.com'),
+            patch.object(service.repo, 'get', return_value=user),
+            patch.object(service.repo, 'exists_by', return_value=False),
+            patch.object(service.security, 'verify_password', return_value=True),
+            patch.object(service.security, 'create_email_verification_token', return_value=token),
+        ):
+            result = await service.change_email(user_id, change_data)
+
+            assert result == token
+            service.repo.update.assert_not_called()
 
     async def test_delete_success(self, service, mock):
         user = mock(id=user_id)

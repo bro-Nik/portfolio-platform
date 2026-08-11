@@ -15,7 +15,6 @@ from .user import (
     UserLogin,
     UserRegister,
     UserResponse,
-    UserUpdate,
     UserUpdateRequest,
 )
 
@@ -43,6 +42,5 @@ __all__ = [
     'UserRegister',
     'UserResponse',
     'UserRole',
-    'UserUpdate',
     'UserUpdateRequest',
 ]

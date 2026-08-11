@@ -146,7 +146,7 @@ async def change_password(
     await user_service.change_password(current_user.id, data)
 
 
-@router.put('/email', status_code=204)
+@router.put('/email', status_code=200)
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка смены email')
 async def change_email(
@@ -154,9 +154,12 @@ async def change_email(
     request: Request,
     user_service: UserServiceDep,
     current_user: Annotated[AuthUser, require_user],
-) -> None:
+) -> RegisterResponse:
     token = await user_service.change_email(current_user.id, data)
-    await send_verification_email.kiq(data.new_email, token)
+    if token:
+        await send_verification_email.kiq(data.new_email, token)
+        return RegisterResponse(message='Письмо с подтверждением отправлено на новый адрес')
+    return RegisterResponse(message='Email успешно изменён')
 
 
 @router.post('/logout', status_code=204)

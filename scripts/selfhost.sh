@@ -19,6 +19,8 @@
 #   ./scripts/selfhost.sh backup-list   List existing backups
 #   ./scripts/selfhost.sh restore [f]   Restore from a backup file (default: latest)
 #   ./scripts/selfhost.sh reinit        Re-run migrations and seed (idempotent)
+#   ./scripts/selfhost.sh passwd [email] Set a new password for a user
+#                                        (default: ADMIN_EMAIL), no mail needed
 #   ./scripts/selfhost.sh clean         Stop and delete ALL data (dangerous)
 
 set -euo pipefail
@@ -84,6 +86,7 @@ cmd_init() {
   log "$ENV_FILE created with a random JWT_SECRET."
   log "It is ignored by git — keep it safe and don't commit it."
   log "Set NGINX_PORT if port 80 is busy."
+  log "Change the default admin password: ./scripts/selfhost.sh passwd"
 }
 
 # Portable in-place sed (works on BSD/macOS and GNU/Linux).
@@ -198,6 +201,34 @@ cmd_reinit() {
   log "Done. (seed is idempotent: it only creates the admin if no users exist)"
 }
 
+# Ensures the backend is running so account management commands can exec into it.
+ensure_backend() {
+  if ! "${COMPOSE[@]}" ps --status running 2>/dev/null | grep -q backend; then
+    log "backend is not running — starting db and backend..."
+    "${COMPOSE[@]}" up -d db backend > /dev/null
+    for _ in $(seq 1 30); do
+      "${COMPOSE[@]}" ps --status running 2>/dev/null | grep -q backend && return
+      sleep 2
+    done
+    err "backend did not start in time. Check the logs: $0 logs backend"
+    exit 1
+  fi
+}
+
+cmd_passwd() {
+  ensure_env_file
+  local email="${1:-$(env_value ADMIN_EMAIL admin@example.com)}"
+  read -rsp "New password for $email: " pw1
+  printf '\n'
+  read -rsp "Confirm password: " pw2
+  printf '\n'
+  [ -n "$pw1" ] || { err "Password cannot be empty."; exit 1; }
+  [ "$pw1" = "$pw2" ] || { err "Passwords do not match."; exit 1; }
+  ensure_backend
+  printf '%s\n' "$pw1" | "${COMPOSE[@]}" exec -T backend python -m app.scripts.account --email "$email"
+  log "Password updated for $email."
+}
+
 cmd_clean() {
   ensure_env_file
   log "This will STOP the stack and DELETE ALL DATA (postgres/redis volumes)."
@@ -228,6 +259,7 @@ help_text() {
   echo "  backup-list    list backups"
   echo "  restore [file] restore DB from a backup file (default: latest)"
   echo "  reinit         re-run migrations and seed data"
+  echo "  passwd [email] set a new password for a user (default: ADMIN_EMAIL)"
   echo "  clean          stop and remove all data"
 }
 
@@ -244,6 +276,7 @@ case "${1:-}" in
   backup-list) cmd_backup_list ;;
   restore) shift; cmd_restore "${1:-}" ;;
   reinit) cmd_reinit ;;
+  passwd) shift; cmd_passwd "${1:-}" ;;
   clean) cmd_clean ;;
   "" | -h | --help | help) help_text ;;
   *) err "Unknown command: $1"; help_text; exit 1 ;;

@@ -79,7 +79,15 @@ export const UserFormModal: React.FC = () => {
           <Select options={statuses} placeholder="Выберите статус" />
         </Form.Item>
 
-        {!editMode && (
+        {editMode ? (
+          <Form.Item
+            name="password"
+            label="Новый пароль"
+            rules={[{ min: 6, message: 'Минимум 6 символов' }]}
+          >
+            <Input.Password placeholder="Оставьте пустым, чтобы не менять" />
+          </Form.Item>
+        ) : (
           <Form.Item
             name="password"
             label="Пароль"
