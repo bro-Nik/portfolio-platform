@@ -152,6 +152,27 @@ async def run(admin_email: str, admin_password: str) -> None:
         else:
             logger.info("Задача загрузки тикеров уже существует — пропускаем")
 
+        if not await provider_repo.exists_by_name("CurrencyApi"):
+            logger.info("Создание провайдера CurrencyApi")
+            await provider_repo.create(
+                ProviderCreate(name="CurrencyApi", is_active=True).model_dump()
+            )
+        else:
+            logger.info("Провайдер CurrencyApi уже существует — пропускаем")
+
+        if not await task_repo.exists_by_name("Update currency prices (CurrencyApi)"):
+            logger.info("Создание задачи обновления курсов валют (ежедневно)")
+            currency_task = TaskCreate(
+                name="Update currency prices (CurrencyApi)",
+                provider_name="CurrencyApi",
+                task_type="update_prices",
+                schedule="0 0 * * *",
+                next_run=datetime.now(UTC),
+            )
+            await task_repo.create(currency_task.model_dump())
+        else:
+            logger.info("Задача обновления курсов валют уже существует — пропускаем")
+
         await session.commit()
         logger.info("Seed завершён")
 
