@@ -35,7 +35,7 @@ const PortfolioTradeFields = ({
   const marketPrice = baseTicker?.price && quoteTicker?.price ? baseTicker.price / quoteTicker.price : null;
   const priceValue = Form.useWatch('price', form);
 
-  const walletsToBuy = getWallets({});
+  const walletsToBuy = getWallets({}).sort((a, b) => (b.totalUsd || 0) - (a.totalUsd || 0));
   const walletsToSell = getWallets({ showTickerId: baseTicker?.id });
 
   return (
@@ -75,10 +75,14 @@ const PortfolioTradeFields = ({
       fieldNames={{label: 'name', value: 'id'}}
       options={isSell ? walletsToSell : walletsToBuy}
       onAddWallet={onAddWallet}
-      optionRender={(o) => (<>
-        {o.data.name}
-        {o.data.free !== undefined ? <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span> : null}
-      </>)}
+      optionRender={(o) => (
+        <>
+          {o.data.name}
+          {o.data.totalUsd !== undefined
+            ? <span className='option-subtext'>(≈ ${o.data.totalUsd.toLocaleString('en-US', { maximumFractionDigits: 2 })})</span>
+            : o.data.free !== undefined ? <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span> : null}
+        </>
+      )}
     />
 
     {/* Цена */}

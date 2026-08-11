@@ -52,25 +52,29 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
 
   const lastTicker2IdRef = useRef(transaction?.ticker2Id ?? null);
 
+  const adjustFreeForTransaction = useCallback((free, asset, owner) => {
+    if (!transaction
+        || (asset.tickerId !== transaction.tickerId && asset.tickerId !== transaction.ticker2Id)
+        || (owner.id !== transaction.portfolioId && owner.id !== transaction.portfolio2Id
+            && owner.id !== transaction.walletId && owner.id !== transaction.wallet2Id)
+    ) return free;
+
+    const direction = getTransactionQuantityDirection(transaction);
+    if (asset.tickerId === transaction.ticker2Id && transaction.quantity2 != null) {
+      return free + Number(transaction.quantity2) * -direction;
+    }
+    return free + Number(transaction.quantity) * direction;
+  }, [transaction]);
+
   const calculatePortfolioAssetAvailableBalance = useCallback((asset, portfolio) => {
     if (!asset) return 0;
-    let free = Number(asset?.quantity) || 0;
-    if (transaction
-        && (asset.tickerId === transaction.tickerId || asset.tickerId === transaction.ticker2Id)
-        && (portfolio.id === transaction.portfolioId || portfolio.id === transaction.portfolio2Id)
-    ) free += Number(transaction.quantity) * getTransactionQuantityDirection(transaction);
-    return free;
-  }, [transaction]);
+    return adjustFreeForTransaction(Number(asset?.quantity) || 0, asset, portfolio);
+  }, [adjustFreeForTransaction]);
 
   const calculateWalletAssetAvailableBalance = useCallback((asset, wallet) => {
     if (!asset) return 0;
-    let free = Number(asset?.quantity) || 0;
-    if (transaction
-        && (asset.tickerId === transaction.tickerId || asset.tickerId === transaction.ticker2Id)
-        && (wallet.id === transaction.walletId || wallet.id === transaction.wallet2Id)
-    ) free += Number(transaction.quantity) * getTransactionQuantityDirection(transaction);
-    return free;
-  }, [transaction]);
+    return adjustFreeForTransaction(Number(asset?.quantity) || 0, asset, wallet);
+  }, [adjustFreeForTransaction]);
 
   const getWalletAvailableBalanceByTicker = useCallback((wallet, tickerId) => {
     if (!wallet || !tickerId) return 0;
@@ -142,10 +146,19 @@ export const useTransactionData = ({ tickerId, walletId, portfolioId, transactio
 
     if (showTickerId) {
       result = result.map(w => ({ ...w, free: getWalletAvailableBalanceByTicker(w, showTickerId) }));
+    } else {
+      result = result.map(w => ({
+        ...w,
+        totalUsd: (w.assets || []).reduce((sum, a) => {
+          const price = prices[a.tickerId];
+          if (!price) return sum;
+          return sum + (Number(a.quantity) || 0) * Number(price);
+        }, 0),
+      }));
     }
 
     return result;
-  }, [wallets, walletId, transaction?.walletId, getWalletAvailableBalanceByTicker]);
+  }, [wallets, walletId, transaction?.walletId, getWalletAvailableBalanceByTicker, prices]);
 
   const handleWalletChange = useCallback((walletOrId) => {
     const walletId = typeof walletOrId === 'object' && walletOrId ? walletOrId.id : walletOrId;
