@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuthStore, useThemeStore } from '@portfolio/shared';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
+import { usePreferencesStore } from 'src/stores/preferencesStore';
 import { Dropdown, Space, Avatar, Select, Segmented } from 'antd';
 import { User, Settings, ChevronDown, Briefcase, Wallet, Star, X, Sun, Moon, Monitor } from 'lucide-react';
 import '../styles/Sidebar.scss';
@@ -107,9 +108,15 @@ const SidebarItem = ({ item, onClick, onClose, activeSection, isParent = false }
 const UserDropdown = ({ user, logout }) => {
   const { setActiveSection } = useNavigation();
   const { theme, setTheme } = useThemeStore();
+  const { displayCurrency, rates, setCurrency } = usePreferencesStore();
   const [open, setOpen] = useState(false);
 
   const stopPropagation = (event) => event.stopPropagation();
+
+  const currencyOptions = useMemo(() => {
+    const symbols = Object.keys(rates).length > 0 ? Object.keys(rates) : ['USD', 'EUR', 'RUB'];
+    return ['USD', ...symbols.filter(s => s !== 'USD')].map(symbol => ({ value: symbol, label: symbol }));
+  }, [rates]);
 
   const menuItems = [
     {
@@ -138,13 +145,13 @@ const UserDropdown = ({ user, logout }) => {
           <Select
             size="small"
             variant="borderless"
-            defaultValue="USD"
+            value={displayCurrency}
+            onChange={setCurrency}
             onClick={stopPropagation}
-            options={[
-              { value: 'USD', label: 'USD' },
-              { value: 'EUR', label: 'EUR' },
-              { value: 'RUB', label: 'RUB' },
-            ]}
+            showSearch
+            optionFilterProp="label"
+            popupMatchSelectWidth={false}
+            options={currencyOptions}
           />
         </div>
       ),

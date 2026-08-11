@@ -1,12 +1,14 @@
 import React from 'react';
-import { formatCurrency, formatPercentage } from 'src/utils/format';
+import { formatCurrencyFromUsd, formatPercentage } from 'src/utils/format';
 import StatisticCards from 'src/features/statistics/StatisticCards';
+import { useDisplayCurrency } from 'src/utils/currency';
 
 const WalletStatistic = ({ wallet }) => {
+  useDisplayCurrency();
   const statCards = [
     {
       title: 'Стоимость',
-      value: formatCurrency(wallet.costNow),
+      value: formatCurrencyFromUsd(wallet.costNow),
     },
     {
       title: 'Доля',
@@ -14,7 +16,7 @@ const WalletStatistic = ({ wallet }) => {
     },
     {
       title: 'В ордерах',
-      value: formatCurrency(wallet.buyOrders),
+      value: formatCurrencyFromUsd(wallet.buyOrders),
     }
   ];
 

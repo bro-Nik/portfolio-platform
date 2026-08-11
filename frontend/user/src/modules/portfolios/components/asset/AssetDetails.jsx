@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { Card, Row, Col, Typography, Space } from 'antd';
 import { PieChart, Wallet } from 'lucide-react';
 import RichTooltip from 'src/components/RichTooltip';
-import { formatCurrency, formatQuantity, formatPercentage } from 'src/utils/format';
+import { formatCurrencyFromUsd, formatQuantity, formatPercentage } from 'src/utils/format';
+import { useDisplayCurrency } from 'src/utils/currency';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 
@@ -15,7 +16,7 @@ const SegmentedProgress = ({ segments, totalAmount, symbol }) => {
         title={
           <div style={{ maxWidth: 300 }}>
             <Text strong style={{ display: 'block', marginBottom: 8 }}>
-              Всего: {formatCurrency(0)}
+              Всего: {formatCurrencyFromUsd(0)}
             </Text>
             <Text type="secondary" style={{ fontSize: 13 }}>
               Актива нигде нет
@@ -63,7 +64,7 @@ const SegmentedProgress = ({ segments, totalAmount, symbol }) => {
       title={
         <div style={{ maxWidth: 300 }} >
           <Text strong style={{ display: 'block', marginBottom: 8 }}>
-            Всего: {formatCurrency(totalAmount)}
+            Всего: {formatCurrencyFromUsd(totalAmount)}
           </Text>
           {positionedSegments.map((segment, index) => (
             <div key={index} style={{ marginBottom: 6 }}>
@@ -80,7 +81,7 @@ const SegmentedProgress = ({ segments, totalAmount, symbol }) => {
               </Space>
               <Space orientation="vertical" size={0} style={{ marginLeft: 16 }}>
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  {formatCurrency(segment.costNow)} ({formatPercentage(segment.percent)})
+                  {formatCurrencyFromUsd(segment.costNow)} ({formatPercentage(segment.percent)})
                 </Text>
                 <Text type="secondary" style={{ fontSize: 11 }}>
                   {formatQuantity(segment.quantity)} {symbol?.toUpperCase()}
@@ -128,6 +129,7 @@ const SegmentedProgress = ({ segments, totalAmount, symbol }) => {
 };
 
 const AssetDetail = ({ data }) => {
+  useDisplayCurrency();
   const { portfolios } = usePortfoliosData();
   const { wallets } = useWalletsData();
 

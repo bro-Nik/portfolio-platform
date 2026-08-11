@@ -8,14 +8,16 @@ import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Checkbox, Input } from 'antd';
-import { formatCurrency, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
+import { formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
 import { calculatePortfolioAssetStats } from 'src/utils/assetStats';
+import { useDisplayCurrency } from 'src/utils/currency';
 
 const DEFAULT_VALUE = '-';
 const mutedStyle = { color: 'var(--text-muted)' };
 
 const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const { openItem } = useNavigation();
+  const displayCurrency = useDisplayCurrency();
 
   const [hideCheap, setHideCheap] = usePersistedState('portfolio-hide-cheap', false);
   const [showArchived, setShowArchived] = usePersistedState('portfolio-archive', false);
@@ -42,16 +44,16 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         invested: stats.invested,
         totalInvested: stats.totalInvested || stats.invested,
         _quantity: assetQuantity > 0 ? `${formatQuantity(assetQuantity)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
-        _avgPrice: stats.averagePrice == null ? DEFAULT_VALUE : formatCurrency(stats.averagePrice),
-        _cost: stats.costNow == null ? DEFAULT_VALUE : formatCurrency(stats.costNow),
-        _invested: hasBasis ? formatCurrency(stats.invested) : DEFAULT_VALUE,
+        _avgPrice: stats.averagePrice == null ? DEFAULT_VALUE : formatCurrencyFromUsd(stats.averagePrice),
+        _cost: stats.costNow == null ? DEFAULT_VALUE : formatCurrencyFromUsd(stats.costNow),
+        _invested: hasBasis ? formatCurrencyFromUsd(stats.invested) : DEFAULT_VALUE,
         _profit: stats.profit == null || Number(stats.profit) === 0 ? DEFAULT_VALUE : formatProfit(stats.profit, stats.invested, stats.totalInvested),
         _share: formatPercentage(share),
-        _buyOrders: formatCurrency(stats.buyOrders || 0),
+        _buyOrders: formatCurrencyFromUsd(stats.buyOrders || 0),
         _hide: !assetQuantity,
       };
     });
-  }, [assets, portfolio.costNow]);
+  }, [assets, portfolio.costNow, displayCurrency]);
 
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;

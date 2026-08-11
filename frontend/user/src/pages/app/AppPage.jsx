@@ -13,6 +13,7 @@ import WishlistPage from './WishlistPage'
 import SettingsPage from 'src/pages/settings/SettingsPage'
 
 import { useOverviewData } from 'src/modules/portfolios/hooks/useOverviewData';
+import { useCurrencies } from 'src/modules/assets/hooks/useCurrencies';
 
 const ModalContainer = () => {
   const { currentModal: ModalComponent, modalProps } = useModalStore();
@@ -22,6 +23,7 @@ const ModalContainer = () => {
 const AppPage = () => {
   const { activeSection, openedItems } = useNavigation();
   const { allPortfolios, allWallets, refresh } = useOverviewData();
+  useCurrencies();
 
   const mainSections = {
     'portfolios': PortfoliosPage,

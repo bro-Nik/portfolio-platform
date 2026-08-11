@@ -14,10 +14,12 @@ import {
 import PortfolioActionsDropdown from '../PortfolioActionsDropdown'
 import TagFilter from 'src/modules/tags/components/TagFilter';
 import { useQueryClient } from '@tanstack/react-query';
+import { useDisplayCurrency } from 'src/utils/currency';
 
 const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, showingArchivedFallback }) => {
   const { openItem } = useNavigation();
   const queryClient = useQueryClient();
+  const displayCurrency = useDisplayCurrency();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
 
@@ -48,7 +50,7 @@ const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, show
     createProfitColumn(),
     createShareColumn(),
     createBuyOrdersColumn(),
-  ], [openItem, handleRefresh]);
+  ], [openItem, handleRefresh, displayCurrency]);
 
   return (
     <>

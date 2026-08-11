@@ -8,8 +8,11 @@ import { useTickersQuery } from 'src/modules/assets/hooks/useTickersQuery';
 import { getTickerImage } from 'src/modules/assets/utils/assetUtils';
 import { useNotifications } from '@portfolio/shared';
 import { getMarketLabel } from 'src/constants/markets';
+import { formatCurrencyFromUsd } from 'src/utils/format';
+import { useDisplayCurrency } from 'src/utils/currency';
 
 const AssetAddModal = () => {
+  useDisplayCurrency();
   const { success, error } = useNotifications();
   const { modalProps, closeModal } = useModalStore();
   const { portfolio } = modalProps;
@@ -168,10 +171,7 @@ const AssetAddModal = () => {
             color: 'var(--text-primary)',
             lineHeight: 1.4,
           }}>
-            ${ticker.price.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+            {formatCurrencyFromUsd(ticker.price)}
           </div>
         </div>
       </div>

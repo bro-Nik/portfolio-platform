@@ -7,6 +7,8 @@ import WalletSelect from 'src/features/forms/WalletSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 import FormSumInput from 'src/features/forms/FormSumInput';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
+import { formatCurrencyFromUsd } from 'src/utils/format';
+import { useDisplayCurrency } from 'src/utils/currency';
 
 const PortfolioTradeFields = ({
   transaction,
@@ -21,7 +23,7 @@ const PortfolioTradeFields = ({
   onAddWallet,
   onFundWallet,
 }) => {
-
+  useDisplayCurrency();
   const form = Form.useFormInstance();
   const { handleQuantityChange, handleAmountChange, handlePriceChange } = useTransactionCalculations(form);
   const { isSell } = getTransactionTypeInfo(transactionType);
@@ -79,7 +81,7 @@ const PortfolioTradeFields = ({
         <>
           {o.data.name}
           {o.data.totalUsd !== undefined
-            ? <span className='option-subtext'>(≈ ${o.data.totalUsd.toLocaleString('en-US', { maximumFractionDigits: 2 })})</span>
+            ? <span className='option-subtext'>(≈ {formatCurrencyFromUsd(o.data.totalUsd)})</span>
             : o.data.free !== undefined ? <span className='option-subtext'>({o.data.free} {baseTicker?.symbol})</span> : null}
         </>
       )}

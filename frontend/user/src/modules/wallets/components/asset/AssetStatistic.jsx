@@ -1,8 +1,10 @@
 import React from 'react';
-import { formatCurrency, formatQuantity } from 'src/utils/format';
+import { formatCurrency, formatCurrencyFromUsd, formatQuantity } from 'src/utils/format';
 import StatisticCards from 'src/features/statistics/StatisticCards';
+import { useDisplayCurrency } from 'src/utils/currency';
 
 const AssetStatistic = ({ asset }) => {
+  useDisplayCurrency();
 
   const statCards = [
     {
@@ -11,15 +13,15 @@ const AssetStatistic = ({ asset }) => {
     },
     {
       title: 'Стоимость',
-      value: formatCurrency(asset.costNow || 0),
+      value: formatCurrencyFromUsd(asset.costNow || 0),
     },
     {
       title: 'В ордерах на покупку',
-      value: formatCurrency(asset.buyOrders || 0),
+      value: formatCurrencyFromUsd(asset.buyOrders || 0),
     },
     {
       title: 'В ордерах на продажу',
-      value: formatCurrency(asset.sellOrders || 0),
+      value: formatCurrencyFromUsd(asset.sellOrders || 0),
     },
     {
       title: 'Свободно',

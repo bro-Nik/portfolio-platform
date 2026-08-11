@@ -8,13 +8,15 @@ import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Input, Checkbox } from 'antd';
-import { formatCurrency, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
+import { formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
+import { useDisplayCurrency } from 'src/utils/currency';
 
 const DEFAULT_VALUE = '-';
 const mutedStyle = { color: 'var(--text-muted)' };
 
 const WalletTable = memo(({ wallet, assets, onRefresh }) => {
   const { openItem } = useNavigation();
+  const displayCurrency = useDisplayCurrency();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
   const [hideCheap, setHideCheap] = usePersistedState('wallet-hide-cheap', false);
@@ -49,17 +51,17 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
         sellOrders: assetSellOrders,
         profit: hasBasis ? profitValue : null,
         _quantity: assetQuantity > 0 ? `${formatQuantity(assetQuantity)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
-        _avgPrice: assetAveragePrice == null ? DEFAULT_VALUE : formatCurrency(assetAveragePrice),
-        _cost: formatCurrency(asset.costNow),
-        _invested: hasBasis ? formatCurrency(Math.max(0, assetAmount)) : DEFAULT_VALUE,
+        _avgPrice: assetAveragePrice == null ? DEFAULT_VALUE : formatCurrencyFromUsd(assetAveragePrice),
+        _cost: formatCurrencyFromUsd(asset.costNow),
+        _invested: hasBasis ? formatCurrencyFromUsd(Math.max(0, assetAmount)) : DEFAULT_VALUE,
         _profit: hasBasis && Number(profitValue) !== 0 ? formatProfit(profitValue, Math.max(0, assetAmount), assetTotalInvested) : DEFAULT_VALUE,
         _share: formatPercentage(share),
-        _buyOrders: formatCurrency(assetBuyOrders || 0),
-        _sellOrders: formatCurrency(assetSellOrders || 0),
+        _buyOrders: formatCurrencyFromUsd(assetBuyOrders || 0),
+        _sellOrders: formatCurrencyFromUsd(assetSellOrders || 0),
         _hide: !assetQuantity,
       };
     });
-  }, [assets, wallet.costNow]);
+  }, [assets, wallet.costNow, displayCurrency]);
 
   const filteredAssets = useMemo(() => {
     let result = preparedAssets;

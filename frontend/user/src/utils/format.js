@@ -1,3 +1,6 @@
+import { fromUsd } from 'src/utils/currency';
+import { usePreferencesStore } from 'src/stores/preferencesStore';
+
 const currencyFormatCache = {};
 
 function getCachedFormatter(locale, currency, formatOptions) {
@@ -48,6 +51,12 @@ export const formatPercentage = (value, decimals = 0) => {
   return `${Math.abs(+value.toFixed(+decimals))}%`;
 };
 
+export const formatCurrencyFromUsd = (number, dontRound = false) => {
+  if (number == null) return formatCurrency(number);
+  const { displayCurrency } = usePreferencesStore.getState();
+  return formatCurrency(fromUsd(number), displayCurrency, 'ru-RU', dontRound);
+};
+
 export const formatProfit = (profit, invested, totalInvested) => {
   if (profit == null) return;
   profit = Number(profit);
@@ -56,7 +65,7 @@ export const formatProfit = (profit, invested, totalInvested) => {
 
   const base = totalInvested !== undefined ? Number(totalInvested) : invested;
   const percentage = base === 0 ? 0 : (profit / base) * 100;
-  let profitStr = formatCurrency(profit);
+  let profitStr = formatCurrencyFromUsd(profit);
   if (percentage) profitStr += ` (${formatPercentage(percentage)})`;
   return profitStr;
 };

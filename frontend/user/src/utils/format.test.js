@@ -1,7 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { formatCurrency, formatPercentage, formatProfit, formatQuantity } from 'src/utils/format';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { formatCurrency, formatCurrencyFromUsd, formatPercentage, formatProfit, formatQuantity } from 'src/utils/format';
+import { usePreferencesStore } from 'src/stores/preferencesStore';
+import { fromUsd, toUsd } from 'src/utils/currency';
 
 describe('format utils', () => {
+  beforeEach(() => {
+    usePreferencesStore.setState({ displayCurrency: 'USD', rates: {} });
+  });
+
   it('formats currency', () => {
     expect(formatCurrency(1234.5)).toContain('234,50');
     expect(formatCurrency(1234.5)).toContain('$');
@@ -12,6 +18,30 @@ describe('format utils', () => {
     expect(formatCurrency(undefined)).toBe('-');
     expect(formatCurrency(NaN)).toBe('-');
     expect(formatCurrency(0)).toContain('0,00');
+  });
+
+  it('converts from USD to display currency and back', () => {
+    usePreferencesStore.setState({ displayCurrency: 'RUB', rates: { RUB: 0.011 } });
+    expect(fromUsd(110)).toBeCloseTo(10000);
+    expect(toUsd(10000)).toBeCloseTo(110);
+  });
+
+  it('returns null unchanged when converting', () => {
+    expect(fromUsd(null)).toBeNull();
+    expect(toUsd(undefined)).toBeUndefined();
+  });
+
+  it('falls back to rate 1 when rate is missing', () => {
+    usePreferencesStore.setState({ displayCurrency: 'EUR', rates: {} });
+    expect(fromUsd(100)).toBe(100);
+  });
+
+  it('formats from USD in display currency', () => {
+    usePreferencesStore.setState({ displayCurrency: 'RUB', rates: { RUB: 0.011 } });
+    const formatted = formatCurrencyFromUsd(110);
+    expect(formatted).toContain('₽');
+    expect(formatted).toContain('10');
+    expect(formatted).not.toContain('$');
   });
 
   it('formats percentage', () => {

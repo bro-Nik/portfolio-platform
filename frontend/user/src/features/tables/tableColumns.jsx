@@ -1,4 +1,4 @@
-import { formatCurrency, formatPercentage, formatProfit, formatDateTime, formatQuantity, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatCurrencyFromUsd, formatPercentage, formatProfit, formatDateTime, formatQuantity, getColorClass } from 'src/utils/format';
 import {
   getTransactionTypeColor,
   getAdjustedTransactionType,
@@ -63,7 +63,7 @@ export const createCostColumn = (hideCondition) => ({
   title: 'Стоимость',
   render: (value, record) => {
     if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    return formatCurrency(value);
+    return formatCurrencyFromUsd(value);
   },
   width: 200,
   sorter: (a, b) => a.costNow - b.costNow,
@@ -75,7 +75,7 @@ export const createAveragePriceColumn = (hideCondition) => ({
   render: (value, record) => {
     if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
     if (value == null) return DEFAULT_VALUE;
-    return formatCurrency(value);
+    return formatCurrencyFromUsd(value);
   },
   width: 200,
   sorter: (a, b) => (a.averagePrice ?? 0) - (b.averagePrice ?? 0),
@@ -125,7 +125,7 @@ export const createInvestedColumn = (hideCondition) => ({
   title: 'Вложено',
   render: (value, record) => {
     if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    return formatCurrency(value);
+    return formatCurrencyFromUsd(value);
   },
   width: 120,
   sorter: (a, b) => a.invested - b.invested,
@@ -136,7 +136,7 @@ export const createBuyOrdersColumn = (hideCondition) => ({
   title: 'В ордерах на покупку',
   render: (value, record) => {
     if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    return formatCurrency(value || 0);
+    return formatCurrencyFromUsd(value || 0);
   },
   width: 120,
   sorter: (a, b) => (a.buyOrders || 0) - (b.buyOrders || 0),
@@ -147,7 +147,7 @@ export const createSellOrdersColumn = (hideCondition) => ({
   title: 'В ордерах на продажу',
   render: (value, record) => {
     if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    return formatCurrency(value || 0);
+    return formatCurrencyFromUsd(value || 0);
   },
   width: 120,
   sorter: (a, b) => (a.sellOrders || 0) - (b.sellOrders || 0),
@@ -189,7 +189,7 @@ export const createTransactionPriceColumn = () => ({
   render: (_, record) => {
     if (isTradeTransaction(record.type)) return (
       <>
-      {formatCurrency(record.priceUsd)}
+      {formatCurrencyFromUsd(record.priceUsd)}
       <br />
       <span style={{ ...smallTextStyle, ...mutedStyle }}>
         {formatCurrency(record.price, record.ticker2Symbol)}
@@ -208,7 +208,7 @@ export const createTransactionSumColumn = (isCounterTransaction) => ({
     if (isTradeTransaction(record.type)) return (
       <>
       {isOutgoingTransaction(record.type) ? '+' : '-'}
-      {formatCurrency(record.priceUsd * record.quantity)}
+      {formatCurrencyFromUsd(record.priceUsd * record.quantity)}
       <br />
       <span style={{ ...smallTextStyle, ...(!isCounterTransaction(record) ? mutedStyle : { color: getTransactionTypeColor(getAdjustedTransactionType(record, isCounterTransaction)) }) }}>
         {isOutgoingTransaction(record.type) ? '+' : '-'}{formatCurrency(record.quantity2, record.ticker2Symbol)}

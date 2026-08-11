@@ -8,6 +8,7 @@ import TransactionActionsDropdown from 'src/modules/transaction/components/Trans
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { isTradeTransaction, isTransferTransaction } from 'src/modules/transaction/utils/type';
+import { useDisplayCurrency } from 'src/utils/currency';
 import {
   createTransactionLinkColumn,
   createTransactionPriceColumn,
@@ -19,6 +20,7 @@ import {
 const AssetTable = memo(({ wallet, asset, transactions }) => {
   const { openModal } = useModalStore();
   const { openItem } = useNavigation();
+  const displayCurrency = useDisplayCurrency();
   const { getPortfolio } = usePortfoliosData();
   const { getWallet } = useWalletsData();
 
@@ -68,7 +70,7 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
     createCommentColumn(),
   ], [
     isCounterTransaction, handleTransactionClick,
-    getPortfolio, getWallet, openItem
+    getPortfolio, getWallet, openItem, displayCurrency
   ]);
 
   return <DataTable data={transactions} columnsConfig={columns} storageKey="wallet-asset-sorting" />;

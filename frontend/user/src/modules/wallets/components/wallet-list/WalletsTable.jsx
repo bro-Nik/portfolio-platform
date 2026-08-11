@@ -7,10 +7,12 @@ import { createCostColumn, createShareColumn, createBuyOrdersColumn, createNameC
 import WalletActionsDropdown from '../WalletActionsDropdown'
 import TagFilter from 'src/modules/tags/components/TagFilter';
 import { useQueryClient } from '@tanstack/react-query';
+import { useDisplayCurrency } from 'src/utils/currency';
 
 const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArchivedFallback }) => {
   const { openItem } = useNavigation();
   const queryClient = useQueryClient();
+  const displayCurrency = useDisplayCurrency();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
 
@@ -39,7 +41,7 @@ const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArc
     createCostColumn(),
     createShareColumn(),
     createBuyOrdersColumn(),
-  ], [openItem, handleRefresh]);
+  ], [openItem, handleRefresh, displayCurrency]);
 
   return (
     <>

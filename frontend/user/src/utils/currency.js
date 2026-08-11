@@ -1,9 +1,15 @@
-// Валюта представления пользователя.
-// Пока жёстко USD; в будущем — настройка пользователя (здесь появится курс).
-export const DISPLAY_CURRENCY = 'USD';
+import { getCurrencyRate, usePreferencesStore } from 'src/stores/preferencesStore';
 
-// Из валюты представления в USD (для бэкенда)
-export const toUsd = (value) => value;
+export const useDisplayCurrency = () => usePreferencesStore((state) => state.displayCurrency);
 
-// Из USD в валюту представления (для отображения)
-export const fromUsd = (value) => value;
+const displayCurrencyRate = () => getCurrencyRate(usePreferencesStore.getState().displayCurrency);
+
+export const fromUsd = (value) => {
+  if (value == null) return value;
+  return value / displayCurrencyRate();
+};
+
+export const toUsd = (value) => {
+  if (value == null) return value;
+  return value * displayCurrencyRate();
+};

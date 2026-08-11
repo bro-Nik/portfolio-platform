@@ -8,6 +8,7 @@ import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { Briefcase, Wallet } from 'lucide-react'
 import { isTradeTransaction, isTransferTransaction } from 'src/modules/transaction/utils/type';
+import { useDisplayCurrency } from 'src/utils/currency';
 import {
   createTransactionLinkColumn,
   createTransactionPriceColumn,
@@ -19,6 +20,7 @@ import {
 const AssetTable = memo(({ portfolio, asset, transactions }) => {
   const { openModal } = useModalStore();
   const { openItem } = useNavigation();
+  const displayCurrency = useDisplayCurrency();
   const { getPortfolio } = usePortfoliosData();
   const { getWallet } = useWalletsData();
 
@@ -67,7 +69,7 @@ const AssetTable = memo(({ portfolio, asset, transactions }) => {
     createCommentColumn(),
   ], [
     isCounterTransaction, handleTransactionClick,
-    getPortfolio, getWallet, openItem
+    getPortfolio, getWallet, openItem, displayCurrency
   ]);
 
   return <DataTable data={transactions} columnsConfig={columns} storageKey="portfolio-asset-sorting" />;

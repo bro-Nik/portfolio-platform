@@ -1,17 +1,19 @@
 import React from 'react';
-import { formatCurrency, formatPercentage, formatProfit, getColorClass } from 'src/utils/format';
+import { formatCurrencyFromUsd, formatPercentage, formatProfit, getColorClass } from 'src/utils/format';
 import StatisticCards from 'src/features/statistics/StatisticCards';
+import { useDisplayCurrency } from 'src/utils/currency';
 
 const PortfolioStatistic = ({ stats }) => {
+  useDisplayCurrency();
 
   const statCards = [
     {
       title: 'Стоимость',
-      value: formatCurrency(stats.costNow),
+      value: formatCurrencyFromUsd(stats.costNow),
     },
     {
       title: 'Вложено',
-      value: formatCurrency(stats.invested),
+      value: formatCurrencyFromUsd(stats.invested),
     },
     {
       title: 'Прибыль',

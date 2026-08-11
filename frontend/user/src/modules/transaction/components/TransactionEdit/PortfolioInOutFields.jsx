@@ -3,7 +3,7 @@ import { Button, Form, InputNumber, Space } from 'antd';
 import WalletSelect from 'src/features/forms/WalletSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
-import { DISPLAY_CURRENCY, fromUsd } from 'src/utils/currency';
+import { useDisplayCurrency, fromUsd } from 'src/utils/currency';
 
 const PortfolioInOutFields = ({
   getWallets,
@@ -18,11 +18,13 @@ const PortfolioInOutFields = ({
 
   const { isSpend } = getTransactionTypeInfo(transactionType);
   const form = Form.useFormInstance();
+  const displayCurrency = useDisplayCurrency();
   const quantityValue = Form.useWatch('quantity', form);
   const wallets = getWallets({ showTickerId: baseTicker?.id });
   const isInput = transactionType === 'Input';
   const inputPriceValue = Form.useWatch('inputPrice', form);
-  const marketPrice = baseTicker?.price ? fromUsd(baseTicker.price) : null;
+  const toInputPrice = (usd) => Math.round(fromUsd(usd) * 100) / 100;
+  const marketPrice = baseTicker?.price ? toInputPrice(baseTicker.price) : null;
 
   useEffect(() => {
     if (!isInput) return;
@@ -30,9 +32,9 @@ const PortfolioInOutFields = ({
     if (current != null && current !== '') return;
     const existing = transaction?.priceUsd;
     if (existing != null) {
-      form.setFieldValue('inputPrice', fromUsd(existing));
+      form.setFieldValue('inputPrice', toInputPrice(existing));
     } else if (baseTicker?.price) {
-      form.setFieldValue('inputPrice', fromUsd(baseTicker.price));
+      form.setFieldValue('inputPrice', toInputPrice(baseTicker.price));
     }
   }, [isInput, transaction?.priceUsd, baseTicker?.price, form]);
 
@@ -86,7 +88,7 @@ const PortfolioInOutFields = ({
             variant="filled"
             suffix={(
               <Space size={4}>
-                <span>{DISPLAY_CURRENCY}</span>
+                <span>{displayCurrency}</span>
                 {inputPriceValue !== marketPrice && marketPrice != null ? (
                   <Button
                     type="link"
