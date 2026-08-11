@@ -65,7 +65,7 @@ class Transaction(Base):
     order: Mapped[bool | None] = mapped_column(Boolean)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
 
-    def get_direction(self, cancel: bool = False) -> int:
+    def get_direction(self, *, cancel: bool = False) -> int:
         positive_types = {'Buy', 'Input', 'TransferIn', 'Earning'}
         direction = 1 if self.type in positive_types else -1
         return direction * -1 if cancel else direction

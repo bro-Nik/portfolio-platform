@@ -57,7 +57,7 @@ class PortfolioAssetService:
         await self.repo.update(id, {'is_archived': False})
 
     async def handle_transaction(self, t: Transaction, *, cancel: bool = False) -> None:
-        direction = t.get_direction(cancel)
+        direction = t.get_direction(cancel=cancel)
         if t.type in ('Buy', 'Sell'):
             await self._handle_trade(t, direction)
         elif t.type == 'Earning':
