@@ -42,7 +42,9 @@ class PolygonProvider(BaseProvider):
     @registry.register_method(full_price_updater)
     async def update_prices(self, **kwargs) -> dict:
         market = self._resolve_market(kwargs)
-        return await full_price_updater.run(market, self._fetch_all_prices, **kwargs)
+        return await full_price_updater.run(
+            market, self._fetch_all_prices, quote_currency=self.QUOTE_CURRENCY, **kwargs,
+        )
 
     @registry.register_method(image_loader)
     async def load_images(self, **kwargs) -> dict:

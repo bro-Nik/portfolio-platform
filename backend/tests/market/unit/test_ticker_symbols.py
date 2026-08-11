@@ -39,3 +39,22 @@ class TestResolvePricesBySymbol:
 
         assert prices == {}
         service.repo.get_all_by_symbols.assert_not_awaited()
+
+
+class TestGetPriceBySymbol:
+    async def test_returns_price_of_found_ticker(self, db_session, async_mock, mock):
+        service = make_service(db_session, async_mock)
+        service.repo.get_all_by_symbols.return_value = [mock(price=0.0121055)]
+
+        price = await service.get_price_by_symbol('currency', 'RUB')
+
+        assert price == 0.0121055
+        service.repo.get_all_by_symbols.assert_awaited_once_with('currency', ['RUB'])
+
+    async def test_returns_none_when_ticker_missing(self, db_session, async_mock):
+        service = make_service(db_session, async_mock)
+        service.repo.get_all_by_symbols.return_value = []
+
+        price = await service.get_price_by_symbol('currency', 'RUB')
+
+        assert price is None

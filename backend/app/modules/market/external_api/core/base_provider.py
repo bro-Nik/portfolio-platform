@@ -22,6 +22,7 @@ class BaseProvider:
     TIMEOUT = 30
     SUPPORTED_MARKETS: list[str] = []
     API_KEY_REQUIRED = False
+    QUOTE_CURRENCY = 'USD'  # валюта котировок цен провайдера; в USD конвертируются, только если не USD
 
     def __init__(self, http: 'HTTPClient', api_key: str | None = None, redis: 'Redis | None' = None) -> None:
         self.http = http

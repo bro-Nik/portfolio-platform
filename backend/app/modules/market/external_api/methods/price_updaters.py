@@ -144,7 +144,9 @@ class FullPriceUpdater(BasePriceUpdater):
     """Обновление цен всех тикеров провайдера (crypto/stocks).
 
     Контракт: fetch_prices() -> dict[str, float] —
-    {внешний идентификатор: цена в USD}
+    {внешний идентификатор: цена в quote_currency, по умолчанию USD}.
+    Если цены приходят в другой валюте (quote_currency != 'USD'),
+    конвертирует их в USD по курсу currency-тикера этой валюты.
     """
 
     async def run(
@@ -154,12 +156,18 @@ class FullPriceUpdater(BasePriceUpdater):
         *,
         provider_name: str,
         ticker_service: 'TickerService',
+        quote_currency: str = 'USD',
         session=None,
         **_,
     ) -> dict:
         prices = await fetch_prices()
         if not prices:
             return {'status': 'error', 'message': 'Нет данных от провайдера'}
+        if quote_currency and quote_currency != 'USD':
+            rate = await ticker_service.get_price_by_symbol('currency', quote_currency)
+            if rate is None:
+                return {'status': 'error', 'message': f'Нет курса {quote_currency} в USD для конвертации'}
+            prices = {ext_id: price * rate for ext_id, price in prices.items()}
         ext_id_service = TickerExternalIdService(TickerExternalIdRepository(session))
         prices = await ext_id_service.resolve_to_internal(provider_name, prices)
         updated_count = await self._save_prices(

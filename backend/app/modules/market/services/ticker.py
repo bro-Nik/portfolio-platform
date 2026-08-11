@@ -223,6 +223,10 @@ class TickerService:
             market, strategy, created, updated, skipped, matched)
         return {'created': created, 'updated': updated, 'skipped': skipped, 'matched': matched}
 
+    async def get_price_by_symbol(self, market: str, symbol: str) -> float | None:
+        tickers = await self.repo.get_all_by_symbols(market, [symbol])
+        return float(tickers[0].price) if tickers else None
+
     async def resolve_prices_by_symbol(self, market: str, prices: dict[str, object]) -> dict[int, object]:
         if not prices:
             return {}

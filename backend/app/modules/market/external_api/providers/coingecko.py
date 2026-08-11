@@ -19,6 +19,7 @@ class CoingeckoProvider(BaseProvider):
     DESCRIPTION = 'Криптовалюты'
     BASE_URL = 'https://api.coingecko.com/api/v3'
     SUPPORTED_MARKETS = ['crypto']
+    QUOTE_CURRENCY = 'USD'
 
     REQUESTS_PER_MINUTE = 30
     REQUESTS_PER_HOUR = 100
