@@ -34,10 +34,16 @@ class TaskService:
         if not provider.is_active:
             raise BusinessRuleError(f'API провайдер "{provider_name}" неактивен. Сначала настройте и активируйте провайдера.')
 
+    async def _validate_task_type(self, provider_name: str, task_type: str) -> None:
+        methods = {m['method'] for m in registry.get_provider_methods(provider_name)}
+        if task_type not in methods:
+            raise BusinessRuleError(f'Метод "{task_type}" не зарегистрирован у провайдера "{provider_name}"')
+
     async def create(self, data: TaskCreateRequest) -> Task:
         if await self.repo.exists_by_name(data.name):
             raise ConflictError(f'API задача с именем "{data.name}" уже существует')
         await self._validate_provider_active(data.provider_name)
+        await self._validate_task_type(data.provider_name, data.task_type)
         task = await self.repo.create(TaskCreate(**data.model_dump()).model_dump())
         await self.session.commit()
         return task
@@ -49,6 +55,9 @@ class TaskService:
                 raise ConflictError(f'API задача с именем "{data.name}" уже существует')
         if data.provider_name and data.provider_name != task.provider_name:
             await self._validate_provider_active(data.provider_name)
+        if data.task_type and data.task_type != task.task_type:
+            provider_name = data.provider_name or task.provider_name
+            await self._validate_task_type(provider_name, data.task_type)
         updated = await self.repo.update(id, TaskUpdate(**data.model_dump()).model_dump())
         await self.session.commit()
         return updated

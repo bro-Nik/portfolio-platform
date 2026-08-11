@@ -1,9 +1,7 @@
-from collections.abc import AsyncIterator
 import logging
 
-from ...constants import CURRENCY_CODES
 from ..core import BaseProvider, registry
-from ..methods import full_price_updater, ticker_loader
+from ..methods import currency_price_updater
 
 logger = logging.getLogger(__name__)
 
@@ -30,33 +28,16 @@ class CurrencyLayerProvider(BaseProvider):
 
     SUPPORTED_MARKETS = ['currency']
 
-    @registry.register_method(ticker_loader)
-    async def load_tickers(self, **kwargs) -> dict:
-        market = self._resolve_market(kwargs)
-        return await ticker_loader.run(market, self._fetch_all_tickers, **kwargs)
-
-    @registry.register_method(full_price_updater)
+    @registry.register_method(currency_price_updater)
     async def update_prices(self, **kwargs) -> dict:
         market = self._resolve_market(kwargs)
-        return await full_price_updater.run(market, self._fetch_live_rates, **kwargs)
+        return await currency_price_updater.run(market, self._fetch_live_rates, **kwargs)
 
     def _augment_params(self, params: dict | None = None) -> dict:
         p = dict(params or {})
         if self._api_key:
             p['access_key'] = self._api_key
         return p
-
-    async def _fetch_all_tickers(self) -> AsyncIterator[list[dict]]:
-        params = self._augment_params()
-        try:
-            data = await self.http.request('GET', 'list', params=params)
-        except Exception:
-            logger.exception('Ошибка загрузки списка валют')
-            return
-
-        currencies = data.get('currencies', {})
-        yield [{'id': code.lower(), 'name': name, 'symbol': code}
-               for code, name in currencies.items() if code.upper() in CURRENCY_CODES]
 
     async def _fetch_live_rates(self) -> dict[str, float]:
         params = self._augment_params()
@@ -74,7 +55,7 @@ class CurrencyLayerProvider(BaseProvider):
         result = {}
         for pair, rate in quotes.items():
             if isinstance(rate, (int, float)) and rate != 0:
-                code = pair.removeprefix('USD').lower()
+                code = pair.removeprefix('USD').upper()
                 result[code] = round(1.0 / float(rate), 10)
 
         return result

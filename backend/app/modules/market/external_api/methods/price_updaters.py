@@ -28,6 +28,13 @@ class BasePriceUpdater(MethodBase):
 
 
 class SelectivePriceUpdater(BasePriceUpdater):
+    """Обновление цен выбранных тикеров по стратегии.
+
+    Контракт: get_prices(ext_ids: list[str]) -> dict[str, float] —
+    {внешний идентификатор: цена в USD}.
+    Стратегии: 'top', 'active', 'all', 'used'.
+    """
+
     PARAMETERS_SCHEMA = [
         {
             'name': 'strategy',
@@ -134,7 +141,11 @@ class SelectivePriceUpdater(BasePriceUpdater):
 
 
 class FullPriceUpdater(BasePriceUpdater):
-    PARAMETERS_SCHEMA: list[dict] = []
+    """Обновление цен всех тикеров провайдера (crypto/stocks).
+
+    Контракт: fetch_prices() -> dict[str, float] —
+    {внешний идентификатор: цена в USD}
+    """
 
     async def run(
         self,
@@ -157,5 +168,33 @@ class FullPriceUpdater(BasePriceUpdater):
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
 
+class CurrencyPriceUpdater(FullPriceUpdater):
+    """Обновление курсов валют.
+
+    Контракт: fetch_prices() -> dict[str, float] —
+    {ISO 4217 в верхнем регистре: цена в USD}.
+    """
+
+    async def run(
+        self,
+        market: str,
+        fetch_prices: Callable[[], Awaitable[dict]],
+        *,
+        provider_name: str,
+        ticker_service: 'TickerService',
+        session=None,
+        **_,
+    ) -> dict:
+        prices = await fetch_prices()
+        if not prices:
+            return {'status': 'error', 'message': 'Нет данных от провайдера'}
+        prices = await ticker_service.resolve_prices_by_symbol(market, prices)
+        updated_count = await self._save_prices(
+            market, prices, provider_name=provider_name, ticker_service=ticker_service
+        )
+        return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
+
+
 selective_price_updater = SelectivePriceUpdater()
 full_price_updater = FullPriceUpdater()
+currency_price_updater = CurrencyPriceUpdater()

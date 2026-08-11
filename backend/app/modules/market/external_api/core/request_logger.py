@@ -10,6 +10,30 @@ from app.modules.market.models import RequestLog
 logger = logging.getLogger(__name__)
 MAX_LOGS_TO_SAVE = 30
 
+SENSITIVE_PARAM_HINTS = ('key', 'token', 'secret', 'auth', 'password')
+
+
+def _is_sensitive(name: str) -> bool:
+    normalized = name.lower().replace('_', '').replace('-', '')
+    return any(hint in normalized for hint in SENSITIVE_PARAM_HINTS)
+
+
+def _sanitize_params(params: dict[str, Any] | None) -> dict[str, Any]:
+    if not params:
+        return {}
+    return {name: '***' if _is_sensitive(name) else value for name, value in params.items()}
+
+
+def _sanitize_url(url: str | None) -> str:
+    if not url:
+        return ''
+    parsed = httpx.URL(url)
+    clean_params = {
+        name: '***' if _is_sensitive(name) else value
+        for name, value in parsed.params.multi_items()
+    }
+    return str(parsed.copy_with(params=clean_params)).replace('%2A%2A%2A', '***')
+
 
 class RequestLogger:
     def __init__(self, provider_name: str, task_id: int, session_factory: async_sessionmaker[AsyncSession]) -> None:
@@ -23,7 +47,7 @@ class RequestLogger:
                   url: str | None = None) -> None:
         log = RequestLog(
             provider_name=self.provider_name, task_id=self.task_id, endpoint=endpoint,
-            method=method, request_params=params or {}, request_url=url or '',
+            method=method, request_params=_sanitize_params(params), request_url=_sanitize_url(url),
             status_code=response.status_code if response else None,
             response_time=response_time,
             was_successful=response.is_success if response else False,

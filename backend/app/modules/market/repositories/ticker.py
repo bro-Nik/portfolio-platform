@@ -18,6 +18,9 @@ class TickerRepository(BaseRepository[Ticker]):
     async def get_all_by_market_without_images(self, market: str) -> list[Ticker]:
         return await self.get_all(self.model.market == market, self.model.image.is_(None))
 
+    async def get_all_by_symbols(self, market: str, symbols: list[str]) -> list[Ticker]:
+        return await self.get_all(self.model.market == market, self.model.symbol.in_(symbols))
+
     async def update_ticker_prices(self, data: dict[int, object], price_updated_by: str | None = None) -> int:
         if not data:
             return 0

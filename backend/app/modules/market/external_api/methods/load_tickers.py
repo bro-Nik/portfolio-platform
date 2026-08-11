@@ -11,6 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 class TickerLoader(MethodBase):
+    """Синхронизация тикеров провайдера.
+
+    Контракт: fetch_all_tickers() -> AsyncIterator[list[dict]] — пачки сырых записей.
+    Обязательное поле записи: 'id' (внешний идентификатор тикера).
+    Стратегии: 'all' — синхронизировать все тикеры, 'new' — только новые.
+    """
+
     NAME = 'Загрузка тикеров'
     EXEMPLE_PARAMS = {'strategy': 'all'}
     PARAMETERS_SCHEMA = [

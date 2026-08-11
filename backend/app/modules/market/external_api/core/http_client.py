@@ -49,6 +49,13 @@ class HTTPClient:
                 pass
         return 5.0
 
+    @staticmethod
+    def _is_retryable(error: httpx.HTTPStatusError | httpx.RequestError) -> bool:
+        if isinstance(error, httpx.HTTPStatusError):
+            status = error.response.status_code
+            return status == 429 or status >= 500
+        return True
+
     async def request(
         self, method: str = 'GET', endpoint: str = '',
         params: dict[str, Any] | None = None,
@@ -84,7 +91,7 @@ class HTTPClient:
                     return response.json()
                 except (httpx.HTTPStatusError, httpx.RequestError) as e:
                     await self.logger.log(method, endpoint, response, params, response_time=time.time() - start_time, error=str(e), url=url)
-                    if attempt >= self.MAX_RETRIES:
+                    if not self._is_retryable(e) or attempt >= self.MAX_RETRIES:
                         logger.error('Ошибка запроса для %s: %s', url, e)
                         raise
 

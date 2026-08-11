@@ -11,9 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 class ImageLoader(MethodBase):
+    """Загрузка изображений для тикеров без картинок.
+
+    Контракт: fetch_images(ext_ids: list[str]) -> dict[str, str] —
+    {внешний идентификатор: url изображения}.
+    """
+
     NAME = 'Загрузка изображений'
-    EXEMPLE_PARAMS = {}
-    PARAMETERS_SCHEMA: list[dict] = []
 
     async def run(
         self,
