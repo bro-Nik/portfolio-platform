@@ -1,4 +1,4 @@
-import { formatCurrency, formatCurrencyFromUsd, formatPercentage, formatProfit, formatDateTime, formatQuantity, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatCurrencyFromUsd, formatPercentage, formatProfit, formatDateTime, formatQuantity, formatUsdValueOrDash, getColorClass } from 'src/utils/format';
 import {
   getTransactionTypeColor,
   getAdjustedTransactionType,
@@ -58,58 +58,27 @@ export const createAssetNameColumn = (openItem, itemType, parentId) => ({
   sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
 });
 
-export const createCostColumn = (hideCondition) => ({
+export const createCostColumn = () => ({
   dataIndex: 'costNow',
   title: 'Стоимость',
-  render: (value, record) => {
-    if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    return formatCurrencyFromUsd(value);
-  },
+  render: (value) => formatUsdValueOrDash(value),
   width: 200,
   sorter: (a, b) => a.costNow - b.costNow,
 });
 
-export const createAveragePriceColumn = (hideCondition) => ({
-  dataIndex: 'averagePrice',
-  title: 'Средняя цена',
-  render: (value, record) => {
-    if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    if (value == null) return DEFAULT_VALUE;
-    return formatCurrencyFromUsd(value, true);
-  },
-  width: 200,
-  sorter: (a, b) => (a.averagePrice ?? 0) - (b.averagePrice ?? 0),
-});
-
-export const createQuantityColumn = (getTicker, hideCondition) => ({
-  dataIndex: 'quantity',
-  title: 'Количество',
-  render: (value, record) => {
-    if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    const ticker = getTicker ? getTicker(record) : '';
-    return `${formatQuantity(value)}${ticker ? ' ' : ''}${ticker}`;
-  },
-  width: 200,
-  sorter: (a, b) => a.quantity - b.quantity,
-});
-
-export const createShareColumn = (hideCondition) => ({
+export const createShareColumn = () => ({
   dataIndex: 'share',
   title: 'Доля',
-  render: (value, record) => {
-    if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    return formatPercentage(value);
-  },
+  render: (value) => value > 0 ? formatPercentage(value) : DEFAULT_VALUE,
   width: 120,
   sorter: (a, b) => a.share - b.share,
 });
 
-export const createProfitColumn = (hideCondition) => ({
+export const createProfitColumn = () => ({
   dataIndex: 'profit',
   title: 'Прибыль',
   render: (value, record) => {
-    if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    if (value == null) return DEFAULT_VALUE;
+    if (value == null || value === 0) return DEFAULT_VALUE;
     return (
       <span className={getColorClass(value)}>
         {formatProfit(value, record.invested, record.totalInvested)}
@@ -120,37 +89,20 @@ export const createProfitColumn = (hideCondition) => ({
   sorter: (a, b) => (a.profit ?? 0) - (b.profit ?? 0),
 });
 
-export const createInvestedColumn = (hideCondition) => ({
+export const createInvestedColumn = () => ({
   dataIndex: 'invested',
   title: 'Вложено',
-  render: (value, record) => {
-    if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    return formatCurrencyFromUsd(value);
-  },
+  render: (value) => formatUsdValueOrDash(value),
   width: 120,
   sorter: (a, b) => a.invested - b.invested,
 });
 
-export const createBuyOrdersColumn = (hideCondition) => ({
+export const createBuyOrdersColumn = () => ({
   dataIndex: 'buyOrders',
-  title: 'В ордерах на покупку',
-  render: (value, record) => {
-    if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    return formatCurrencyFromUsd(value || 0);
-  },
+  title: 'Ордера на покупку',
+  render: (value) => formatUsdValueOrDash(value),
   width: 120,
   sorter: (a, b) => (a.buyOrders || 0) - (b.buyOrders || 0),
-});
-
-export const createSellOrdersColumn = (hideCondition) => ({
-  dataIndex: 'sellOrders',
-  title: 'В ордерах на продажу',
-  render: (value, record) => {
-    if (hideCondition && hideCondition(record)) return DEFAULT_VALUE;
-    return formatCurrencyFromUsd(value || 0);
-  },
-  width: 120,
-  sorter: (a, b) => (a.sellOrders || 0) - (b.sellOrders || 0),
 });
 
 export const createActionsColumn = (renderElement) => ({

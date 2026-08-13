@@ -8,7 +8,7 @@ import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Input, Checkbox } from 'antd';
-import { formatCurrency, formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatPercentage, formatQuantity, formatUsdValueOrDash } from 'src/utils/format';
 import { useDisplayCurrency } from 'src/utils/currency';
 
 const DEFAULT_VALUE = '-';
@@ -27,38 +27,22 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
 
     return assets.map(asset => {
       const assetQuantity = Number(asset.quantity) || 0;
-      const assetAmount = Number(asset.amount) || 0;
-      const assetRealizedProfit = Number(asset.realizedProfit) || 0;
-      const assetTotalInvested = Number(asset.totalInvested) || 0;
       const assetBuyOrders = Number(asset.buyOrders) || 0;
       const assetSellOrders = Number(asset.sellOrders) || 0;
-      const hasBasis = assetAmount > 0;
-      const assetAveragePrice = hasBasis && assetQuantity > 0 ? assetAmount / assetQuantity : null;
       const share = wallet.costNow > 0 ? (asset.costNow / wallet.costNow) * 100 : 0;
       const symbol = asset.symbol?.toUpperCase();
-
-      const profitValue = asset.profit ?? asset.costNow - assetAmount + assetRealizedProfit;
 
       return {
         ...asset,
         share,
         symbol,
-        averagePrice: assetAveragePrice,
-        invested: Math.max(0, assetAmount),
-        totalInvested: assetTotalInvested || Math.max(0, assetAmount),
-        realizedProfit: assetRealizedProfit,
         buyOrders: assetBuyOrders,
         sellOrders: assetSellOrders,
-        profit: hasBasis ? profitValue : null,
         _quantity: assetQuantity > 0 ? `${formatQuantity(assetQuantity)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
-        _avgPrice: assetAveragePrice == null ? DEFAULT_VALUE : formatCurrencyFromUsd(assetAveragePrice, true),
-        _cost: formatCurrencyFromUsd(asset.costNow),
-        _invested: hasBasis ? formatCurrencyFromUsd(Math.max(0, assetAmount)) : DEFAULT_VALUE,
-        _profit: hasBasis && Number(profitValue) !== 0 ? formatProfit(profitValue, Math.max(0, assetAmount), assetTotalInvested) : DEFAULT_VALUE,
-        _share: formatPercentage(share),
-        _buyOrders: formatCurrencyFromUsd(assetBuyOrders || 0),
-        _sellOrders: formatCurrencyFromUsd(assetSellOrders || 0),
-        _hide: !assetQuantity,
+        _cost: formatUsdValueOrDash(asset.costNow),
+        _share: share > 0 ? formatPercentage(share) : DEFAULT_VALUE,
+        _buyOrders: formatUsdValueOrDash(assetBuyOrders),
+        _sellOrders: assetSellOrders > 0 ? `${formatQuantity(assetSellOrders)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
       };
     });
   }, [assets, wallet.costNow, displayCurrency]);
@@ -118,59 +102,35 @@ const WalletTable = memo(({ wallet, assets, onRefresh }) => {
     {
       dataIndex: '_quantity',
       title: 'Количество',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      render: (value) => value,
       width: 200,
       sorter: (a, b) => a.quantity - b.quantity,
     },
     {
-      dataIndex: '_avgPrice',
-      title: 'Средняя цена',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
-      width: 200,
-      sorter: (a, b) => a.averagePrice - b.averagePrice,
-    },
-    {
       dataIndex: '_cost',
       title: 'Стоимость',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      render: (value) => value,
       width: 200,
       sorter: (a, b) => a.costNow - b.costNow,
     },
     {
-      dataIndex: '_invested',
-      title: 'Вложено',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
-      width: 120,
-      sorter: (a, b) => a.invested - b.invested,
-    },
-    {
-      key: 'profit',
-      title: 'Прибыль',
-      render: (_, record) => {
-        if (record._hide) return DEFAULT_VALUE;
-        return <span className={getColorClass(record.profit)}>{record._profit}</span>;
-      },
-      width: 120,
-      sorter: (a, b) => a.profit - b.profit,
-    },
-    {
       dataIndex: '_share',
       title: 'Доля',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      render: (value) => value,
       width: 120,
       sorter: (a, b) => a.share - b.share,
     },
     {
       dataIndex: '_buyOrders',
-      title: 'В ордерах на покупку',
-      render: (value, record) => (record._hide && !record.buyOrders) ? DEFAULT_VALUE : value,
+      title: 'Ордера на покупку',
+      render: (value) => value,
       width: 120,
       sorter: (a, b) => (a.buyOrders || 0) - (b.buyOrders || 0),
     },
     {
       dataIndex: '_sellOrders',
-      title: 'В ордерах на продажу',
-      render: (value, record) => (record._hide && !record.sellOrders) ? DEFAULT_VALUE : value,
+      title: 'Ордера на продажу',
+      render: (value) => value,
       width: 120,
       sorter: (a, b) => (a.sellOrders || 0) - (b.sellOrders || 0),
     },

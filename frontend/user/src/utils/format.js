@@ -63,6 +63,12 @@ export const formatCurrencyFromUsd = (number, dontRound = false) => {
   return formatCurrency(rounded, displayCurrency, 'ru-RU', true);
 };
 
+export const formatUsdValueOrDash = (number, dontRound = false) => {
+  if (number == null || Number(number) <= 0) return '-';
+  const value = formatCurrencyFromUsd(number, dontRound);
+  return value === formatCurrencyFromUsd(0, dontRound) ? '-' : value;
+};
+
 export const formatProfit = (profit, invested, totalInvested) => {
   if (profit == null) return;
   profit = Number(profit);

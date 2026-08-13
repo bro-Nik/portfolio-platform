@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { formatCurrency, formatCurrencyFromUsd, formatPercentage, formatProfit, formatQuantity } from 'src/utils/format';
+import { formatCurrency, formatCurrencyFromUsd, formatPercentage, formatProfit, formatQuantity, formatUsdValueOrDash } from 'src/utils/format';
 import { usePreferencesStore } from 'src/stores/preferencesStore';
 import { fromUsd, toUsd } from 'src/utils/currency';
 
@@ -32,6 +32,22 @@ describe('format utils', () => {
     expect(formatCurrency(NaN)).toBe('-');
     expect(formatCurrency(0)).toContain('0');
     expect(formatCurrency(0)).toContain('$');
+  });
+
+  it('formatUsdValueOrDash returns dash for zero and display-zero values', () => {
+    expect(formatUsdValueOrDash(null)).toBe('-');
+    expect(formatUsdValueOrDash(0)).toBe('-');
+    expect(formatUsdValueOrDash(-0.5)).toBe('-');
+    expect(formatUsdValueOrDash(0.4)).toBe('-');
+    expect(formatUsdValueOrDash(0.99)).toBe('-');
+    expect(formatUsdValueOrDash(1.5)).not.toBe('-');
+    expect(formatUsdValueOrDash(1.5)).toContain('$');
+  });
+
+  it('formatUsdValueOrDash returns dash only when display is zero in any currency', () => {
+    usePreferencesStore.setState({ displayCurrency: 'RUB', rates: { RUB: 0.011 } });
+    expect(formatUsdValueOrDash(0.7)).not.toBe('-');
+    expect(formatUsdValueOrDash(0.7)).toContain('₽');
   });
 
   it('converts from USD to display currency and back', () => {

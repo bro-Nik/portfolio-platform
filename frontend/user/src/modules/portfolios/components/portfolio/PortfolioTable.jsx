@@ -8,7 +8,7 @@ import TagFilter from 'src/modules/tags/components/TagFilter';
 import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Checkbox, Input } from 'antd';
-import { formatCurrency, formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, getColorClass } from 'src/utils/format';
+import { formatCurrency, formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, formatUsdValueOrDash, getColorClass } from 'src/utils/format';
 import { calculatePortfolioAssetStats } from 'src/utils/assetStats';
 import { useDisplayCurrency } from 'src/utils/currency';
 
@@ -45,12 +45,12 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
         totalInvested: stats.totalInvested || stats.invested,
         _quantity: assetQuantity > 0 ? `${formatQuantity(assetQuantity)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
         _avgPrice: stats.averagePrice == null ? DEFAULT_VALUE : formatCurrencyFromUsd(stats.averagePrice, true),
-        _cost: stats.costNow == null ? DEFAULT_VALUE : formatCurrencyFromUsd(stats.costNow),
-        _invested: hasBasis ? formatCurrencyFromUsd(stats.invested) : DEFAULT_VALUE,
+        _cost: stats.costNow == null ? DEFAULT_VALUE : formatUsdValueOrDash(stats.costNow),
+        _invested: hasBasis && stats.invested > 0 ? formatCurrencyFromUsd(stats.invested) : DEFAULT_VALUE,
         _profit: stats.profit == null || Number(stats.profit) === 0 ? DEFAULT_VALUE : formatProfit(stats.profit, stats.invested, stats.totalInvested),
-        _share: formatPercentage(share),
-        _buyOrders: formatCurrencyFromUsd(stats.buyOrders || 0),
-        _hide: !assetQuantity,
+        _share: share > 0 ? formatPercentage(share) : DEFAULT_VALUE,
+        _buyOrders: formatUsdValueOrDash(stats.buyOrders),
+        _sellOrders: stats.sellOrders > 0 ? `${formatQuantity(stats.sellOrders)}${symbol ? ' ' : ''}${symbol ?? ''}` : DEFAULT_VALUE,
       };
     });
   }, [assets, portfolio.costNow, displayCurrency]);
@@ -107,31 +107,31 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
       maxWidth: 300,
       sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
     },
-    {
+{
       dataIndex: '_quantity',
       title: 'Количество',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      render: (value) => value,
       width: 200,
       sorter: (a, b) => a.quantity - b.quantity,
     },
     {
       dataIndex: '_avgPrice',
       title: 'Средняя цена',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      render: (value) => value,
       width: 200,
       sorter: (a, b) => a.averagePrice - b.averagePrice,
     },
     {
       dataIndex: '_cost',
       title: 'Стоимость',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      render: (value) => value,
       width: 200,
       sorter: (a, b) => a.costNow - b.costNow,
     },
     {
       dataIndex: '_invested',
       title: 'Вложено',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      render: (value) => value,
       width: 120,
       sorter: (a, b) => a.invested - b.invested,
     },
@@ -139,7 +139,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
       key: 'profit',
       title: 'Прибыль',
       render: (_, record) => {
-        if (record._profit === 0) return DEFAULT_VALUE;
+        if (record._profit === DEFAULT_VALUE) return DEFAULT_VALUE;
         return <span className={getColorClass(record.profit)}>{record._profit}</span>;
       },
       width: 120,
@@ -148,16 +148,23 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
     {
       dataIndex: '_share',
       title: 'Доля',
-      render: (value, record) => record._hide ? DEFAULT_VALUE : value,
+      render: (value) => value,
       width: 120,
       sorter: (a, b) => a.share - b.share,
     },
     {
       dataIndex: '_buyOrders',
-      title: 'В ордерах на покупку',
-      render: (value, record) => (record._hide && !record.buyOrders) ? DEFAULT_VALUE : value,
+      title: 'Ордера на покупку',
+      render: (value) => value,
       width: 120,
       sorter: (a, b) => (a.buyOrders || 0) - (b.buyOrders || 0),
+    },
+    {
+      dataIndex: '_sellOrders',
+      title: 'Ордера на продажу',
+      render: (value) => value,
+      width: 120,
+      sorter: (a, b) => (a.sellOrders || 0) - (b.sellOrders || 0),
     },
   ], [openItem, portfolio, onRefresh]);
 
