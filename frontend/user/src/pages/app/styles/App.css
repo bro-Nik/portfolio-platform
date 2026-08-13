@@ -79,6 +79,27 @@ th:hover .ant-table-column-sorter .ant-table-column-sorter-down {
   opacity: 0.55;
 }
 
+.comment-add {
+  opacity: 0.35;
+  transition: opacity .15s;
+}
+
+.comment-add:hover {
+  opacity: 1;
+}
+
+.ant-table-tbody .comment-add {
+  opacity: 0;
+}
+
+.ant-table-tbody tr:hover .comment-add {
+  opacity: 0.35;
+}
+
+.ant-table-tbody tr:hover .comment-add:hover {
+  opacity: 1;
+}
+
 .row-actions {
   opacity: 0;
   transition: opacity .15s;

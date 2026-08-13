@@ -1,19 +1,17 @@
 import { memo, useMemo, useState } from 'react';
 import DataTable from 'src/features/tables/DataTable';
-import TickerAvatar from 'src/components/TickerAvatar';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { usePersistedState } from '@portfolio/shared';
 import AssetActionsDropdown from '../AssetActionsDropdown';
 import TagFilter from 'src/modules/tags/components/TagFilter';
-import TagBadges from 'src/modules/tags/components/TagBadges';
 import { Alert } from '@portfolio/shared';
 import { Checkbox, Input } from 'antd';
 import { formatCurrency, formatCurrencyFromUsd, formatProfit, formatPercentage, formatQuantity, formatUsdValueOrDash, getColorClass } from 'src/utils/format';
 import { calculatePortfolioAssetStats } from 'src/utils/assetStats';
 import { useDisplayCurrency } from 'src/utils/currency';
+import { createAssetNameColumn } from 'src/features/tables/tableColumns';
 
 const DEFAULT_VALUE = '-';
-const mutedStyle = { color: 'var(--text-muted)' };
 
 const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const { openItem } = useNavigation();
@@ -82,31 +80,7 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
   const showingArchivedFallback = !showArchived && preparedAssets.length > 0 && preparedAssets.every(a => a.isArchived);
 
   const columns = useMemo(() => [
-    {
-      key: 'name',
-      title: 'Актив',
-      fixed: 'left',
-      render: (_, record) => (
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-          <div style={{ display: 'flex', gap: 8, flex: 1 }} onClick={() => openItem(record, 'portfolio_asset', portfolio.id)}>
-            <TickerAvatar src={record.image} symbol={record.symbol} size={24} style={{ cursor: 'pointer' }} />
-            <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
-              <span style={{ display: 'flex', alignItems: 'flex-start' }}>
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }} title={record.name}>{record.name}</span>
-                <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4, flexShrink: 0 }}>{record.symbol}</span>
-                {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 4, marginTop: 1 }}>Архивный</span>}
-              </span>
-              <TagBadges tags={record.tags} entityType="portfolio_asset" entityId={record.id} parentId={portfolio.id} assignedTags={record.tags} />
-            </div>
-          </div>
-          <div className="row-actions" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
-            <AssetActionsDropdown portfolio={portfolio} asset={record} onUpdate={onRefresh} />
-          </div>
-        </div>
-      ),
-      maxWidth: 300,
-      sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
-    },
+    createAssetNameColumn(openItem, 'portfolio_asset', portfolio.id, (record) => <AssetActionsDropdown portfolio={portfolio} asset={record} onUpdate={onRefresh} />),
 {
       dataIndex: '_quantity',
       title: 'Количество',
@@ -194,12 +168,6 @@ const PortfolioTable = memo(({ portfolio, assets, onRefresh }) => {
           type="info"
           style={{ marginBottom: 16 }}
         />
-      )}
-
-      {portfolio.comment && (
-        <div style={{ marginBottom: 12 }}>
-          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{portfolio.comment}</span>
-        </div>
       )}
 
       <DataTable

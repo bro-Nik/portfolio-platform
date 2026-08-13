@@ -4,9 +4,16 @@ import { useModalStore } from '@portfolio/shared';
 import CloseMinimizeBtns from 'src/components/ui/CloseMinimizeBtns';
 import AssetAddModal from '../modals/AssetAdd';
 import PortfolioActionsDropdown from '../PortfolioActionsDropdown'
+import CommentCell from 'src/features/forms/CommentCell';
+import { usePortfolioMutations } from '../../hooks/usePortfolioMutations';
 
 const PortfolioHeader = ({ portfolio, onRefresh }) => {
   const { openModal } = useModalStore();
+  const { editPortfolio } = usePortfolioMutations();
+
+  const handleSaveComment = async (comment) => {
+    await editPortfolio.mutateAsync({ id: portfolio.id, name: portfolio.name, market: portfolio.market, comment });
+  };
 
   return (
     <div className="portfolio-header" style={{ marginBottom: 24 }}>
@@ -18,9 +25,10 @@ const PortfolioHeader = ({ portfolio, onRefresh }) => {
                 {portfolio.name}
                 {portfolio.isArchived && <span style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 8 }}>Архивный</span>}
               </h1>
-              <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-                <span style={{ marginRight: 12, textTransform: 'capitalize' }}>Рынок: {portfolio.market}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'var(--text-muted)', fontSize: '12px' }}>
+                <span style={{ textTransform: 'capitalize' }}>Рынок: {portfolio.market}</span>
                 <span>Активов: {portfolio.assets.length}</span>
+                <CommentCell comment={portfolio.comment} onSave={handleSaveComment}/>
               </div>
             </div>
           </div>

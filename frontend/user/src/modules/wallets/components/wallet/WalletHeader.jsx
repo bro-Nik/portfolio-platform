@@ -2,8 +2,15 @@ import React from 'react';
 import { Space } from 'antd';
 import CloseMinimizeBtns from 'src/components/ui/CloseMinimizeBtns';
 import WalletActionsDropdown from '../WalletActionsDropdown'
+import CommentCell from 'src/features/forms/CommentCell';
+import { useWalletMutations } from '../../hooks/useWalletMutations';
 
 const WalletHeader = ({ wallet, onRefresh }) => {
+  const { editWallet } = useWalletMutations();
+
+  const handleSaveComment = async (comment) => {
+    await editWallet.mutateAsync({ id: wallet.id, name: wallet.name, comment });
+  };
   return (
     <div className="portfolio-header" style={{ marginBottom: 24 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -14,8 +21,9 @@ const WalletHeader = ({ wallet, onRefresh }) => {
                 {wallet.name}
                 {wallet.isArchived && <span style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 8 }}>Архивный</span>}
               </h1>
-              <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'var(--text-muted)', fontSize: '12px' }}>
                 <span>Активов: {wallet.assets.length}</span>
+                <CommentCell comment={wallet.comment} onSave={handleSaveComment}/>
               </div>
             </div>
           </div>

@@ -7,27 +7,32 @@ import {
   isOutgoingTransaction,
 } from 'src/modules/transaction/utils/type';
 import TagBadges from 'src/modules/tags/components/TagBadges';
+import TickerAvatar from 'src/components/TickerAvatar';
+import CommentCell from '../forms/CommentCell';
 
 const DEFAULT_VALUE = '-';
 
 const mutedStyle = { color: 'var(--text-muted)' };
 const smallTextStyle = { fontSize: '12px' };
 
-export const createNameColumn = (openItem, itemType, actions) => ({
+export const createNameColumn = (openItem, itemType, actions, onEditComment) => ({
   dataIndex: 'name',
   title: 'Название',
   fixed: 'left',
   render: (_, record) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-      <div style={{ display: 'grid', flex: 1 }} onClick={() => openItem(record, itemType)}>
-        <span style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }} title={record.name}>
+      <div style={{ display: 'grid', flex: 1 }}>
+        <span style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }} title={record.name} onClick={() => openItem(record, itemType)}>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }}>
             {record.name}
           </span>
           {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginTop: 1, marginLeft: 4 }}>Архивный</span>}
         </span>
         <span style={{ ...mutedStyle, ...smallTextStyle, textTransform: 'capitalize' }}>{record.market}</span>
-        <span style={{ ...mutedStyle, ...smallTextStyle }}>{record.assets?.length || 0} активов</span>
+        <span style={{ display: 'flex', alignItems: 'center', ...mutedStyle, ...smallTextStyle, gap: 8 }}>
+          {record.assets?.length || 0} активов
+          <CommentCell comment={record.comment} onSave={(comment) => onEditComment(record, comment)}/>
+        </span>
         <TagBadges tags={record.tags} entityType={itemType} entityId={record.id} assignedTags={record.tags} />
       </div>
       {actions && <div className="row-actions" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{actions(record)}</div>}
@@ -37,21 +42,24 @@ export const createNameColumn = (openItem, itemType, actions) => ({
   sorter: (a, b) => (a.name || '').localeCompare(b.name || ''),
 });
 
-export const createAssetNameColumn = (openItem, itemType, parentId) => ({
+export const createAssetNameColumn = (openItem, itemType, parentId, actions) => ({
   key: 'name',
   title: 'Актив',
   fixed: 'left',
   render: (_, record) => (
-    <div style={{ display: 'flex', gap: 8 }} onClick={() => openItem(record, itemType, parentId)}>
-      <img className="img-asset-min" loading="lazy" src={record.image} style={{ cursor: 'pointer' }} />
-      <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
-        <span style={{ display: 'flex', alignItems: 'flex-start' }}>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }} title={record.name}>{record.name}</span>
-          <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4, flexShrink: 0 }}>{record.symbol}</span>
-          {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 4, marginTop: 1 }}>Архивный</span>}
-        </span>
-        <TagBadges tags={record.tags} entityType={itemType} entityId={record.id} parentId={parentId} assignedTags={record.tags} />
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+        <TickerAvatar src={record.image} symbol={record.symbol} size={24} />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }} onClick={() => openItem(record, itemType, parentId)}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1, minWidth: 0 }} title={record.name}>{record.name}</span>
+            <span style={{ ...mutedStyle, textTransform: 'uppercase', marginLeft: 4, flexShrink: 0 }}>{record.symbol}</span>
+            {record.isArchived && <span style={{ ...mutedStyle, fontSize: 10, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 4, marginTop: 1 }}>Архивный</span>}
+          </span>
+          <TagBadges tags={record.tags} entityType={itemType} entityId={record.id} parentId={parentId} assignedTags={record.tags} />
+        </div>
       </div>
+      {actions && <div className="row-actions" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{actions(record)}</div>}
     </div>
   ),
   maxWidth: 300,
@@ -112,20 +120,27 @@ export const createActionsColumn = (renderElement) => ({
   width: 100,
 });
 
-export const createTransactionLinkColumn = (isCounterTransaction, onClick, disabled, actions) => ({
+export const createTransactionLinkColumn = (isCounterTransaction, onClick, disabled, actions, onEditComment) => ({
   key: 'transactionLink',
   title: 'Тип',
   render: (_, record) => {
     const colorClassName = getTransactionTypeColor(getAdjustedTransactionType(record, isCounterTransaction));
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-        <div onClick={() => !disabled && onClick(record)} style={{ cursor: disabled ? 'default' : 'pointer', flex: 1 }}>
-          <span className={colorClassName}>
+        <div style={{ flex: 1 }}>
+          <span
+            className={colorClassName}
+            style={{ cursor: disabled ? 'default' : 'pointer' }}
+            onClick={() => { if (!disabled) onClick(record); }}
+          >
             {getTransactionTypeLabel(record, isCounterTransaction)}
             {record.order ? ' (Ордер)' : ''}
           </span>
           <br />
-          <span style={{ ...smallTextStyle, ...mutedStyle }}>{formatDateTime(record.date)}</span>
+          <span style={{ display: 'flex', alignItems: 'center', ...smallTextStyle, ...mutedStyle, gap: 8 }}>
+            {formatDateTime(record.date)}
+            <CommentCell comment={record.comment} onSave={(comment) => onEditComment(record, comment)}/>
+          </span>
         </div>
         {actions && <div className="row-actions" onClick={e => e.stopPropagation()} style={{ flexShrink: 0, alignSelf: 'flex-start' }}>{actions(record)}</div>}
       </div>
@@ -185,11 +200,4 @@ export const createTransactionQuantityColumn = (isCounterTransaction) => ({
   },
   width: 200,
   sorter: (a, b) => a.quantity - b.quantity,
-});
-
-export const createCommentColumn = () => ({
-  dataIndex: 'comment',
-  title: 'Комментарий',
-  render: (value) => value || '-',
-  width: 120,
 });

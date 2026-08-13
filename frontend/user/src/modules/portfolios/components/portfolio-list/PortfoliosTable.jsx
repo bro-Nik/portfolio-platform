@@ -15,17 +15,23 @@ import PortfolioActionsDropdown from '../PortfolioActionsDropdown'
 import TagFilter from 'src/modules/tags/components/TagFilter';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDisplayCurrency } from 'src/utils/currency';
+import { usePortfolioMutations } from '../../hooks/usePortfolioMutations';
 
 const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, showingArchivedFallback }) => {
   const { openItem } = useNavigation();
   const queryClient = useQueryClient();
   const displayCurrency = useDisplayCurrency();
+  const { editPortfolio } = usePortfolioMutations();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
 
   const handleRefresh = useCallback(async () => {
     queryClient.invalidateQueries({ queryKey: ['overview'] });
   }, [queryClient]);
+
+  const handleEditComment = useCallback(async (record, comment) => {
+    await editPortfolio.mutateAsync({ id: record.id, name: record.name, market: record.market, comment });
+  }, [editPortfolio]);
 
   const filtered = useMemo(() => {
     let result = portfolios;
@@ -44,13 +50,13 @@ const PortfoliosTable = memo(({ portfolios, showArchived, onToggleArchived, show
   }, [portfolios, tagFilterIds, search]);
 
   const columns = useMemo(() => [
-    createNameColumn(openItem, 'portfolio', (record) => <PortfolioActionsDropdown portfolio={record} onUpdate={handleRefresh} />),
+    createNameColumn(openItem, 'portfolio', (record) => <PortfolioActionsDropdown portfolio={record} onUpdate={handleRefresh} />, handleEditComment),
     createCostColumn(),
     createInvestedColumn(),
     createProfitColumn(),
     createShareColumn(),
     createBuyOrdersColumn(),
-  ], [openItem, handleRefresh, displayCurrency]);
+  ], [openItem, handleRefresh, handleEditComment, displayCurrency]);
 
   return (
     <>

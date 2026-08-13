@@ -8,17 +8,23 @@ import WalletActionsDropdown from '../WalletActionsDropdown'
 import TagFilter from 'src/modules/tags/components/TagFilter';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDisplayCurrency } from 'src/utils/currency';
+import { useWalletMutations } from '../../hooks/useWalletMutations';
 
 const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArchivedFallback }) => {
   const { openItem } = useNavigation();
   const queryClient = useQueryClient();
   const displayCurrency = useDisplayCurrency();
+  const { editWallet } = useWalletMutations();
   const [tagFilterIds, setTagFilterIds] = useState([]);
   const [search, setSearch] = useState('');
 
   const handleRefresh = useCallback(async () => {
     queryClient.invalidateQueries({ queryKey: ['overview'] });
   }, [queryClient]);
+
+  const handleEditComment = useCallback(async (record, comment) => {
+    await editWallet.mutateAsync({ id: record.id, name: record.name, comment });
+  }, [editWallet]);
 
   const filtered = useMemo(() => {
     let result = wallets;
@@ -37,11 +43,11 @@ const WalletsTable = memo(({ wallets, showArchived, onToggleArchived, showingArc
   }, [wallets, tagFilterIds, search]);
 
   const columns = useMemo(() => [
-    createNameColumn(openItem, 'wallet', (record) => <WalletActionsDropdown wallet={record} onUpdate={handleRefresh} />),
+    createNameColumn(openItem, 'wallet', (record) => <WalletActionsDropdown wallet={record} onUpdate={handleRefresh} />, handleEditComment),
     createCostColumn(),
     createShareColumn(),
     createBuyOrdersColumn(),
-  ], [openItem, handleRefresh, displayCurrency]);
+  ], [openItem, handleRefresh, handleEditComment, displayCurrency]);
 
   return (
     <>

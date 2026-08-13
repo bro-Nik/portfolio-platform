@@ -8,13 +8,13 @@ import TransactionActionsDropdown from 'src/modules/transaction/components/Trans
 import { usePortfoliosData } from 'src/modules/portfolios/hooks/usePortfoliosData';
 import { useWalletsData } from 'src/modules/wallets/hooks/useWalletsData';
 import { isTradeTransaction, isTransferTransaction } from 'src/modules/transaction/utils/type';
+import { useTransactionMutations } from 'src/modules/transaction/hooks/useTransactionMutations';
 import { useDisplayCurrency } from 'src/utils/currency';
 import {
   createTransactionLinkColumn,
   createTransactionPriceColumn,
   createTransactionQuantityColumn,
   createTransactionSumColumn,
-  createCommentColumn,
 } from 'src/features/tables/tableColumns';
 
 const AssetTable = memo(({ wallet, asset, transactions }) => {
@@ -23,6 +23,11 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
   const displayCurrency = useDisplayCurrency();
   const { getPortfolio } = usePortfoliosData();
   const { getWallet } = useWalletsData();
+  const { saveTransaction } = useTransactionMutations();
+
+  const handleEditComment = useCallback(async (record, comment) => {
+    await saveTransaction.mutateAsync({ ...record, comment });
+  }, [saveTransaction]);
 
   const isCounterTransaction = useCallback((transaction) => {
     if (isTradeTransaction(transaction.type)) 
@@ -38,7 +43,7 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
   }, [openModal, asset, wallet.id]);
 
   const columns = useMemo(() => [
-    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick, asset.isArchived, (record) => <TransactionActionsDropdown wallet={wallet} asset={asset} transaction={record} />),
+    createTransactionLinkColumn(isCounterTransaction, handleTransactionClick, asset.isArchived, (record) => <TransactionActionsDropdown wallet={wallet} asset={asset} transaction={record} />, handleEditComment),
     createTransactionPriceColumn(),
     createTransactionSumColumn(isCounterTransaction),
     createTransactionQuantityColumn(isCounterTransaction),
@@ -67,10 +72,9 @@ const AssetTable = memo(({ wallet, asset, transactions }) => {
       },
       width: 120,
     },
-    createCommentColumn(),
   ], [
     isCounterTransaction, handleTransactionClick,
-    getPortfolio, getWallet, openItem, displayCurrency
+    getPortfolio, getWallet, openItem, displayCurrency, handleEditComment
   ]);
 
   return <DataTable data={transactions} columnsConfig={columns} storageKey="wallet-asset-sorting" />;
