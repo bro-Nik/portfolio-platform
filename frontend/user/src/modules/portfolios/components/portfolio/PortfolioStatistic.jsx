@@ -24,6 +24,10 @@ const PortfolioStatistic = ({ stats }) => {
       title: 'Доля',
       value: formatPercentage(stats.share || 0),
     },
+    {
+      title: 'Ордера на покупку',
+      value: formatCurrencyFromUsd(stats.buyOrders || 0),
+    },
   ];
 
   return <StatisticCards cards={statCards} />;

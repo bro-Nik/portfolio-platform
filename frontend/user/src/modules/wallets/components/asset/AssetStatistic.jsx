@@ -16,12 +16,12 @@ const AssetStatistic = ({ asset }) => {
       value: formatCurrencyFromUsd(asset.costNow || 0),
     },
     {
-      title: 'В ордерах на покупку',
+      title: 'Ордера на покупку',
       value: formatCurrencyFromUsd(asset.buyOrders || 0),
     },
     {
-      title: 'В ордерах на продажу',
-      value: formatCurrencyFromUsd(asset.sellOrders || 0),
+      title: 'Ордера на продажу',
+      value: `${formatQuantity(asset.sellOrders || 0)} ${asset.symbol?.toUpperCase()}`,
     },
     {
       title: 'Свободно',

@@ -15,7 +15,7 @@ const WalletStatistic = ({ wallet }) => {
       value: formatPercentage(wallet.share),
     },
     {
-      title: 'В ордерах',
+      title: 'Ордера на покупку',
       value: formatCurrencyFromUsd(wallet.buyOrders),
     }
   ];

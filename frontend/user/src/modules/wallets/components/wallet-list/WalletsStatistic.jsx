@@ -11,7 +11,7 @@ export const WalletsStatistic = ({ stats }) => {
       value: formatCurrencyFromUsd(stats.totalCostNow || 0),
     },
     {
-      title: 'В ордерах',
+      title: 'Ордера на покупку',
       value: formatCurrencyFromUsd(stats.totalBuyOrders || 0),
     }
   ];

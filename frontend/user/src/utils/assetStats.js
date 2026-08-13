@@ -4,6 +4,7 @@ export const calculatePortfolioAssetStats = (asset, price) => {
   const assetRealizedProfit = Number(asset.realizedProfit) || 0;
   const assetTotalInvested = Number(asset.totalInvested) || 0;
   const assetBuyOrders = Number(asset.buyOrders) || 0;
+  const assetSellOrders = Number(asset.sellOrders) || 0;
 
   const priceValue = Number(price);
   const hasPrice = !(price == null || isNaN(priceValue));
@@ -22,6 +23,7 @@ export const calculatePortfolioAssetStats = (asset, price) => {
     realizedProfit: assetRealizedProfit,
     totalInvested: assetTotalInvested || assetInvested,
     buyOrders: assetBuyOrders,
+    sellOrders: assetSellOrders,
     profit: assetProfit,
     price: hasPrice ? priceValue : null,
     hasBasis,

@@ -42,6 +42,7 @@ class WalletAssetResponse(WalletAssetBase):
     id: int
     quantity: CleanDecimal
     buy_orders: CleanDecimal
+    sell_orders: CleanDecimal
     is_archived: bool
     has_transactions: bool = False
     tags: list[TagResponse] = []

@@ -20,7 +20,7 @@ const PortfoliosStatistic = ({ stats }) => {
       class: getColorClass(stats.totalProfit),
     },
     {
-      title: 'В ордерах',
+      title: 'Ордера на покупку',
       value: formatCurrencyFromUsd(stats.totalBuyOrders || 0),
     }
   ];

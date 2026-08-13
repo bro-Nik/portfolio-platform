@@ -14,7 +14,7 @@ export const useAssetData = (portfolio, asset, { enabled } = {}) => {
     return {
       ...asset,
       share: portfolio?.costNow > 0 ? (asset.costNow / portfolio.costNow) * 100 : 0,
-      free: asset.quantity - (asset.buyOrders || 0),
+      free: asset.quantity - (asset.sellOrders || 0),
       transactions: skip ? [] : (transactions ? sortTransactions(transactions) : undefined),
     };
   }, [asset, transactions, portfolio?.costNow, skip]);
