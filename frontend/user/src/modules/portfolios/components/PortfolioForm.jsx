@@ -28,7 +28,11 @@ const PortfolioForm = ({ initialMarket = 'crypto', submitText = 'Сохрани�
   }, [initialMarket, form]);
 
   const handleSubmit = async (values) => {
-    const result = await editPortfolio(values);
+    const submitData = {
+      ...values,
+      comment: form.getFieldValue('comment'),
+    };
+    const result = await editPortfolio(submitData);
 
     if (result.success) {
       success('Портфель создан');

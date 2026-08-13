@@ -32,6 +32,7 @@ const PortfolioEditModal = () => {
   const handleSubmit = async (values) => {
     const submitData = {
       ...values,
+      comment: form.getFieldValue('comment'),
       // Добавляем ID если редактируем
       ...(portfolio && { id: portfolio.id })
     };

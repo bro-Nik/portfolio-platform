@@ -41,11 +41,13 @@ const WalletFundingForm = ({ walletId, portfolioId, onSuccess, onCancel }) => {
 
   const handleSubmit = async (values) => {
     const dateValue = form.getFieldValue('date');
+    const commentValue = form.getFieldValue('comment');
     const submitData = {
       ...values,
       walletId,
       portfolioId,
       date: dateValue?.toISOString?.() || (dateValue ? new Date(dateValue).toISOString() : new Date().toISOString()),
+      ...(commentValue != null && { comment: commentValue }),
       type: 'Input',
     };
     const result = await editTransaction(null, submitData);

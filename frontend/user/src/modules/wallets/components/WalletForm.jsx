@@ -27,6 +27,7 @@ const WalletForm = ({ wallet = null, submitText = 'Сохранить', onSucces
   const handleSubmit = async (values) => {
     const submitData = {
       ...values,
+      comment: form.getFieldValue('comment'),
       ...(wallet && { id: wallet.id })
     };
 

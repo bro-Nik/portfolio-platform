@@ -21,7 +21,8 @@ import { toUsd } from 'src/utils/currency';
 
 const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onCancel, onSubmit, loading, subview, openSubview, closeSubview }) => {
 
-  const availableTypes = portfolioId ? PORTFOLIO_TYPES : WALLET_TYPES;
+  const effectivePortfolioId = portfolioId || transaction?.portfolioId;
+  const availableTypes = effectivePortfolioId ? PORTFOLIO_TYPES : WALLET_TYPES;
 
   const {
     form,
@@ -94,7 +95,7 @@ const BaseTransactionForm = ({ tickerId, portfolioId, walletId, transaction, onC
   const walletIdValue = Form.useWatch('walletId', { form, preserve: true });
 
   const getFormFields = () => {
-    if (portfolioId) {
+    if (effectivePortfolioId) {
       if (isTrade) return (
         <PortfolioTradeFields 
           transaction={transaction}

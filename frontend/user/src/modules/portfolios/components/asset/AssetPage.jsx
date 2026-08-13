@@ -5,7 +5,7 @@ import { useAssetData } from 'src/modules/portfolios/hooks/useAssetData';
 import EmptyState from 'src/components/EmptyState';
 import AssetHeader from './AssetHeader';
 import AssetStatistic from './AssetStatistic';
-import AssetDetails from './AssetDetails';
+import AssetDetails from 'src/features/assets/AssetDetails';
 import AssetTable from './AssetTable';
 import TransactionEditModal from 'src/modules/transaction/modals/TransactionEdit';
 import { ArrowLeftRight } from 'lucide-react';
