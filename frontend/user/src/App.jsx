@@ -1,11 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { App as AntApp, ConfigProvider } from 'antd';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ChevronDown } from 'lucide-react';
 import ProtectedRoute from './components/ProtectedRoute';
-import LandingPage from './pages/landing/LandingPage';
 import AuthPage from './pages/auth/AuthPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
@@ -50,7 +49,7 @@ function App() {
         <AntApp style={{ height: '100%', display: 'contents' }}>
         <Router>
           <Routes>
-            <Route path={ROUTES.HOME} element={<LandingPage />} />
+            <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.APP} replace />} />
             <Route path={ROUTES.LOGIN} element={<AuthPage type="login" />} />
             <Route path={ROUTES.REGISTER} element={<AuthPage type="register" />} />
             <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
