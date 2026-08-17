@@ -1,6 +1,6 @@
 from fastapi import status
 
-from app.modules.portfolios.models import Wallet
+from app.modules.portfolios.models import Wallet, WalletAsset
 
 
 class TestWalletsAPI:
@@ -90,15 +90,41 @@ class TestWalletsAPI:
     async def test_delete_wallet_success(self, client, auth_headers, wallet, db_session):
         response = await client.delete(f'/api/wallets/{wallet.id}', headers=auth_headers)
 
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert data['wallet_id'] == wallet.id
+        assert response.status_code == status.HTTP_204_NO_CONTENT
 
-        db_wallet = await db_session.get(Wallet, data['wallet_id'])
+        db_wallet = await db_session.get(Wallet, wallet.id)
         assert db_wallet is None
 
-    async def test_get_asset_transactions(self, client, auth_headers, wallet_asset, transaction):
-        response = await client.get(f'/api/wallets/assets/{wallet_asset.id}/transactions', headers=auth_headers)
+    async def test_archive_wallet(self, client, auth_headers, wallet, db_session):
+        response = await client.patch(
+            f'/api/wallets/{wallet.id}',
+            json={'is_archived': True},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        db_wallet = await db_session.get(Wallet, wallet.id)
+        assert db_wallet.is_archived is True
+
+    async def test_unarchive_wallet(self, client, auth_headers, wallet, db_session):
+        wallet.is_archived = True
+        await db_session.commit()
+
+        response = await client.patch(
+            f'/api/wallets/{wallet.id}',
+            json={'is_archived': False},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        db_wallet = await db_session.get(Wallet, wallet.id)
+        assert db_wallet.is_archived is False
+
+    async def test_get_asset_transactions(self, client, auth_headers, wallet, wallet_asset, transaction):
+        response = await client.get(
+            f'/api/wallets/{wallet.id}/assets/{wallet_asset.id}/transactions',
+            headers=auth_headers,
+        )
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -106,13 +132,41 @@ class TestWalletsAPI:
         assert len(data) > 0
         assert data[0]['ticker_id'] == 1
 
-    async def test_get_asset_distribution(self, client, auth_headers, wallet_asset, wallet):
-        response = await client.get(f'/api/wallets/assets/{wallet_asset.id}/distribution', headers=auth_headers)
+    async def test_get_asset_distribution(self, client, auth_headers, wallet, wallet_asset):
+        response = await client.get(
+            f'/api/wallets/{wallet.id}/assets/{wallet_asset.id}/distribution',
+            headers=auth_headers,
+        )
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert 'total_quantity_all_wallets' in data
         assert 'wallets' in data
+
+    async def test_archive_asset(self, client, auth_headers, wallet, wallet_asset, db_session):
+        response = await client.patch(
+            f'/api/wallets/{wallet.id}/assets/{wallet_asset.id}',
+            json={'is_archived': True},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        db_asset = await db_session.get(WalletAsset, wallet_asset.id)
+        assert db_asset.is_archived is True
+
+    async def test_unarchive_asset(self, client, auth_headers, wallet, wallet_asset, db_session):
+        wallet_asset.is_archived = True
+        await db_session.commit()
+
+        response = await client.patch(
+            f'/api/wallets/{wallet.id}/assets/{wallet_asset.id}',
+            json={'is_archived': False},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        db_asset = await db_session.get(WalletAsset, wallet_asset.id)
+        assert db_asset.is_archived is False
 
     async def test_unauthenticated_access(self, client):
         response = await client.get('/api/wallets/')

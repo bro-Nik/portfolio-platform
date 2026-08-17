@@ -4,8 +4,8 @@ import { sortTransactions } from 'src/modules/assets/utils/assetUtils'
 
 export const useAssetData = (portfolio, asset, { enabled } = {}) => {
   const skip = asset?.hasTransactions === false;
-  const { data: transactions, isLoading } = usePortfolioAssetTransactionsQuery(asset?.id, {
-    enabled: enabled && !!asset?.id && !skip,
+  const { data: transactions, isLoading } = usePortfolioAssetTransactionsQuery(portfolio?.id, asset?.id, {
+    enabled: enabled && !!portfolio?.id && !!asset?.id && !skip,
   });
 
   const assetData = useMemo(() => {

@@ -11,10 +11,8 @@ export const walletApi = {
     }
   },
   deleteWallet: (walletId) => api.del(`/${walletId}`),
-  archiveWallet: (walletId) => api.post(`/${walletId}/archive`),
-  unarchiveWallet: (walletId) => api.post(`/${walletId}/unarchive`),
-  getAssetTransactions: (assetId) => api.get(`/assets/${assetId}/transactions`),
-  archiveWalletAsset: (walletId, assetId) => api.post(`/${walletId}/assets/${assetId}/archive`),
-  unarchiveWalletAsset: (walletId, assetId) => api.post(`/${walletId}/assets/${assetId}/unarchive`),
+  setWalletArchived: (walletId, isArchived) => api.patch(`/${walletId}`, { isArchived }),
+  getAssetTransactions: (walletId, assetId) => api.get(`/${walletId}/assets/${assetId}/transactions`),
+  setWalletAssetArchived: (walletId, assetId, isArchived) => api.patch(`/${walletId}/assets/${assetId}`, { isArchived }),
   deleteWalletAsset: (walletId, assetId) => api.del(`/${walletId}/assets/${assetId}`),
 };

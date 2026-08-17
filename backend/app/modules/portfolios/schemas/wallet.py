@@ -17,6 +17,14 @@ class WalletUpdateRequest(WalletBase):
     pass
 
 
+class WalletArchiveRequest(BaseModel):
+    is_archived: bool
+
+
+class WalletAssetArchiveRequest(BaseModel):
+    is_archived: bool
+
+
 class WalletCreate(WalletBase):
     user_id: int
 
@@ -64,15 +72,6 @@ class WalletResponse(WalletBase):
 
 class WalletListResponse(BaseModel):
     wallets: list[WalletResponse]
-
-
-class WalletDeleteResponse(BaseModel):
-    wallet_id: int
-
-
-class WalletAssetActionResponse(BaseModel):
-    wallet_id: int
-    asset_id: int
 
 
 WalletResponse.model_rebuild()

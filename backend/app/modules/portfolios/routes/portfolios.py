@@ -10,8 +10,8 @@ from app.modules.portfolios.dependencies import (
     require_user,
 )
 from app.modules.portfolios.schemas import (
-    PortfolioAssetActionResponse, PortfolioAssetCreateRequest, PortfolioAssetResponse,
-    PortfolioCreateRequest, PortfolioDeleteResponse,
+    PortfolioAssetArchiveRequest, PortfolioAssetCreateRequest, PortfolioAssetResponse,
+    PortfolioArchiveRequest, PortfolioCreateRequest,
     PortfolioListResponse, PortfolioResponse, PortfolioUpdateRequest,
     TransactionResponse,
 )
@@ -69,40 +69,27 @@ async def update_portfolio(
     return await query.get_with_assets(portfolio.id)
 
 
-@router.delete('/portfolios/{portfolio_id}')
+@router.delete('/portfolios/{portfolio_id}', status_code=204)
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка удаления портфеля')
 async def delete_portfolio(
     request: Request,
     portfolio_id: int,
     portfolio_service: PortfolioServiceDep,
-) -> PortfolioDeleteResponse:
+) -> None:
     await portfolio_service.delete(portfolio_id)
-    return PortfolioDeleteResponse(portfolio_id=portfolio_id)
 
 
-@router.post('/portfolios/{portfolio_id}/archive')
+@router.patch('/portfolios/{portfolio_id}', status_code=204)
 @limiter.limit(settings.rate_limit_auth)
-@handle_errors('Ошибка архивации портфеля')
-async def archive_portfolio(
+@handle_errors('Ошибка изменения статуса портфеля')
+async def set_portfolio_archived(
     request: Request,
     portfolio_id: int,
+    data: PortfolioArchiveRequest,
     portfolio_service: PortfolioServiceDep,
-) -> PortfolioDeleteResponse:
-    await portfolio_service.archive(portfolio_id)
-    return PortfolioDeleteResponse(portfolio_id=portfolio_id)
-
-
-@router.post('/portfolios/{portfolio_id}/unarchive')
-@limiter.limit(settings.rate_limit_auth)
-@handle_errors('Ошибка разархивации портфеля')
-async def unarchive_portfolio(
-    request: Request,
-    portfolio_id: int,
-    portfolio_service: PortfolioServiceDep,
-) -> PortfolioDeleteResponse:
-    await portfolio_service.unarchive(portfolio_id)
-    return PortfolioDeleteResponse(portfolio_id=portfolio_id)
+) -> None:
+    await portfolio_service.set_archived(portfolio_id, data.is_archived)
 
 
 @router.post('/portfolios/{portfolio_id}/assets', status_code=201)
@@ -120,7 +107,7 @@ async def add_asset_to_portfolio(
     return PortfolioAssetResponse.model_validate(asset)
 
 
-@router.delete('/portfolios/{portfolio_id}/assets/{asset_id}')
+@router.delete('/portfolios/{portfolio_id}/assets/{asset_id}', status_code=204)
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка удаления актива')
 async def delete_asset_from_portfolio(
@@ -128,53 +115,41 @@ async def delete_asset_from_portfolio(
     portfolio_id: int,
     asset_id: int,
     portfolio_service: PortfolioServiceDep,
-) -> PortfolioAssetActionResponse:
+) -> None:
     await portfolio_service.delete_asset(portfolio_id, asset_id)
-    return PortfolioAssetActionResponse(portfolio_id=portfolio_id, asset_id=asset_id)
 
 
-@router.post('/portfolios/{portfolio_id}/assets/{asset_id}/archive')
+@router.patch('/portfolios/{portfolio_id}/assets/{asset_id}', status_code=204)
 @limiter.limit(settings.rate_limit_auth)
-@handle_errors('Ошибка архивации актива')
-async def archive_asset_in_portfolio(
+@handle_errors('Ошибка изменения статуса актива')
+async def set_asset_in_portfolio_archived(
     request: Request,
     portfolio_id: int,
     asset_id: int,
+    data: PortfolioAssetArchiveRequest,
     portfolio_service: PortfolioServiceDep,
-) -> PortfolioAssetActionResponse:
-    await portfolio_service.archive_asset(portfolio_id, asset_id)
-    return PortfolioAssetActionResponse(portfolio_id=portfolio_id, asset_id=asset_id)
+) -> None:
+    await portfolio_service.set_asset_archived(portfolio_id, asset_id, data.is_archived)
 
 
-@router.post('/portfolios/{portfolio_id}/assets/{asset_id}/unarchive')
-@limiter.limit(settings.rate_limit_auth)
-@handle_errors('Ошибка разархивации актива')
-async def unarchive_asset_in_portfolio(
-    request: Request,
-    portfolio_id: int,
-    asset_id: int,
-    portfolio_service: PortfolioServiceDep,
-) -> PortfolioAssetActionResponse:
-    await portfolio_service.unarchive_asset(portfolio_id, asset_id)
-    return PortfolioAssetActionResponse(portfolio_id=portfolio_id, asset_id=asset_id)
-
-
-@router.get('/portfolios/assets/{asset_id}/transactions')
+@router.get('/portfolios/{portfolio_id}/assets/{asset_id}/transactions')
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка получения транзакций актива')
 async def get_asset_transactions(
     request: Request,
+    portfolio_id: int,
     asset_id: int,
     query: TransactionReadQueryDep,
 ) -> list[TransactionResponse]:
     return await query.get_portfolio_asset_transactions(asset_id)
 
 
-@router.get('/portfolios/assets/{asset_id}/distribution')
+@router.get('/portfolios/{portfolio_id}/assets/{asset_id}/distribution')
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка получения распределения актива')
 async def get_asset_distribution(
     request: Request,
+    portfolio_id: int,
     asset_id: int,
     asset_service: PortfolioAssetServiceDep,
 ) -> dict:

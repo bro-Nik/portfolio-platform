@@ -1,8 +1,9 @@
-from .tag import TagAttachRequest, TagCreate, TagResponse, TagUpdate
+from .tag import TagCreate, TagEntityType, TagResponse, TagScope, TagUpdate
 
 __all__ = [
-    'TagAttachRequest',
     'TagCreate',
+    'TagEntityType',
     'TagResponse',
+    'TagScope',
     'TagUpdate',
 ]

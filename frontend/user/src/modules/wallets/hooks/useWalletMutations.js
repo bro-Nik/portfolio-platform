@@ -76,7 +76,7 @@ export const useWalletMutations = () => {
   });
 
   const archiveWallet = useMutation({
-    mutationFn: (walletId) => walletApi.archiveWallet(walletId),
+    mutationFn: (walletId) => walletApi.setWalletArchived(walletId, true),
 
     onMutate: async (walletId) => {
       await queryClient.cancelQueries({ queryKey: ['overview'] });
@@ -110,7 +110,7 @@ export const useWalletMutations = () => {
   });
 
   const unarchiveWallet = useMutation({
-    mutationFn: (walletId) => walletApi.unarchiveWallet(walletId),
+    mutationFn: (walletId) => walletApi.setWalletArchived(walletId, false),
 
     onMutate: async (walletId) => {
       await queryClient.cancelQueries({ queryKey: ['overview'] });
@@ -138,7 +138,7 @@ export const useWalletMutations = () => {
   });
 
   const archiveWalletAsset = useMutation({
-    mutationFn: ({ walletId, assetId }) => walletApi.archiveWalletAsset(walletId, assetId),
+    mutationFn: ({ walletId, assetId }) => walletApi.setWalletAssetArchived(walletId, assetId, true),
 
     onMutate: async ({ walletId, assetId }) => {
       await queryClient.cancelQueries({ queryKey: ['overview'] });
@@ -172,7 +172,7 @@ export const useWalletMutations = () => {
   });
 
   const unarchiveWalletAsset = useMutation({
-    mutationFn: ({ walletId, assetId }) => walletApi.unarchiveWalletAsset(walletId, assetId),
+    mutationFn: ({ walletId, assetId }) => walletApi.setWalletAssetArchived(walletId, assetId, false),
 
     onMutate: async ({ walletId, assetId }) => {
       await queryClient.cancelQueries({ queryKey: ['overview'] });

@@ -102,6 +102,18 @@ class PortfolioService:
         await self.repo.update(id, {'is_archived': False})
         await self.session.commit()
 
+    async def set_archived(self, id: int, is_archived: bool) -> None:
+        if is_archived:
+            await self.archive(id)
+        else:
+            await self.unarchive(id)
+
+    async def set_asset_archived(self, id: int, asset_id: int, is_archived: bool) -> None:
+        if is_archived:
+            await self.archive_asset(id, asset_id)
+        else:
+            await self.unarchive_asset(id, asset_id)
+
     async def add_asset(self, id: int, data: PortfolioAssetCreateRequest) -> PortfolioAsset:
         portfolio = await self.get(id)
         if portfolio.is_archived:

@@ -17,6 +17,14 @@ class PortfolioUpdateRequest(PortfolioBase):
     market: str | None = None
 
 
+class PortfolioArchiveRequest(BaseModel):
+    is_archived: bool
+
+
+class PortfolioAssetArchiveRequest(BaseModel):
+    is_archived: bool
+
+
 class PortfolioCreate(PortfolioBase):
     user_id: int
     market: str
@@ -74,19 +82,6 @@ class PortfolioResponse(PortfolioBase):
 
 class PortfolioListResponse(BaseModel):
     portfolios: list[PortfolioResponse]
-
-
-class PortfolioDeleteResponse(BaseModel):
-    portfolio_id: int
-
-
-class PortfolioAssetActionResponse(BaseModel):
-    portfolio_id: int
-    asset_id: int
-
-
-class PortfolioAssetCreateResponse(BaseModel):
-    pass
 
 
 PortfolioResponse.model_rebuild()

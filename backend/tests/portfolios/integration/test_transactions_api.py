@@ -108,10 +108,7 @@ class TestTransactionsAPI:
     async def test_delete_transaction(self, client, auth_headers, portfolio, wallet, transaction):
         response = await client.delete(f'/api/transactions/{transaction.id}', headers=auth_headers)
 
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-
-        assert data['success'] is True
+        assert response.status_code == status.HTTP_204_NO_CONTENT
 
         data_portfolio = (await client.get(f'/api/portfolios/{portfolio.id}', headers=auth_headers)).json()
         assets = data_portfolio['assets']
@@ -188,7 +185,7 @@ class TestTransactionsAPI:
         data_portfolio = (await client.get(f'/api/portfolios/{portfolio.id}', headers=auth_headers)).json()
         usdt = next(a for a in data_portfolio['assets'] if a['ticker_id'] == 2)
 
-        data_asset = (await client.get(f'/api/portfolios/assets/{usdt["id"]}/transactions', headers=auth_headers)).json()
+        data_asset = (await client.get(f'/api/portfolios/{portfolio.id}/assets/{usdt["id"]}/transactions', headers=auth_headers)).json()
         assert len(data_asset) == 1
         assert data_asset[0]['type'] == 'Buy'
         assert data_asset[0]['ticker_id'] == 1
@@ -213,7 +210,7 @@ class TestTransactionsAPI:
         data_wallet = (await client.get(f'/api/wallets/{wallet.id}', headers=auth_headers)).json()
         usdt = next(a for a in data_wallet['assets'] if a['ticker_id'] == 2)
 
-        data_asset = (await client.get(f'/api/wallets/assets/{usdt["id"]}/transactions', headers=auth_headers)).json()
+        data_asset = (await client.get(f'/api/wallets/{wallet.id}/assets/{usdt["id"]}/transactions', headers=auth_headers)).json()
         assert len(data_asset) == 1
         assert data_asset[0]['type'] == 'Buy'
         assert data_asset[0]['ticker_id'] == 1
@@ -239,7 +236,7 @@ class TestTransactionsAPI:
         data_portfolio2 = (await client.get(f'/api/portfolios/{portfolio2["id"]}', headers=auth_headers)).json()
         btc = next(a for a in data_portfolio2['assets'] if a['ticker_id'] == 1)
 
-        data_asset = (await client.get(f'/api/portfolios/assets/{btc["id"]}/transactions', headers=auth_headers)).json()
+        data_asset = (await client.get(f'/api/portfolios/{portfolio2["id"]}/assets/{btc["id"]}/transactions', headers=auth_headers)).json()
         assert len(data_asset) == 1
         assert data_asset[0]['type'] == 'TransferOut'
         assert data_asset[0]['portfolio2_id'] == portfolio2['id']

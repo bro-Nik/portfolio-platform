@@ -93,6 +93,18 @@ class WalletService:
         await self.repo.update(id, {'is_archived': False})
         await self.session.commit()
 
+    async def set_archived(self, id: int, is_archived: bool) -> None:
+        if is_archived:
+            await self.archive(id)
+        else:
+            await self.unarchive(id)
+
+    async def set_asset_archived(self, id: int, asset_id: int, is_archived: bool) -> None:
+        if is_archived:
+            await self.archive_asset(id, asset_id)
+        else:
+            await self.unarchive_asset(id, asset_id)
+
     async def delete_asset(self, wallet_id: int, asset_id: int) -> None:
         await self.get(wallet_id)
         await self.asset_service.delete(asset_id)

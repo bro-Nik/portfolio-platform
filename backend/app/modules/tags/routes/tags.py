@@ -8,7 +8,7 @@ from app.modules.tags.dependencies import (
     TagServiceDep, require_user,
 )
 from app.modules.tags.schemas import (
-    TagAttachRequest, TagCreate, TagResponse, TagUpdate,
+    TagCreate, TagEntityType, TagResponse, TagUpdate,
 )
 
 
@@ -36,30 +36,30 @@ async def create_tag(
     return await tag_service.create(data.name, data.color, data.scope)
 
 
-@router.post('/tags/attach')
+@router.post('/tags/{tag_id}/entities/{entity_type}/{entity_id}', status_code=204)
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка прикрепления тега')
 async def attach_tag(
     request: Request,
-    data: TagAttachRequest,
+    tag_id: int,
+    entity_type: TagEntityType,
+    entity_id: int,
     tag_service: TagServiceDep,
-) -> dict:
-    await tag_service.add_to_entity(data.tag_id, data.entity_type, data.entity_id)
-    return {'success': True}
+) -> None:
+    await tag_service.add_to_entity(tag_id, entity_type, entity_id)
 
 
-@router.delete('/tags/detach')
+@router.delete('/tags/{tag_id}/entities/{entity_type}/{entity_id}', status_code=204)
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка открепления тега')
 async def detach_tag(
     request: Request,
     tag_id: int,
-    entity_type: str,
+    entity_type: TagEntityType,
     entity_id: int,
     tag_service: TagServiceDep,
-) -> dict:
+) -> None:
     await tag_service.remove_from_entity(tag_id, entity_type, entity_id)
-    return {'success': True}
 
 
 @router.put('/tags/{tag_id}')
@@ -74,13 +74,12 @@ async def update_tag(
     return await tag_service.update(tag_id, data.name, data.color)
 
 
-@router.delete('/tags/{tag_id}')
+@router.delete('/tags/{tag_id}', status_code=204)
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка удаления тега')
 async def delete_tag(
     request: Request,
     tag_id: int,
     tag_service: TagServiceDep,
-) -> dict:
+) -> None:
     await tag_service.delete(tag_id)
-    return {'tag_id': tag_id}

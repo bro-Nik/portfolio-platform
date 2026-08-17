@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 TagScope = Literal['portfolio', 'wallet', 'asset']
+TagEntityType = Literal['portfolio', 'wallet', 'portfolio_asset', 'wallet_asset']
 
 
 class TagResponse(BaseModel):
@@ -23,9 +24,3 @@ class TagCreate(BaseModel):
 class TagUpdate(BaseModel):
     name: str | None = None
     color: str | None = None
-
-
-class TagAttachRequest(BaseModel):
-    tag_id: int
-    entity_type: str
-    entity_id: int

@@ -167,7 +167,7 @@ export const usePortfolioMutations = () => {
   });
 
   const archivePortfolio = useMutation({
-    mutationFn: (portfolioId) => portfolioApi.archivePortfolio(portfolioId),
+    mutationFn: (portfolioId) => portfolioApi.setPortfolioArchived(portfolioId, true),
 
     onMutate: async (portfolioId) => {
       await queryClient.cancelQueries({ queryKey: ['overview'] });
@@ -201,7 +201,7 @@ export const usePortfolioMutations = () => {
   });
 
   const unarchivePortfolio = useMutation({
-    mutationFn: (portfolioId) => portfolioApi.unarchivePortfolio(portfolioId),
+    mutationFn: (portfolioId) => portfolioApi.setPortfolioArchived(portfolioId, false),
 
     onMutate: async (portfolioId) => {
       await queryClient.cancelQueries({ queryKey: ['overview'] });
@@ -229,7 +229,7 @@ export const usePortfolioMutations = () => {
   });
 
   const archiveAsset = useMutation({
-    mutationFn: ({ portfolioId, assetId }) => portfolioApi.archiveAsset(portfolioId, assetId),
+    mutationFn: ({ portfolioId, assetId }) => portfolioApi.setAssetArchived(portfolioId, assetId, true),
 
     onMutate: async ({ portfolioId, assetId }) => {
       await queryClient.cancelQueries({ queryKey: ['overview'] });
@@ -263,7 +263,7 @@ export const usePortfolioMutations = () => {
   });
 
   const unarchiveAsset = useMutation({
-    mutationFn: ({ portfolioId, assetId }) => portfolioApi.unarchiveAsset(portfolioId, assetId),
+    mutationFn: ({ portfolioId, assetId }) => portfolioApi.setAssetArchived(portfolioId, assetId, false),
 
     onMutate: async ({ portfolioId, assetId }) => {
       await queryClient.cancelQueries({ queryKey: ['overview'] });

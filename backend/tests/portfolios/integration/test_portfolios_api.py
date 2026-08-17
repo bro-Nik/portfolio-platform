@@ -114,12 +114,46 @@ class TestPortfoliosAPI:
     async def test_delete_portfolio_success(self, client, auth_headers, portfolio, db_session):
         response = await client.delete(f'/api/portfolios/{portfolio.id}', headers=auth_headers)
 
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert data['portfolio_id'] == portfolio.id
+        assert response.status_code == status.HTTP_204_NO_CONTENT
 
-        db_portfolio = await db_session.get(Portfolio, data['portfolio_id'])
+        db_portfolio = await db_session.get(Portfolio, portfolio.id)
         assert db_portfolio is None
+
+    async def test_archive_portfolio(self, client, auth_headers, portfolio, db_session):
+        response = await client.patch(
+            f'/api/portfolios/{portfolio.id}',
+            json={'is_archived': True},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        db_portfolio = await db_session.get(Portfolio, portfolio.id)
+        assert db_portfolio.is_archived is True
+
+    async def test_unarchive_portfolio(self, client, auth_headers, portfolio, db_session):
+        portfolio.is_archived = True
+        await db_session.commit()
+
+        response = await client.patch(
+            f'/api/portfolios/{portfolio.id}',
+            json={'is_archived': False},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        db_portfolio = await db_session.get(Portfolio, portfolio.id)
+        assert db_portfolio.is_archived is False
+
+    async def test_archive_portfolio_archives_assets(self, client, auth_headers, portfolio, portfolio_asset, db_session):
+        response = await client.patch(
+            f'/api/portfolios/{portfolio.id}',
+            json={'is_archived': True},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        db_asset = await db_session.get(PortfolioAsset, portfolio_asset.id)
+        assert db_asset.is_archived is True
 
     async def test_add_asset_to_portfolio(self, client, auth_headers, portfolio, db_session):
         asset_data = {'ticker_id': 1, 'portfolio_id': portfolio.id}
@@ -135,8 +169,11 @@ class TestPortfoliosAPI:
         assert asset is not None
         assert asset.ticker_id == asset_data['ticker_id']
 
-    async def test_get_asset_transactions(self, client, auth_headers, portfolio_asset, transaction):
-        response = await client.get(f'/api/portfolios/assets/{portfolio_asset.id}/transactions', headers=auth_headers)
+    async def test_get_asset_transactions(self, client, auth_headers, portfolio, portfolio_asset, transaction):
+        response = await client.get(
+            f'/api/portfolios/{portfolio.id}/assets/{portfolio_asset.id}/transactions',
+            headers=auth_headers,
+        )
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -144,14 +181,42 @@ class TestPortfoliosAPI:
         assert len(data) > 0
         assert data[0]['ticker_id'] == 1
 
-    async def test_get_asset_distribution(self, client, auth_headers, portfolio_asset, portfolio):
-        response = await client.get(f'/api/portfolios/assets/{portfolio_asset.id}/distribution', headers=auth_headers)
+    async def test_get_asset_distribution(self, client, auth_headers, portfolio, portfolio_asset):
+        response = await client.get(
+            f'/api/portfolios/{portfolio.id}/assets/{portfolio_asset.id}/distribution',
+            headers=auth_headers,
+        )
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert 'total_quantity_all_portfolios' in data
         assert 'total_amount_all_portfolios' in data
         assert 'portfolios' in data
+
+    async def test_archive_asset(self, client, auth_headers, portfolio, portfolio_asset, db_session):
+        response = await client.patch(
+            f'/api/portfolios/{portfolio.id}/assets/{portfolio_asset.id}',
+            json={'is_archived': True},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        db_asset = await db_session.get(PortfolioAsset, portfolio_asset.id)
+        assert db_asset.is_archived is True
+
+    async def test_unarchive_asset(self, client, auth_headers, portfolio, portfolio_asset, db_session):
+        portfolio_asset.is_archived = True
+        await db_session.commit()
+
+        response = await client.patch(
+            f'/api/portfolios/{portfolio.id}/assets/{portfolio_asset.id}',
+            json={'is_archived': False},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        db_asset = await db_session.get(PortfolioAsset, portfolio_asset.id)
+        assert db_asset.is_archived is False
 
     async def test_unauthenticated_access(self, client):
         response = await client.get('/api/portfolios/')

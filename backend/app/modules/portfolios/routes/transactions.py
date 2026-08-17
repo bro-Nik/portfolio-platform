@@ -41,13 +41,12 @@ async def update_transaction(
     return await transaction_service.build_response_with_assets(new_t, old_t)
 
 
-@router.delete('/transactions/{transaction_id}')
+@router.delete('/transactions/{transaction_id}', status_code=204)
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка удаления транзакции')
 async def delete_transaction(
     request: Request,
     transaction_id: int,
     transaction_service: TransactionServiceDep,
-) -> TransactionResponseWithAssets:
-    t = await transaction_service.delete(transaction_id)
-    return await transaction_service.build_response_with_assets(t)
+) -> None:
+    await transaction_service.delete(transaction_id)

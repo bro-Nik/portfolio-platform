@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -80,6 +80,46 @@ class TestWalletService:
             await service.archive(wallet.id)
 
             service.asset_service.archive_many.assert_not_awaited()
+
+    async def test_set_archived_true_dispatches_archive(self, service):
+        with (
+            patch.object(service, 'archive', new=AsyncMock()) as archive,
+            patch.object(service, 'unarchive', new=AsyncMock()) as unarchive,
+        ):
+            await service.set_archived(1, True)
+
+            archive.assert_awaited_once_with(1)
+            unarchive.assert_not_awaited()
+
+    async def test_set_archived_false_dispatches_unarchive(self, service):
+        with (
+            patch.object(service, 'archive', new=AsyncMock()) as archive,
+            patch.object(service, 'unarchive', new=AsyncMock()) as unarchive,
+        ):
+            await service.set_archived(1, False)
+
+            unarchive.assert_awaited_once_with(1)
+            archive.assert_not_awaited()
+
+    async def test_set_asset_archived_true_dispatches_archive_asset(self, service):
+        with (
+            patch.object(service, 'archive_asset', new=AsyncMock()) as archive_asset,
+            patch.object(service, 'unarchive_asset', new=AsyncMock()) as unarchive_asset,
+        ):
+            await service.set_asset_archived(1, 10, True)
+
+            archive_asset.assert_awaited_once_with(1, 10)
+            unarchive_asset.assert_not_awaited()
+
+    async def test_set_asset_archived_false_dispatches_unarchive_asset(self, service):
+        with (
+            patch.object(service, 'archive_asset', new=AsyncMock()) as archive_asset,
+            patch.object(service, 'unarchive_asset', new=AsyncMock()) as unarchive_asset,
+        ):
+            await service.set_asset_archived(1, 10, False)
+
+            unarchive_asset.assert_awaited_once_with(1, 10)
+            archive_asset.assert_not_awaited()
 
     async def test_get_with_assets_not_found(self, service):
         with (

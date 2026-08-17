@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { walletApi } from '../api/walletApi';
 
-export const useWalletAssetTransactionsQuery = (assetId, options = {}) => {
+export const useWalletAssetTransactionsQuery = (walletId, assetId, options = {}) => {
   return useQuery({
-    queryKey: ['walletAssetTransactions', assetId],
-    queryFn: () => walletApi.getAssetTransactions(assetId),
-    enabled: !!assetId,
+    queryKey: ['walletAssetTransactions', walletId, assetId],
+    queryFn: () => walletApi.getAssetTransactions(walletId, assetId),
+    enabled: !!walletId && !!assetId,
     ...options,
   });
 };
