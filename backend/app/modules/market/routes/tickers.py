@@ -1,8 +1,10 @@
 from typing import Annotated
 
-from fastapi import Query
+from fastapi import Query, Request
 
 from app.common.exceptions import handle_errors
+from app.core import settings
+from app.core.rate_limit import limiter
 from app.modules.market.dependencies import TickerServiceDep, require_user
 from app.modules.market.routes.app_router import AppRouter
 from app.modules.market.schemas import (
@@ -16,8 +18,10 @@ user_router = AppRouter(prefix='/api/tickers', tags=['User | Tickers'], dependen
 
 
 @user_router.get('')
+@limiter.limit(settings.rate_limit_default)
 @handle_errors('Ошибка получения тикеров')
 async def search_tickers(
+    request: Request,
     ticker_service: TickerServiceDep,
     search: str | None = Query(None),
     markets: Annotated[list[str] | None, Query()] = None,
@@ -29,8 +33,10 @@ async def search_tickers(
 
 
 @user_router.post('/prices')
+@limiter.limit(settings.rate_limit_default)
 @handle_errors('Ошибка получения цен')
 async def get_prices(
+    request: Request,
     ticker_ids: list[int],
     ticker_service: TickerServiceDep,
 ) -> PricesResponse:
@@ -39,8 +45,10 @@ async def get_prices(
 
 
 @user_router.post('/images')
+@limiter.limit(settings.rate_limit_default)
 @handle_errors('Ошибка получения изображений')
 async def get_images(
+    request: Request,
     ticker_ids: list[int],
     ticker_service: TickerServiceDep,
 ) -> ImagesResponse:
@@ -49,8 +57,10 @@ async def get_images(
 
 
 @user_router.post('/info')
+@limiter.limit(settings.rate_limit_default)
 @handle_errors('Ошибка получения информации о тикере')
 async def get_info(
+    request: Request,
     ticker_ids: list[int],
     ticker_service: TickerServiceDep,
 ) -> TickerInfoListResponse:

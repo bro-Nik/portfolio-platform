@@ -1,47 +1,76 @@
+from fastapi import Request
+
 from app.common.exceptions import handle_errors
 from app.common.exceptions.business import BusinessRuleError
-
+from app.core import settings
+from app.core.rate_limit import limiter
 from app.modules.market.dependencies import TaskServiceDep
 from app.modules.market.enums import TaskStatus
-from app.modules.market.tasks.market import update_market_data
-from app.modules.market.schemas import (
-    TaskCreateRequest, TaskResponse, TaskUpdateRequest,
-)
 from app.modules.market.routes.app_router import AppRouter
-
+from app.modules.market.schemas import (
+    TaskCreateRequest,
+    TaskResponse,
+    TaskUpdateRequest,
+)
+from app.modules.market.tasks.market import update_market_data
 
 tasks_router = AppRouter(prefix='/tasks', tags=['Admin | ApiTasks'])
 
 
 @tasks_router.get('')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка получения задач')
-async def get_tasks(task_service: TaskServiceDep) -> list[TaskResponse]:
+async def get_tasks(
+    request: Request,
+    task_service: TaskServiceDep,
+) -> list[TaskResponse]:
     return await task_service.get_all()
 
 
 @tasks_router.post('', status_code=201)
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка создания задачи')
-async def create_task(data: TaskCreateRequest, task_service: TaskServiceDep) -> TaskResponse:
+async def create_task(
+    request: Request,
+    data: TaskCreateRequest,
+    task_service: TaskServiceDep,
+) -> TaskResponse:
     task = await task_service.create(data)
     return await task_service.get(task.id)
 
 
 @tasks_router.put('/{task_id}')
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка обновления задачи')
-async def update_task(task_id: int, data: TaskUpdateRequest, task_service: TaskServiceDep) -> TaskResponse:
+async def update_task(
+    request: Request,
+    task_id: int,
+    data: TaskUpdateRequest,
+    task_service: TaskServiceDep,
+) -> TaskResponse:
     task = await task_service.update(task_id, data)
     return await task_service.get(task.id)
 
 
 @tasks_router.delete('/{task_id}', status_code=204)
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка удаления задачи')
-async def delete_task(task_id: int, task_service: TaskServiceDep) -> None:
+async def delete_task(
+    request: Request,
+    task_id: int,
+    task_service: TaskServiceDep,
+) -> None:
     await task_service.delete(task_id)
 
 
 @tasks_router.post('/{task_id}/run', status_code=202)
+@limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка запуска задачи')
-async def run_task(task_id: int, task_service: TaskServiceDep) -> dict:
+async def run_task(
+    request: Request,
+    task_id: int,
+    task_service: TaskServiceDep,
+) -> dict:
     task = await task_service.get(task_id)
     if task.status == TaskStatus.RUNNING:
         raise BusinessRuleError(f'Задача {task_id} уже выполняется')
