@@ -37,4 +37,6 @@ class UserRepository(BaseRepository[User]):
             *where,
             order=[User.created_at.desc()],
             relations=('login_sessions',),
+            offset=skip,
+            limit=limit,
         )

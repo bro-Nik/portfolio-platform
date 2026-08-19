@@ -32,9 +32,11 @@ class BaseRepository[Model]:
         self,
         *where: ColumnElement[bool],
         order: Sequence[ColumnElement] | None = None,
-        relations: Sequence[str] | None = None
+        relations: Sequence[str] | None = None,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> list[Model]:
-        return await self._get_all(*where, order=order, relations=relations)
+        return await self._get_all(*where, order=order, relations=relations, offset=offset, limit=limit)
 
     async def get_all_by_ids(
         self,
@@ -183,9 +185,15 @@ class BaseRepository[Model]:
         *where: ColumnElement[bool],
         order: Sequence[ColumnElement] | None = None,
         relations: Sequence[str] | None = None,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> list[Model]:
         stmt = select(self.model)
         stmt = self._apply(stmt, where=where, order=order, relations=relations)
+        if offset is not None:
+            stmt = stmt.offset(offset)
+        if limit is not None:
+            stmt = stmt.limit(limit)
 
         result = await self._session.execute(stmt)
         return list(result.unique().scalars().all())
