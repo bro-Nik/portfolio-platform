@@ -1,10 +1,10 @@
 from datetime import UTC, datetime
 from unittest.mock import patch
 
-from fastapi import HTTPException
 from freezegun import freeze_time
 import pytest
 
+from app.common.exceptions.business import NotFoundError
 from app.modules.auth.repositories import SessionRepository, TokenRepository
 from app.modules.auth.services.session import SessionService
 
@@ -96,11 +96,9 @@ class TestSessionService:
     async def test_delete_session_not_found(self, service):
         with (
             patch.object(service.repo, 'get', return_value=None),
-            pytest.raises(HTTPException) as exc,
+            pytest.raises(NotFoundError),
         ):
             await service.delete_session(999, user_id)
-
-            assert exc.value.status_code == 404
 
     async def test_delete_session_wrong_user(self, service, mock):
         session_id = 10
@@ -108,8 +106,6 @@ class TestSessionService:
 
         with (
             patch.object(service.repo, 'get', return_value=db_session),
-            pytest.raises(HTTPException) as exc,
+            pytest.raises(NotFoundError),
         ):
             await service.delete_session(session_id, user_id)
-
-            assert exc.value.status_code == 404

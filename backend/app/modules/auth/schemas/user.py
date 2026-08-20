@@ -1,25 +1,11 @@
 from datetime import UTC, datetime
-from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
+from app.common.schemas import UserRole
 from app.core import settings
 
 from .session import LoginSessionResponse
-
-
-class UserRole(str, Enum):
-    USER = 'user'
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-
-    @property
-    def priority(self) -> int:
-        return {
-            UserRole.USER: 1,
-            UserRole.MODERATOR: 2,
-            UserRole.ADMIN: 3,
-        }.get(self, 1)
 
 
 class UserCreateRequest(BaseModel):

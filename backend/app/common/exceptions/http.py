@@ -1,5 +1,6 @@
 from collections.abc import Callable
 import functools
+import logging
 from typing import Any, ParamSpec, TypeVar, cast
 
 from fastapi import HTTPException, status
@@ -11,6 +12,8 @@ from .business import (
     NotFoundError,
     PermissionDeniedError,
 )
+
+logger = logging.getLogger(__name__)
 
 P = ParamSpec('P')
 F = TypeVar('F', bound=Callable[..., Any])
@@ -35,7 +38,8 @@ def handle_errors(
             except BusinessRuleError as e:
                 raise BadRequestException(str(e)) from e
             except Exception as e:
-                raise InternalServerException(f'{default_message}: {e!s}') from e
+                logger.exception('%s: %s', default_message, e)
+                raise InternalServerException(default_message) from e
         return cast('F', wrapper)
     return decorator
 

@@ -35,7 +35,6 @@ __all__ = [
     'RefreshTokenRequest',
     'RefreshTokenUpdate',
     'TokensResponse',
-    'VerifyEmailRequest',
     'UserCreate',
     'UserCreateRequest',
     'UserLogin',

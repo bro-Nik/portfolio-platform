@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app.common.exceptions.http import UnauthorizedException
+from app.common.exceptions.business import AuthenticationError
 from app.common.schemas import AuthUser
 
 
@@ -14,7 +14,7 @@ class Context:
     @property
     def actor(self) -> AuthUser:
         if self._actor is None:
-            raise UnauthorizedException('Необходимо авторизоваться')
+            raise AuthenticationError('Необходимо авторизоваться')
         return self._actor
 
     @property

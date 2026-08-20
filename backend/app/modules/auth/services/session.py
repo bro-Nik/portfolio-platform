@@ -3,8 +3,7 @@ from datetime import UTC, datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from user_agents import parse
 
-from fastapi import HTTPException, status
-
+from app.common.exceptions.business import NotFoundError
 from app.common.schemas import Context
 
 from app.modules.auth.repositories import SessionRepository, TokenRepository
@@ -40,7 +39,7 @@ class SessionService:
     async def delete_session(self, session_id: int, user_id: int) -> None:
         db_session = await self.repo.get(session_id)
         if not db_session or db_session.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Сессия не найдена')
+            raise NotFoundError('Сессия не найдена')
         if db_session.refresh_token_id:
             await self.token_repo.delete(db_session.refresh_token_id)
         await self.repo.delete(session_id)
