@@ -9,7 +9,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 class Settings(BaseSettings):
     jwt_secret: str = 'super-secret-jwt-token-with-at-least-32-characters-long'
     jwt_algorithm: str = 'HS256'
-    jwt_access_token_expire_minutes: int = 1
+    jwt_access_token_expire_minutes: int = 15
     jwt_refresh_token_expire_days: int = 30
 
     db_echo: bool = False
