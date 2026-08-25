@@ -9,11 +9,11 @@ from redis.exceptions import ConnectionError as RedisConnectionError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.common.dependencies import get_session
 from app.common.schemas import UserRole
 from app.core.config import settings
 from app.core.database import Base
 from app.core.rate_limit import limiter
+from app.di import build_test_container
 from app.main import app as fastapi_app
 import app.modules.auth.models
 from app.modules.auth.models import User
@@ -79,20 +79,22 @@ async def user(db_session, save):
 
 @pytest.fixture
 async def client(db_session):
-    fastapi_app.dependency_overrides[get_session] = lambda: db_session
+    original_container = fastapi_app.state.dishka_container
+    fastapi_app.state.dishka_container = build_test_container(db_session)
     limiter.enabled = False
 
-    async with (
-        LifespanManager(fastapi_app) as manager,
-        AsyncClient(
-            transport=ASGITransport(app=manager.app),
-            base_url='http://testserver',
-            follow_redirects=True,
-        ) as client,
-    ):
-        yield client
-
-    fastapi_app.dependency_overrides.clear()
+    try:
+        async with (
+            LifespanManager(fastapi_app) as manager,
+            AsyncClient(
+                transport=ASGITransport(app=manager.app),
+                base_url='http://testserver',
+                follow_redirects=True,
+            ) as client,
+        ):
+            yield client
+    finally:
+        fastapi_app.state.dishka_container = original_container
 
 
 @pytest.fixture

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Request
+from fastapi import Request
+
+from app.common.routing import DishkaRouter
 
 from app.common.exceptions import handle_errors
 from app.core.rate_limit import limiter
@@ -8,7 +10,7 @@ from app.modules.portfolios.dependencies import OverviewReadQueryDep, require_us
 from app.modules.portfolios.schemas.overview import OverviewResponse
 
 
-router = APIRouter(dependencies=[require_user])
+router = DishkaRouter(dependencies=[require_user])
 
 
 @router.get('/overview')

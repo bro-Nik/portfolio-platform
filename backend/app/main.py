@@ -9,19 +9,21 @@ from app.core.rate_limit import setup_rate_limiter
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.core import settings
+from app.di import build_web_container
 from app.modules.auth.routes import router as auth_router
 from app.modules.portfolios.routes import router as portfolios_router
 from app.modules.tags.routes import router as tags_router
 from app.modules.market.routes import router as market_router
-from app.modules.market.dependencies import container
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_rate_limiter(app, settings.redis_url)
     yield
-    await container.close()
+    await app.state.dishka_container.close()
 
+
+container = build_web_container()
 
 app = FastAPI(
     title='Portfolios API',

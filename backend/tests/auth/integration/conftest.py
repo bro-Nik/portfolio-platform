@@ -8,7 +8,7 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import Base
 from app.core.rate_limit import limiter
-from app.common.dependencies import get_session
+from app.di import build_test_container
 
 import app.modules.auth.models  # noqa: F401
 
@@ -66,17 +66,19 @@ def mock_taskiq():
 
 @pytest.fixture
 async def client(db_session):
-    app.dependency_overrides[get_session] = lambda: db_session
+    original_container = app.state.dishka_container
+    app.state.dishka_container = build_test_container(db_session)
     limiter.enabled = False
 
-    async with LifespanManager(app) as manager, AsyncClient(
-        transport=ASGITransport(app=manager.app),
-        base_url='http://testserver',
-        follow_redirects=True,
-    ) as client:
-        yield client
-
-    app.dependency_overrides.clear()
+    try:
+        async with LifespanManager(app) as manager, AsyncClient(
+            transport=ASGITransport(app=manager.app),
+            base_url='http://testserver',
+            follow_redirects=True,
+        ) as client:
+            yield client
+    finally:
+        app.state.dishka_container = original_container
 
 
 @pytest.fixture

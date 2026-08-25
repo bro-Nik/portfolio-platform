@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Request
+from fastapi import Request
+
+from app.common.routing import DishkaRouter
 from typing import Annotated
 from fastapi import Path, Query
 
@@ -12,7 +14,7 @@ from app.modules.auth.schemas import (
 )
 
 
-router = APIRouter(dependencies=[require_admin])
+router = DishkaRouter(dependencies=[require_admin])
 
 
 @router.get('/users')

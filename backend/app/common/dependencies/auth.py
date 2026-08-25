@@ -14,6 +14,24 @@ from app.common.schemas import AuthUser, UserRole
 security = HTTPBearer(auto_error=False)
 
 
+def get_actor_from_headers(authorization: str | None) -> AuthUser | None:
+    if not authorization:
+        return None
+
+    scheme, _, token = authorization.partition(' ')
+    if scheme.lower() != 'bearer' or not token:
+        return None
+
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+    except jwt.PyJWTError:
+        return None
+    try:
+        return AuthUser(**payload)
+    except ValidationError:
+        return None
+
+
 def get_current_user(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> AuthUser:
     if not credentials:
         raise UnauthorizedException('Токен доступа отсутствует')
@@ -34,13 +52,7 @@ def get_current_user(credentials: Annotated[HTTPAuthorizationCredentials, Depend
 def get_current_user_or_none(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> AuthUser | None:
     if not credentials:
         return None
-
-    token = credentials.credentials
-    try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
-        return AuthUser(**payload)
-    except jwt.PyJWTError:
-        return None
+    return get_actor_from_headers(credentials.scheme.lower() + ' ' + credentials.credentials)
 
 
 def _create_role_requirement(required_role: UserRole) -> Callable[..., AuthUser]:

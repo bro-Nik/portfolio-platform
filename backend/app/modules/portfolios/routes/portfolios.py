@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Request
+from fastapi import Request
+
+from app.common.routing import DishkaRouter
 
 from app.common.exceptions import handle_errors
 from app.core.rate_limit import limiter
@@ -17,7 +19,7 @@ from app.modules.portfolios.schemas import (
 )
 
 
-router = APIRouter(dependencies=[require_user])
+router = DishkaRouter(dependencies=[require_user])
 
 
 @router.get('/portfolios')

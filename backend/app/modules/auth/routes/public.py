@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Request
+from fastapi import Request
+
+from app.common.routing import DishkaRouter
 
 from app.common.exceptions import handle_errors
 from app.core.rate_limit import limiter
@@ -21,7 +23,7 @@ from app.modules.auth.tasks import (
 from typing import Annotated
 
 
-router = APIRouter()
+router = DishkaRouter()
 
 
 @router.post('/register', status_code=201)

@@ -1,12 +1,10 @@
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 
-from dishka import FromDishka, Provider, Scope, make_async_container, provide
+from dishka import FromDishka, Provider, Scope, provide
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.common.redis import get_redis as get_common_redis
-from app.core.database import AsyncSessionLocal
 from app.modules.market.external_api.core import (
     BaseProvider,
     HTTPClient,
@@ -33,24 +31,7 @@ from app.modules.market.services.ticker_identifier import TickerIdentifierServic
 SessionFactory = async_sessionmaker[AsyncSession]
 
 
-class AppProvider(Provider):
-    @provide(scope=Scope.APP)
-    def get_redis(self) -> Redis:
-        return get_common_redis()
-
-    @provide(scope=Scope.APP)
-    async def get_session_factory(self) -> SessionFactory:
-        return AsyncSessionLocal
-
-    @provide(scope=Scope.REQUEST)
-    async def get_session(self, session_factory: SessionFactory) -> AsyncIterator[AsyncSession]:
-        async with AsyncSessionLocal() as session:
-            try:
-                yield session
-            except Exception:
-                await session.rollback()
-                raise
-
+class MarketProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_task_repo(self, session: AsyncSession) -> TaskRepository:
         return TaskRepository(session)
@@ -149,8 +130,6 @@ class TaskProvider(Provider):
 
         return factory
 
-
-container = make_async_container(AppProvider())
 
 ProviderServiceDep = Annotated[FromDishka[ProviderService], ...]
 TaskServiceDep = Annotated[FromDishka[TaskService], ...]

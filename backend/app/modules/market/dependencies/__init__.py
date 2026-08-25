@@ -1,22 +1,24 @@
 from .di import (
-    AppProvider,
+    MarketProvider,
+    ProviderFactoryDep,
     ProviderServiceDep,
+    SessionDep,
     TaskProvider,
     TaskServiceDep,
     TaskTrackerServiceDep,
     TickerServiceDep,
-    container,
 )
 from app.common.dependencies import require_admin, require_user
 
 __all__ = [
-    'AppProvider',
+    'MarketProvider',
+    'ProviderFactoryDep',
     'ProviderServiceDep',
+    'SessionDep',
     'TaskProvider',
     'TaskServiceDep',
     'TaskTrackerServiceDep',
     'TickerServiceDep',
-    'container',
     'require_admin',
     'require_user',
 ]
