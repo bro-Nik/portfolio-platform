@@ -58,7 +58,6 @@ class WalletService:
     async def create(self, data: WalletCreateRequest) -> Wallet:
         await self._validate_unique_name(data.name)
         wallet = await self.repo.create(WalletCreate(**data.model_dump(), user_id=self.actor.id).model_dump())
-        await self.session.commit()
         return wallet
 
     async def update(self, id: int, data: WalletUpdateRequest) -> Wallet:
@@ -68,7 +67,6 @@ class WalletService:
         if data.name != wallet.name:
             await self._validate_unique_name(data.name)
         updated = await self.repo.update(id, WalletUpdate(**data.model_dump()).model_dump())
-        await self.session.commit()
         return updated
 
     async def delete(self, id: int) -> None:
@@ -77,7 +75,6 @@ class WalletService:
         if has_txns:
             raise ConflictError('Нельзя удалить кошелёк с транзакциями')
         await self.repo.delete(id)
-        await self.session.commit()
 
     async def archive(self, id: int) -> None:
         wallet = await self.repo.get_with_assets(id)
@@ -86,12 +83,10 @@ class WalletService:
         unarchived_ids = [a.id for a in wallet.assets if not a.is_archived]
         if unarchived_ids:
             await self.asset_service.archive_many(unarchived_ids)
-        await self.session.commit()
 
     async def unarchive(self, id: int) -> None:
         await self.get(id)
         await self.repo.update(id, {'is_archived': False})
-        await self.session.commit()
 
     async def set_archived(self, id: int, is_archived: bool) -> None:
         if is_archived:
@@ -108,17 +103,14 @@ class WalletService:
     async def delete_asset(self, wallet_id: int, asset_id: int) -> None:
         await self.get(wallet_id)
         await self.asset_service.delete(asset_id)
-        await self.session.commit()
 
     async def archive_asset(self, wallet_id: int, asset_id: int) -> None:
         await self.get(wallet_id)
         await self.asset_service.archive(asset_id)
-        await self.session.commit()
 
     async def unarchive_asset(self, wallet_id: int, asset_id: int) -> None:
         await self.get(wallet_id)
         await self.asset_service.unarchive(asset_id)
-        await self.session.commit()
 
     async def handle_transaction(self, t: Transaction, *, cancel: bool = False) -> None:
         if not t.wallet_id:

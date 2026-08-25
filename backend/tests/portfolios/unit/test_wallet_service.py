@@ -141,7 +141,6 @@ class TestWalletService:
             assert result.name == 'New Wallet'
             service.repo.exists_by_name_and_user.assert_called_once_with('New Wallet', user_id)
             service.repo.create.assert_called_once()
-            service.session.commit.assert_called_once()
 
     async def test_create_duplicate_name(self, service, data):
         wallet_data = data(name='Existing Wallet')

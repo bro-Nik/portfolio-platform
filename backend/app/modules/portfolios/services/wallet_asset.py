@@ -101,7 +101,6 @@ class WalletAssetService:
             for w_id, t_id in missing
         ])
         created_by_pair = {(a.wallet_id, a.ticker_id): a for a in created}
-        await self.session.flush()
         return tuple(existing_by_pair.get(pair) or created_by_pair[pair] for pair in valid)
 
     async def _handle_trade(self, t: Transaction, direction: int) -> None:

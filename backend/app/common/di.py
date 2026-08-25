@@ -35,6 +35,7 @@ class SessionProvider(Provider):
             except Exception:
                 await session.rollback()
                 raise
+            await session.commit()
 
 
 class ContextProvider(Provider):

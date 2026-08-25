@@ -45,7 +45,6 @@ class TaskService:
         await self._validate_provider_active(data.provider_name)
         await self._validate_task_type(data.provider_name, data.task_type)
         task = await self.repo.create(TaskCreate(**data.model_dump()).model_dump())
-        await self.session.commit()
         return task
 
     async def update(self, id: int, data: TaskUpdateRequest) -> Task:
@@ -59,9 +58,7 @@ class TaskService:
             provider_name = data.provider_name or task.provider_name
             await self._validate_task_type(provider_name, data.task_type)
         updated = await self.repo.update(id, TaskUpdate(**data.model_dump()).model_dump())
-        await self.session.commit()
         return updated
 
     async def delete(self, id: int) -> None:
         await self.repo.delete(id)
-        await self.session.commit()

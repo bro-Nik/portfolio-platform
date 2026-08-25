@@ -188,7 +188,6 @@ class TickerService:
                         'symbol': coin.get('symbol', ''),
                         'market_cap_rank': coin.get('market_cap_rank'),
                     })
-                    await self.session.flush()
                     existing_by_ext[ext_id] = ticker
                     image_url = coin.get('image')
                     created += 1
@@ -214,7 +213,6 @@ class TickerService:
                     if filename:
                         ticker.image = filename
 
-            await self.session.flush()
             await self.session.commit()
 
         await self._invalidate_infos(touched_ids)
@@ -305,7 +303,6 @@ class TickerService:
         if not dump:
             raise BusinessRuleError('Нет полей для обновления')
         updated = await self.repo.update(ticker_id, dump)
-        await self.session.commit()
         await self._invalidate_infos([ticker_id])
         return TickerDetailResponse.model_validate(updated)
 
@@ -322,7 +319,6 @@ class TickerService:
             self._delete_image_files(ticker.image, ticker.market)
 
         await self.repo.delete(ticker_id)
-        await self.session.commit()
         await self._invalidate_infos([ticker_id])
         await self._invalidate_prices([ticker_id])
 
@@ -341,7 +337,6 @@ class TickerService:
         await self._merge_update_references(source_id, target_id)
 
         await self.repo.delete(source_id)
-        await self.session.commit()
 
         merged_ids = [source_id, target_id]
         await self._invalidate_infos(merged_ids)

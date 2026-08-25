@@ -86,7 +86,6 @@ async def seed_currencies(session) -> None:
         }
         for code in missing
     ])
-    await session.flush()
 
 
 async def run(admin_email: str, admin_password: str) -> None:
@@ -110,7 +109,6 @@ async def run(admin_email: str, admin_password: str) -> None:
             'role': UserRole.ADMIN,
             'status': 'active',
         })
-        await session.flush()
 
         provider_exists = await provider_repo.exists_by_name("CoinGecko")
         if not provider_exists:
@@ -120,7 +118,6 @@ async def run(admin_email: str, admin_password: str) -> None:
                 is_active=True,
             )
             await provider_repo.create(provider_data.model_dump())
-            await session.flush()
         else:
             logger.info("Провайдер CoinGecko уже существует — пропускаем")
 

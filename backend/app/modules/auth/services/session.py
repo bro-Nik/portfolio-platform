@@ -43,7 +43,6 @@ class SessionService:
         if db_session.refresh_token_id:
             await self.token_repo.delete(db_session.refresh_token_id)
         await self.repo.delete(session_id)
-        await self.session.commit()
 
     @staticmethod
     def _parse_user_agent(user_agent_string: str) -> dict:

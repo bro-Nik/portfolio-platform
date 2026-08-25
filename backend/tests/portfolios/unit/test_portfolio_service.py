@@ -142,7 +142,6 @@ class TestPortfolioService:
             assert result.name == 'New Portfolio'
             service.repo.exists_by_name_and_user.assert_called_once_with('New Portfolio', 1)
             service.repo.create.assert_called_once()
-            service.session.commit.assert_called_once()
 
     async def test_create_duplicate_name(self, service, data):
         portfolio_data = data(name='Existing Portfolio')

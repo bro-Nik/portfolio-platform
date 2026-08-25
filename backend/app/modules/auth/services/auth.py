@@ -55,7 +55,6 @@ class AuthService:
         user = await self.user_service.create(user_data)
         token = self.security.create_email_verification_token(user.id)
         auth_result = await self._create_tokens(user)
-        await self.session.commit()
         return RegisterResult(
             tokens=auth_result.tokens,
             user_id=auth_result.user_id,
@@ -77,7 +76,6 @@ class AuthService:
             if user.is_verified:
                 return RegisterResponse(message='Email уже подтверждён')
             await self.user_service.repo.update(user_id, {'is_verified': True})
-        await self.session.commit()
         return RegisterResponse(message='Email успешно подтверждён')
 
     async def resend_verification(self, email: str) -> RegisterTaskData | RegisterResponse:
@@ -96,7 +94,6 @@ class AuthService:
         if not self.security.verify_password(data.password, user.password_hash):
             raise AuthenticationError('Неверный email или пароль')
         result = await self._create_tokens(user)
-        await self.session.commit()
         return result
 
     async def refresh_tokens(self, data: RefreshTokenRequest) -> AuthResult:
@@ -107,32 +104,27 @@ class AuthService:
         user = await self.user_service.get_for_auth(id=user_id)
         token = await self._get_db_refresh_token(data.token)
         result = await self._create_tokens(user, token)
-        await self.session.commit()
         return result
 
     async def logout(self, refresh_token: str) -> bool:
         token = await self._get_db_refresh_token(refresh_token)
         deleted = bool(await self.token_repo.delete(token.id))
-        await self.session.commit()
         return deleted
 
     async def logout_all(self, user_id: int | None = None) -> bool:
         user_id = user_id or self.ctx.actor.id
         deleted = bool(await self.token_repo.delete_all_by_user(user_id))
-        await self.session.commit()
         return deleted
 
     async def reset_password(self, token: str, new_password: str) -> User:
         user_id = await self.user_service.reset_password(token, new_password)
         user = await self.user_service.get_for_auth(id=user_id)
         await self.logout_all(user_id)
-        await self.session.commit()
         return user
 
     async def delete_account(self, user_id: int, data: DeleteAccountRequest) -> None:
         await self.user_service.delete_account(user_id, data)
         await self.logout_all(user_id)
-        await self.session.commit()
 
     async def _get_db_refresh_token(self, refresh_token: str) -> RefreshToken:
         token_hash = self.security.hash_token(refresh_token)
@@ -152,7 +144,6 @@ class AuthService:
         else:
             create = RefreshTokenCreate(user_id=user.id, token_hash=token_hash, expires_at=token_data.refresh_expires_at)
             token = await self.token_repo.create(create.model_dump())
-            await self.session.flush()
             await self.session_service.create(token.id, user.id)
         await self.user_service.update_activity(user.id)
 

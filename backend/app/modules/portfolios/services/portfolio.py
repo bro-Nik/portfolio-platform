@@ -60,7 +60,6 @@ class PortfolioService:
     async def create(self, data: PortfolioCreateRequest) -> Portfolio:
         await self._validate_unique_name(data.name)
         portfolio = await self.repo.create(PortfolioCreate(**data.model_dump(), user_id=self.actor.id).model_dump())
-        await self.session.commit()
         return portfolio
 
     async def update(self, id: int, data: PortfolioUpdateRequest) -> Portfolio:
@@ -77,7 +76,6 @@ class PortfolioService:
 
         update_data = data.model_dump(exclude_unset=True)
         updated = await self.repo.update(id, PortfolioUpdate(**update_data).model_dump(exclude_unset=True))
-        await self.session.commit()
         return updated
 
     async def delete(self, id: int) -> None:
@@ -86,7 +84,6 @@ class PortfolioService:
         if has_txns:
             raise ConflictError('Нельзя удалить портфель с транзакциями')
         await self.repo.delete(id)
-        await self.session.commit()
 
     async def archive(self, id: int) -> None:
         portfolio = await self.repo.get_with_assets(id)
@@ -95,12 +92,10 @@ class PortfolioService:
         unarchived_ids = [a.id for a in portfolio.assets if not a.is_archived]
         if unarchived_ids:
             await self.asset_service.archive_many(unarchived_ids)
-        await self.session.commit()
 
     async def unarchive(self, id: int) -> None:
         await self.get(id)
         await self.repo.update(id, {'is_archived': False})
-        await self.session.commit()
 
     async def set_archived(self, id: int, is_archived: bool) -> None:
         if is_archived:
@@ -119,23 +114,19 @@ class PortfolioService:
         if portfolio.is_archived:
             raise ConflictError('Нельзя добавлять активы в архивный портфель')
         asset = await self.asset_service.create(data)
-        await self.session.commit()
         return asset
 
     async def delete_asset(self, id: int, asset_id: int) -> None:
         await self.get(id)
         await self.asset_service.delete(asset_id)
-        await self.session.commit()
 
     async def archive_asset(self, id: int, asset_id: int) -> None:
         await self.get(id)
         await self.asset_service.archive(asset_id)
-        await self.session.commit()
 
     async def unarchive_asset(self, id: int, asset_id: int) -> None:
         await self.get(id)
         await self.asset_service.unarchive(asset_id)
-        await self.session.commit()
 
     async def handle_transaction(self, t: Transaction, *, cancel: bool = False) -> None:
         if not t.portfolio_id:

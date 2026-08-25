@@ -52,7 +52,6 @@ class UserService:
         await self._validate_create_data(data)
         user_to_db = UserCreate(**data.model_dump(exclude={'password'}), password_hash=self.security.get_password_hash(data.password))
         user = await self.repo.create(user_to_db.model_dump())
-        await self.session.commit()
         return user
 
     async def update(self, id: int, data: UserUpdateRequest) -> User:
@@ -73,13 +72,11 @@ class UserService:
             updates['status'] = data.status
 
         updated = await self.repo.update(id, updates) if updates else user
-        await self.session.commit()
         return updated or user
 
     async def delete(self, id: int) -> None:
         await self.get(id)
         await self.repo.delete(id)
-        await self.session.commit()
 
     async def update_activity(self, user_id: int) -> None:
         await self.repo.update_activity(user_id)
@@ -90,7 +87,6 @@ class UserService:
             raise AuthenticationError('Неверный текущий пароль')
         password_hash = self.security.get_password_hash(data.new_password)
         await self.repo.update(user_id, {'password_hash': password_hash})
-        await self.session.commit()
 
     async def change_email(self, user_id: int, data: EmailChangeRequest) -> str | None:
         user = await self.get(user_id)
@@ -100,7 +96,6 @@ class UserService:
             raise ConflictError(f'Пользователь с email {data.new_email} уже существует')
         if not settings.smtp_enabled:
             await self.repo.update(user_id, {'email': data.new_email, 'is_verified': True})
-            await self.session.commit()
             return None
         return self.security.create_email_verification_token(user_id, new_email=data.new_email)
 
