@@ -7,8 +7,11 @@ from app.modules.market.dependencies import ProviderServiceDep
 from app.modules.market.routes.app_router import AppRouter
 from app.modules.market.schemas import (
     ProviderCreateRequest,
+    ProviderDetailsItem,
     ProviderLog,
+    ProviderMethodsItem,
     ProviderResponse,
+    ProviderSettingsItem,
     ProviderStats,
     ProviderUpdateRequest,
 )
@@ -22,7 +25,7 @@ providers_router = AppRouter(prefix='/providers', tags=['Admin | ApiProviders'])
 async def get_providers_with_settings(
     request: Request,
     provider_service: ProviderServiceDep,
-) -> list:
+) -> list[ProviderSettingsItem]:
     return await provider_service.get_all_with_settings()
 
 
@@ -32,7 +35,7 @@ async def get_providers_with_settings(
 async def get_providers_with_methods(
     request: Request,
     provider_service: ProviderServiceDep,
-) -> list:
+) -> list[ProviderMethodsItem]:
     return await provider_service.get_all_with_methods()
 
 
@@ -42,7 +45,7 @@ async def get_providers_with_methods(
 async def get_providers(
     request: Request,
     provider_service: ProviderServiceDep,
-) -> list:
+) -> list[ProviderDetailsItem]:
     return await provider_service.get_all_with_details()
 
 

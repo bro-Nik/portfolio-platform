@@ -1,3 +1,9 @@
+from .distribution import (
+    PortfolioAssetDistributionItem,
+    PortfolioAssetDistributionResponse,
+    WalletAssetDistributionItem,
+    WalletAssetDistributionResponse,
+)
 from .overview import OverviewResponse
 from .portfolio import (
     PortfolioArchiveRequest,
@@ -44,6 +50,8 @@ __all__ = [
     'PortfolioAssetArchiveRequest',
     'PortfolioAssetCreate',
     'PortfolioAssetCreateRequest',
+    'PortfolioAssetDistributionItem',
+    'PortfolioAssetDistributionResponse',
     'PortfolioAssetResponse',
     'PortfolioAssetUpdate',
     'PortfolioBase',
@@ -63,6 +71,8 @@ __all__ = [
     'WalletArchiveRequest',
     'WalletAssetArchiveRequest',
     'WalletAssetCreate',
+    'WalletAssetDistributionItem',
+    'WalletAssetDistributionResponse',
     'WalletAssetResponse',
     'WalletAssetUpdate',
     'WalletBase',

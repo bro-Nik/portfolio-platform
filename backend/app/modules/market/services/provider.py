@@ -10,7 +10,9 @@ from app.modules.market.external_api.core import registry
 from app.modules.market.models import Provider, RequestLog
 from app.modules.market.repositories import ProviderRepository, RequestLogRepository
 from app.modules.market.schemas import (
-    ProviderCreate, ProviderCreateRequest, ProviderResponse,
+    ProviderCreate, ProviderCreateRequest, ProviderDetailsItem,
+    ProviderMethodsItem, ProviderMethodInfo, ProviderRateLimits,
+    ProviderResponse, ProviderSettingsItem,
     ProviderStats, ProviderUpdate, ProviderUpdateRequest,
 )
 
@@ -37,7 +39,7 @@ class ProviderService:
         self.repo = provider_repo
         self.log_repo = log_repo
 
-    async def get_all_with_details(self) -> list[dict]:
+    async def get_all_with_details(self) -> list[ProviderDetailsItem]:
         db_providers = await self.repo.get_all()
         db_map = {p.name: p for p in db_providers}
         counters_map = await self._get_counters_for_providers(
@@ -47,30 +49,29 @@ class ProviderService:
         result = []
         for name, cls in registry.PROVIDERS.items():
             db = db_map.get(name)
-            methods = registry.get_provider_methods(name)
             counters = counters_map.get(name, {})
 
-            result.append({
-                'id': db.id if db else None,
-                'name': name,
-                'description': cls.DESCRIPTION,
-                'has_config': db is not None,
-                'supported_markets': db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
-                'api_key_required': cls.API_KEY_REQUIRED,
-                'api_key': db.api_key if db else None,
-                'requests_per_minute': db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
-                'requests_per_hour': db.requests_per_hour if db and db.requests_per_hour is not None else cls.REQUESTS_PER_HOUR,
-                'requests_per_day': db.requests_per_day if db and db.requests_per_day is not None else cls.REQUESTS_PER_DAY,
-                'requests_per_month': db.requests_per_month if db and db.requests_per_month is not None else cls.REQUESTS_PER_MONTH,
-                'retry_delay': db.retry_delay if db else cls.RETRY_DELAY if hasattr(cls, 'RETRY_DELAY') else 60,
-                'timeout': db.timeout if db else cls.TIMEOUT,
-                'is_active': db.is_active if db else False,
-                'minute_counter': counters.get('minute', 0),
-                'hour_counter': counters.get('hour', 0),
-                'day_counter': counters.get('day', 0),
-                'month_counter': counters.get('month', 0),
-                'methods': methods,
-            })
+            result.append(ProviderDetailsItem(
+                id=db.id if db else None,
+                name=name,
+                description=cls.DESCRIPTION,
+                has_config=db is not None,
+                supported_markets=db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
+                api_key_required=cls.API_KEY_REQUIRED,
+                api_key=db.api_key if db else None,
+                requests_per_minute=db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
+                requests_per_hour=db.requests_per_hour if db and db.requests_per_hour is not None else cls.REQUESTS_PER_HOUR,
+                requests_per_day=db.requests_per_day if db and db.requests_per_day is not None else cls.REQUESTS_PER_DAY,
+                requests_per_month=db.requests_per_month if db and db.requests_per_month is not None else cls.REQUESTS_PER_MONTH,
+                retry_delay=db.retry_delay if db else cls.RETRY_DELAY if hasattr(cls, 'RETRY_DELAY') else 60,
+                timeout=db.timeout if db else cls.TIMEOUT,
+                is_active=db.is_active if db else False,
+                minute_counter=counters.get('minute', 0),
+                hour_counter=counters.get('hour', 0),
+                day_counter=counters.get('day', 0),
+                month_counter=counters.get('month', 0),
+                methods=[ProviderMethodInfo.model_validate(m) for m in registry.get_provider_methods(name)],
+            ))
         return result
 
     async def get_config_by_name(self, name: str) -> ProviderConfig:
@@ -170,31 +171,35 @@ class ProviderService:
         last_time = datetime.now(UTC) - timedelta(hours=hours)
         return await self.log_repo.get_all_by_provider(name, last_time)
 
-    async def get_all_with_settings(self) -> list[dict]:
-        return [{'name': name, 'description': cls.DESCRIPTION, 'limits': {
-            'per_minute': cls.REQUESTS_PER_MINUTE, 'per_hour': cls.REQUESTS_PER_HOUR,
-            'per_day': cls.REQUESTS_PER_DAY, 'per_month': cls.REQUESTS_PER_MONTH,
-        }} for name, cls in registry.PROVIDERS.items()]
+    async def get_all_with_settings(self) -> list[ProviderSettingsItem]:
+        return [ProviderSettingsItem(
+            name=name,
+            description=cls.DESCRIPTION,
+            limits=ProviderRateLimits(
+                per_minute=cls.REQUESTS_PER_MINUTE, per_hour=cls.REQUESTS_PER_HOUR,
+                per_day=cls.REQUESTS_PER_DAY, per_month=cls.REQUESTS_PER_MONTH,
+            ),
+        ) for name, cls in registry.PROVIDERS.items()]
 
-    async def get_all_with_methods(self) -> list[dict]:
+    async def get_all_with_methods(self) -> list[ProviderMethodsItem]:
         db_providers = await self.repo.get_all()
         db_map = {p.name: p for p in db_providers}
         result = []
         for name, cls in registry.PROVIDERS.items():
             db = db_map.get(name)
-            result.append({
-                'name': name,
-                'supported_markets': db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
-                'api_key': db.api_key if db else None,
-                'api_key_required': cls.API_KEY_REQUIRED,
-                'requests_per_minute': db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
-                'requests_per_hour': db.requests_per_hour if db and db.requests_per_hour is not None else cls.REQUESTS_PER_HOUR,
-                'requests_per_day': db.requests_per_day if db and db.requests_per_day is not None else cls.REQUESTS_PER_DAY,
-                'requests_per_month': db.requests_per_month if db and db.requests_per_month is not None else cls.REQUESTS_PER_MONTH,
-                'timeout': db.timeout if db else cls.TIMEOUT,
-                'is_active': db.is_active if db else False,
-                'methods': registry.get_provider_methods(name),
-            })
+            result.append(ProviderMethodsItem(
+                name=name,
+                supported_markets=db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
+                api_key=db.api_key if db else None,
+                api_key_required=cls.API_KEY_REQUIRED,
+                requests_per_minute=db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
+                requests_per_hour=db.requests_per_hour if db and db.requests_per_hour is not None else cls.REQUESTS_PER_HOUR,
+                requests_per_day=db.requests_per_day if db and db.requests_per_day is not None else cls.REQUESTS_PER_DAY,
+                requests_per_month=db.requests_per_month if db and db.requests_per_month is not None else cls.REQUESTS_PER_MONTH,
+                timeout=db.timeout if db else cls.TIMEOUT,
+                is_active=db.is_active if db else False,
+                methods=[ProviderMethodInfo.model_validate(m) for m in registry.get_provider_methods(name)],
+            ))
         return result
 
     async def get_current_counter(self, name: str, period: str) -> int:

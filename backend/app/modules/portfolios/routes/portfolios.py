@@ -12,7 +12,8 @@ from app.modules.portfolios.dependencies import (
     require_user,
 )
 from app.modules.portfolios.schemas import (
-    PortfolioAssetArchiveRequest, PortfolioAssetCreateRequest, PortfolioAssetResponse,
+    PortfolioAssetArchiveRequest, PortfolioAssetCreateRequest,
+    PortfolioAssetDistributionResponse, PortfolioAssetResponse,
     PortfolioArchiveRequest, PortfolioCreateRequest,
     PortfolioListResponse, PortfolioResponse, PortfolioUpdateRequest,
     TransactionResponse,
@@ -154,5 +155,5 @@ async def get_asset_distribution(
     portfolio_id: int,
     asset_id: int,
     asset_service: PortfolioAssetServiceDep,
-) -> dict:
+) -> PortfolioAssetDistributionResponse:
     return await asset_service.get_distribution(asset_id)

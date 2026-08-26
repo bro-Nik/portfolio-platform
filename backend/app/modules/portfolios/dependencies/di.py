@@ -9,11 +9,13 @@ from app.modules.portfolios.services.portfolio_asset import PortfolioAssetServic
 from app.modules.portfolios.services.transaction import TransactionService
 from app.modules.portfolios.services.wallet import WalletService
 from app.modules.portfolios.services.wallet_asset import WalletAssetService
+from app.modules.portfolios.queries import (
+    OverviewReadQuery,
+    PortfolioReadQuery,
+    TransactionReadQuery,
+    WalletReadQuery,
+)
 from app.modules.tags.repositories import TaggableRepository
-from app.queries.overview_read import OverviewReadQuery
-from app.queries.portfolio_read import PortfolioReadQuery
-from app.queries.transaction_read import TransactionReadQuery
-from app.queries.wallet_read import WalletReadQuery
 
 
 class PortfoliosProvider(Provider):

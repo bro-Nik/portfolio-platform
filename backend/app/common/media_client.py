@@ -3,6 +3,8 @@ import logging
 
 import httpx
 
+from app.common.utils.retry import parse_retry_after, retry_pause
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,26 +45,24 @@ class MediaClient:
                     response.raise_for_status()
                     return response.content
                 except httpx.HTTPStatusError as e:
-                    if e.response.status_code == 429:
-                        retry_after = float(e.response.headers.get('Retry-After', 5))
-                        logger.warning(
-                            '429 для %s, повтор через %.1fс (попытка %d/%d)',
-                            url, retry_after, attempt + 1, cls.MAX_RETRIES,
-                        )
-                        await asyncio.sleep(retry_after)
-                    else:
+                    if e.response.status_code != 429:
                         logger.exception('HTTP ошибка %s для %s', e.response.status_code, url)
                         raise
+                    await retry_pause(
+                        attempt, cls.MAX_RETRIES,
+                        subject=f'429 для {url}',
+                        retry_after=parse_retry_after(e.response),
+                    )
                 except (httpx.ConnectTimeout, httpx.RequestError) as e:
                     if attempt >= cls.MAX_RETRIES:
                         logger.exception('Ошибка загрузки %s', url)
                         raise
-                    backoff = min(cls.RETRY_BACKOFF * (2 ** attempt), cls.MAX_BACKOFF)
-                    logger.warning(
-                        'Повтор %s через %.1fс (попытка %d/%d): %s',
-                        url, backoff, attempt + 1, cls.MAX_RETRIES, e,
+                    await retry_pause(
+                        attempt, cls.MAX_RETRIES,
+                        subject=f'Повтор {url}',
+                        error=e,
+                        base=cls.RETRY_BACKOFF, cap=cls.MAX_BACKOFF,
                     )
-                    await asyncio.sleep(backoff)
 
     @classmethod
     async def download_batch(cls, urls: list[str]) -> dict[str, bytes | Exception]:

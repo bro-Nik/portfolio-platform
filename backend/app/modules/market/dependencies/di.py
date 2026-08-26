@@ -13,6 +13,7 @@ from app.modules.market.external_api.core import (
     RequestLogger,
     registry,
 )
+from app.modules.market.protocols import TickerUsageReader
 from app.modules.market.repositories import (
     ProviderRepository,
     RequestLogRepository,
@@ -81,12 +82,14 @@ class MarketProvider(Provider):
         repo: TickerRepository,
         ext_id_service: TickerExternalIdService,
         identifier_service: TickerIdentifierService,
+        usage: TickerUsageReader,
     ) -> TickerService:
         return TickerService(
             session,
             repo=repo,
             ext_id_service=ext_id_service,
             identifier_service=identifier_service,
+            usage=usage,
             redis=redis,
         )
 

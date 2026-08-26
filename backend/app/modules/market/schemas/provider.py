@@ -60,6 +60,62 @@ class ProviderStats(BaseModel):
     utilization_percent: dict[str, float]
 
 
+class ProviderMethodInfo(BaseModel):
+    name: str
+    method: str
+    example_params: dict[str, Any] = {}
+    parameters_schema: list[dict[str, Any]] = []
+
+
+class ProviderRateLimits(BaseModel):
+    per_minute: int | None
+    per_hour: int | None
+    per_day: int | None
+    per_month: int | None
+
+
+class ProviderSettingsItem(BaseModel):
+    name: str
+    description: str
+    limits: ProviderRateLimits
+
+
+class ProviderMethodsItem(BaseModel):
+    name: str
+    supported_markets: list[str] | None
+    api_key: str | None
+    api_key_required: bool
+    requests_per_minute: int | None
+    requests_per_hour: int | None
+    requests_per_day: int | None
+    requests_per_month: int | None
+    timeout: int
+    is_active: bool
+    methods: list[ProviderMethodInfo]
+
+
+class ProviderDetailsItem(BaseModel):
+    id: int | None
+    name: str
+    description: str
+    has_config: bool
+    supported_markets: list[str] | None
+    api_key_required: bool
+    api_key: str | None
+    requests_per_minute: int | None
+    requests_per_hour: int | None
+    requests_per_day: int | None
+    requests_per_month: int | None
+    retry_delay: int
+    timeout: int
+    is_active: bool
+    minute_counter: int
+    hour_counter: int
+    day_counter: int
+    month_counter: int
+    methods: list[ProviderMethodInfo]
+
+
 class ProviderLog(BaseModel):
     id: int
     provider_name: str | None = None

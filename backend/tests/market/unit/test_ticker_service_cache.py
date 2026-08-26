@@ -11,12 +11,19 @@ from app.modules.market.services.ticker_external_id import TickerExternalIdServi
 from app.modules.market.services.ticker_identifier import TickerIdentifierService
 
 
+def _usage_mock(async_mock):
+    usage = async_mock()
+    usage.count_references.return_value = 0
+    return usage
+
+
 def make_service(db_session, async_mock, redis=None):
     return TickerService(
         db_session,
         repo=async_mock(spec=TickerRepository, session=db_session),
         ext_id_service=async_mock(spec=TickerExternalIdService),
         identifier_service=async_mock(spec=TickerIdentifierService),
+        usage=_usage_mock(async_mock),
         redis=redis,
     )
 
@@ -191,7 +198,6 @@ class TestTickerAdminCacheInvalidation:
         await service.update(1, TickerUpdateRequest(name='Bitcoin2'))
 
         service.repo.update.assert_awaited_once_with(1, {'name': 'Bitcoin2'})
-        service.session.commit.assert_awaited_once()
         redis.delete.assert_awaited_once_with('ticker:info:1')
 
     async def test_delete_invalidates_info_and_price_keys(self, service, redis, mock):
@@ -203,8 +209,8 @@ class TestTickerAdminCacheInvalidation:
 
         await service.delete(1)
 
+        service._usage.count_references.assert_awaited_once_with(1)
         service.repo.delete.assert_awaited_once_with(1)
-        service.session.commit.assert_awaited_once()
         redis.delete.assert_any_call('ticker:info:1')
         redis.delete.assert_any_call('ticker:price:1')
 
@@ -239,7 +245,7 @@ class TestTickerAdminCacheInvalidation:
         merged = await service.merge(1, 2)
 
         service.repo.delete.assert_awaited_once_with(1)
-        service.session.commit.assert_awaited_once()
+        service._usage.reassign_references.assert_awaited_once_with(1, 2)
         assert merged.id == 2
         redis.delete.assert_any_call('ticker:info:1', 'ticker:info:2')
         redis.delete.assert_any_call('ticker:price:1', 'ticker:price:2')

@@ -13,6 +13,8 @@ from app.modules.portfolios.repositories import (
 from app.modules.portfolios.schemas import (
     PortfolioAssetCreate,
     PortfolioAssetCreateRequest,
+    PortfolioAssetDistributionItem,
+    PortfolioAssetDistributionResponse,
 )
 from app.modules.portfolios.services.transaction_analyzer import combine_ids_and_tickers
 
@@ -70,17 +72,21 @@ class PortfolioAssetService:
         asset = await self.get(id)
         return await self.transaction_repo.get_all_by_ticker_and_portfolio(asset.ticker_id, asset.portfolio_id)
 
-    async def get_distribution(self, id: int) -> dict:
+    async def get_distribution(self, id: int) -> PortfolioAssetDistributionResponse:
         asset = await self.get(id)
         assets = await self.repo.get_all_by_ticker_and_user_with_portfolios(asset.ticker_id, self.actor.id)
         total_qty = sum(a.quantity for a in assets)
         total_amt = sum(a.amount for a in assets)
-        distribution = [{
-            'portfolio_id': a.portfolio.id, 'portfolio_name': a.portfolio.name,
-            'quantity': a.quantity, 'amount': a.amount,
-            'percentage_of_total': round(float(a.quantity / total_qty * 100) if total_qty > 0 else 0, 2),
-        } for a in assets]
-        return {'total_quantity_all_portfolios': total_qty, 'total_amount_all_portfolios': total_amt, 'portfolios': distribution}
+        distribution = [PortfolioAssetDistributionItem(
+            portfolio_id=a.portfolio.id, portfolio_name=a.portfolio.name,
+            quantity=a.quantity, amount=a.amount,
+            percentage_of_total=round(float(a.quantity / total_qty * 100) if total_qty > 0 else 0, 2),
+        ) for a in assets]
+        return PortfolioAssetDistributionResponse(
+            total_quantity_all_portfolios=total_qty,
+            total_amount_all_portfolios=total_amt,
+            portfolios=distribution,
+        )
 
     async def get_affected(self, *transactions: Transaction) -> list[PortfolioAsset]:
         pairs = {

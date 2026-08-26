@@ -4,12 +4,19 @@ from app.modules.market.services.ticker_external_id import TickerExternalIdServi
 from app.modules.market.services.ticker_identifier import TickerIdentifierService
 
 
+def _usage_mock(async_mock):
+    usage = async_mock()
+    usage.count_references.return_value = 0
+    return usage
+
+
 def make_service(db_session, async_mock):
     return TickerService(
         db_session,
         repo=async_mock(spec=TickerRepository, session=db_session),
         ext_id_service=async_mock(spec=TickerExternalIdService),
         identifier_service=async_mock(spec=TickerIdentifierService),
+        usage=_usage_mock(async_mock),
     )
 
 

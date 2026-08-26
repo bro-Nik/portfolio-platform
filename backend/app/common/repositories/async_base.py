@@ -49,11 +49,13 @@ class BaseRepository[Model]:
     async def create(self, data: dict) -> Model:
         obj = self.model(**data)
         self._session.add(obj)
+        await self._session.flush()
         return obj
 
     async def create_all(self, objects: Sequence[dict]) -> list[Model]:
         objs = [self.model(**obj) for obj in objects]
         self._session.add_all(objs)
+        await self._session.flush()
         return objs
 
     async def update(self, id: Id, data: dict) -> Model | None:

@@ -5,6 +5,8 @@ from typing import Any
 
 import httpx
 
+from app.common.utils.retry import parse_retry_after, retry_pause
+
 from .rate_limiter import RateLimiter
 from .request_logger import RequestLogger
 
@@ -41,13 +43,7 @@ class HTTPClient:
 
     @staticmethod
     def _parse_retry_after(response: httpx.Response) -> float:
-        retry_after = response.headers.get('Retry-After')
-        if retry_after:
-            try:
-                return float(retry_after)
-            except ValueError:
-                pass
-        return 5.0
+        return parse_retry_after(response)
 
     @staticmethod
     def _is_retryable(error: httpx.HTTPStatusError | httpx.RequestError) -> bool:
@@ -95,20 +91,18 @@ class HTTPClient:
                         logger.error('Ошибка запроса для %s: %s', url, e)
                         raise
 
-                    if isinstance(e, httpx.HTTPStatusError) and e.response.status_code == 429:
-                        retry_after = self._parse_retry_after(e.response)
-                        logger.warning(
-                            '429 Too Many Requests для %s, повтор через %.1fс (попытка %d/%d)',
-                            url, retry_after, attempt + 1, self.MAX_RETRIES,
-                        )
-                        await asyncio.sleep(retry_after)
-                    else:
-                        backoff = min(self.RETRY_BACKOFF * (2 ** attempt), self.MAX_BACKOFF)
-                        logger.warning(
-                            'Ошибка соединения для %s, повтор через %.1fс (попытка %d/%d): %s',
-                            url, backoff, attempt + 1, self.MAX_RETRIES, e,
-                        )
-                        await asyncio.sleep(backoff)
+                    retry_after = (
+                        self._parse_retry_after(e.response)
+                        if isinstance(e, httpx.HTTPStatusError) and e.response.status_code == 429
+                        else None
+                    )
+                    await retry_pause(
+                        attempt, self.MAX_RETRIES,
+                        subject=f'Ошибка запроса для {url}',
+                        error=e,
+                        retry_after=retry_after,
+                        base=self.RETRY_BACKOFF, cap=self.MAX_BACKOFF,
+                    )
 
     async def close(self) -> None:
         if self.client and not self.client.is_closed:

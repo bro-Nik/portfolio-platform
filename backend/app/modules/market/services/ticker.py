@@ -6,12 +6,13 @@ from pathlib import Path
 
 from PIL import Image
 from redis.asyncio import Redis
-from sqlalchemy import func, or_, select, text
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import BusinessRuleError, NotFoundError
 from app.common.media_client import MediaClient
 from app.modules.market.models import Ticker, TickerExternalId, TickerIdentifier
+from app.modules.market.protocols import TickerUsageReader
 from app.modules.market.repositories import TickerRepository
 from app.modules.market.schemas import TickerDetailResponse, TickerInfo, TickerListResponse, TickerUpdateRequest
 from app.modules.market.services.ticker_external_id import TickerExternalIdService
@@ -35,12 +36,14 @@ class TickerService:
         repo: TickerRepository,
         ext_id_service: TickerExternalIdService,
         identifier_service: TickerIdentifierService,
+        usage: TickerUsageReader,
         redis: Redis | None = None,
     ) -> None:
         self.session = session
         self.repo = repo
         self._ext_id_service = ext_id_service
         self._identifier_service = identifier_service
+        self._usage = usage
         self._redis = redis
 
     async def search(
@@ -453,18 +456,11 @@ class TickerService:
     def _info_key(self, ticker_id: int) -> str:
         return f'ticker:info:{ticker_id}'
 
+    async def get_used_ticker_ids(self) -> list[int]:
+        return await self._usage.get_used_ticker_ids()
+
     async def _count_references(self, ticker_id: int) -> int:
-        result = await self.session.execute(
-            text("""
-            SELECT
-                (SELECT COUNT(*) FROM portfolio_asset WHERE ticker_id = :id) +
-                (SELECT COUNT(*) FROM wallet_asset WHERE ticker_id = :id) +
-                (SELECT COUNT(*) FROM "transaction" WHERE ticker_id = :id) +
-                (SELECT COUNT(*) FROM "transaction" WHERE ticker2_id = :id)
-        """),
-            {'id': ticker_id},
-        )
-        return result.scalar() or 0
+        return await self._usage.count_references(ticker_id)
 
     def _delete_image_files(self, filename: str, market: str) -> None:
         for px in (24, 40):
@@ -472,17 +468,7 @@ class TickerService:
             path.unlink(missing_ok=True)
 
     async def _merge_update_references(self, source_id: int, target_id: int) -> None:
-        tables = [
-            ('portfolio_asset', 'ticker_id'),
-            ('wallet_asset', 'ticker_id'),
-            ('"transaction"', 'ticker_id'),
-            ('"transaction"', 'ticker2_id'),
-        ]
-        for table, column in tables:
-            await self.session.execute(
-                text(f'UPDATE {table} SET {column} = :target WHERE {column} = :source'),
-                {'source': source_id, 'target': target_id},
-            )
+        await self._usage.reassign_references(source_id, target_id)
 
     async def _merge_handle_image(self, source: Ticker, target: Ticker) -> None:
         if not source.image:

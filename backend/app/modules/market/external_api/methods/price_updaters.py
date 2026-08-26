@@ -78,7 +78,7 @@ class SelectivePriceUpdater(BasePriceUpdater):
         **_,
     ) -> dict:
         logger.info('Старт обновления цен со стратегией: %s', strategy)
-        ticker_ids = await self._fetch_ticker_ids(market, strategy, limit, session)
+        ticker_ids = await self._fetch_ticker_ids(market, strategy, limit, session, ticker_service)
         if not ticker_ids:
             return {'status': 'error', 'message': 'Нет тикеров для обновления'}
 
@@ -97,14 +97,21 @@ class SelectivePriceUpdater(BasePriceUpdater):
         )
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
-    async def _fetch_ticker_ids(self, market: str, strategy: str, limit: int | None, session) -> list[int]:
+    async def _fetch_ticker_ids(
+        self,
+        market: str,
+        strategy: str,
+        limit: int | None,
+        session,
+        ticker_service: 'TickerService | None' = None,
+    ) -> list[int]:
         if strategy not in self.STRATEGIES:
             logger.warning('Неизвестная стратегия "%s", возврат к "used"', strategy)
             strategy = 'used'
         method_name = self.STRATEGIES[strategy]
-        return await getattr(self, method_name)(market, limit, session)
+        return await getattr(self, method_name)(market, limit, session, ticker_service)
 
-    async def _fetch_top_coins(self, market: str, limit: int | None = None, session=None) -> list[int]:
+    async def _fetch_top_coins(self, market: str, limit: int | None = None, session=None, ticker_service=None) -> list[int]:
         repo = TickerRepository(session)
         tickers = await repo.get_all(
             Ticker.market == market,
@@ -114,28 +121,22 @@ class SelectivePriceUpdater(BasePriceUpdater):
         tickers = tickers[:limit] if limit else tickers
         return [t.id for t in tickers]
 
-    async def _fetch_active_coins(self, market: str, limit: int | None = None, session=None) -> list[int]:
+    async def _fetch_active_coins(self, market: str, limit: int | None = None, session=None, ticker_service=None) -> list[int]:
         repo = TickerRepository(session)
         tickers = await repo.get_all(Ticker.market == market, Ticker.is_active.is_(True))
         tickers = tickers[:limit] if limit else tickers
         return [t.id for t in tickers]
 
-    async def _fetch_all_coins(self, market: str, limit: int | None = None, session=None) -> list[int]:
+    async def _fetch_all_coins(self, market: str, limit: int | None = None, session=None, ticker_service=None) -> list[int]:
         repo = TickerRepository(session)
         tickers = await repo.get_all_by_market(market)
         tickers = tickers[:limit] if limit else tickers
         return [t.id for t in tickers]
 
-    async def _fetch_used_coins(self, market: str, limit: int | None = None, session=None) -> list[int]:
-        from sqlalchemy import text
-
-        query = text("""
-            SELECT DISTINCT ticker_id FROM portfolio_asset
-            UNION
-            SELECT DISTINCT ticker_id FROM wallet_asset
-        """)
-        result = await session.execute(query)
-        unique_ids = list(set(row[0] for row in result.all() if row[0]))
+    async def _fetch_used_coins(self, market: str, limit: int | None = None, session=None, ticker_service=None) -> list[int]:
+        if ticker_service is None:
+            return []
+        unique_ids = await ticker_service.get_used_ticker_ids()
         logger.info('Получено %s уникальных используемых тикеров', len(unique_ids))
         return unique_ids[:limit] if limit else unique_ids
 

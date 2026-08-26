@@ -10,6 +10,10 @@ from app.modules.portfolios.repositories import (
     TransactionRepository,
     WalletAssetRepository,
 )
+from app.modules.portfolios.schemas import (
+    WalletAssetDistributionItem,
+    WalletAssetDistributionResponse,
+)
 from app.modules.portfolios.services.transaction_analyzer import combine_ids_and_tickers
 
 
@@ -60,16 +64,19 @@ class WalletAssetService:
         asset = await self.get(id)
         return await self.transaction_repo.get_all_by_ticker_and_wallet(asset.ticker_id, asset.wallet_id)
 
-    async def get_distribution(self, id: int) -> dict:
+    async def get_distribution(self, id: int) -> WalletAssetDistributionResponse:
         asset = await self.get(id)
         assets = await self.repo.get_all_by_ticker_and_user_with_wallets(asset.ticker_id, self.actor.id)
         total_qty = sum(a.quantity for a in assets)
-        distribution = [{
-            'wallet_id': a.wallet.id, 'wallet_name': a.wallet.name,
-            'quantity': a.quantity,
-            'percentage_of_total': round(float(a.quantity / total_qty * 100) if total_qty > 0 else 0, 2),
-        } for a in assets]
-        return {'total_quantity_all_wallets': total_qty, 'wallets': distribution}
+        distribution = [WalletAssetDistributionItem(
+            wallet_id=a.wallet.id, wallet_name=a.wallet.name,
+            quantity=a.quantity,
+            percentage_of_total=round(float(a.quantity / total_qty * 100) if total_qty > 0 else 0, 2),
+        ) for a in assets]
+        return WalletAssetDistributionResponse(
+            total_quantity_all_wallets=total_qty,
+            wallets=distribution,
+        )
 
     async def get_affected(self, *transactions: Transaction) -> list[WalletAsset]:
         pairs = {

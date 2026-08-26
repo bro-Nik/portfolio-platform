@@ -13,6 +13,7 @@ from app.modules.portfolios.dependencies import (
 )
 from app.modules.portfolios.schemas import (
     TransactionResponse, WalletArchiveRequest, WalletAssetArchiveRequest,
+    WalletAssetDistributionResponse,
     WalletCreateRequest, WalletListResponse, WalletResponse,
     WalletUpdateRequest,
 )
@@ -138,5 +139,5 @@ async def get_wallet_asset_distribution(
     wallet_id: int,
     asset_id: int,
     asset_service: WalletAssetServiceDep,
-) -> dict:
+) -> WalletAssetDistributionResponse:
     return await asset_service.get_distribution(asset_id)
