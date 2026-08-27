@@ -1,9 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useOverviewQuery } from './useOverviewQuery';
-import { useTickerIds, extractTickerIds } from 'src/hooks/TickerContext';
-import { useAssetPricesQuery } from 'src/hooks/TickerContext';
-import { calculatePortfolioAssetStats } from 'src/utils/assetStats';
+import { useTickerIds, extractTickerIds, useAssetPricesQuery } from 'src/hooks/TickerContext';
+import { buildPortfolioStats } from 'src/utils/assetStats';
 
 export const usePortfoliosData = (showArchived = false) => {
   const queryClient = useQueryClient();
@@ -26,71 +25,10 @@ export const usePortfoliosData = (showArchived = false) => {
   );
   const pricesLoading = internalPricesQuery.isLoading;
 
-  const { portfoliosWithStats, overallStats } = useMemo(() => {
-    if (!rawPortfolios || rawPortfolios.length === 0) return { portfoliosWithStats: [], overallStats: {} };
-
-    let totalCostNow = 0;
-    let totalInvested = 0;
-    let totalBuyOrders = 0;
-    let totalProfit = 0;
-    let totalCapitalDeployed = 0;
-
-    const portfoliosWithStats = rawPortfolios.map(portfolio => {
-      let costNow = 0;
-      let invested = 0;
-      let buyOrders = 0;
-      let profit = 0;
-      let capitalDeployed = 0;
-
-      const assetsWithStats = portfolio.assets?.map(asset => {
-        const price = prices[asset.tickerId];
-        const stats = calculatePortfolioAssetStats(asset, price);
-
-        costNow += stats.costNow || 0;
-        invested += stats.invested;
-        buyOrders += stats.buyOrders;
-        profit += stats.profit ?? 0;
-        capitalDeployed += stats.totalInvested;
-
-        return {
-          ...asset,
-          ...stats,
-        };
-      }) || [];
-
-      totalCostNow += costNow;
-      totalInvested += invested;
-      totalBuyOrders += buyOrders;
-      totalProfit += profit;
-      totalCapitalDeployed += capitalDeployed;
-
-      return {
-        ...portfolio,
-        assets: assetsWithStats,
-        costNow,
-        invested,
-        totalInvested: capitalDeployed,
-        buyOrders,
-        profit,
-      };
-    });
-
-    const portfoliosWithStatsAndShare = portfoliosWithStats.map(portfolio => ({
-      ...portfolio,
-      share: totalInvested > 0 ? (portfolio.invested / totalInvested) * 100 : 0
-    }));
-
-    return {
-      portfoliosWithStats: portfoliosWithStatsAndShare,
-      overallStats: {
-        totalCostNow,
-        totalInvested,
-        totalProfit,
-        totalBuyOrders,
-        totalCapitalDeployed,
-      }
-    };
-  }, [rawPortfolios, prices]);
+  const { items: portfoliosWithStats, overall: overallStats } = useMemo(
+    () => buildPortfolioStats(rawPortfolios, prices),
+    [rawPortfolios, prices]
+  );
 
   const filteredPortfolios = useMemo(() => {
     if (showArchived) return portfoliosWithStats;

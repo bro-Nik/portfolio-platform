@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { walletService } from '../services/walletService'
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useWalletMutations } from './useWalletMutations';
 
@@ -10,11 +9,6 @@ export const useWalletOperations = () => {
   const mutations = useWalletMutations();
 
   const editWallet = async (wallet) => {
-    const validation = walletService.validateEdit(wallet);
-    if (!validation.isValid) {
-      return { success: false, error: validation.error };
-    }
-
     setLoading(true);
     try {
       const data = await mutations.editWallet.mutateAsync(wallet);
@@ -27,11 +21,6 @@ export const useWalletOperations = () => {
   };
 
   const deleteWallet = async (wallet) => {
-    const validation = walletService.validateDelete(wallet);
-    if (!validation.isValid) {
-      return { success: false, error: validation.error };
-    }
-
     setLoading(true);
     try {
       await mutations.deleteWallet.mutateAsync(wallet);

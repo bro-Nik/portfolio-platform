@@ -1,5 +1,4 @@
-import { Modal } from 'antd';
-import { useModalStore } from '@portfolio/shared';
+import { ConfirmDeleteModal, useModalStore } from '@portfolio/shared';
 import { useTaskActions } from '../hooks/useTaskActions';
 import { Task } from '../../../../types/task';
 
@@ -7,30 +6,18 @@ interface TaskDelModalProps { task: Task }
 
 export const TaskDelModal: React.FC<TaskDelModalProps> = ({ task }) => {
   const { closeModal } = useModalStore();
-  const { deleteTask, isDeleting } = useTaskActions();
+  const { deleteTask } = useTaskActions();
 
   if (!task) return null;
 
-  const handleConfirm = async () => {
-    deleteTask(task.id);
-    closeModal();
-  };
-
   return (
-    <Modal
+    <ConfirmDeleteModal
       title="Удалить задачу?"
-      open={true}
-      onOk={handleConfirm}
+      entityName={<strong>{task.name}</strong>}
+      onConfirm={() => {
+        deleteTask(task.id);
+      }}
       onCancel={closeModal}
-      okText="Удалить"
-      cancelText="Отмена"
-      okType="danger"
-      confirmLoading={isDeleting}
-    >
-      <p>Вы уверены, что хотите удалить <strong>{task.name}</strong>?</p>
-      <p style={{ color: '#ff4d4f', fontSize: '12px' }}>
-        Это действие нельзя отменить.
-      </p>
-    </Modal>
+    />
   );
 };

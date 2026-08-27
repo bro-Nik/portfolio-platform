@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form } from 'antd';
-import PortfolioSelect from 'src/features/forms/PortfolioSelect';
+import PortfolioSelect from 'src/modules/portfolios/components/PortfolioSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 
 const PortfolioTransferFields = ({

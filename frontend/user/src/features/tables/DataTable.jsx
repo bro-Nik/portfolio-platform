@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import Table from 'src/components/Table';
+import { Table } from '@portfolio/shared';
 import { usePersistedState } from '@portfolio/shared';
 
 const DataTable = memo(({

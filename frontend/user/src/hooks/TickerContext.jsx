@@ -1,10 +1,8 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { createApi } from '@portfolio/shared';
+import { tickerApi } from 'src/modules/assets/api/assetApi';
 
 const TickerIdsContext = createContext(null);
-
-const marketApi = createApi('/market/api/tickers', { useAuth: true });
 
 export const TickerIdsProvider = ({ children }) => {
   const [tickerIds, setTickerIds] = useState([]);
@@ -36,7 +34,7 @@ export const useAssetPricesQuery = () => {
 
   return useQuery({
     queryKey: ['assetPrices', tickerIds],
-    queryFn: () => marketApi.post('/prices', tickerIds),
+    queryFn: () => tickerApi.post('/prices', tickerIds),
     enabled: tickerIds.length > 0,
     refetchInterval: 12 * 60 * 60 * 1000,
     staleTime: 12 * 60 * 60 * 1000,

@@ -1,4 +1,4 @@
-import { theme } from 'antd';
+import { createThemes } from '@portfolio/shared';
 
 const sharedComponents = {
   Alert: {
@@ -9,23 +9,10 @@ const sharedComponents = {
   },
 };
 
-export const darkTheme = {
-  algorithm: theme.darkAlgorithm,
-  token: {
-    colorPrimary: '#1890ff',
-    borderRadius: 6,
-    colorBgLayout: '#1a1f2e',
-    colorBgContainer: '#242a3d',
-    colorBgElevated: '#2d3448',
-  },
+const { lightTheme, darkTheme } = createThemes({
+  colorPrimary: '#1890ff',
+  borderRadius: 6,
   components: sharedComponents,
-};
+});
 
-export const lightTheme = {
-  algorithm: theme.defaultAlgorithm,
-  token: {
-    colorPrimary: '#1890ff',
-    borderRadius: 6,
-  },
-  components: sharedComponents,
-};
+export { lightTheme, darkTheme };

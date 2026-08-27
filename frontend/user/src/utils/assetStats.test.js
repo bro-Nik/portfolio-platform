@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { calculatePortfolioAssetStats, calculateWalletAssetStats } from 'src/utils/assetStats';
+import {
+  calculatePortfolioAssetStats,
+  calculateWalletAssetStats,
+  buildPortfolioStats,
+  buildWalletStats,
+} from 'src/utils/assetStats';
 
 describe('calculatePortfolioAssetStats', () => {
   it('shows profit for purchased assets', () => {
@@ -78,5 +83,91 @@ describe('calculateWalletAssetStats', () => {
   it('calculates cost now', () => {
     const stats = calculateWalletAssetStats({ quantity: 5 }, 10);
     expect(stats.costNow).toBe(50);
+  });
+});
+
+describe('buildPortfolioStats', () => {
+  it('aggregates asset stats into portfolio and overall totals', () => {
+    const portfolios = [
+      { id: 1, isArchived: false, assets: [
+        { tickerId: 'a', quantity: 2, amount: 100, buyOrders: 1, sellOrders: 0 },
+        { tickerId: 'b', quantity: 5, amount: 50, buyOrders: 2, sellOrders: 0 },
+      ] },
+      { id: 2, isArchived: false, assets: [
+        { tickerId: 'c', quantity: 1, amount: 10, buyOrders: 1, sellOrders: 0 },
+      ] },
+    ];
+    const prices = { a: 100, b: 10, c: 10 };
+
+    const { items, overall } = buildPortfolioStats(portfolios, prices);
+
+    expect(items[0].costNow).toBe(250);
+    expect(items[0].invested).toBe(150);
+    expect(items[1].costNow).toBe(10);
+
+    expect(overall.totalCostNow).toBe(260);
+    expect(overall.totalInvested).toBe(160);
+    expect(overall.totalBuyOrders).toBe(4);
+    expect(overall.totalCapitalDeployed).toBe(160);
+    expect(overall.totalProfit).toBe(100);
+  });
+
+  it('computes share of invested per portfolio', () => {
+    const portfolios = [
+      { id: 1, assets: [{ tickerId: 'a', quantity: 1, amount: 75 }] },
+      { id: 2, assets: [{ tickerId: 'b', quantity: 1, amount: 25 }] },
+    ];
+    const prices = { a: 100, b: 100 };
+
+    const { items } = buildPortfolioStats(portfolios, prices);
+    expect(items[0].share).toBeCloseTo(75);
+    expect(items[1].share).toBeCloseTo(25);
+  });
+
+  it('omits share when total invested is zero', () => {
+    const { items } = buildPortfolioStats(
+      [{ id: 1, assets: [{ tickerId: 'a', quantity: 0, amount: 0 }] }],
+      { a: 5 },
+    );
+    expect(items[0].share).toBeUndefined();
+  });
+
+  it('returns empty result for empty input', () => {
+    const { items, overall } = buildPortfolioStats([], {});
+    expect(items).toEqual([]);
+    expect(overall).toEqual({});
+  });
+});
+
+describe('buildWalletStats', () => {
+  it('aggregates wallet costs and computes share by costNow', () => {
+    const wallets = [
+      { id: 1, isArchived: false, assets: [{ tickerId: 'a', quantity: 4, buyOrders: 1 }] },
+      { id: 2, isArchived: true, assets: [] },
+    ];
+    const prices = { a: 25 };
+
+    const { items, overall } = buildWalletStats(wallets, prices);
+
+    expect(items[0].costNow).toBe(100);
+    expect(items[0].share).toBe(100);
+    expect(items[1].share).toBe(0);
+    expect(overall.totalCostNow).toBe(100);
+    expect(overall.totalBuyOrders).toBe(1);
+  });
+
+  it('treats missing price as zero', () => {
+    const { items, overall } = buildWalletStats(
+      [{ id: 1, assets: [{ tickerId: 'x', quantity: 3 }] }],
+      {},
+    );
+    expect(items[0].assets[0].price).toBe(0);
+    expect(overall.totalCostNow).toBe(0);
+  });
+
+  it('returns empty result for empty input', () => {
+    const { items, overall } = buildWalletStats([], {});
+    expect(items).toEqual([]);
+    expect(overall).toEqual({});
   });
 });

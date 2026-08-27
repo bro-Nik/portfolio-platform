@@ -1,6 +1,7 @@
 import { createApi } from '@portfolio/shared';
+import { API_BASE } from 'src/constants/api';
 
-const api = createApi('/api/tags', { useAuth: true });
+const api = createApi(API_BASE.tags, { useAuth: true });
 
 export const tagApi = {
   getTags: () => api.get(''),

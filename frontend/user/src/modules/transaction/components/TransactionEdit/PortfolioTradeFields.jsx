@@ -3,7 +3,7 @@ import { Form, InputNumber, Space, Button } from 'antd';
 import { useTransactionCalculations } from './hooks/useTransactionCalculations';
 import FormCheckbox from 'src/features/forms/FormCheckbox';
 import FormSelect from 'src/features/forms/FormSelect';
-import WalletSelect from 'src/features/forms/WalletSelect';
+import WalletSelect from 'src/modules/wallets/components/WalletSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 import FormSumInput from 'src/features/forms/FormSumInput';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';

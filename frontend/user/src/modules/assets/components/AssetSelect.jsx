@@ -1,18 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Spin, Empty } from 'antd';
-import FormSelect from './FormSelect';
+import { useDebounce } from '@portfolio/shared';
+import FormSelect from 'src/features/forms/FormSelect';
 import TickerAvatar from 'src/components/TickerAvatar';
-import { useTickersQuery } from 'src/modules/assets/hooks/useTickersQuery';
-import { getTickerImage } from 'src/modules/assets/utils/assetUtils';
+import { useTickersQuery } from '../hooks/useTickersQuery';
+import { getTickerImage } from '../utils/assetUtils';
 
 const AssetSelect = ({ markets, label = 'Актив', placeholder = 'Введите название или тикер...', onTickerChange, ...props }) => {
   const [searchValue, setSearchValue] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchValue), 300);
-    return () => clearTimeout(timer);
-  }, [searchValue]);
+  const debouncedSearch = useDebounce(searchValue, 300);
 
   const {
     data,

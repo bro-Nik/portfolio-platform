@@ -1,9 +1,9 @@
 import React from 'react';
 import { Button } from 'antd';
 import { Plus } from 'lucide-react';
-import FormSelect from './FormSelect';
+import FormSelect from 'src/features/forms/FormSelect';
 
-const WalletSelect = ({ onAddWallet, options, ...props }) => (
+const PortfolioSelect = ({ onCreatePortfolio, options, ...props }) => (
   <FormSelect
     {...props}
     options={options}
@@ -15,13 +15,13 @@ const WalletSelect = ({ onAddWallet, options, ...props }) => (
           block
           icon={<Plus size={14} />}
           style={{ marginTop: 8 }}
-          onClick={onAddWallet}
+          onClick={onCreatePortfolio}
         >
-          Добавить кошелек
+          Создать портфель
         </Button>
       </>
     )}
   />
 );
 
-export default WalletSelect;
+export default PortfolioSelect;

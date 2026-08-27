@@ -2,11 +2,10 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Modal, Input, Spin, Empty, Tooltip, Segmented } from 'antd';
 import { Search } from 'lucide-react';
 import TickerAvatar from 'src/components/TickerAvatar';
-import { useModalStore } from '@portfolio/shared';
+import { useModalStore, useNotifications, useDebounce } from '@portfolio/shared';
 import { usePortfolioOperations } from '../../hooks/usePortfolioOperations';
 import { useTickersQuery } from 'src/modules/assets/hooks/useTickersQuery';
 import { getTickerImage } from 'src/modules/assets/utils/assetUtils';
-import { useNotifications } from '@portfolio/shared';
 import { getMarketLabel } from 'src/constants/markets';
 import { formatCurrencyFromUsd } from 'src/utils/format';
 import { useDisplayCurrency } from 'src/utils/currency';
@@ -25,13 +24,8 @@ const AssetAddModal = () => {
 
   const [selectedMarket, setSelectedMarket] = useState(portfolio.market);
   const [searchValue, setSearchValue] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(searchValue, 300);
   const listRef = useRef();
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchValue), 300);
-    return () => clearTimeout(timer);
-  }, [searchValue]);
 
   const marketOptions = useMemo(() => {
     const options = [{ value: portfolio.market, label: getMarketLabel(portfolio.market) }];
@@ -44,7 +38,6 @@ const AssetAddModal = () => {
   const handleMarketChange = (value) => {
     setSelectedMarket(value);
     setSearchValue('');
-    setDebouncedSearch('');
   };
 
   const {

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Form, Segmented } from 'antd';
 import { useNotifications } from '@portfolio/shared';
 import FormActionBtns from 'src/features/forms/FormActionBtns';
-import AssetSelect from 'src/features/forms/AssetSelect';
+import AssetSelect from 'src/modules/assets/components/AssetSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 import MetaRowGroup from 'src/components/ui/MetaRowGroup';
 import DateSubview from 'src/features/forms/DateSubview';

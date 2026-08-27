@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { transactionService } from 'src/modules/transaction/services/transactionService'
 import { useTransactionMutations } from './useTransactionMutations';
 
 export const useTransactionOperations = () => {
@@ -8,11 +7,6 @@ export const useTransactionOperations = () => {
   const mutations = useTransactionMutations();
 
   const editTransaction = async (oldTransaction, newTransaction) => {
-    const validation = transactionService.validateEdit(newTransaction);
-    if (!validation.isValid) {
-      return { success: false, error: validation.error };
-    }
-
     setLoading(true);
     try {
       const data = await mutations.saveTransaction.mutateAsync(newTransaction);
@@ -25,11 +19,6 @@ export const useTransactionOperations = () => {
   };
 
   const deleteTransaction = async (transaction) => {
-    const validation = transactionService.validateDelete(transaction);
-    if (!validation.isValid) {
-      return { success: false, error: validation.error };
-    }
-
     setLoading(true);
     try {
       const data = await mutations.deleteTransaction.mutateAsync(transaction);

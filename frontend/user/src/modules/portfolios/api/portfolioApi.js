@@ -1,6 +1,7 @@
 import { createApi } from '@portfolio/shared';
+import { API_BASE } from 'src/constants/api';
 
-const api = createApi('/api/portfolios', { useAuth: true });
+const api = createApi(API_BASE.portfolios, { useAuth: true });
 
 export const portfolioApi = {
   savePortfolio: (portfolioData) => {

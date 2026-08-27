@@ -1,7 +1,9 @@
 import React, { Suspense, useMemo } from 'react';
 import Sidebar from './components/Sidebar';
 import { useNavigation } from 'src/hooks/useNavigation';
-import { useModalStore } from '@portfolio/shared';
+import { useOverviewData } from 'src/modules/portfolios/hooks/useOverviewData';
+import { useCurrencies } from 'src/modules/assets/hooks/useCurrencies';
+import { ModalContainer } from '@portfolio/shared';
 import './styles/App.css';
 import PortfoliosPage from 'src/modules/portfolios/components/portfolio-list/PortfoliosPage'
 import PortfolioPage from 'src/modules/portfolios/components/portfolio/PortfolioPage';
@@ -11,14 +13,6 @@ import WalletPage from 'src/modules/wallets/components/wallet/WalletPage';
 import WalletAssetPage from 'src/modules/wallets/components/asset/AssetPage';
 import WishlistPage from './WishlistPage'
 import SettingsPage from 'src/pages/settings/SettingsPage'
-
-import { useOverviewData } from 'src/modules/portfolios/hooks/useOverviewData';
-import { useCurrencies } from 'src/modules/assets/hooks/useCurrencies';
-
-const ModalContainer = () => {
-  const { currentModal: ModalComponent, modalProps } = useModalStore();
-  if (ModalComponent) return <ModalComponent {...modalProps} />;
-};
 
 const AppPage = () => {
   const { activeSection, openedItems } = useNavigation();

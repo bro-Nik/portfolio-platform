@@ -3,21 +3,12 @@ import ReactDOM from 'react-dom/client';
 import { ConfigProvider } from 'antd';
 import './index.css';
 import App from './App';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useResolvedTheme, createQueryClient } from '@portfolio/shared';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useResolvedTheme } from '@portfolio/shared';
 import { darkTheme, lightTheme } from './theme';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: true,
-      refetchOnReconnect: true,
-    },
-  },
-});
+const queryClient = createQueryClient();
 
 const ThemedApp = () => {
   const currentTheme = useResolvedTheme();

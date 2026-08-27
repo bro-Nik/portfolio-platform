@@ -1,5 +1,5 @@
 import { Space, Tag, Tooltip, Dropdown, Button, Progress } from 'antd';
-import Table from 'src/components/Table';
+import { Table } from '@portfolio/shared';
 import { ApiOutlined, DeleteOutlined, MoreOutlined, ReloadOutlined, EyeOutlined, SettingOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';

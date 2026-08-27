@@ -1,9 +1,10 @@
-import { theme } from 'antd';
+import { createThemes } from '@portfolio/shared';
+
+const colorPrimary = '#6366f1';
 
 const sharedTokens = {
-  borderRadius: 8,
   fontSize: 14,
-  colorBgSpotlight: '#6366f1',
+  colorBgSpotlight: colorPrimary,
 };
 
 const sharedComponents = {
@@ -55,33 +56,22 @@ const sharedComponents = {
   },
 };
 
-export const lightTheme = {
-  token: {
-    ...sharedTokens,
-    colorPrimary: '#6366f1',
-    // colorBgLayout: '#f6f5f5',
-    colorBgLayout: '#ffffff',
-    colorBgContainer: '#ffffff',
-  },
-  components: {
-    ...sharedComponents,
-    Segmented: {
-      ...sharedComponents.Segmented,
-      trackBg: '#f5f5f5',
+const { lightTheme, darkTheme } = createThemes({
+  colorPrimary,
+  tokens: sharedTokens,
+  components: sharedComponents,
+  light: {
+    tokens: {
+      colorBgLayout: '#ffffff',
+      colorBgContainer: '#ffffff',
+    },
+    components: {
+      Segmented: {
+        ...sharedComponents.Segmented,
+        trackBg: '#f5f5f5',
+      },
     },
   },
-};
+});
 
-export const darkTheme = {
-  algorithm: theme.darkAlgorithm,
-  token: {
-    ...sharedTokens,
-    colorPrimary: '#6366f1',
-    colorBgLayout: '#1a1f2e',
-    colorBgContainer: '#242a3d',
-    colorBgElevated: '#2d3448',
-  },
-  components: {
-    ...sharedComponents,
-  },
-};
+export { lightTheme, darkTheme };

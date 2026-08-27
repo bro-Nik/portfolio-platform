@@ -14,7 +14,7 @@ import {
   MoonOutlined,
   StockOutlined
 } from '@ant-design/icons';
-import { useAuthStore, useModalStore, authService, useThemeStore, useResolvedTheme, usePersistedState } from '@portfolio/shared';
+import { useAuthStore, authService, useThemeStore, useResolvedTheme, usePersistedState, ModalContainer } from '@portfolio/shared';
 import { ExternalApiModule } from './modules/externalApi/ExternalApiModule';
 import { TickersModule } from './modules/tickers/TickersModule';
 import { UsersModule } from './modules/users/UsersModule';
@@ -24,12 +24,6 @@ type MenuKey = 'api-services' | 'users' | 'tickers';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
-
-const ModalContainer = (): React.ReactElement | null => {
-  const { currentModal: ModalComponent, modalProps } = useModalStore();
-  if (ModalComponent) return <ModalComponent {...modalProps} />;
-  return null;
-};
 
 export { useHeaderExtra, SubTabsBar };
 export type { SubTabItem } from './utils/headerContext';

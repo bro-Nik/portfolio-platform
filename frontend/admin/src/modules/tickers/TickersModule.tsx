@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Input, Select, Space, Row, Col, Card, Statistic } from 'antd';
 import { MergeCellsOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { useDebounce } from '@portfolio/shared';
 import { TickerTable } from './components/TickerTable';
 import { useTickers } from './hooks/useTickers';
 import { useTickerModals } from './hooks/useTickerModals';
-import { useDebounce } from '../../hooks/useDebounce';
+
 import { QueryError } from '../../components/QueryError';
 
 export const TickersModule: React.FC = () => {

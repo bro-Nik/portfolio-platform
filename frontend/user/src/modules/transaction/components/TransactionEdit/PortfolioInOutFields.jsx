@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Button, Form, InputNumber, Space } from 'antd';
-import WalletSelect from 'src/features/forms/WalletSelect';
+import WalletSelect from 'src/modules/wallets/components/WalletSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 import { getTransactionTypeInfo } from 'src/modules/transaction/utils/type';
 import { useDisplayCurrency, fromUsd } from 'src/utils/currency';

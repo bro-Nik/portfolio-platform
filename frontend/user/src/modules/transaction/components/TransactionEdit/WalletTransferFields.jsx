@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form } from 'antd';
-import WalletSelect from 'src/features/forms/WalletSelect';
+import WalletSelect from 'src/modules/wallets/components/WalletSelect';
 import FormQuantityInput from 'src/features/forms/FormQuantityInput';
 
 const WalletTransferFields = ({

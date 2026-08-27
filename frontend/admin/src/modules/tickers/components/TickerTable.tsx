@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tag, Dropdown, Button, Switch } from 'antd';
-import Table from 'src/components/Table';
+import { Table } from '@portfolio/shared';
 import type { ColumnsType } from 'antd/es/table';
 import type { MenuProps } from 'antd';
 import { DeleteOutlined, EditOutlined, MoreOutlined } from '@ant-design/icons';

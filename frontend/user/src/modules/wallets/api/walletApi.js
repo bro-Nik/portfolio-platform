@@ -1,6 +1,7 @@
 import { createApi } from '@portfolio/shared';
+import { API_BASE } from 'src/constants/api';
 
-const api = createApi('/api/wallets', { useAuth: true });
+const api = createApi(API_BASE.wallets, { useAuth: true });
 
 export const walletApi = {
   saveWallet: (walletData) => {
