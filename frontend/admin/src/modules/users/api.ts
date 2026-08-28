@@ -26,14 +26,10 @@ export const usersApi = {
   },
 
   updateUserStatus: (id: number, status: string): Promise<User> => {
-    return api.put(`/${id}/status`, { status });
+    return api.put(`/${id}`, { status });
   },
 
   fullLogoutUser: (id: number): Promise<void> => {
-    return api.post('/logout-all', { userId: id });
-  },
-
-  bulkDeleteUsers: (ids: number[]): Promise<void> => {
-    return api.post('/bulk-delete', { userIds: ids });
+    return api.post(`/${id}/logout-all`);
   },
 };

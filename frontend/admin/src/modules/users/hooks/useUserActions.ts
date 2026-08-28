@@ -114,37 +114,15 @@ export const useUserActions = () => {
     ...simpleMutation('Выход из всех устройств выполнен', 'Ошибка выхода'),
   });
 
-  const bulkDeleteMut = useMutation({
-    mutationFn: (ids: number[]) => usersApi.bulkDeleteUsers(ids),
-    onMutate: async (ids) => {
-      await queryClient.cancelQueries({ queryKey: ['users'] });
-      const previous = queryClient.getQueryData<User[]>(['users']);
-      const idSet = new Set(ids);
-      queryClient.setQueryData<User[]>(['users'], (old: User[] | undefined) =>
-        old?.filter((u: User) => !idSet.has(u.id))
-      );
-      return { previous };
-    },
-    onSuccess: () => success('Пользователи удалены'),
-    onError: (err: Error, _vars, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(['users'], context.previous);
-      }
-      error(err?.message || 'Ошибка массового удаления');
-    },
-  });
-
   return {
     createUser: (data: CreateUserData) => createMut.mutate(data),
     updateUser: (id: number, data: UpdateUserData) => updateMut.mutate({ id, data }),
     deleteUser: (id: number) => deleteMut.mutate(id),
     updateUserStatus: (id: number, status: string) => statusMut.mutate({ id, status }),
     logoutAllDevices: (id: number) => logoutMut.mutate(id),
-    bulkDeleteUsers: (ids: number[]) => bulkDeleteMut.mutate(ids),
     isCreating: createMut.isPending,
     isUpdating: updateMut.isPending,
     isDeleting: deleteMut.isPending,
     isUpdatingStatus: statusMut.isPending,
-    isBulkDeleting: bulkDeleteMut.isPending,
   };
 };

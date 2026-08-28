@@ -66,9 +66,9 @@ class UserService:
             updates['is_verified'] = True
         if data.password:
             updates['password_hash'] = self.security.get_password_hash(data.password)
-        if data.role != user.role:
+        if data.role is not None and data.role != user.role:
             updates['role'] = data.role
-        if data.status != user.status:
+        if data.status is not None and data.status != user.status:
             updates['status'] = data.status
 
         updated = await self.repo.update(id, updates) if updates else user
@@ -129,6 +129,8 @@ class UserService:
             raise ConflictError(f'Пользователь с email {data.email} уже существует')
 
     async def _validate_update_data(self, data: UserUpdateRequest, user: User) -> None:
+        if data.role is None:
+            return
         if user.id == self.ctx.actor.id and data.role.priority <= self.ctx.actor.role.priority:
             return
         if data.role.priority >= self.ctx.actor.role.priority:

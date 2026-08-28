@@ -18,8 +18,8 @@ class UserCreateRequest(BaseModel):
 class UserUpdateRequest(BaseModel):
     email: EmailStr | None = None
     password: str | None = None
-    role: UserRole = UserRole.USER
-    status: str = 'active'
+    role: UserRole | None = None
+    status: str | None = None
 
 
 class UserResponse(BaseModel):
