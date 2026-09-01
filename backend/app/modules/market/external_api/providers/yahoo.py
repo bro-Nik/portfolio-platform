@@ -13,6 +13,7 @@ SCREENER_PAGE_SIZE = 250
 # Yahoo-символ: суффикс биржи -> валюта котировки
 SUFFIX_CURRENCY = {
     '': 'USD', '.US': 'USD',
+    '.A': 'USD', '.B': 'USD',
     '.DE': 'EUR', '.PA': 'EUR', '.MI': 'EUR', '.AS': 'EUR', '.BR': 'EUR',
     '.MC': 'EUR', '.VI': 'EUR', '.F': 'EUR', '.MU': 'EUR', '.SG': 'EUR',
     '.BE': 'EUR', '.DU': 'EUR', '.HM': 'EUR', '.HA': 'EUR', '.LS': 'EUR',
@@ -28,7 +29,7 @@ SUFFIX_CURRENCY = {
     '.OL': 'NOK', '.NO': 'NOK',
     '.CO': 'DKK', '.DK': 'DKK',
     '.TW': 'TWD',
-    '.SI': 'SGD', '.SG2': 'SGD',
+    '.SI': 'SGD',
     '.NS': 'INR', '.BO': 'INR', '.IN': 'INR',
     '.KS': 'KRW', '.KQ': 'KRW',
 }

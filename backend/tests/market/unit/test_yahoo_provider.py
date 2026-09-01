@@ -164,6 +164,14 @@ class TestYahooProviderGetPrices:
 
         assert prices == {'AAPL': Decimal('302.25')}
 
+    async def test_us_share_class_suffixes(self, async_mock):
+        payload = {'BRK.B': spark_item(410.5), 'FOO.A': spark_item(12.25)}
+        provider, _ = make_provider(async_mock, payload)
+
+        prices = await provider.get_prices(['BRK.B', 'FOO.A'])
+
+        assert prices == {'BRK.B': Decimal('410.5'), 'FOO.A': Decimal('12.25')}
+
     async def test_skips_unknown_currency(self, async_mock):
         payload = {'TSLA.MX': spark_item(1000.0)}
         provider, _ = make_provider(async_mock, payload)
