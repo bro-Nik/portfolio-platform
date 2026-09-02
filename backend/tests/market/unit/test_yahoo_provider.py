@@ -172,6 +172,17 @@ class TestYahooProviderGetPrices:
 
         assert prices == {'BRK.B': Decimal('410.5'), 'FOO.A': Decimal('12.25')}
 
+    async def test_skips_zero_fx_rate(self, async_mock):
+        payload = {
+            '7203.T': spark_item(1500.0),
+            'USDJPY=X': spark_item(0),
+        }
+        provider, _ = make_provider(async_mock, payload)
+
+        prices = await provider.get_prices(['7203.T'])
+
+        assert prices == {}
+
     async def test_skips_unknown_currency(self, async_mock):
         payload = {'TSLA.MX': spark_item(1000.0)}
         provider, _ = make_provider(async_mock, payload)

@@ -234,7 +234,7 @@ class YahooProvider(BaseProvider):
             if not fx_pair:
                 return None
             rate = rates.get(fx_pair)
-            if rate is None:
+            if rate is None or rate <= 0:
                 return None
             usd = price * rate if direction == 'multiply' else price / rate
         else:
