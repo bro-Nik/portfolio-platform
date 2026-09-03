@@ -3,10 +3,11 @@ import { authService } from '../services/auth.js';
 
 interface CreateApiOptions {
   useAuth?: boolean;
+  sessionExpiredRedirect?: string;
 }
 
 export const createApi = (baseUrl?: string, options: CreateApiOptions = {}) => {
-  const { useAuth = false } = options;
+  const { useAuth = false, sessionExpiredRedirect = '/login' } = options;
 
   const tokenProvider = useAuth ? () => authService().getValidToken() : null;
   const refreshProvider = useAuth
@@ -19,5 +20,5 @@ export const createApi = (baseUrl?: string, options: CreateApiOptions = {}) => {
       }
     : undefined;
 
-  return apiService(baseUrl, tokenProvider, refreshProvider);
+  return apiService(baseUrl, tokenProvider, refreshProvider, sessionExpiredRedirect);
 };

@@ -63,7 +63,12 @@ const parseErrorMessage = (data: Record<string, unknown> | null): string => {
   return 'Ошибка запроса';
 };
 
-export const apiService = (baseUrl = '', getToken?: TokenProvider, refreshProvider?: () => Promise<string | undefined>) => {
+export const apiService = (
+  baseUrl = '',
+  getToken?: TokenProvider,
+  refreshProvider?: () => Promise<string | undefined>,
+  sessionExpiredRedirect = '/login',
+) => {
   const client: AxiosInstance = axios.create({
     baseURL: baseUrl,
     headers: { 'Content-Type': 'application/json' },
@@ -106,7 +111,7 @@ export const apiService = (baseUrl = '', getToken?: TokenProvider, refreshProvid
         }
 
         clearTokens();
-        window.location.href = '/login';
+        window.location.href = sessionExpiredRedirect;
         throw new Error('Сессия истекла');
       }
 
