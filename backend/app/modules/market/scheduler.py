@@ -113,7 +113,7 @@ class DBScheduleSource(ScheduleSource):
                 kwargs={
                     'provider_name': task.provider_name,
                     'method': task.task_type,
-                    'db_task_id': str(task.id),
+                    'db_task_id': task.id,
                     **task.parameters,
                 },
                 labels={'source': 'database', 'task_id': str(task.id), 'provider': task.provider_name},
