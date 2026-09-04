@@ -1,43 +1,43 @@
-import { createApi } from '@portfolio/shared';
-import { CreateProviderData, Provider, ProviderLog, ProviderPreset, ProviderStats, ProviderWithMethods, UpdateProviderData } from '../../../types/provider';
+import { getMarket } from 'src/api';
+import type {
+  GetProviderLogsMarketAdminProvidersProviderNameLogsGetParams,
+  ProviderCreateRequest,
+  ProviderLog,
+  ProviderMethodsItem,
+  ProviderResponse,
+  ProviderSettingsItem,
+  ProviderStats,
+  ProviderUpdateRequest,
+} from 'src/api';
 
-const baseUrl = `${import.meta.env.VITE_MARKET_SERVICE_URL}/admin/providers`;
-const api = createApi(baseUrl, { useAuth: true });
+const market = getMarket();
 
 export const providersApi = {
-  getProviders: (): Promise<Provider[]> => {
-    return api.get('');
-  },
+  getProviders: (): Promise<ProviderResponse[]> => market.getProvidersMarketAdminProvidersGet(),
 
-  createProvider: (data: CreateProviderData): Promise<Provider> => {
-    return api.post('', data);
-  },
+  createProvider: (data: ProviderCreateRequest): Promise<ProviderResponse> =>
+    market.createProviderMarketAdminProvidersPost(data),
 
-  updateProvider: (name: string, data: UpdateProviderData): Promise<Provider> => {
-    return api.put(`/${encodeURIComponent(name)}`, data);
-  },
+  updateProvider: (name: string, data: ProviderUpdateRequest): Promise<ProviderResponse> =>
+    market.updateProviderMarketAdminProvidersProviderNamePut(name, data),
 
-  deleteProvider: (name: string): Promise<void> => {
-    return api.del(`/${encodeURIComponent(name)}`);
-  },
+  deleteProvider: (name: string): Promise<void> =>
+    market.deleteProviderMarketAdminProvidersProviderNameDelete(name),
 
-  resetCountersProvider: (name: string): Promise<void> => {
-    return api.post(`/${encodeURIComponent(name)}/reset-counters`);
-  },
+  resetCountersProvider: (name: string): Promise<void> =>
+    market.resetCountersMarketAdminProvidersProviderNameResetCountersPost(name),
 
-  getProviderLogs: (name: string): Promise<ProviderLog[]> => {
-    return api.get(`/${encodeURIComponent(name)}/logs?hours=24&limit=20`);
-  },
+  getProviderLogs: (
+    name: string,
+    params?: GetProviderLogsMarketAdminProvidersProviderNameLogsGetParams,
+  ): Promise<ProviderLog[]> => market.getProviderLogsMarketAdminProvidersProviderNameLogsGet(name, params),
 
-  getProviderStats: (name: string): Promise<ProviderStats> => {
-    return api.get(`/${encodeURIComponent(name)}/stats`);
-  },
+  getProviderStats: (name: string): Promise<ProviderStats> =>
+    market.getProviderStatsMarketAdminProvidersProviderNameStatsGet(name),
 
-  getProvidersWithPresets: (): Promise<ProviderPreset[]> => {
-    return api.get('/with/settings');
-  },
+  getProvidersWithPresets: (): Promise<ProviderSettingsItem[]> =>
+    market.getProvidersWithSettingsMarketAdminProvidersWithSettingsGet(),
 
-  getProvidersWithMethods: (): Promise<ProviderWithMethods[]> => {
-    return api.get('/with/methods');
-  },
+  getProvidersWithMethods: (): Promise<ProviderMethodsItem[]> =>
+    market.getProvidersWithMethodsMarketAdminProvidersWithMethodsGet(),
 };

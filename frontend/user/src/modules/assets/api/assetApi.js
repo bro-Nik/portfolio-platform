@@ -1,15 +1,15 @@
-import { createApi } from '@portfolio/shared';
-import { API_BASE } from 'src/constants/api';
+import { getMarket } from 'src/api';
 
-export const tickerApi = createApi(API_BASE.marketTickers, { useAuth: true });
+const market = getMarket();
 
 export const assetApi = {
-  getTickersByMarket: (markets, search, page, pageSize = 20) => {
-    const params = { markets, page: page.toString(), page_size: pageSize.toString() };
-    if (search) params.search = search;
-    return tickerApi.get('', {
-      params,
-      paramsSerializer: { indexes: null },
-    });
-  },
+  getTickersByMarket: (markets, search, page, pageSize = 20) =>
+    market.searchTickersMarketApiTickersGet({
+      markets,
+      page,
+      pageSize,
+      ...(search ? { search } : {}),
+    }),
+
+  getPrices: (tickerIds) => market.getPricesMarketApiTickersPricesPost(tickerIds),
 };

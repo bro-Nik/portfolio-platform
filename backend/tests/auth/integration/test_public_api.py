@@ -17,8 +17,8 @@ class TestPublicAPI:
 
         assert response.status_code == 201
         data = response.json()
-        assert 'access_token' in data
-        assert 'refresh_token' in data
+        assert 'accessToken' in data
+        assert 'refreshToken' in data
 
         repo = UserRepository(db_session)
         user = await repo.get_by_email('newuser@example.com')
@@ -40,8 +40,8 @@ class TestPublicAPI:
 
         assert response.status_code == 200
         data = response.json()
-        assert 'access_token' in data
-        assert 'refresh_token' in data
+        assert 'accessToken' in data
+        assert 'refreshToken' in data
 
         token_repo = TokenRepository(db_session)
         tokens = await token_repo.get_all(RefreshToken.user_id == test_user.id)
@@ -56,15 +56,15 @@ class TestPublicAPI:
         response = await client.post('/auth/login', json=login_data)
 
         data = response.json()
-        refresh_token = data['refresh_token']
+        refresh_token = data['refreshToken']
 
         refresh_data = {'token': refresh_token}
         response = await client.post('/auth/refresh', json=refresh_data)
 
         assert response.status_code == 200
         data = response.json()
-        assert 'access_token' in data
-        assert 'refresh_token' in data
+        assert 'accessToken' in data
+        assert 'refreshToken' in data
 
         token_repo = TokenRepository(db_session)
         tokens = await token_repo.get_all(RefreshToken.user_id == test_user.id)

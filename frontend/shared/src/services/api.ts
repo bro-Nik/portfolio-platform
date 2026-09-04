@@ -12,36 +12,6 @@ const errorTranslations: Record<string, string> = {
 
 const translateError = (msg: string): string => errorTranslations[msg] || msg;
 
-const snakeToCamel = (obj: unknown): unknown => {
-  if (obj === undefined || obj === null) return obj;
-
-  if (Array.isArray(obj)) {
-    return obj.map(v => snakeToCamel(v));
-  } else if (obj !== null && typeof obj === 'object' && obj.constructor === Object) {
-    return Object.keys(obj as Record<string, unknown>).reduce((result, key) => {
-      const camelKey = key.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
-      (result as Record<string, unknown>)[camelKey] = snakeToCamel((obj as Record<string, unknown>)[key]);
-      return result;
-    }, {} as Record<string, unknown>);
-  }
-  return obj;
-};
-
-const camelToSnake = (obj: unknown): unknown => {
-  if (obj === undefined || obj === null) return obj;
-
-  if (Array.isArray(obj)) {
-    return obj.map(v => camelToSnake(v));
-  } else if (obj !== null && typeof obj === 'object' && obj.constructor === Object) {
-    return Object.keys(obj as Record<string, unknown>).reduce((result, key) => {
-      const snakeKey = key.replace(/([A-Z])/g, (_, letter: string) => `_${letter.toLowerCase()}`);
-      (result as Record<string, unknown>)[snakeKey] = camelToSnake((obj as Record<string, unknown>)[key]);
-      return result;
-    }, {} as Record<string, unknown>);
-  }
-  return obj;
-};
-
 const parseErrorMessage = (data: Record<string, unknown> | null): string => {
   if (!data) return 'Ошибка запроса';
 
@@ -87,10 +57,7 @@ export const apiService = (
   let refreshPromise: Promise<string | undefined> | null = null;
 
   client.interceptors.response.use(
-    (response) => {
-      response.data = snakeToCamel(response.data);
-      return response;
-    },
+    (response) => response,
     async (error) => {
       if (error.response?.status === 401 && refreshProvider && !error.config._retry) {
         const originalRequest = error.config;
@@ -116,7 +83,7 @@ export const apiService = (
       }
 
       if (error.response) {
-        const data = snakeToCamel(error.response.data) as Record<string, unknown> | null;
+        const data = error.response.data as Record<string, unknown> | null;
         const message = parseErrorMessage(data);
         console.error('Ошибка запроса:', baseUrl + error.config?.url, message);
         throw new Error(message);
@@ -130,19 +97,19 @@ export const apiService = (
     client.get(url, config).then((r) => r.data as T);
 
   const post = <T = unknown>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> => {
-    return client.post(url, camelToSnake(body), config).then((r) => r.data as T);
+    return client.post(url, body, config).then((r) => r.data as T);
   };
 
   const put = <T = unknown>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> => {
-    return client.put(url, camelToSnake(body), config).then((r) => r.data as T);
+    return client.put(url, body, config).then((r) => r.data as T);
   };
 
   const patch = <T = unknown>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> => {
-    return client.patch(url, camelToSnake(body), config).then((r) => r.data as T);
+    return client.patch(url, body, config).then((r) => r.data as T);
   };
 
   const del = <T = unknown>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> => {
-    const mergedConfig: AxiosRequestConfig = { ...config, data: body ? camelToSnake(body) : config?.data };
+    const mergedConfig: AxiosRequestConfig = { ...config, data: body ?? config?.data };
     return client.delete(url, mergedConfig).then((r) => r.data as T);
   };
 

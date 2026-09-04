@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 
+from app.common.schemas import ApiModel
 
-class TokensResponse(BaseModel):
+
+class TokensResponse(ApiModel):
     access_token: str
     refresh_token: str
     token_type: str = 'bearer'
@@ -18,9 +20,9 @@ class RefreshTokenUpdate(BaseModel):
     expires_at: int
 
 
-class RefreshTokenRequest(BaseModel):
+class RefreshTokenRequest(ApiModel):
     token: str
 
 
-class VerifyEmailRequest(BaseModel):
+class VerifyEmailRequest(ApiModel):
     token: str

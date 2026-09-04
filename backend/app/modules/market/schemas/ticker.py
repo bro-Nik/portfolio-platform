@@ -1,9 +1,11 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+
+from app.common.schemas import ApiModel
 
 
-class TickerResponse(BaseModel):
+class TickerResponse(ApiModel):
     id: int
     name: str
     symbol: str
@@ -11,7 +13,6 @@ class TickerResponse(BaseModel):
     market_cap_rank: int | None = None
     price: float
     market: str
-    model_config = ConfigDict(from_attributes=True)
 
 
 class TickerDetailResponse(TickerResponse):
@@ -20,43 +21,43 @@ class TickerDetailResponse(TickerResponse):
     updated_at: datetime | None = None
 
 
-class TickerSearchResponse(BaseModel):
+class TickerSearchResponse(ApiModel):
     data: list[TickerResponse]
     has_more: bool
     total: int
 
 
-class TickerListResponse(BaseModel):
+class TickerListResponse(ApiModel):
     data: list[TickerDetailResponse]
     has_more: bool
     total: int
 
 
-class PricesResponse(BaseModel):
+class PricesResponse(ApiModel):
     prices: dict[int, float]
 
 
-class ImagesResponse(BaseModel):
+class ImagesResponse(ApiModel):
     images: dict[int, str]
 
 
-class TickerInfo(BaseModel):
+class TickerInfo(ApiModel):
     name: str
     symbol: str
     image: str | None = None
     market: str | None = None
 
 
-class TickerInfoListResponse(BaseModel):
+class TickerInfoListResponse(ApiModel):
     info: dict[int, TickerInfo]
 
 
-class TickerUpdateRequest(BaseModel):
+class TickerUpdateRequest(ApiModel):
     name: str | None = None
     symbol: str | None = None
     is_active: bool | None = None
 
 
-class TickerMergeRequest(BaseModel):
+class TickerMergeRequest(ApiModel):
     source_id: int
     target_id: int

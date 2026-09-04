@@ -122,7 +122,7 @@ class TestPortfoliosAPI:
     async def test_archive_portfolio(self, client, auth_headers, portfolio, db_session):
         response = await client.patch(
             f'/api/portfolios/{portfolio.id}',
-            json={'is_archived': True},
+            json={'isArchived': True},
             headers=auth_headers,
         )
 
@@ -136,7 +136,7 @@ class TestPortfoliosAPI:
 
         response = await client.patch(
             f'/api/portfolios/{portfolio.id}',
-            json={'is_archived': False},
+            json={'isArchived': False},
             headers=auth_headers,
         )
 
@@ -147,7 +147,7 @@ class TestPortfoliosAPI:
     async def test_archive_portfolio_archives_assets(self, client, auth_headers, portfolio, portfolio_asset, db_session):
         response = await client.patch(
             f'/api/portfolios/{portfolio.id}',
-            json={'is_archived': True},
+            json={'isArchived': True},
             headers=auth_headers,
         )
 
@@ -156,18 +156,18 @@ class TestPortfoliosAPI:
         assert db_asset.is_archived is True
 
     async def test_add_asset_to_portfolio(self, client, auth_headers, portfolio, db_session):
-        asset_data = {'ticker_id': 1, 'portfolio_id': portfolio.id}
+        asset_data = {'tickerId': 1, 'portfolioId': portfolio.id}
 
         response = await client.post(f'/api/portfolios/{portfolio.id}/assets', json=asset_data, headers=auth_headers)
 
         assert response.status_code == status.HTTP_201_CREATED
         data = response.json()
-        assert data['ticker_id'] == 1
-        assert data['portfolio_id'] == portfolio.id
+        assert data['tickerId'] == 1
+        assert data['portfolioId'] == portfolio.id
 
         asset = await db_session.get(PortfolioAsset, data['id'])
         assert asset is not None
-        assert asset.ticker_id == asset_data['ticker_id']
+        assert asset.ticker_id == asset_data['tickerId']
 
     async def test_get_asset_transactions(self, client, auth_headers, portfolio, portfolio_asset, transaction):
         response = await client.get(
@@ -179,7 +179,7 @@ class TestPortfoliosAPI:
         data = response.json()
         assert isinstance(data, list)
         assert len(data) > 0
-        assert data[0]['ticker_id'] == 1
+        assert data[0]['tickerId'] == 1
 
     async def test_get_asset_distribution(self, client, auth_headers, portfolio, portfolio_asset):
         response = await client.get(
@@ -189,14 +189,14 @@ class TestPortfoliosAPI:
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert 'total_quantity_all_portfolios' in data
-        assert 'total_amount_all_portfolios' in data
+        assert 'totalQuantityAllPortfolios' in data
+        assert 'totalAmountAllPortfolios' in data
         assert 'portfolios' in data
 
     async def test_archive_asset(self, client, auth_headers, portfolio, portfolio_asset, db_session):
         response = await client.patch(
             f'/api/portfolios/{portfolio.id}/assets/{portfolio_asset.id}',
-            json={'is_archived': True},
+            json={'isArchived': True},
             headers=auth_headers,
         )
 
@@ -210,7 +210,7 @@ class TestPortfoliosAPI:
 
         response = await client.patch(
             f'/api/portfolios/{portfolio.id}/assets/{portfolio_asset.id}',
-            json={'is_archived': False},
+            json={'isArchived': False},
             headers=auth_headers,
         )
 

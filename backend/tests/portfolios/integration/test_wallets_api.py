@@ -98,7 +98,7 @@ class TestWalletsAPI:
     async def test_archive_wallet(self, client, auth_headers, wallet, db_session):
         response = await client.patch(
             f'/api/wallets/{wallet.id}',
-            json={'is_archived': True},
+            json={'isArchived': True},
             headers=auth_headers,
         )
 
@@ -112,7 +112,7 @@ class TestWalletsAPI:
 
         response = await client.patch(
             f'/api/wallets/{wallet.id}',
-            json={'is_archived': False},
+            json={'isArchived': False},
             headers=auth_headers,
         )
 
@@ -130,7 +130,7 @@ class TestWalletsAPI:
         data = response.json()
         assert isinstance(data, list)
         assert len(data) > 0
-        assert data[0]['ticker_id'] == 1
+        assert data[0]['tickerId'] == 1
 
     async def test_get_asset_distribution(self, client, auth_headers, wallet, wallet_asset):
         response = await client.get(
@@ -140,13 +140,13 @@ class TestWalletsAPI:
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert 'total_quantity_all_wallets' in data
+        assert 'totalQuantityAllWallets' in data
         assert 'wallets' in data
 
     async def test_archive_asset(self, client, auth_headers, wallet, wallet_asset, db_session):
         response = await client.patch(
             f'/api/wallets/{wallet.id}/assets/{wallet_asset.id}',
-            json={'is_archived': True},
+            json={'isArchived': True},
             headers=auth_headers,
         )
 
@@ -160,7 +160,7 @@ class TestWalletsAPI:
 
         response = await client.patch(
             f'/api/wallets/{wallet.id}/assets/{wallet_asset.id}',
-            json={'is_archived': False},
+            json={'isArchived': False},
             headers=auth_headers,
         )
 

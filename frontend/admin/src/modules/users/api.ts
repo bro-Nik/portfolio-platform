@@ -1,35 +1,22 @@
-import { createApi } from '@portfolio/shared';
-import { CreateUserData, UpdateUserData, User } from '../../types/user';
+import { getAuth } from 'src/api';
+import type { UserCreateRequest, UserResponse, UserUpdateRequest } from 'src/api';
 
-const baseUrl = `${import.meta.env.VITE_AUTH_SERVICE_URL}/admin/users`;
-const api = createApi(baseUrl, { useAuth: true });
+const auth = getAuth();
 
 export const usersApi = {
-  getUsers: (): Promise<User[]> => {
-    return api.get('');
-  },
+  getUsers: (): Promise<UserResponse[]> => auth.getUsersAuthAdminUsersGet(),
 
-  getUser: (id: number): Promise<User> => {
-    return api.get(`/${id}`);
-  },
+  getUser: (id: number): Promise<UserResponse> => auth.getUserAuthAdminUsersUserIdGet(id),
 
-  createUser: (data: CreateUserData): Promise<User> => {
-    return api.post('', data);
-  },
+  createUser: (data: UserCreateRequest): Promise<UserResponse> => auth.createUserAuthAdminUsersPost(data),
 
-  updateUser: (id: number, data: UpdateUserData): Promise<User> => {
-    return api.put(`/${id}`, data);
-  },
+  updateUser: (id: number, data: UserUpdateRequest): Promise<UserResponse> =>
+    auth.updateUserAuthAdminUsersUserIdPut(id, data),
 
-  deleteUser: (id: number): Promise<void> => {
-    return api.del(`/${id}`);
-  },
+  deleteUser: (id: number): Promise<void> => auth.deleteUserAuthAdminUsersUserIdDelete(id),
 
-  updateUserStatus: (id: number, status: string): Promise<User> => {
-    return api.put(`/${id}`, { status });
-  },
+  updateUserStatus: (id: number, status: string): Promise<UserResponse> =>
+    auth.updateUserAuthAdminUsersUserIdPut(id, { status }),
 
-  fullLogoutUser: (id: number): Promise<void> => {
-    return api.post(`/${id}/logout-all`);
-  },
+  fullLogoutUser: (id: number): Promise<void> => auth.logoutAllUserAuthAdminUsersUserIdLogoutAllPost(id),
 };

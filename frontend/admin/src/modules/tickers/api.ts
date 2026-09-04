@@ -1,32 +1,26 @@
-import { createApi } from '@portfolio/shared';
-import { Ticker, TickerListResponse, TickerUpdateData } from '../../types/ticker';
+import { getMarket } from 'src/api';
+import type {
+  ListTickersMarketAdminTickersGetParams,
+  TickerDetailResponse,
+  TickerListResponse,
+  TickerUpdateRequest,
+} from 'src/api';
 
-const baseUrl = `${import.meta.env.VITE_MARKET_SERVICE_URL}/admin/tickers`;
-const api = createApi(baseUrl, { useAuth: true });
+const market = getMarket();
+
+export type TickerListParams = ListTickersMarketAdminTickersGetParams;
 
 export const tickersApi = {
-  list: (params: { search?: string; markets?: string[]; page?: number; pageSize?: number }): Promise<TickerListResponse> => {
-    const queryParams: Record<string, string | number | string[]> = {};
-    if (params.search) queryParams.search = params.search;
-    if (params.markets?.length) queryParams.markets = params.markets;
-    if (params.page) queryParams.page = params.page;
-    if (params.pageSize) queryParams.page_size = params.pageSize;
-    return api.get('', { params: queryParams, paramsSerializer: { indexes: null } });
-  },
+  list: (params?: TickerListParams): Promise<TickerListResponse> =>
+    market.listTickersMarketAdminTickersGet(params),
 
-  getById: (id: number): Promise<Ticker> => {
-    return api.get(`/${id}`);
-  },
+  getById: (id: number): Promise<TickerDetailResponse> => market.getTickerMarketAdminTickersTickerIdGet(id),
 
-  update: (id: number, data: TickerUpdateData): Promise<Ticker> => {
-    return api.put(`/${id}`, data);
-  },
+  update: (id: number, data: TickerUpdateRequest): Promise<TickerDetailResponse> =>
+    market.updateTickerMarketAdminTickersTickerIdPut(id, data),
 
-  delete: (id: number): Promise<void> => {
-    return api.del(`/${id}`);
-  },
+  delete: (id: number): Promise<void> => market.deleteTickerMarketAdminTickersTickerIdDelete(id),
 
-  merge: (sourceId: number, targetId: number): Promise<Ticker> => {
-    return api.post('/merge', { source_id: sourceId, target_id: targetId });
-  },
+  merge: (sourceId: number, targetId: number): Promise<TickerDetailResponse> =>
+    market.mergeTickersMarketAdminTickersMergePost({ sourceId, targetId }),
 };

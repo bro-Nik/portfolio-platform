@@ -6,6 +6,7 @@ import { useModalStore } from '@portfolio/shared';
 import { useTaskActions } from '../hooks/useTaskActions';
 import { Task, TaskFormData } from '../../../../types/task';
 import { useProvidersWithMethods } from '../../providers/hooks/useProviders';
+import type { ParameterSchemaField } from '../../../../types/provider';
 import { DynamicParametersForm } from './DynamicParametersForm';
 
 interface TaskFormModalProps { task?: Task }
@@ -174,7 +175,7 @@ export const TaskFormModal: React.FC = () => {
         </Form.Item>
 
         <Form.Item label="Параметры задачи">
-          <DynamicParametersForm schema={selectedMethod?.parametersSchema || []} />
+          <DynamicParametersForm schema={(selectedMethod?.parametersSchema as unknown as ParameterSchemaField[]) || []} />
         </Form.Item>
 
         <Form.Item

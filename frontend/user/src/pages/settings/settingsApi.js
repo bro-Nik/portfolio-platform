@@ -1,7 +1,7 @@
-import { createApi } from '@portfolio/shared';
+import { getAuth } from 'src/api';
 
-const api = createApi(import.meta.env.VITE_AUTH_SERVICE_URL, { useAuth: true });
+const auth = getAuth();
 
 export const settingsApi = {
-  getProfile: () => api.get('/me'),
+  getProfile: () => auth.getMeAuthMeGet(),
 };

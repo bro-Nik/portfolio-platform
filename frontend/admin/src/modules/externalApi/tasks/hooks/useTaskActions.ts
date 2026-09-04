@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../api';
+import type { TaskUpdateRequest } from 'src/api';
 import { CreateTaskData, Task, UpdateTaskData } from '../../../../types/task';
 import { useNotifications } from '@portfolio/shared';
 
@@ -42,12 +43,12 @@ export const useTaskActions = () => {
   });
 
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateTaskData }) => tasksApi.updateTask(id, data),
+    mutationFn: ({ id, data }: { id: number; data: UpdateTaskData }) => tasksApi.updateTask(id, data as TaskUpdateRequest),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ['tasks'] });
       const previous = queryClient.getQueryData<Task[]>(['tasks']);
       queryClient.setQueryData<Task[]>(['tasks'], (old: Task[] | undefined) =>
-        old?.map((t: Task) => t.id === id ? { ...t, ...data } : t)
+        old?.map((t: Task) => t.id === id ? ({ ...t, ...data } as Task) : t)
       );
       return { previous };
     },

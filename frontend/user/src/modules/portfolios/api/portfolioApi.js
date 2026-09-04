@@ -1,20 +1,23 @@
-import { createApi } from '@portfolio/shared';
-import { API_BASE } from 'src/constants/api';
+import { getPortfolios } from 'src/api';
 
-const api = createApi(API_BASE.portfolios, { useAuth: true });
+const portfolios = getPortfolios();
 
 export const portfolioApi = {
   savePortfolio: (portfolioData) => {
     if (portfolioData.id) {
-      return api.put(`/${portfolioData.id}`, portfolioData);
-    } else {
-      return api.post('', portfolioData);
+      return portfolios.updatePortfolioApiPortfoliosPortfolioIdPut(portfolioData.id, portfolioData);
     }
+    return portfolios.createPortfolioApiPortfoliosPost(portfolioData);
   },
-  deletePortfolio: (portfolioId) => api.del(`/${portfolioId}`),
-  setPortfolioArchived: (portfolioId, isArchived) => api.patch(`/${portfolioId}`, { isArchived }),
-  getAssetTransactions: (portfolioId, assetId) => api.get(`/${portfolioId}/assets/${assetId}/transactions`),
-  addAssetToPortfolio: (portfolioId, tickerId) => api.post(`/${portfolioId}/assets`, {ticker_id: tickerId, portfolio_id: portfolioId}),
-  delAssetFromPortfolio: (portfolioId, assetId) => api.del(`/${portfolioId}/assets/${assetId}`),
-  setAssetArchived: (portfolioId, assetId, isArchived) => api.patch(`/${portfolioId}/assets/${assetId}`, { isArchived }),
+  deletePortfolio: (portfolioId) => portfolios.deletePortfolioApiPortfoliosPortfolioIdDelete(portfolioId),
+  setPortfolioArchived: (portfolioId, isArchived) =>
+    portfolios.setPortfolioArchivedApiPortfoliosPortfolioIdPatch(portfolioId, { isArchived }),
+  getAssetTransactions: (portfolioId, assetId) =>
+    portfolios.getAssetTransactionsApiPortfoliosPortfolioIdAssetsAssetIdTransactionsGet(portfolioId, assetId),
+  addAssetToPortfolio: (portfolioId, tickerId) =>
+    portfolios.addAssetToPortfolioApiPortfoliosPortfolioIdAssetsPost(portfolioId, { tickerId, portfolioId }),
+  delAssetFromPortfolio: (portfolioId, assetId) =>
+    portfolios.deleteAssetFromPortfolioApiPortfoliosPortfolioIdAssetsAssetIdDelete(portfolioId, assetId),
+  setAssetArchived: (portfolioId, assetId, isArchived) =>
+    portfolios.setAssetInPortfolioArchivedApiPortfoliosPortfolioIdAssetsAssetIdPatch(portfolioId, assetId, { isArchived }),
 };

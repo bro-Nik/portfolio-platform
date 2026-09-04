@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+
+from app.common.schemas import ApiModel
 
 
-class ProviderBase(BaseModel):
+class ProviderBase(ApiModel):
     api_key: str | None = None
     supported_markets: list[str] | None = None
     requests_per_minute: int | None = None
@@ -40,10 +41,9 @@ class ProviderResponse(ProviderBase):
     hour_counter: int | None = None
     day_counter: int | None = None
     month_counter: int | None = None
-    model_config = ConfigDict(from_attributes=True)
 
 
-class ProviderStats(BaseModel):
+class ProviderStats(ApiModel):
     provider_name: str
     requests_today: int
     successful_today: int
@@ -60,27 +60,27 @@ class ProviderStats(BaseModel):
     utilization_percent: dict[str, float]
 
 
-class ProviderMethodInfo(BaseModel):
+class ProviderMethodInfo(ApiModel):
     name: str
     method: str
     example_params: dict[str, Any] = {}
     parameters_schema: list[dict[str, Any]] = []
 
 
-class ProviderRateLimits(BaseModel):
+class ProviderRateLimits(ApiModel):
     per_minute: int | None
     per_hour: int | None
     per_day: int | None
     per_month: int | None
 
 
-class ProviderSettingsItem(BaseModel):
+class ProviderSettingsItem(ApiModel):
     name: str
     description: str
     limits: ProviderRateLimits
 
 
-class ProviderMethodsItem(BaseModel):
+class ProviderMethodsItem(ApiModel):
     name: str
     supported_markets: list[str] | None
     api_key: str | None
@@ -94,7 +94,7 @@ class ProviderMethodsItem(BaseModel):
     methods: list[ProviderMethodInfo]
 
 
-class ProviderDetailsItem(BaseModel):
+class ProviderDetailsItem(ApiModel):
     id: int | None
     name: str
     description: str
@@ -116,7 +116,7 @@ class ProviderDetailsItem(BaseModel):
     methods: list[ProviderMethodInfo]
 
 
-class ProviderLog(BaseModel):
+class ProviderLog(ApiModel):
     id: int
     provider_name: str | None = None
     endpoint: str
@@ -128,4 +128,3 @@ class ProviderLog(BaseModel):
     request_params: dict[str, Any] | None
     task_id: int | None
     created_at: datetime
-    model_config = ConfigDict(from_attributes=True)

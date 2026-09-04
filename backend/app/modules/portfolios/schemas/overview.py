@@ -1,10 +1,10 @@
-from pydantic import BaseModel
 
 from .portfolio import PortfolioResponse
 from .wallet import WalletResponse
+from app.common.schemas import ApiModel
 
 
-class OverviewResponse(BaseModel):
+class OverviewResponse(ApiModel):
     portfolios: list[PortfolioResponse]
     wallets: list[WalletResponse]
 

@@ -1,10 +1,12 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+
+from app.common.schemas import ApiModel
 
 from app.common.utils.decimal import CleanDecimal
 from app.modules.tags.schemas import TagResponse
 
 
-class WalletBase(BaseModel):
+class WalletBase(ApiModel):
     name: str
     comment: str | None = None
 
@@ -17,11 +19,11 @@ class WalletUpdateRequest(WalletBase):
     pass
 
 
-class WalletArchiveRequest(BaseModel):
+class WalletArchiveRequest(ApiModel):
     is_archived: bool
 
 
-class WalletAssetArchiveRequest(BaseModel):
+class WalletAssetArchiveRequest(ApiModel):
     is_archived: bool
 
 
@@ -33,7 +35,7 @@ class WalletUpdate(WalletBase):
     pass
 
 
-class WalletAssetBase(BaseModel):
+class WalletAssetBase(ApiModel):
     wallet_id: int
     ticker_id: int
 
@@ -58,7 +60,6 @@ class WalletAssetResponse(WalletAssetBase):
     symbol: str | None = None
     image: str | None = None
     market: str | None = None
-    model_config = ConfigDict(from_attributes=True)
 
 
 class WalletResponse(WalletBase):
@@ -67,10 +68,9 @@ class WalletResponse(WalletBase):
     has_transactions: bool = False
     assets: list[WalletAssetResponse] = []
     tags: list[TagResponse] = []
-    model_config = ConfigDict(from_attributes=True)
 
 
-class WalletListResponse(BaseModel):
+class WalletListResponse(ApiModel):
     wallets: list[WalletResponse]
 
 

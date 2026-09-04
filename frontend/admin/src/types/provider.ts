@@ -1,69 +1,11 @@
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-export interface Provider {
-  id?: number | null;
-  name: string;
-  description?: string;
-  hasConfig?: boolean;
-  apiKeyRequired?: boolean;
-  apiKey?: string;
-  requestsPerMinute?: number;
-  requestsPerHour?: number;
-  requestsPerDay?: number;
-  requestsPerMonth?: number;
-  isActive?: boolean;
-  timeout?: number;
-  retryDelay?: number;
-  minuteCounter?: number;
-  hourCounter?: number;
-  dayCounter?: number;
-  monthCounter?: number;
-}
-
-export interface ProviderStats {
-  providerName: string;
-  requestsToday: number;
-  successfulToday: number;
-  failedToday: number;
-  avgResponseTime: number;
-  minuteCounter: number;
-  minuteLimit: number;
-  hourCounter: number;
-  hourLimit: number;
-  dayCounter: number;
-  dayLimit: number;
-  monthCounter: number;
-  monthLimit: number;
-  utilizationPercent: Record<string, number>;
-}
-
-export interface ProviderLog {
-  id: number;
-  providerName?: string;
-  endpoint: string;
-  method: string;
-  statusCode?: number;
-  responseTime?: number;
-  wasSuccessful: boolean;
-  errorMessage?: string;
-  requestParams: Record<string, unknown>;
-  taskId: number;
-  createdAt: string;
-}
-
-export interface ProviderPreset {
-  name: string;
-  displayName: string;
-  requestsPerMinute: number;
-  requestsPerHour: number;
-  requestsPerDay: number;
-  requestsPerMonth: number;
-  timeout: number;
-}
+export type {
+  ProviderLog,
+  ProviderMethodsItem as ProviderWithMethods,
+  ProviderMethodInfo as ProviderMethod,
+  ProviderResponse as Provider,
+  ProviderSettingsItem as ProviderPreset,
+  ProviderStats,
+} from 'src/api';
 
 export interface ParameterSchemaField {
   name: string;
@@ -72,17 +14,6 @@ export interface ParameterSchemaField {
   options?: Record<string, string>;
   required?: boolean;
   default?: unknown;
-}
-
-export interface ProviderMethod {
-  method: string;
-  name: string;
-  exampleParams?: Record<string, unknown>;
-  parametersSchema?: ParameterSchemaField[];
-}
-
-export interface ProviderWithMethods extends Provider {
-  methods: ProviderMethod[];
 }
 
 export interface ProviderFormData {

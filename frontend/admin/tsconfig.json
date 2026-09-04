@@ -18,7 +18,8 @@
     "baseUrl": ".",
     "paths": {
       "@portfolio/shared": ["../shared/dist/index.js"],
-      "@portfolio/shared/*": ["../shared/dist/*"]
+      "@portfolio/shared/*": ["../shared/dist/*"],
+      "src/*": ["./src/*"]
     }
   },
   "include": ["src"],

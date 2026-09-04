@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+
+from app.common.schemas import ApiModel
 
 
 class LoginSessionCreate(BaseModel):
@@ -18,7 +20,7 @@ class LoginSessionUpdate(BaseModel):
     last_activity_at: datetime | None = None
 
 
-class LoginSessionResponse(BaseModel):
+class LoginSessionResponse(ApiModel):
     id: int
     ip_address: str | None = None
     device_type: str | None = None
@@ -27,5 +29,3 @@ class LoginSessionResponse(BaseModel):
     platform: str | None = None
     login_at: datetime
     last_activity_at: datetime | None = None
-
-    model_config = ConfigDict(from_attributes=True)

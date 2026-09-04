@@ -191,6 +191,7 @@ class TestTickerAdminCacheInvalidation:
             is_active=True,
             updated_at=None,
             price_updated_by=None,
+            priceUpdatedBy=None,
         )
         service.repo.get = async_mock(return_value=ticker)
         service.repo.update = async_mock(return_value=updated)
@@ -226,6 +227,7 @@ class TestTickerAdminCacheInvalidation:
             is_active=True,
             updated_at=None,
             price_updated_by=None,
+            priceUpdatedBy=None,
         )
         target = mock(
             id=2,
@@ -238,6 +240,7 @@ class TestTickerAdminCacheInvalidation:
             is_active=True,
             updated_at=None,
             price_updated_by=None,
+            priceUpdatedBy=None,
         )
         service.repo.get = async_mock(side_effect=[source, target, target])
         service.session.execute.return_value = EmptyRows()

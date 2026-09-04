@@ -1,19 +1,21 @@
-import { createApi } from '@portfolio/shared';
-import { API_BASE } from 'src/constants/api';
+import { getPortfolios } from 'src/api';
 
-const api = createApi(API_BASE.wallets, { useAuth: true });
+const portfolios = getPortfolios();
 
 export const walletApi = {
   saveWallet: (walletData) => {
     if (walletData.id) {
-      return api.put(`/${walletData.id}`, walletData);
-    } else {
-      return api.post('', walletData);
+      return portfolios.updateWalletApiWalletsWalletIdPut(walletData.id, walletData);
     }
+    return portfolios.createWalletApiWalletsPost(walletData);
   },
-  deleteWallet: (walletId) => api.del(`/${walletId}`),
-  setWalletArchived: (walletId, isArchived) => api.patch(`/${walletId}`, { isArchived }),
-  getAssetTransactions: (walletId, assetId) => api.get(`/${walletId}/assets/${assetId}/transactions`),
-  setWalletAssetArchived: (walletId, assetId, isArchived) => api.patch(`/${walletId}/assets/${assetId}`, { isArchived }),
-  deleteWalletAsset: (walletId, assetId) => api.del(`/${walletId}/assets/${assetId}`),
+  deleteWallet: (walletId) => portfolios.deleteWalletApiWalletsWalletIdDelete(walletId),
+  setWalletArchived: (walletId, isArchived) =>
+    portfolios.setWalletArchivedApiWalletsWalletIdPatch(walletId, { isArchived }),
+  getAssetTransactions: (walletId, assetId) =>
+    portfolios.getWalletAssetTransactionsApiWalletsWalletIdAssetsAssetIdTransactionsGet(walletId, assetId),
+  setWalletAssetArchived: (walletId, assetId, isArchived) =>
+    portfolios.setWalletAssetArchivedApiWalletsWalletIdAssetsAssetIdPatch(walletId, assetId, { isArchived }),
+  deleteWalletAsset: (walletId, assetId) =>
+    portfolios.deleteWalletAssetApiWalletsWalletIdAssetsAssetIdDelete(walletId, assetId),
 };

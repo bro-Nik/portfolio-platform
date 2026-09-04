@@ -1,26 +1,27 @@
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+
+from app.common.schemas import ApiModel
 
 
 TagScope = Literal['portfolio', 'wallet', 'asset']
 TagEntityType = Literal['portfolio', 'wallet', 'portfolio_asset', 'wallet_asset']
 
 
-class TagResponse(BaseModel):
+class TagResponse(ApiModel):
     id: int
     name: str
     color: str | None = None
     scope: TagScope
-    model_config = ConfigDict(from_attributes=True)
 
 
-class TagCreate(BaseModel):
+class TagCreate(ApiModel):
     name: str
     color: str | None = None
     scope: TagScope
 
 
-class TagUpdate(BaseModel):
+class TagUpdate(ApiModel):
     name: str | None = None
     color: str | None = None

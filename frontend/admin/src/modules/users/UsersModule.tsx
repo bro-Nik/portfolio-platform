@@ -28,7 +28,7 @@ export const UsersModule: React.FC = () => {
       active: users.filter(u => u.status === 'active').length,
       online: users.filter(u => u.online === true).length,
       admins: users.filter(u => u.role === 'admin').length,
-      newMonth: users.filter(u => new Date(u.createdAt) >= thirtyDaysAgo).length,
+      newMonth: users.filter(u => u.createdAt && new Date(u.createdAt) >= thirtyDaysAgo).length,
     };
   }, [users]);
 
@@ -40,7 +40,7 @@ export const UsersModule: React.FC = () => {
     } else if (activeTab === 'recent') {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      filtered = filtered.filter(u => new Date(u.createdAt) >= thirtyDaysAgo);
+      filtered = filtered.filter(u => u.createdAt && new Date(u.createdAt) >= thirtyDaysAgo);
     } else if (activeTab !== 'all') {
       filtered = filtered.filter(u => u.status === activeTab);
     }

@@ -1,27 +1,24 @@
-import { createApi } from '@portfolio/shared';
-import { CreateTaskData, Task, UpdateTaskData } from '../../../types/task';
+import { getMarket } from 'src/api';
+import type {
+  RunTaskMarketAdminTasksTaskIdRunPost202,
+  TaskCreateRequest,
+  TaskResponse,
+  TaskUpdateRequest,
+} from 'src/api';
 
-const baseUrl = `${import.meta.env.VITE_MARKET_SERVICE_URL}/admin/tasks`;
-const api = createApi(baseUrl, { useAuth: true });
+const market = getMarket();
 
 export const tasksApi = {
-  getTasks: (): Promise<Task[]> => {
-    return api.get('');
-  },
+  getTasks: (): Promise<TaskResponse[]> => market.getTasksMarketAdminTasksGet(),
 
-  createTask: (data: CreateTaskData): Promise<Task> => {
-    return api.post('', data);
-  },
+  createTask: (data: TaskCreateRequest): Promise<TaskResponse> => market.createTaskMarketAdminTasksPost(data),
 
-  updateTask: (id: number, data: UpdateTaskData): Promise<Task> => {
-    return api.put(`/${id}`, data);
-  },
+  updateTask: (id: number, data: TaskUpdateRequest): Promise<TaskResponse> =>
+    market.updateTaskMarketAdminTasksTaskIdPut(id, data),
 
-  deleteTask: (id: number): Promise<void> => {
-    return api.del(`/${id}`);
-  },
+  deleteTask: (id: number): Promise<void> => market.deleteTaskMarketAdminTasksTaskIdDelete(id),
 
-  runTask: (id: number): Promise<{ message: string; task_id: number }> => {
-    return api.post(`/${id}/run`);
-  },
-}
+  runTask: (id: number): Promise<RunTaskMarketAdminTasksTaskIdRunPost202> =>
+    market.runTaskMarketAdminTasksTaskIdRunPost(id),
+};
+

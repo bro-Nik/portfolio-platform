@@ -85,6 +85,19 @@ just          # показать все доступные команды с о�
 `just up` запускает worker + scheduler. Чтобы запустить стек без фоновых задач, используйте
 `just up-no-workers -d`.
 
+### Кодогенерация API-клиента
+
+Клиенты API фронтенда генерируются из OpenAPI-схемы бэкенда (camelCase на проводе).
+После изменения любой pydantic-схемы или роута:
+
+```bash
+just codegen   # экспортирует openapi.json + перегенерирует frontend/{user,admin}/src/api/generated
+```
+
+Затем выполните `pnpm typecheck` в затронутых приложениях — компилятор покажет все места,
+сломанные изменением контракта. Не редактируйте файлы в `src/api/generated` вручную;
+правьте request/response-модели на бэкенде.
+
 ## 📚 Структура
 
 - [`Backend`](backend/) — монолит на FastAPI (модули: auth, portfolios, market)

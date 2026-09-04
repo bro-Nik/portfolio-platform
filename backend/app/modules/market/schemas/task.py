@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
 
-class TaskBase(BaseModel):
+from app.common.schemas import ApiModel
+
+class TaskBase(ApiModel):
     name: str
     provider_name: str
     task_type: str
@@ -29,7 +30,7 @@ class TaskUpdate(TaskBase):
     pass
 
 
-class TaskResponse(BaseModel):
+class TaskResponse(ApiModel):
     id: int
     name: str
     description: str | None
@@ -41,4 +42,3 @@ class TaskResponse(BaseModel):
     parameters: dict[str, Any]
     last_run: datetime | None = None
     next_run: datetime | None = None
-    model_config = ConfigDict(from_attributes=True)

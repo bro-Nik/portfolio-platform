@@ -1,18 +1,19 @@
-import { createApi } from '@portfolio/shared';
-import { API_BASE } from 'src/constants/api';
+import { getTags } from 'src/api';
 
-const api = createApi(API_BASE.tags, { useAuth: true });
+const tags = getTags();
 
 export const tagApi = {
-  getTags: () => api.get(''),
+  getTags: () => tags.getTagsApiTagsGet(),
 
-  createTag: (name, color, scope) => api.post('', { name, color, scope }),
+  createTag: (name, color, scope) => tags.createTagApiTagsPost({ name, color, scope }),
 
-  updateTag: (tagId, data) => api.put(`/${tagId}`, data),
+  updateTag: (tagId, data) => tags.updateTagApiTagsTagIdPut(tagId, data),
 
-  deleteTag: (tagId) => api.del(`/${tagId}`),
+  deleteTag: (tagId) => tags.deleteTagApiTagsTagIdDelete(tagId),
 
-  attachTag: (tagId, entityType, entityId) => api.post(`/${tagId}/entities/${entityType}/${entityId}`),
+  attachTag: (tagId, entityType, entityId) =>
+    tags.attachTagApiTagsTagIdEntitiesEntityTypeEntityIdPost(tagId, entityType, entityId),
 
-  detachTag: (tagId, entityType, entityId) => api.del(`/${tagId}/entities/${entityType}/${entityId}`),
+  detachTag: (tagId, entityType, entityId) =>
+    tags.detachTagApiTagsTagIdEntitiesEntityTypeEntityIdDelete(tagId, entityType, entityId),
 };

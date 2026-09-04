@@ -46,7 +46,7 @@ export const useTickerActions = () => {
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ['tickers'] });
       const snapshot = snapshotTickers();
-      updateTickerInCache(snapshot, id, (t: Ticker) => ({ ...t, ...data }));
+      updateTickerInCache(snapshot, id, (t: Ticker) => ({ ...t, ...data }) as Ticker);
       return { snapshot };
     },
     onSuccess: (serverTicker, { id }) => {

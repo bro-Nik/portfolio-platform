@@ -27,9 +27,6 @@ export const ProviderTable: React.FC<ProviderTableProps> = ({ data, loading }) =
           <ApiOutlined style={{ color: '#1890ff', marginRight: 4 }} />
           <div style={{ textAlign: 'left' }}>
             <div><strong>{name}</strong></div>
-            {record.description && (
-              <div style={{ fontSize: '12px', color: 'var(--text-admin-secondary)', lineHeight: 1.4 }}>{record.description}</div>
-            )}
           </div>
         </Button>
       )

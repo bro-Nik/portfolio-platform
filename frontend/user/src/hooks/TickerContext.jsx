@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { tickerApi } from 'src/modules/assets/api/assetApi';
+import { assetApi } from 'src/modules/assets/api/assetApi';
 
 const TickerIdsContext = createContext(null);
 
@@ -34,7 +34,7 @@ export const useAssetPricesQuery = () => {
 
   return useQuery({
     queryKey: ['assetPrices', tickerIds],
-    queryFn: () => tickerApi.post('/prices', tickerIds),
+    queryFn: () => assetApi.getPrices(tickerIds),
     enabled: tickerIds.length > 0,
     refetchInterval: 12 * 60 * 60 * 1000,
     staleTime: 12 * 60 * 60 * 1000,

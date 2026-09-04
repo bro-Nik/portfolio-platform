@@ -1,28 +1,28 @@
 from datetime import UTC, datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
+from pydantic import BaseModel, EmailStr, Field, computed_field
 
-from app.common.schemas import UserRole
+from app.common.schemas import ApiModel, UserRole
 from app.core import settings
 
 from .session import LoginSessionResponse
 
 
-class UserCreateRequest(BaseModel):
+class UserCreateRequest(ApiModel):
     email: EmailStr
     password: str
     role: UserRole = UserRole.USER
     status: str = 'active'
 
 
-class UserUpdateRequest(BaseModel):
+class UserUpdateRequest(ApiModel):
     email: EmailStr | None = None
     password: str | None = None
     role: UserRole | None = None
     status: str | None = None
 
 
-class UserResponse(BaseModel):
+class UserResponse(ApiModel):
     id: int
     email: EmailStr
     role: UserRole
@@ -33,8 +33,6 @@ class UserResponse(BaseModel):
     total_active_time: int = Field(0, description='Total time on site in seconds')
     login_sessions: list[LoginSessionResponse] | None = None
 
-    model_config = ConfigDict(from_attributes=True)
-
     @computed_field
     @property
     def online(self) -> bool:
@@ -44,44 +42,44 @@ class UserResponse(BaseModel):
         return time_diff.total_seconds() < settings.jwt_access_token_expire_minutes * 60
 
 
-class PasswordChangeRequest(BaseModel):
+class PasswordChangeRequest(ApiModel):
     current_password: str
     new_password: str
 
 
-class EmailChangeRequest(BaseModel):
+class EmailChangeRequest(ApiModel):
     current_password: str
     new_email: EmailStr
 
 
-class UserLogin(BaseModel):
+class UserLogin(ApiModel):
     email: EmailStr
     password: str
 
 
-class UserRegister(BaseModel):
+class UserRegister(ApiModel):
     email: EmailStr
     password: str
 
 
-class RegisterResponse(BaseModel):
+class RegisterResponse(ApiModel):
     message: str
 
 
-class ResendVerificationRequest(BaseModel):
+class ResendVerificationRequest(ApiModel):
     email: EmailStr | None = None
     password: str | None = None
 
 
-class DeleteAccountRequest(BaseModel):
+class DeleteAccountRequest(ApiModel):
     current_password: str
 
 
-class ForgotPasswordRequest(BaseModel):
+class ForgotPasswordRequest(ApiModel):
     email: EmailStr
 
 
-class ResetPasswordRequest(BaseModel):
+class ResetPasswordRequest(ApiModel):
     token: str
     password: str
 

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '../api';
 import { CreateUserData, UpdateUserData, User } from '../../../types/user';
+import type { UserCreateRequest as UserCreateRequestData, UserUpdateRequest as UserUpdateRequestData } from 'src/api';
 import { useNotifications } from '@portfolio/shared';
 
 export const useUserActions = () => {
@@ -18,7 +19,7 @@ export const useUserActions = () => {
   });
 
   const createMut = useMutation({
-    mutationFn: (data: CreateUserData) => usersApi.createUser(data),
+    mutationFn: (data: CreateUserData) => usersApi.createUser(data as UserCreateRequestData),
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ['users'] });
       const previous = queryClient.getQueryData<User[]>(['users']);
@@ -42,12 +43,12 @@ export const useUserActions = () => {
   });
 
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateUserData }) => usersApi.updateUser(id, data),
+    mutationFn: ({ id, data }: { id: number; data: UpdateUserData }) => usersApi.updateUser(id, data as UserUpdateRequestData),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ['users'] });
       const previous = queryClient.getQueryData<User[]>(['users']);
       queryClient.setQueryData<User[]>(['users'], (old: User[] | undefined) =>
-        old?.map((u: User) => u.id === id ? { ...u, ...data } : u)
+        old?.map((u: User) => u.id === id ? ({ ...u, ...data } as User) : u)
       );
       return { previous };
     },

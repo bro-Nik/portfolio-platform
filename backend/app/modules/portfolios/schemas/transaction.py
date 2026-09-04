@@ -1,13 +1,15 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+
+from app.common.schemas import ApiModel
 
 from .portfolio import PortfolioAssetResponse
 from .wallet import WalletAssetResponse
 
 
-class TransactionBase(BaseModel):
+class TransactionBase(ApiModel):
     date: datetime
     ticker_id: int
     ticker2_id: int | None = None
@@ -28,14 +30,13 @@ class TransactionResponse(TransactionBase):
     id: int
     ticker_symbol: str | None = None
     ticker2_symbol: str | None = None
-    model_config = ConfigDict(from_attributes=True)
 
 
 class TransactionCreateRequest(TransactionBase):
     pass
 
 
-class TransactionUpdateRequest(BaseModel):
+class TransactionUpdateRequest(ApiModel):
     date: datetime | None = None
     ticker_id: int | None = None
     ticker2_id: int | None = None
@@ -60,7 +61,7 @@ class TransactionUpdate(TransactionBase):
     pass
 
 
-class TransactionResponseWithAssets(BaseModel):
+class TransactionResponseWithAssets(ApiModel):
     success: bool = True
     message: str | None = None
     transaction: TransactionResponse | None = None

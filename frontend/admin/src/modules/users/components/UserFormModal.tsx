@@ -19,7 +19,6 @@ export const UserFormModal: React.FC = () => {
     if (user) {
       form.setFieldsValue({
         email: user.email,
-        fullName: user.fullName,
         role: user.role,
         status: user.status,
       });

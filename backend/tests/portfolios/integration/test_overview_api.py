@@ -110,29 +110,29 @@ class TestOverviewAPI:
 
         by_id = {p['id']: p for p in data['portfolios']}
 
-        assert by_id[portfolio.id]['has_transactions'] is True
-        assets = {a['ticker_id']: a for a in by_id[portfolio.id]['assets']}
-        assert assets[1]['has_transactions'] is True
-        assert assets[2]['has_transactions'] is True
-        assert assets[5]['has_transactions'] is False
+        assert by_id[portfolio.id]['hasTransactions'] is True
+        assets = {a['tickerId']: a for a in by_id[portfolio.id]['assets']}
+        assert assets[1]['hasTransactions'] is True
+        assert assets[2]['hasTransactions'] is True
+        assert assets[5]['hasTransactions'] is False
 
-        assert by_id[empty_portfolio.id]['has_transactions'] is False
-        empty_assets = {a['ticker_id']: a for a in by_id[empty_portfolio.id]['assets']}
-        assert empty_assets[1]['has_transactions'] is False
+        assert by_id[empty_portfolio.id]['hasTransactions'] is False
+        empty_assets = {a['tickerId']: a for a in by_id[empty_portfolio.id]['assets']}
+        assert empty_assets[1]['hasTransactions'] is False
 
-        assert by_id[transfer_target.id]['has_transactions'] is True
-        target_assets = {a['ticker_id']: a for a in by_id[transfer_target.id]['assets']}
-        assert target_assets[1]['has_transactions'] is True
-        assert target_assets[6]['has_transactions'] is False
+        assert by_id[transfer_target.id]['hasTransactions'] is True
+        target_assets = {a['tickerId']: a for a in by_id[transfer_target.id]['assets']}
+        assert target_assets[1]['hasTransactions'] is True
+        assert target_assets[6]['hasTransactions'] is False
 
         wallets_by_id = {w['id']: w for w in data['wallets']}
 
-        assert wallets_by_id[wallet.id]['has_transactions'] is True
-        wallet_assets = {a['ticker_id']: a for a in wallets_by_id[wallet.id]['assets']}
-        assert wallet_assets[1]['has_transactions'] is True
-        assert wallet_assets[2]['has_transactions'] is True
-        assert wallet_assets[5]['has_transactions'] is False
+        assert wallets_by_id[wallet.id]['hasTransactions'] is True
+        wallet_assets = {a['tickerId']: a for a in wallets_by_id[wallet.id]['assets']}
+        assert wallet_assets[1]['hasTransactions'] is True
+        assert wallet_assets[2]['hasTransactions'] is True
+        assert wallet_assets[5]['hasTransactions'] is False
 
-        assert wallets_by_id[empty_wallet.id]['has_transactions'] is True
-        empty_wallet_assets = {a['ticker_id']: a for a in wallets_by_id[empty_wallet.id]['assets']}
-        assert empty_wallet_assets[1]['has_transactions'] is False
+        assert wallets_by_id[empty_wallet.id]['hasTransactions'] is True
+        empty_wallet_assets = {a['tickerId']: a for a in wallets_by_id[empty_wallet.id]['assets']}
+        assert empty_wallet_assets[1]['hasTransactions'] is False

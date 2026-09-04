@@ -1,6 +1,5 @@
-import { createApi } from '@portfolio/shared';
-import { API_BASE } from 'src/constants/api';
+import { getPortfolios } from 'src/api';
 
-const api = createApi(API_BASE.overview, { useAuth: true });
+const portfolios = getPortfolios();
 
-export const fetchOverview = () => api.get('');
+export const fetchOverview = () => portfolios.getUserOverviewApiOverviewGet();

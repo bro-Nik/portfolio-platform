@@ -1,4 +1,6 @@
-from fastapi import Request
+from typing import Annotated
+
+from fastapi import Query, Request
 
 from app.common.exceptions import handle_errors
 from app.core import settings
@@ -17,9 +19,9 @@ async def list_tickers(
     request: Request,
     service: TickerServiceDep,
     search: str | None = None,
-    markets: list[str] | None = None,
+    markets: Annotated[list[str] | None, Query()] = None,
     page: int = 1,
-    page_size: int = 20,
+    page_size: int = Query(20, alias='pageSize'),
 ) -> TickerListResponse:
     return await service.get_all_admin(search=search, markets=markets, page=page, page_size=page_size)
 

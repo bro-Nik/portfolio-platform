@@ -85,6 +85,18 @@ just          # Show all available commands with descriptions
 `just up` starts the worker + scheduler. To run the stack without background tasks, use
 `just up-no-workers -d`.
 
+### API client codegen
+
+The frontend API clients are generated from the backend OpenAPI schema (camelCase over the wire).
+After changing any pydantic schema or route:
+
+```bash
+just codegen   # exports openapi.json + regenerates frontend/{user,admin}/src/api/generated
+```
+
+Then run `pnpm typecheck` in the affected apps — the compiler lists every call site broken by the contract change.
+Do not edit files in `src/api/generated` manually; adjust request/response models on the backend instead.
+
 ## 📚 Structure
 
 - [`Backend`](backend/) — FastAPI monolith (modules: auth, portfolios, market)

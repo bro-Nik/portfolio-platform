@@ -30,11 +30,11 @@ class TestTradingWorkflow:
 
         funding_transaction = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 7,
+            'tickerId': 7,
             'quantity': '100000.0',
             'type': 'Input',
-            'portfolio_id': portfolio_id,
-            'wallet_id': wallet_id,
+            'portfolioId': portfolio_id,
+            'walletId': wallet_id,
             'comment': 'Начальное пополнение',
         }
 
@@ -44,7 +44,7 @@ class TestTradingWorkflow:
         tickers = {'AAPL': 4, 'GOOGL': 5, 'MSFT': 6}
 
         for ticker_id in tickers.values():
-            asset_data = {'ticker_id': ticker_id, 'portfolio_id': portfolio_id}
+            asset_data = {'tickerId': ticker_id, 'portfolioId': portfolio_id}
             response = await client.post(f'/api/portfolios/{portfolio_id}/assets', json=asset_data, headers=auth_headers)
             assert response.status_code == status.HTTP_201_CREATED
 
@@ -57,15 +57,15 @@ class TestTradingWorkflow:
         for trade in trades:
             transaction_data = {
                 'date': datetime.now(UTC).isoformat(),
-                'ticker_id': tickers[trade['ticker']],
-                'ticker2_id': 7,
+                'tickerId': tickers[trade['ticker']],
+                'ticker2Id': 7,
                 'quantity': str(trade['quantity']),
                 'quantity2': str(trade['quantity'] * trade['price']),
                 'price': str(trade['price']),
-                'price_usd': str(trade['price']),
+                'priceUsd': str(trade['price']),
                 'type': 'Buy',
-                'portfolio_id': portfolio_id,
-                'wallet_id': wallet_id,
+                'portfolioId': portfolio_id,
+                'walletId': wallet_id,
                 'comment': f"Покупка {trade['ticker']}",
             }
 
@@ -90,45 +90,45 @@ class TestTradingWorkflow:
 
         funding = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 7,
+            'tickerId': 7,
             'quantity': '100000.0',
             'type': 'Input',
-            'portfolio_id': portfolio_id,
-            'wallet_id': wallet_id,
+            'portfolioId': portfolio_id,
+            'walletId': wallet_id,
         }
         assert (await client.post('/api/transactions/', json=funding, headers=auth_headers)).status_code == status.HTTP_201_CREATED
 
         buy = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 4,
-            'ticker2_id': 7,
+            'tickerId': 4,
+            'ticker2Id': 7,
             'quantity': '0.0015923962068690731',
             'quantity2': '49.04332138018967',
             'price': '30798.44147369412',
-            'price_usd': '30772.232000000007',
+            'priceUsd': '30772.232000000007',
             'type': 'Buy',
-            'portfolio_id': portfolio_id,
-            'wallet_id': wallet_id,
+            'portfolioId': portfolio_id,
+            'walletId': wallet_id,
         }
         assert (await client.post('/api/transactions/', json=buy, headers=auth_headers)).status_code == status.HTTP_201_CREATED
 
         sell = {
             'date': datetime.now(UTC).isoformat(),
-            'ticker_id': 4,
-            'ticker2_id': 7,
+            'tickerId': 4,
+            'ticker2Id': 7,
             'quantity': '0.0015923962068690731',
             'quantity2': '100',
             'price': '62798.44147369412',
-            'price_usd': '62745',
+            'priceUsd': '62745',
             'type': 'Sell',
-            'portfolio_id': portfolio_id,
-            'wallet_id': wallet_id,
+            'portfolioId': portfolio_id,
+            'walletId': wallet_id,
         }
         assert (await client.post('/api/transactions/', json=sell, headers=auth_headers)).status_code == status.HTTP_201_CREATED
 
         portfolio_response = await client.get(f'/api/portfolios/{portfolio_id}', headers=auth_headers)
         assert portfolio_response.status_code == status.HTTP_200_OK
         assets = portfolio_response.json()['assets']
-        btc_asset = next(a for a in assets if a['ticker_id'] == 4)
+        btc_asset = next(a for a in assets if a['tickerId'] == 4)
         assert btc_asset['quantity'] == '0'
         assert 'E' not in btc_asset['quantity']

@@ -4,8 +4,10 @@ packages:
   - 'admin'
 allowBuilds:
   '@parcel/watcher': true
+  '@scarf/scarf': false
   core-js: true
   core-js-pure: true
+  esbuild: true
 autoInstallPeers: true
 strictPeerDependencies: false
 
@@ -24,6 +26,7 @@ catalog:
   jsdom: ^30.0.1
   jwt-decode: ^4.0.0
   lucide-react: ^1.24.0
+  orval: ^7.13.0
   react: ^19.2.1
   react-dom: ^19.2.1
   react-router-dom: ^7.10.1

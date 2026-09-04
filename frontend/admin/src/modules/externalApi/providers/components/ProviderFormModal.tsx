@@ -53,10 +53,9 @@ export const ProviderFormModal: React.FC = () => {
         initialValues={getInitialValues()}
       >
         <Form.Item
-          label={provider?.apiKeyRequired ? 'API Ключ (обязательно)' : 'API Ключ (опционально)'}
+          label="API Ключ (опционально)"
           name="apiKey"
-          extra={provider?.apiKeyRequired ? undefined : 'Оставьте пустым, если не требуется'}
-          rules={provider?.apiKeyRequired ? [{ required: true, message: 'Введите API ключ' }] : undefined}
+          extra="Оставьте пустым, если не требуется"
         >
           <Input.Password 
             placeholder="Введите API ключ" 

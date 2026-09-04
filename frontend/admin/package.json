@@ -23,7 +23,8 @@
     "build": "vite build",
     "test": "vitest",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "codegen": "orval --config orval.config.ts"
   },
   "devDependencies": {
     "@testing-library/dom": "catalog:",
@@ -35,6 +36,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "catalog:",
     "jsdom": "catalog:",
+    "orval": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

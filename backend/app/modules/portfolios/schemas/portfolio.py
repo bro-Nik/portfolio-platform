@@ -1,10 +1,12 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+
+from app.common.schemas import ApiModel
 
 from app.common.utils.decimal import CleanDecimal
 from app.modules.tags.schemas import TagResponse
 
 
-class PortfolioBase(BaseModel):
+class PortfolioBase(ApiModel):
     name: str
     comment: str | None = None
 
@@ -17,11 +19,11 @@ class PortfolioUpdateRequest(PortfolioBase):
     market: str | None = None
 
 
-class PortfolioArchiveRequest(BaseModel):
+class PortfolioArchiveRequest(ApiModel):
     is_archived: bool
 
 
-class PortfolioAssetArchiveRequest(BaseModel):
+class PortfolioAssetArchiveRequest(ApiModel):
     is_archived: bool
 
 
@@ -34,12 +36,12 @@ class PortfolioUpdate(PortfolioBase):
     market: str | None = None
 
 
-class PortfolioAssetBase(BaseModel):
+class PortfolioAssetBase(ApiModel):
     portfolio_id: int
     ticker_id: int
 
 
-class PortfolioAssetCreateRequest(BaseModel):
+class PortfolioAssetCreateRequest(ApiModel):
     ticker_id: int
     portfolio_id: int
 
@@ -67,7 +69,6 @@ class PortfolioAssetResponse(PortfolioAssetBase):
     symbol: str | None = None
     image: str | None = None
     market: str | None = None
-    model_config = ConfigDict(from_attributes=True)
 
 
 class PortfolioResponse(PortfolioBase):
@@ -77,10 +78,9 @@ class PortfolioResponse(PortfolioBase):
     has_transactions: bool = False
     assets: list[PortfolioAssetResponse] = []
     tags: list[TagResponse] = []
-    model_config = ConfigDict(from_attributes=True)
 
 
-class PortfolioListResponse(BaseModel):
+class PortfolioListResponse(ApiModel):
     portfolios: list[PortfolioResponse]
 
 

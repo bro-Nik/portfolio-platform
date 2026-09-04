@@ -1,15 +1,4 @@
-export interface Task {
-  id: number;
-  name: string;
-  providerName: string;
-  taskType: string;
-  schedule: string;
-  parameters: Record<string, unknown>;
-  isActive: boolean;
-  lastRun?: string;
-  nextRun?: string;
-  status?: string;
-}
+export type { TaskResponse as Task } from 'src/api';
 
 export interface TaskFormData {
   name: string;

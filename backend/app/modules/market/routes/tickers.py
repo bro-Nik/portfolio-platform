@@ -26,7 +26,7 @@ async def search_tickers(
     search: str | None = Query(None),
     markets: Annotated[list[str] | None, Query()] = None,
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(20, ge=1, le=100, alias='pageSize'),
 ) -> TickerSearchResponse:
     result = await ticker_service.search(search, markets, page, page_size)
     return TickerSearchResponse(**result)

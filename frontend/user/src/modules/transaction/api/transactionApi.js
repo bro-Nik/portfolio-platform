@@ -1,15 +1,14 @@
-import { createApi } from '@portfolio/shared';
-import { API_BASE } from 'src/constants/api';
+import { getPortfolios } from 'src/api';
 
-const api = createApi(API_BASE.transactions, { useAuth: true });
+const portfolios = getPortfolios();
 
 export const transactionApi = {
   saveTransaction: (transactionData) => {
     if (transactionData.id) {
-      return api.put(`/${transactionData.id}`, transactionData);
-    } else {
-      return api.post('', transactionData);
+      return portfolios.updateTransactionApiTransactionsTransactionIdPut(transactionData.id, transactionData);
     }
+    return portfolios.createTransactionApiTransactionsPost(transactionData);
   },
-  deleteTransaction: (transactionId) => api.del(`/${transactionId}`),
+  deleteTransaction: (transactionId) =>
+    portfolios.deleteTransactionApiTransactionsTransactionIdDelete(transactionId),
 };

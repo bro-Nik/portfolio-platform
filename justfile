@@ -30,6 +30,7 @@ default:
     @echo 'Backend development:'
     @echo '  just tests [args]          - Run tests'
     @echo '  just build-local-env       - Create a local env for LSP support'
+    @echo '  just codegen               - Export OpenAPI + regenerate frontend API clients'
     @echo ''
     @echo 'Databases:'
     @echo '  just backup                - Back up the database'
@@ -93,6 +94,14 @@ build-local-env:
     @python3 -m venv {{ backend_path }}/.venv
     @{{ backend_path }}/.venv/bin/pip install --upgrade pip
     @{{ backend_path }}/.venv/bin/pip install -r {{ backend_path }}/requirements.txt -r {{ backend_path }}/requirements-test.txt
+
+# Export the OpenAPI schema and regenerate frontend API clients
+codegen:
+    @echo "📦 Exporting OpenAPI schema..."
+    @cd {{ backend_path }} && .venv/bin/python -m app.scripts.export_openapi
+    @echo "⚙️  Generating frontend API clients..."
+    @cd frontend/user && pnpm codegen
+    @cd frontend/admin && pnpm codegen
 
 # -------------------- Databases --------------------
 
