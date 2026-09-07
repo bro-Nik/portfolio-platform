@@ -65,5 +65,9 @@ class Settings(BaseSettings):
     def sync_db_url(self) -> str:
         return self.db_url.replace('+asyncpg', '')
 
+    @property
+    def is_prod(self) -> bool:
+        return self.env == 'production'
+
 
 settings = Settings()

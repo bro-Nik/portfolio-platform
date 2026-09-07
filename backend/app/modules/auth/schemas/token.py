@@ -9,6 +9,11 @@ class TokensResponse(ApiModel):
     token_type: str = 'bearer'
 
 
+class AccessTokenResponse(ApiModel):
+    access_token: str
+    token_type: str = 'bearer'
+
+
 class RefreshTokenCreate(BaseModel):
     user_id: int
     token_hash: str

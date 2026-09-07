@@ -18,7 +18,12 @@ class TestPublicAPI:
         assert response.status_code == 201
         data = response.json()
         assert 'accessToken' in data
-        assert 'refreshToken' in data
+        assert 'refreshToken' not in data
+
+        set_cookie = response.headers.get('set-cookie', '')
+        assert 'refresh_token=' in set_cookie
+        assert 'httponly' in set_cookie.lower()
+        assert 'samesite=strict' in set_cookie.lower()
 
         repo = UserRepository(db_session)
         user = await repo.get_by_email('newuser@example.com')
@@ -41,7 +46,8 @@ class TestPublicAPI:
         assert response.status_code == 200
         data = response.json()
         assert 'accessToken' in data
-        assert 'refreshToken' in data
+        assert 'refreshToken' not in data
+        assert 'refresh_token=' in response.headers.get('set-cookie', '')
 
         token_repo = TokenRepository(db_session)
         tokens = await token_repo.get_all(RefreshToken.user_id == test_user.id)
@@ -55,16 +61,14 @@ class TestPublicAPI:
         login_data = {'email': 'test@example.com', 'password': 'testpass'}
         response = await client.post('/auth/login', json=login_data)
 
-        data = response.json()
-        refresh_token = data['refreshToken']
+        assert 'refresh_token=' in response.headers.get('set-cookie', '')
 
-        refresh_data = {'token': refresh_token}
-        response = await client.post('/auth/refresh', json=refresh_data)
+        response = await client.post('/auth/refresh')
 
         assert response.status_code == 200
         data = response.json()
         assert 'accessToken' in data
-        assert 'refreshToken' in data
+        assert 'refreshToken' not in data
 
         token_repo = TokenRepository(db_session)
         tokens = await token_repo.get_all(RefreshToken.user_id == test_user.id)
@@ -73,3 +77,23 @@ class TestPublicAPI:
         session_repo = SessionRepository(db_session)
         sessions = await session_repo.get_all(LoginSession.user_id == test_user.id)
         assert len(sessions) == 1
+
+    async def test_refresh_without_cookie_fails(self, client, test_user):
+        response = await client.post('/auth/refresh')
+
+        assert response.status_code == 401
+
+    async def test_logout_revokes_and_clears_cookie(self, client, db_session, test_user):
+        login_data = {'email': 'test@example.com', 'password': 'testpass'}
+        await client.post('/auth/login', json=login_data)
+
+        response = await client.post('/auth/logout')
+
+        assert response.status_code == 204
+        set_cookie = response.headers.get('set-cookie', '')
+        assert 'refresh_token=' in set_cookie
+        assert 'max-age=0' in set_cookie.lower() or 'expires=thu, 01 jan 1970' in set_cookie.lower()
+
+        token_repo = TokenRepository(db_session)
+        tokens = await token_repo.get_all(RefreshToken.user_id == test_user.id)
+        assert len(tokens) == 0

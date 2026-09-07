@@ -1,4 +1,4 @@
-import { getToken, getRefreshToken, setTokens, decodeToken, isTokenExpired, clearTokens, getStoredLogin, setStoredLogin } from './token.js';
+import { getToken, setTokens, decodeToken, isTokenExpired, clearTokens, getStoredLogin, setStoredLogin } from './token.js';
 import { apiService } from './api.js';
 import { createApi } from '../factories/api.js';
 
@@ -7,21 +7,14 @@ const AUTH_SERVICE_URL = import.meta.env.VITE_AUTH_SERVICE_URL;
 export const authService = () => {
   const computeLogin = (email: string): string => email.split('@')[0] ?? '';
 
-  const setTokensFromResponse = (data: { accessToken?: string; refreshToken?: string }) => {
-    const { accessToken, refreshToken } = data;
-    if (!accessToken && !refreshToken) throw new Error('Не получены токены авторизации');
-    if (!accessToken) throw new Error('Нет access токена');
-    if (!refreshToken) throw new Error('Нет refresh токена');
-
-    setTokens(accessToken, refreshToken);
+  const setAccessTokenFromResponse = (data: { accessToken?: string }) => {
+    if (!data.accessToken) throw new Error('Не получен access токен');
+    setTokens(data.accessToken);
   };
 
   const refreshTokens = async (): Promise<string> => {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) throw new Error('Нет refresh токена');
-
-    const data = await api.post('/refresh', { token: refreshToken }) as { accessToken: string };
-    setTokensFromResponse(data);
+    const data = await api.post('/refresh') as { accessToken: string };
+    setAccessTokenFromResponse(data);
     return data.accessToken;
   };
 
@@ -61,7 +54,7 @@ export const authService = () => {
   const login = async (email: string, password: string): Promise<{ success: boolean; data?: unknown; error?: string }> => {
     try {
       const data = await api.post('/login', { email, password });
-      setTokensFromResponse(data as { accessToken?: string; refreshToken?: string });
+      setAccessTokenFromResponse(data as { accessToken?: string });
       setStoredLogin(computeLogin(email));
       return { success: true, data };
     } catch (error) {
@@ -72,7 +65,7 @@ export const authService = () => {
   const register = async (email: string, password: string): Promise<{ success: boolean; data?: unknown; error?: string }> => {
     try {
       const data = await api.post('/register', { email, password });
-      setTokensFromResponse(data as { accessToken?: string; refreshToken?: string });
+      setAccessTokenFromResponse(data as { accessToken?: string });
       setStoredLogin(computeLogin(email));
       return { success: true, data };
     } catch (error) {
@@ -81,12 +74,8 @@ export const authService = () => {
   };
 
   const logout = async (): Promise<void> => {
-    const refreshToken = getRefreshToken();
     clearTokens();
-
-    if (refreshToken) {
-      api.post('/logout', { token: refreshToken }).catch(() => {});
-    }
+    api.post('/logout').catch(() => {});
   };
 
   const verifyEmail = async (token: string): Promise<{ success: boolean; data?: unknown; error?: string }> => {

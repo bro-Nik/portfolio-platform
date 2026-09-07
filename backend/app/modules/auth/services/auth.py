@@ -107,9 +107,10 @@ class AuthService:
         return result
 
     async def logout(self, refresh_token: str) -> bool:
-        token = await self._get_db_refresh_token(refresh_token)
-        deleted = bool(await self.token_repo.delete(token.id))
-        return deleted
+        token_hash = self.security.hash_token(refresh_token)
+        if not (token := await self.token_repo.get_by_token_hash(token_hash)):
+            return False
+        return bool(await self.token_repo.delete(token.id))
 
     async def logout_all(self, user_id: int | None = None) -> bool:
         user_id = user_id or self.ctx.actor.id

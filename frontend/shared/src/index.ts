@@ -3,7 +3,6 @@ export type { AuthService } from './services/auth.js';
 
 export {
   getToken,
-  getRefreshToken,
   setTokens,
   clearTokens,
   decodeToken,

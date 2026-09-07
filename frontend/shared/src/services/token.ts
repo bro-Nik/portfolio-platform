@@ -11,13 +11,8 @@ export function getToken(): string | null {
   return localStorage.getItem('accessToken');
 }
 
-export function getRefreshToken(): string | null {
-  return localStorage.getItem('refreshToken');
-}
-
-export function setTokens(accessToken: string, refreshToken: string): void {
+export function setTokens(accessToken: string): void {
   localStorage.setItem('accessToken', accessToken);
-  localStorage.setItem('refreshToken', refreshToken);
 }
 
 export function getStoredLogin(): string {

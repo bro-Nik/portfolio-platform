@@ -1,8 +1,8 @@
-from fastapi import Request
+from fastapi import Request, Response
 
 from app.common.routing import DishkaRouter
 
-from app.common.exceptions import handle_errors
+from app.common.exceptions import AuthenticationError, handle_errors
 from app.core.rate_limit import limiter
 
 from app.core import settings
@@ -10,7 +10,7 @@ from app.modules.auth.dependencies import AuthServiceDep, SessionServiceDep, Use
 from app.common.schemas import AuthUser
 from app.common.dependencies import CurrentUser, CurrentUserOrNone
 from app.modules.auth.schemas import (
-    DeleteAccountRequest, EmailChangeRequest, ForgotPasswordRequest, LoginSessionResponse,
+    AccessTokenResponse, DeleteAccountRequest, EmailChangeRequest, ForgotPasswordRequest, LoginSessionResponse,
     PasswordChangeRequest, RefreshTokenRequest, RegisterResponse, ResetPasswordRequest,
     ResendVerificationRequest, TokensResponse, UserLogin, UserRegister, UserResponse,
 )
@@ -25,6 +25,29 @@ from typing import Annotated
 
 router = DishkaRouter()
 
+REFRESH_COOKIE_NAME = 'refresh_token'
+REFRESH_COOKIE_PATH = '/auth'
+_DAY_SECONDS = 86400
+
+
+def _set_refresh_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        key=REFRESH_COOKIE_NAME,
+        value=token,
+        max_age=settings.jwt_refresh_token_expire_days * _DAY_SECONDS,
+        httponly=True,
+        secure=settings.env == 'production',
+        samesite='strict',
+        path=REFRESH_COOKIE_PATH,
+    )
+
+
+def _refresh_token_from_cookie(request: Request) -> str:
+    token = request.cookies.get(REFRESH_COOKIE_NAME)
+    if not token:
+        raise AuthenticationError('Refresh токен отсутствует')
+    return token
+
 
 @router.post('/register', status_code=201)
 @limiter.limit(settings.rate_limit_public)
@@ -32,11 +55,12 @@ router = DishkaRouter()
 async def register(
     data: UserRegister,
     request: Request,
+    response: Response,
     auth: AuthServiceDep,
-) -> TokensResponse:
+) -> AccessTokenResponse:
     result = await auth.register(data)
     await send_verification_email.kiq(result.email, result.verification_token)
-    return result.tokens
+    return AccessTokenResponse(access_token=result.tokens.access_token)
 
 
 @router.post('/login')
@@ -45,10 +69,12 @@ async def register(
 async def login(
     data: UserLogin,
     request: Request,
+    response: Response,
     auth: AuthServiceDep,
-) -> TokensResponse:
+) -> AccessTokenResponse:
     result = await auth.login(data)
-    return result.tokens
+    _set_refresh_cookie(response, result.tokens.refresh_token)
+    return AccessTokenResponse(access_token=result.tokens.access_token)
 
 
 @router.post('/verify-email')
@@ -89,12 +115,14 @@ async def resend_verification(
 @limiter.limit(settings.rate_limit_public)
 @handle_errors('Ошибка обновления токена')
 async def refresh_tokens(
-    data: RefreshTokenRequest,
     request: Request,
+    response: Response,
     auth: AuthServiceDep,
-) -> TokensResponse:
-    result = await auth.refresh_tokens(data)
-    return result.tokens
+) -> AccessTokenResponse:
+    token = _refresh_token_from_cookie(request)
+    result = await auth.refresh_tokens(RefreshTokenRequest(token=token))
+    _set_refresh_cookie(response, result.tokens.refresh_token)
+    return AccessTokenResponse(access_token=result.tokens.access_token)
 
 
 @router.post('/forgot-password')
@@ -168,11 +196,14 @@ async def change_email(
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка выхода')
 async def logout(
-    data: RefreshTokenRequest,
     request: Request,
+    response: Response,
     auth: AuthServiceDep,
 ) -> None:
-    await auth.logout(data.token)
+    token = request.cookies.get(REFRESH_COOKIE_NAME)
+    if token:
+        await auth.logout(token)
+    response.delete_cookie(key=REFRESH_COOKIE_NAME, path=REFRESH_COOKIE_PATH)
 
 
 @router.post('/logout-all', status_code=204)

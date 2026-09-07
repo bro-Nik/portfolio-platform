@@ -136,6 +136,7 @@ services:
       - "${NGINX_PORT:-80}:80"
     volumes:
       - ./nginx/nginx.selfhost.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/security_headers.conf:/etc/nginx/snippets/security_headers.conf:ro
     depends_on:
       - backend
       - ui-user
