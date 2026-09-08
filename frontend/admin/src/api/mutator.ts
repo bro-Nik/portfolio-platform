@@ -7,7 +7,7 @@ export const mutator = <T>(config: AxiosRequestConfig): Promise<T> => {
   const { method = 'get', url, data, params, headers } = config;
   const requestConfig = { params, headers };
 
-  switch (method) {
+  switch (method.toLowerCase()) {
     case 'post':
       return api.post<T>(url!, data, requestConfig);
     case 'put':

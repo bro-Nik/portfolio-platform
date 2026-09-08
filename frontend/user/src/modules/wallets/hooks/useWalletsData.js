@@ -1,14 +1,22 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useOverviewQuery } from 'src/modules/portfolios/hooks/useOverviewQuery';
-import { useAssetPricesQuery } from 'src/hooks/TickerContext';
+import { useTickerIds, extractTickerIds, useAssetPricesQuery } from 'src/hooks/TickerContext';
 import { buildWalletStats } from 'src/utils/assetStats';
 
 export const useWalletsData = (showArchived = false) => {
   const queryClient = useQueryClient();
+  const { addTickerIds } = useTickerIds();
 
   const { data, isLoading } = useOverviewQuery();
   const rawWallets = data?.wallets || [];
+
+  useEffect(() => {
+    if (rawWallets.length > 0) {
+      const ids = extractTickerIds(rawWallets);
+      if (ids.length > 0) addTickerIds(ids);
+    }
+  }, [rawWallets, addTickerIds]);
 
   const internalPricesQuery = useAssetPricesQuery();
   const prices = useMemo(() =>

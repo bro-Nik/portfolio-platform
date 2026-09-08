@@ -13,11 +13,9 @@ export const useOverviewData = () => {
   const rawWallets = data?.wallets || [];
 
   useEffect(() => {
-    if (rawPortfolios.length > 0) {
-      const ids = extractTickerIds(rawPortfolios);
-      if (ids.length > 0) addTickerIds(ids);
-    }
-  }, [rawPortfolios, addTickerIds]);
+    const ids = [...extractTickerIds(rawPortfolios), ...extractTickerIds(rawWallets)];
+    if (ids.length > 0) addTickerIds(ids);
+  }, [rawPortfolios, rawWallets, addTickerIds]);
 
   const { data: pricesData, isLoading: pricesLoading } = useAssetPricesQuery();
   const prices = useMemo(() => pricesData?.prices || {}, [pricesData]);
