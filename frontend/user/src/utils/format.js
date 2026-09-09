@@ -51,7 +51,11 @@ export const formatCurrency = (number, currency = 'USD', locale = 'ru-RU', dontR
 };
 
 export const formatPercentage = (value, decimals = 0) => {
-  return `${Math.abs(+value.toFixed(+decimals))}%`;
+  if (value == null) return '-';
+  const num = Number(value);
+  const dec = Number(decimals);
+  if (Number.isNaN(num) || Number.isNaN(dec)) return '-';
+  return `${Math.abs(Number(num.toFixed(dec)))}%`;
 };
 
 export const formatCurrencyFromUsd = (number, dontRound = false) => {

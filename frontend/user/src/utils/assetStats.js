@@ -46,7 +46,7 @@ export const calculateWalletAssetStats = (asset, price) => {
 };
 
 const withShare = (items, total, getNumerator) => {
-  if (total <= 0) return items;
+  if (!(total > 0)) return items.map((item) => ({ ...item, share: 0 }));
   return items.map(item => ({
     ...item,
     share: (getNumerator(item) / total) * 100,

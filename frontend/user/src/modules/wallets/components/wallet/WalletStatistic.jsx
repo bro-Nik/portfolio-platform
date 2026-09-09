@@ -12,7 +12,7 @@ const WalletStatistic = ({ wallet }) => {
     },
     {
       title: 'Доля',
-      value: formatPercentage(wallet.share),
+      value: formatPercentage(wallet.share ?? 0),
     },
     {
       title: 'Ордера на покупку',

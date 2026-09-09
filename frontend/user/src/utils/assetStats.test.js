@@ -124,12 +124,12 @@ describe('buildPortfolioStats', () => {
     expect(items[1].share).toBeCloseTo(25);
   });
 
-  it('omits share when total invested is zero', () => {
+  it('sets zero share when total invested is zero', () => {
     const { items } = buildPortfolioStats(
       [{ id: 1, assets: [{ tickerId: 'a', quantity: 0, amount: 0 }] }],
       { a: 5 },
     );
-    expect(items[0].share).toBeUndefined();
+    expect(items[0].share).toBe(0);
   });
 
   it('returns empty result for empty input', () => {
