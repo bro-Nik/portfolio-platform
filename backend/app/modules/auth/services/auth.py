@@ -93,6 +93,7 @@ class AuthService:
         user = await self.user_service.get_for_auth(email=data.email)
         if not self.security.verify_password(data.password, user.password_hash):
             raise AuthenticationError('Неверный email или пароль')
+        self.user_service.check_can_authenticate(user)
         result = await self._create_tokens(user)
         return result
 
@@ -102,6 +103,7 @@ class AuthService:
             raise AuthenticationError('Невалидный refresh токен')
         user_id = int(payload['id'])
         user = await self.user_service.get_for_auth(id=user_id)
+        self.user_service.check_can_authenticate(user)
         token = await self._get_db_refresh_token(data.token)
         result = await self._create_tokens(user, token)
         return result

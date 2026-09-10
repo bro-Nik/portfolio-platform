@@ -23,6 +23,15 @@ from app.modules.auth.schemas import (
 from app.modules.auth.security import SecurityService
 
 
+class UserStatus:
+    ACTIVE = 'active'
+    ERRORS = {
+        'block': 'Аккаунт заблокирован',
+        'inactive': 'Аккаунт отключён',
+        'pending': 'Аккаунт ожидает активации',
+    }
+
+
 class UserService:
     def __init__(self, session: AsyncSession, ctx: Context) -> None:
         self.ctx = ctx
@@ -45,12 +54,24 @@ class UserService:
         self._check_exists(user)
         return user
 
-    async def get_all_detailed(self, skip: int = 0, limit: int = 20, search: str | None = None, role: str | None = None) -> list[User]:
+    def check_can_authenticate(self, user: User) -> None:
+        if user.status != UserStatus.ACTIVE:
+            raise AuthenticationError(UserStatus.ERRORS.get(user.status, 'Доступ к аккаунту ограничен'))
+        # Подтверждение email требуем только когда есть куда слать письма: в selfhost
+        # без SMTP проверка недостижима и заблокировала бы вход полностью.
+        if settings.smtp_enabled and not user.is_verified:
+            raise AuthenticationError('Email не подтверждён')
+
+    async def get_all_detailed(
+        self, skip: int = 0, limit: int = 20, search: str | None = None, role: str | None = None
+    ) -> list[User]:
         return await self.repo.get_all_with_sessions(skip, limit, search, role)
 
     async def create(self, data: UserCreateRequest) -> User:
         await self._validate_create_data(data)
-        user_to_db = UserCreate(**data.model_dump(exclude={'password'}), password_hash=self.security.get_password_hash(data.password))
+        user_to_db = UserCreate(
+            **data.model_dump(exclude={'password'}), password_hash=self.security.get_password_hash(data.password)
+        )
         user = await self.repo.create(user_to_db.model_dump())
         return user
 

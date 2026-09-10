@@ -11,7 +11,13 @@ from app.common.exceptions import (
 )
 from app.core import settings
 from app.modules.auth.repositories import UserRepository
-from app.modules.auth.schemas import UserRole
+from app.modules.auth.schemas import (
+    PasswordChangeRequest,
+    ResetPasswordRequest,
+    UserRegister,
+    UserRole,
+)
+from pydantic import ValidationError
 from app.modules.auth.security import SecurityService
 from app.modules.auth.services.user import UserService
 
@@ -128,12 +134,15 @@ class TestUserService:
         ):
             await service.create(create_data)
 
-    @pytest.mark.parametrize(('current_role', 'target_role', 'should_raise'), [
-        (None, USER, False),
-        (None, ADMIN, True),
-        (USER, ADMIN, True),
-        (ADMIN, USER, False),
-    ])
+    @pytest.mark.parametrize(
+        ('current_role', 'target_role', 'should_raise'),
+        [
+            (None, USER, False),
+            (None, ADMIN, True),
+            (USER, ADMIN, True),
+            (ADMIN, USER, False),
+        ],
+    )
     async def test_create_role_validation(self, service, mock, data, current_role, target_role, should_raise):
         service.ctx.actor = mock(role=current_role) if current_role else None
         create_data = data(email='test@example.com', password='Password123!', role=target_role)
@@ -143,7 +152,6 @@ class TestUserService:
             patch.object(service.repo, 'create', return_value=mock()),
             patch.object(service.repo, 'exists_by', return_value=False),
         ):
-
             if should_raise:
                 with pytest.raises(BusinessRuleError, match='права'):
                     await service.create(create_data)
@@ -179,19 +187,22 @@ class TestUserService:
         ):
             await service.update(999, update_data)
 
-    @pytest.mark.parametrize(('current_role', 'target_role', 'should_raise', 'operation_for'), [
-        (USER, USER, False, 'self'),
-        (MODERATOR, MODERATOR, False, 'self'),
-        (ADMIN, ADMIN, False, 'self'),
-        (USER, USER, True, 'other'),
-        (USER, ADMIN, True, 'other'),
-        (MODERATOR, USER, False, 'other'),
-        (MODERATOR, MODERATOR, True, 'other'),
-        (MODERATOR, ADMIN, True, 'other'),
-        (ADMIN, USER, False, 'other'),
-        (ADMIN, MODERATOR, False, 'other'),
-        (ADMIN, ADMIN, True, 'other'),
-    ])
+    @pytest.mark.parametrize(
+        ('current_role', 'target_role', 'should_raise', 'operation_for'),
+        [
+            (USER, USER, False, 'self'),
+            (MODERATOR, MODERATOR, False, 'self'),
+            (ADMIN, ADMIN, False, 'self'),
+            (USER, USER, True, 'other'),
+            (USER, ADMIN, True, 'other'),
+            (MODERATOR, USER, False, 'other'),
+            (MODERATOR, MODERATOR, True, 'other'),
+            (MODERATOR, ADMIN, True, 'other'),
+            (ADMIN, USER, False, 'other'),
+            (ADMIN, MODERATOR, False, 'other'),
+            (ADMIN, ADMIN, True, 'other'),
+        ],
+    )
     async def test_update_role_check(self, service, mock, data, current_role, target_role, should_raise, operation_for):
         update_data = data(role=USER, status='active', email=None, password=None)
         service.ctx.actor.role = current_role
@@ -213,19 +224,24 @@ class TestUserService:
 
                 assert result is not None
 
-    @pytest.mark.parametrize(('current_role', 'target_role', 'should_raise', 'operation_for'), [
-        (USER, USER, False, 'self'),
-        (USER, ADMIN, True, 'self'),
-        (MODERATOR, MODERATOR, False, 'self'),
-        (MODERATOR, ADMIN, True, 'self'),
-        (MODERATOR, USER, False, 'self'),
-        (ADMIN, ADMIN, False, 'self'),
-        (ADMIN, MODERATOR, False, 'self'),
-        (MODERATOR, USER, False, ''),
-        (ADMIN, USER, False, ''),
-        (ADMIN, MODERATOR, False, ''),
-    ])
-    async def test_update_role_validation(self, service, mock, data, current_role, target_role, should_raise, operation_for):
+    @pytest.mark.parametrize(
+        ('current_role', 'target_role', 'should_raise', 'operation_for'),
+        [
+            (USER, USER, False, 'self'),
+            (USER, ADMIN, True, 'self'),
+            (MODERATOR, MODERATOR, False, 'self'),
+            (MODERATOR, ADMIN, True, 'self'),
+            (MODERATOR, USER, False, 'self'),
+            (ADMIN, ADMIN, False, 'self'),
+            (ADMIN, MODERATOR, False, 'self'),
+            (MODERATOR, USER, False, ''),
+            (ADMIN, USER, False, ''),
+            (ADMIN, MODERATOR, False, ''),
+        ],
+    )
+    async def test_update_role_validation(
+        self, service, mock, data, current_role, target_role, should_raise, operation_for
+    ):
         update_data = data(role=target_role, status='active', email=None, password=None)
         service.ctx.actor.role = current_role
 
@@ -275,7 +291,8 @@ class TestUserService:
             result = await service.update(user_id, update_data)
 
             service.repo.update.assert_called_once_with(
-                user_id, {'email': 'new@example.com', 'is_verified': True},
+                user_id,
+                {'email': 'new@example.com', 'is_verified': True},
             )
             assert result == updated_user
 
@@ -305,7 +322,8 @@ class TestUserService:
 
             assert result is None
             service.repo.update.assert_called_once_with(
-                user_id, {'email': 'new@example.com', 'is_verified': True},
+                user_id,
+                {'email': 'new@example.com', 'is_verified': True},
             )
 
     async def test_change_email_with_smtp_returns_token(self, service, mock, data):
@@ -343,19 +361,22 @@ class TestUserService:
         ):
             await service.delete(999)
 
-    @pytest.mark.parametrize(('current_role', 'target_role', 'should_raise', 'operation_for'), [
-        (USER, USER, False, 'self'),
-        (MODERATOR, MODERATOR, False, 'self'),
-        (ADMIN, ADMIN, False, 'self'),
-        (USER, USER, True, 'other'),
-        (USER, ADMIN, True, 'other'),
-        (MODERATOR, USER, False, 'other'),
-        (MODERATOR, MODERATOR, True, 'other'),
-        (MODERATOR, ADMIN, True, 'other'),
-        (ADMIN, USER, False, 'other'),
-        (ADMIN, MODERATOR, False, 'other'),
-        (ADMIN, ADMIN, True, 'other'),
-    ])
+    @pytest.mark.parametrize(
+        ('current_role', 'target_role', 'should_raise', 'operation_for'),
+        [
+            (USER, USER, False, 'self'),
+            (MODERATOR, MODERATOR, False, 'self'),
+            (ADMIN, ADMIN, False, 'self'),
+            (USER, USER, True, 'other'),
+            (USER, ADMIN, True, 'other'),
+            (MODERATOR, USER, False, 'other'),
+            (MODERATOR, MODERATOR, True, 'other'),
+            (MODERATOR, ADMIN, True, 'other'),
+            (ADMIN, USER, False, 'other'),
+            (ADMIN, MODERATOR, False, 'other'),
+            (ADMIN, ADMIN, True, 'other'),
+        ],
+    )
     async def test_delete_role_check(self, service, mock, current_role, target_role, should_raise, operation_for):
         service.ctx.actor.role = current_role
 
@@ -458,7 +479,11 @@ class TestUserService:
         token = 'invalid.token'
 
         with (
-            patch.object(service.security, 'verify_password_reset_token', side_effect=AuthenticationError('Невалидный токен сброса пароля')),
+            patch.object(
+                service.security,
+                'verify_password_reset_token',
+                side_effect=AuthenticationError('Невалидный токен сброса пароля'),
+            ),
             pytest.raises(AuthenticationError, match='Невалидный токен сброса пароля'),
         ):
             await service.reset_password(token, 'newpass')
@@ -472,3 +497,49 @@ class TestUserService:
             pytest.raises(AuthenticationError, match='Пользователь не найден'),
         ):
             await service.reset_password(token, 'newpass')
+
+
+class TestPasswordPolicy:
+    @pytest.mark.parametrize('password', ['', 'short', 'a' * 7])
+    def test_short_password_rejected(self, password):
+        with pytest.raises(ValidationError):
+            UserRegister(email='a@example.com', password=password)
+
+    def test_long_password_rejected(self):
+        # bcrypt silently truncates past 72 bytes, so longer input is refused
+        # instead of quietly collapsing distinct passwords into one hash.
+        with pytest.raises(ValidationError):
+            UserRegister(email='a@example.com', password='a' * 73)
+
+    def test_valid_password_accepted(self):
+        assert UserRegister(email='a@example.com', password='a' * 72).password == 'a' * 72
+
+    def test_reset_password_request_enforces_policy(self):
+        with pytest.raises(ValidationError):
+            ResetPasswordRequest(token='t', password='short')
+
+    def test_change_password_request_enforces_policy(self):
+        with pytest.raises(ValidationError):
+            PasswordChangeRequest(current_password='oldpassword', new_password='short')
+
+
+class TestCheckCanAuthenticate:
+    @pytest.mark.parametrize('status', ['block', 'inactive', 'pending'])
+    def test_non_active_status_rejected(self, service, mock, status):
+        with pytest.raises(AuthenticationError):
+            service.check_can_authenticate(mock(id=1, status=status, is_verified=True))
+
+    def test_active_unverified_rejected_when_smtp_enabled(self, service, mock, monkeypatch):
+        monkeypatch.setattr(settings, 'smtp_host', 'smtp.example.com')
+        with pytest.raises(AuthenticationError, match='Email не подтверждён'):
+            service.check_can_authenticate(mock(id=1, status='active', is_verified=False))
+
+    def test_active_unverified_allowed_without_smtp(self, service, mock, monkeypatch):
+        # Selfhost without SMTP has no way to deliver a verification mail, so
+        # requiring confirmation would lock every user out.
+        monkeypatch.setattr(settings, 'smtp_host', '')
+        service.check_can_authenticate(mock(id=1, status='active', is_verified=False))
+
+    def test_active_verified_allowed(self, service, mock, monkeypatch):
+        monkeypatch.setattr(settings, 'smtp_host', 'smtp.example.com')
+        service.check_can_authenticate(mock(id=1, status='active', is_verified=True))

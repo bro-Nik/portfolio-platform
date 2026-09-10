@@ -60,6 +60,7 @@ async def register(
 ) -> AccessTokenResponse:
     result = await auth.register(data)
     await send_verification_email.kiq(result.email, result.verification_token)
+    _set_refresh_cookie(response, result.tokens.refresh_token)
     return AccessTokenResponse(access_token=result.tokens.access_token)
 
 

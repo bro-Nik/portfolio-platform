@@ -6,8 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
+JWT_SECRET_DEFAULT = 'super-secret-jwt-token-with-at-least-32-characters-long'
+
+
 class Settings(BaseSettings):
-    jwt_secret: str = 'super-secret-jwt-token-with-at-least-32-characters-long'
+    jwt_secret: str = JWT_SECRET_DEFAULT
     jwt_algorithm: str = 'HS256'
     jwt_access_token_expire_minutes: int = 15
     jwt_refresh_token_expire_days: int = 30
@@ -52,10 +55,22 @@ class Settings(BaseSettings):
         if self.env != 'production':
             return self
 
-        if self.jwt_secret == 'super-secret-jwt-token-with-at-least-32-characters-long':
-            raise ValueError('Нужно определить JWT_SECRET для production!')
+        # В production лимит включён принудительно: явный false из env не должен
+        # отключать защиту от перебора паролей на документированных развёртываниях.
+        self.rate_limit_enabled = True
+
+        if self.is_insecure_jwt_secret:
+            raise ValueError('JWT_SECRET для production должен быть задан явно и быть случайным!')
 
         return self
+
+    @property
+    def is_insecure_jwt_secret(self) -> bool:
+        """Секрет совпадает с дефолтом или с примером из репозитория."""
+        if self.jwt_secret == JWT_SECRET_DEFAULT:
+            return True
+        lowered = self.jwt_secret.lower()
+        return any(marker in lowered for marker in ('change', 'your-', 'example', 'placeholder', 'secret-token'))
 
     @property
     def smtp_enabled(self) -> bool:

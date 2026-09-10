@@ -18,7 +18,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column('tag', sa.Column('scope', sa.String(32), nullable=False))
+    op.add_column('tag', sa.Column('scope', sa.String(32), nullable=False, server_default='asset'))
 
 
 def downgrade() -> None:

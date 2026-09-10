@@ -1,5 +1,6 @@
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
@@ -19,6 +20,7 @@ import app.modules.auth.models
 from app.modules.auth.models import User
 from app.modules.market.models import Ticker
 import app.modules.portfolios.models
+from app.modules.portfolios.models import Portfolio, PortfolioAsset
 import app.modules.tags.models  # noqa: F401
 
 
@@ -125,3 +127,37 @@ async def tickers(db_session, save):
     return [
         await save(db_session, Ticker(id=i, name=f'Ticker {i}', symbol=f'T{i}', market='crypto')) for i in range(1, 4)
     ]
+
+
+@pytest.fixture
+async def portfolio(db_session, user, save):
+    return await save(db_session, Portfolio(name='Портфель', market='crypto', user_id=user.id))
+
+
+@pytest.fixture
+async def asset(db_session, user, save, tickers, portfolio):
+    return await save(
+        db_session,
+        PortfolioAsset(
+            ticker_id=tickers[0].id,
+            portfolio_id=portfolio.id,
+            user_id=user.id,
+            quantity=Decimal(1),
+            amount=Decimal(100),
+        ),
+    )
+
+
+@pytest.fixture
+async def foreign_asset(db_session, user, save, tickers, portfolio):
+    other = await save(db_session, User(email='other@example.com', password_hash='test', is_verified=True))
+    return await save(
+        db_session,
+        PortfolioAsset(
+            ticker_id=tickers[1].id,
+            portfolio_id=portfolio.id,
+            user_id=other.id,
+            quantity=Decimal(1),
+            amount=Decimal(100),
+        ),
+    )

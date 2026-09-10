@@ -113,6 +113,8 @@ class PortfolioService:
         portfolio = await self.get(id)
         if portfolio.is_archived:
             raise ConflictError('Нельзя добавлять активы в архивный портфель')
+        # portfolio_id из тела не должен уводить запись в чужой портфель
+        data.portfolio_id = id
         asset = await self.asset_service.create(data)
         return asset
 

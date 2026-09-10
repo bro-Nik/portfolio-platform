@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class CurrencyLayerProvider(BaseProvider):
     NAME = 'CurrencyLayer'
     DESCRIPTION = 'Валюты'
-    BASE_URL = 'http://api.currencylayer.com/'
+    BASE_URL = 'https://api.currencylayer.com/'
     API_KEY_REQUIRED = True
 
     @classmethod

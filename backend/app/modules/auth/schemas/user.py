@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, computed_field
 
@@ -8,16 +9,21 @@ from app.core import settings
 from .session import LoginSessionResponse
 
 
+MIN_PASSWORD_LENGTH = 8
+MAX_PASSWORD_LENGTH = 72  # bcrypt silently truncates beyond 72 bytes
+Password = Annotated[str, Field(min_length=MIN_PASSWORD_LENGTH, max_length=MAX_PASSWORD_LENGTH)]
+
+
 class UserCreateRequest(ApiModel):
     email: EmailStr
-    password: str
+    password: Password
     role: UserRole = UserRole.USER
     status: str = 'active'
 
 
 class UserUpdateRequest(ApiModel):
     email: EmailStr | None = None
-    password: str | None = None
+    password: Password | None = None
     role: UserRole | None = None
     status: str | None = None
 
@@ -44,7 +50,7 @@ class UserResponse(ApiModel):
 
 class PasswordChangeRequest(ApiModel):
     current_password: str
-    new_password: str
+    new_password: Password
 
 
 class EmailChangeRequest(ApiModel):
@@ -59,7 +65,7 @@ class UserLogin(ApiModel):
 
 class UserRegister(ApiModel):
     email: EmailStr
-    password: str
+    password: Password
 
 
 class RegisterResponse(ApiModel):
@@ -81,7 +87,7 @@ class ForgotPasswordRequest(ApiModel):
 
 class ResetPasswordRequest(ApiModel):
     token: str
-    password: str
+    password: Password
 
 
 class UserCreate(BaseModel):

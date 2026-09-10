@@ -13,6 +13,15 @@ from app.common.schemas import AuthUser, UserRole
 
 security = HTTPBearer(auto_error=False)
 
+ACCESS_TOKEN_TYPE = 'access'
+
+
+def _decode_access_token(token: str) -> AuthUser:
+    payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+    if payload.get('type') != ACCESS_TOKEN_TYPE:
+        raise jwt.InvalidTokenError(f'Ожидался токен типа {ACCESS_TOKEN_TYPE}')
+    return AuthUser(**payload)
+
 
 def get_actor_from_headers(authorization: str | None) -> AuthUser | None:
     if not authorization:
@@ -23,12 +32,8 @@ def get_actor_from_headers(authorization: str | None) -> AuthUser | None:
         return None
 
     try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
-    except jwt.PyJWTError:
-        return None
-    try:
-        return AuthUser(**payload)
-    except ValidationError:
+        return _decode_access_token(token)
+    except (jwt.PyJWTError, ValidationError):
         return None
 
 
@@ -38,8 +43,7 @@ def get_current_user(credentials: Annotated[HTTPAuthorizationCredentials, Depend
 
     token = credentials.credentials
     try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
-        return AuthUser(**payload)
+        return _decode_access_token(token)
 
     except jwt.ExpiredSignatureError as e:
         raise UnauthorizedException('Токен устарел') from e
@@ -49,7 +53,9 @@ def get_current_user(credentials: Annotated[HTTPAuthorizationCredentials, Depend
         raise AuthenticationError('Ошибка верификации токена') from e
 
 
-def get_current_user_or_none(credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)]) -> AuthUser | None:
+def get_current_user_or_none(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> AuthUser | None:
     if not credentials:
         return None
     return get_actor_from_headers(credentials.scheme.lower() + ' ' + credentials.credentials)
@@ -60,6 +66,7 @@ def _create_role_requirement(required_role: UserRole) -> Callable[..., AuthUser]
         if required_role.priority > current_user.role.priority:
             raise ForbiddenException(f'Требуется роль: {required_role.value}')
         return current_user
+
     return Depends(require_role)
 
 

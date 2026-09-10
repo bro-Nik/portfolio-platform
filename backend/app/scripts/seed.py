@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import logging
 import os
+import secrets
 from datetime import UTC, datetime, timedelta
 
 from app.common.schemas.auth import UserRole
@@ -88,6 +89,11 @@ async def seed_currencies(session) -> None:
     ])
 
 
+def _random_password(length: int = 16) -> str:
+    """Пароль для админа, когда ADMIN_PASSWORD не задан: без дефолта в коде."""
+    return secrets.token_urlsafe(length)
+
+
 async def run(admin_email: str, admin_password: str) -> None:
     async with AsyncSessionLocal() as session:
         user_repo = UserRepository(session)
@@ -109,6 +115,7 @@ async def run(admin_email: str, admin_password: str) -> None:
             'role': UserRole.ADMIN,
             'status': 'active',
         })
+        logger.info("Пароль администратора: %s (сохраните его)", admin_password)
 
         provider_exists = await provider_repo.exists_by_name("CoinGecko")
         if not provider_exists:
@@ -178,7 +185,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     parser = argparse.ArgumentParser(description="Seed initial data")
     parser.add_argument("--admin-email", default=os.getenv("ADMIN_EMAIL", "admin@example.com"))
-    parser.add_argument("--admin-password", default=os.getenv("ADMIN_PASSWORD", "admin123"))
+    parser.add_argument("--admin-password", default=os.getenv("ADMIN_PASSWORD") or _random_password())
     args = parser.parse_args()
     asyncio.run(run(args.admin_email, args.admin_password))
 

@@ -11,6 +11,7 @@ from app.modules.auth.security import SecurityService
 from app.modules.auth.services.auth import AuthService, AuthResult, RegisterResult, RegisterTaskData
 from app.modules.auth.services.session import SessionService
 from app.modules.auth.services.user import UserService
+
 user_id = 1
 
 
@@ -123,6 +124,41 @@ class TestAuthService:
         ):
             await service.login(login_data)
 
+    @pytest.mark.parametrize('status', ['block', 'inactive', 'pending'])
+    async def test_login_blocked_status_rejected(self, service, mock, data, status):
+        login_data = data(email='test@example.com', password='password123')
+        user = mock(id=1, role='user', email='test@example.com', status=status, is_verified=True)
+
+        with (
+            patch.object(service.user_service, 'get_for_auth', return_value=user),
+            patch.object(service.security, 'verify_password', return_value=True),
+            patch.object(
+                service.user_service, 'check_can_authenticate', side_effect=AuthenticationError('Аккаунт заблокирован')
+            ),
+            pytest.raises(AuthenticationError),
+            patch.object(service.security, 'create_token_pair') as create_pair,
+        ):
+            await service.login(login_data)
+
+            create_pair.assert_not_called()
+
+    async def test_login_calls_status_check(self, service, mock, data):
+        login_data = data(email='test@example.com', password='password123')
+        user = mock(id=1, password_hash='hashed', role='user', status='active', email='test@example.com')
+        tokens = mock(access_token='access', refresh_token='refresh')
+        db_token = mock(id=99)
+
+        with (
+            patch.object(service.user_service, 'get_for_auth', return_value=user),
+            patch.object(service.security, 'verify_password', return_value=True),
+            patch.object(service.security, 'hash_token', return_value='token_hash_str'),
+            patch.object(service.security, 'create_token_pair', return_value=tokens),
+            patch.object(service.token_repo, 'create', return_value=db_token),
+        ):
+            await service.login(login_data)
+
+            service.user_service.check_can_authenticate.assert_called_once_with(user)
+
     async def test_refresh_tokens_success(self, service, mock, data):
         user = mock(id=1, role='user', email='test@example.com', is_verified=False)
         payload = {'id': '1', 'type': 'refresh', 'exp': 9999999999}
@@ -144,11 +180,32 @@ class TestAuthService:
             service.security.verify_token.assert_called_once()
             assert service.security.hash_token.call_args_list[0][0][0] == token_data.token
             service.token_repo.get_by_token_hash.assert_called_once_with('hashed_token')
+            service.user_service.check_can_authenticate.assert_called_once_with(user)
             _check_created_with_authuser(service.security.create_token_pair, user)
             service.token_repo.update.assert_called_once()
             service.session_service.update.assert_called_once_with(db_token.id)
             service.user_service.update_activity.assert_called_once_with(user.id)
             assert isinstance(result, AuthResult)
+
+    async def test_refresh_tokens_blocked_user_rejected(self, service, mock, data):
+        user = mock(id=1, role='user', email='test@example.com', status='block')
+        payload = {'id': '1', 'type': 'refresh', 'exp': 9999999999}
+        token_data = data(token='valid.refresh.token')
+
+        with (
+            patch.object(service.security, 'verify_token', return_value=payload),
+            patch.object(service.user_service, 'get_for_auth', return_value=user),
+            patch.object(
+                service.user_service,
+                'check_can_authenticate',
+                side_effect=AuthenticationError('Аккаунт заблокирован'),
+            ),
+            patch.object(service.security, 'create_token_pair') as create_pair,
+            pytest.raises(AuthenticationError),
+        ):
+            await service.refresh_tokens(token_data)
+
+            create_pair.assert_not_called()
 
     async def test_refresh_tokens_invalid_type(self, service, data):
         token_data = data(token='access.token.not.refresh')

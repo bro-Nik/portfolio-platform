@@ -25,11 +25,11 @@ class TestTagsAPI:
         assert len(data) == 1
         assert data[0]['name'] == 'Крипта'
 
-    async def test_attach_tag_to_entity(self, client, auth_headers, db_session, user, save):
+    async def test_attach_tag_to_entity(self, client, auth_headers, db_session, user, save, asset):
         tag = await save(db_session, Tag(name='Крипта', scope='asset', user_id=user.id))
 
         response = await client.post(
-            f'/api/tags/{tag.id}/entities/portfolio_asset/1',
+            f'/api/tags/{tag.id}/entities/portfolio_asset/{asset.id}',
             headers=auth_headers,
         )
 
@@ -38,17 +38,38 @@ class TestTagsAPI:
             Taggable.__table__.select().where(
                 Taggable.tag_id == tag.id,
                 Taggable.entity_type == 'portfolio_asset',
-                Taggable.entity_id == 1,
+                Taggable.entity_id == asset.id,
             ),
         )
         assert exists is not None
 
-    async def test_detach_tag_from_entity(self, client, auth_headers, db_session, user, save):
+    async def test_attach_tag_to_foreign_entity_returns_404(
+        self,
+        client,
+        auth_headers,
+        db_session,
+        user,
+        save,
+        foreign_asset,
+    ):
         tag = await save(db_session, Tag(name='Крипта', scope='asset', user_id=user.id))
-        await save(db_session, Taggable(tag_id=tag.id, entity_type='portfolio_asset', entity_id=1))
+
+        response = await client.post(
+            f'/api/tags/{tag.id}/entities/portfolio_asset/{foreign_asset.id}',
+            headers=auth_headers,
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    async def test_detach_tag_from_entity(self, client, auth_headers, db_session, user, save, asset):
+        tag = await save(db_session, Tag(name='Крипта', scope='asset', user_id=user.id))
+        await save(
+            db_session,
+            Taggable(tag_id=tag.id, entity_type='portfolio_asset', entity_id=asset.id),
+        )
 
         response = await client.delete(
-            f'/api/tags/{tag.id}/entities/portfolio_asset/1',
+            f'/api/tags/{tag.id}/entities/portfolio_asset/{asset.id}',
             headers=auth_headers,
         )
 
@@ -57,7 +78,7 @@ class TestTagsAPI:
             Taggable.__table__.select().where(
                 Taggable.tag_id == tag.id,
                 Taggable.entity_type == 'portfolio_asset',
-                Taggable.entity_id == 1,
+                Taggable.entity_id == asset.id,
             ),
         )
         assert exists is None

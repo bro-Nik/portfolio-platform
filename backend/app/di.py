@@ -6,14 +6,20 @@ from app.modules.auth.dependencies.di import AuthProvider
 from app.modules.market.dependencies.di import MarketProvider, TaskProvider
 from app.modules.market.protocols import TickerUsageReader
 from app.modules.portfolios.dependencies.di import PortfoliosProvider
-from app.modules.portfolios.repositories import TickerUsageRepository
+from app.modules.portfolios.repositories import TaggableEntityOwnershipRepository, TickerUsageRepository
 from app.modules.tags.dependencies.di import TagsProvider
+from app.modules.tags.protocols import EntityOwnershipChecker
 
 
 class CrossModuleProvider(Provider):
     """Связывает порты модулей с реализациями из других модулей."""
 
     ticker_usage = provide(TickerUsageRepository, provides=TickerUsageReader, scope=Scope.REQUEST)
+    entity_ownership = provide(
+        TaggableEntityOwnershipRepository,
+        provides=EntityOwnershipChecker,
+        scope=Scope.REQUEST,
+    )
 
 
 def build_web_container() -> AsyncContainer:
