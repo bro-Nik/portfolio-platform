@@ -7,7 +7,7 @@
 #
 # Usage:
 #   ./scripts/selfhost.sh init          Generate .env.selfhost from the template
-#                                       with a random JWT_SECRET
+#                                       with random secrets
 #   ./scripts/selfhost.sh up            Build and start the stack (auto-inits .env.selfhost)
 #   ./scripts/selfhost.sh down          Stop the stack
 #   ./scripts/selfhost.sh restart       Recreate & restart (picks up .env.selfhost changes)
@@ -78,16 +78,23 @@ cmd_init() {
 
   cp "$ENV_TEMPLATE" "$ENV_FILE"
 
-  jwt_secret="$(openssl rand -hex 48 2>/dev/null || true)"
-  jwt_secret="${jwt_secret:-change-me-to-a-unique-long-random-secret}"
+  # The app refuses to start with a placeholder JWT_SECRET in production, and a
+  # shipped default admin password is an open door — generate both.
+  jwt_secret="$(_random_secret 48)"
+  admin_password="$(_random_secret 12)"
 
-  # The template is already production-oriented; only the auth secret is replaced.
   _sed "s|^JWT_SECRET=.*|JWT_SECRET=${jwt_secret}|" "$ENV_FILE"
+  _sed "s|^ADMIN_PASSWORD=.*|ADMIN_PASSWORD=${admin_password}|" "$ENV_FILE"
 
-  log "$ENV_FILE created with a random JWT_SECRET."
+  log "$ENV_FILE created with a random JWT_SECRET and admin password."
   log "It is ignored by git — keep it safe and don't commit it."
   log "Set NGINX_PORT if port 80 is busy."
-  log "Change the default admin password: ./scripts/selfhost.sh passwd"
+  log "Change the admin password later with: ./scripts/selfhost.sh passwd"
+}
+
+# Hex string from openssl, with a fallback for hosts without it.
+_random_secret() {
+  openssl rand -hex "$1" 2>/dev/null || head -c "$1" /dev/urandom | od -An -tx1 | tr -d ' \n'
 }
 
 # Portable in-place sed (works on BSD/macOS and GNU/Linux).
@@ -262,7 +269,7 @@ cmd_clean() {
 help_text() {
   echo "Usage: $0 <command>"
   echo
-  echo "  init           generate .env.selfhost (random JWT_SECRET)"
+  echo "  init           generate .env.selfhost (random secrets)"
   echo "  up             build & start the stack"
   echo "  down           stop the stack"
   echo "  restart        recreate containers (applies .env.selfhost changes)"
