@@ -37,6 +37,7 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest",
+    "test:ci": "vitest run --passWithNoTests",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "codegen": "orval --config orval.config.ts"

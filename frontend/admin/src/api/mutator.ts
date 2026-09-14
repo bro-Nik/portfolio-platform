@@ -16,7 +16,7 @@ export const mutator = <T>(config: AxiosRequestConfig): Promise<T> => {
       return api.patch<T>(url!, data, requestConfig);
     case 'delete':
       return data !== undefined
-        ? api.del<T>(url!, { ...requestConfig, data })
+        ? api.del<T>(url!, data, requestConfig)
         : api.del<T>(url!, requestConfig);
     default:
       return api.get<T>(url!, requestConfig);
