@@ -1,9 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel
-
 from app.common.schemas import ApiModel
-
 
 TagScope = Literal['portfolio', 'wallet', 'asset']
 TagEntityType = Literal['portfolio', 'wallet', 'portfolio_asset', 'wallet_asset']

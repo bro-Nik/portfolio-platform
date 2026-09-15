@@ -1,10 +1,11 @@
 import logging
+import re
 from typing import Any
 
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.core.database import AsyncSessionLocal as session_factory
+from app.core.database import AsyncSessionLocal
 from app.modules.market.models import RequestLog
 
 logger = logging.getLogger(__name__)
@@ -28,30 +29,59 @@ def _sanitize_url(url: str | None) -> str:
     if not url:
         return ''
     parsed = httpx.URL(url)
-    clean_params = {
-        name: '***' if _is_sensitive(name) else value
-        for name, value in parsed.params.multi_items()
-    }
+    clean_params = {name: '***' if _is_sensitive(name) else value for name, value in parsed.params.multi_items()}
     return str(parsed.copy_with(params=clean_params)).replace('%2A%2A%2A', '***')
 
 
+def sanitize_error(error: str | None) -> str | None:
+    """Вырезает секреты из текста ошибки httpx.
+
+    `str(HTTPStatusError)` содержит полный URL запроса вместе с query-параметрами,
+    поэтому ключ провайдера попадал и в request_log, и в логи приложения.
+    """
+    if not error:
+        return error
+    sanitized = re.sub(r'(?i)((?:api|access)?key|token|secret|password)=([^&\s"\']+)', r'\1=***', error)
+    return sanitized[:500]
+
+
 class RequestLogger:
-    def __init__(self, provider_name: str, task_id: int, session_factory: async_sessionmaker[AsyncSession]) -> None:
-        self.session_factory = session_factory
+    def __init__(
+        self,
+        provider_name: str,
+        task_id: int,
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> None:
+        self.session_factory = session_factory or AsyncSessionLocal
         self.provider_name = provider_name
         self.task_id = task_id
         self._logs = []
 
-    async def log(self, method: str, endpoint: str, response: httpx.Response | None,
-                  params: dict[str, Any] | None, response_time: float, error: str | None = None,
-                  url: str | None = None) -> None:
+    async def log(
+        self,
+        method: str,
+        endpoint: str,
+        response: httpx.Response | None,
+        params: dict[str, Any] | None,
+        response_time: float,
+        error: str | None = None,
+        url: str | None = None,
+    ) -> None:
         log = RequestLog(
-            provider_name=self.provider_name, task_id=self.task_id, endpoint=endpoint,
-            method=method, request_params=_sanitize_params(params), request_url=_sanitize_url(url),
+            provider_name=self.provider_name,
+            task_id=self.task_id,
+            endpoint=endpoint,
+            method=method,
+            request_params=_sanitize_params(params),
+            request_url=_sanitize_url(url),
             status_code=response.status_code if response else None,
             response_time=response_time,
             was_successful=response.is_success if response else False,
-            error_message=error if not response else (None if response.is_success else response.text[:500] or error),
+            error_message=(
+                None
+                if response is not None and response.is_success
+                else sanitize_error((response.text[:500] or error) if response is not None else error)
+            ),
         )
         self._logs.append(log)
         if len(self._logs) > MAX_LOGS_TO_SAVE:
@@ -61,7 +91,7 @@ class RequestLogger:
         if self._logs:
             logs_to_save = self._logs.copy()
             self._logs = []
-            async with session_factory() as session:
+            async with self.session_factory() as session:
                 session.add_all(logs_to_save)
                 await session.commit()
             logger.info('Логи запросов сохранены')

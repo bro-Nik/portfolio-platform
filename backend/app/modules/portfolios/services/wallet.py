@@ -1,17 +1,20 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import ConflictError, NotFoundError, PermissionDeniedError
-
-from app.modules.portfolios.models import Wallet, Transaction
+from app.common.schemas import Context
+from app.modules.portfolios.models import Transaction, Wallet
 from app.modules.portfolios.protocols import TagReader
 from app.modules.portfolios.repositories import (
-    TransactionRepository, WalletRepository,
+    TransactionRepository,
+    WalletRepository,
 )
 from app.modules.portfolios.schemas import (
-    WalletCreate, WalletCreateRequest, WalletUpdate, WalletUpdateRequest,
+    WalletCreate,
+    WalletCreateRequest,
+    WalletUpdate,
+    WalletUpdateRequest,
 )
 from app.modules.portfolios.services.wallet_asset import WalletAssetService
-from app.common.schemas import Context
 
 
 class WalletService:
@@ -28,11 +31,8 @@ class WalletService:
         self.transaction_repo = TransactionRepository(session)
 
     async def _bulk_load_tags(self, wallets: list[Wallet]) -> None:
-        items = []
-        for w in wallets:
-            items.append((self.ENTITY_TYPE, w.id))
-            for a in w.assets:
-                items.append((self.ASSET_ENTITY_TYPE, a.id))
+        items = [(self.ENTITY_TYPE, w.id) for w in wallets]
+        items.extend((self.ASSET_ENTITY_TYPE, a.id) for w in wallets for a in w.assets)
         tags_map = await self.taggable_repo.bulk_get_tags(items)
         for wallet in wallets:
             wallet.tags = tags_map.get((self.ENTITY_TYPE, wallet.id), [])
@@ -57,8 +57,7 @@ class WalletService:
 
     async def create(self, data: WalletCreateRequest) -> Wallet:
         await self._validate_unique_name(data.name)
-        wallet = await self.repo.create(WalletCreate(**data.model_dump(), user_id=self.actor.id).model_dump())
-        return wallet
+        return await self.repo.create(WalletCreate(**data.model_dump(), user_id=self.actor.id).model_dump())
 
     async def update(self, id: int, data: WalletUpdateRequest) -> Wallet:
         wallet = await self.get(id)
@@ -66,11 +65,10 @@ class WalletService:
             raise ConflictError('Нельзя редактировать архивный кошелёк')
         if data.name != wallet.name:
             await self._validate_unique_name(data.name)
-        updated = await self.repo.update(id, WalletUpdate(**data.model_dump()).model_dump())
-        return updated
+        return await self.repo.update(id, WalletUpdate(**data.model_dump()).model_dump())
 
     async def delete(self, id: int) -> None:
-        wallet = await self.get(id)
+        await self.get(id)
         has_txns = await self.transaction_repo.exists_for_wallet(id)
         if has_txns:
             raise ConflictError('Нельзя удалить кошелёк с транзакциями')
@@ -121,7 +119,7 @@ class WalletService:
         if await self.repo.exists_by_name_and_user(name, self.actor.id):
             raise ConflictError('Кошелек с таким именем уже существует')
 
-    def _verify(self, wallet) -> None:
+    def _verify(self, wallet: Wallet) -> None:
         if not wallet:
             raise NotFoundError('Кошелек не найден')
         if wallet.user_id != self.actor.id:

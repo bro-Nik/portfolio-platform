@@ -1,7 +1,12 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey, Index, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.modules.auth.models import User
 
 
 class Tag(Base):
@@ -24,6 +29,4 @@ class Taggable(Base):
     entity_type: Mapped[str] = mapped_column(String(32))
     entity_id: Mapped[int] = mapped_column(Integer)
 
-    __table_args__ = (
-        Index('ix_taggable_entity_type_entity_id', 'entity_type', 'entity_id'),
-    )
+    __table_args__ = (Index('ix_taggable_entity_type_entity_id', 'entity_type', 'entity_id'),)

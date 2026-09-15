@@ -185,12 +185,14 @@ class TickerService:
                         skipped += 1
                         continue
                 else:
-                    ticker = await self.repo.create({
-                        'market': market,
-                        'name': coin.get('name', ''),
-                        'symbol': coin.get('symbol', ''),
-                        'market_cap_rank': coin.get('market_cap_rank'),
-                    })
+                    ticker = await self.repo.create(
+                        {
+                            'market': market,
+                            'name': coin.get('name', ''),
+                            'symbol': coin.get('symbol', ''),
+                            'market_cap_rank': coin.get('market_cap_rank'),
+                        }
+                    )
                     existing_by_ext[ext_id] = ticker
                     image_url = coin.get('image')
                     created += 1
@@ -220,8 +222,15 @@ class TickerService:
 
         await self._invalidate_infos(touched_ids)
 
-        logger.info('sync_tickers(%s, %s): created=%s, updated=%s, skipped=%s, matched=%s',
-            market, strategy, created, updated, skipped, matched)
+        logger.info(
+            'sync_tickers(%s, %s): created=%s, updated=%s, skipped=%s, matched=%s',
+            market,
+            strategy,
+            created,
+            updated,
+            skipped,
+            matched,
+        )
         return {'created': created, 'updated': updated, 'skipped': skipped, 'matched': matched}
 
     async def get_price_by_symbol(self, market: str, symbol: str) -> float | None:
@@ -316,7 +325,9 @@ class TickerService:
 
         refs = await self._count_references(ticker_id)
         if refs > 0:
-            raise BusinessRuleError(f'Тикер используется в {refs} записях. Удалите или переназначьте их перед удалением.')
+            raise BusinessRuleError(
+                f'Тикер используется в {refs} записях. Удалите или переназначьте их перед удалением.'
+            )
 
         if ticker.image:
             self._delete_image_files(ticker.image, ticker.market)

@@ -15,6 +15,7 @@ def mock():
         mock = MagicMock(spec=spec) if spec else MagicMock()
         mock.configure_mock(**kwargs)
         return mock
+
     return _create
 
 
@@ -24,6 +25,7 @@ def async_mock():
         mock = AsyncMock(spec=spec) if spec else AsyncMock()
         mock.configure_mock(**kwargs)
         return mock
+
     return _create
 
 
@@ -33,4 +35,5 @@ def data():
         obj = SimpleNamespace(**kwargs)
         obj.model_dump = lambda **_: {k: getattr(obj, k) for k in kwargs}
         return obj
+
     return _create

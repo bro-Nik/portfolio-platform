@@ -13,7 +13,9 @@ class WalletAssetRepository(BaseRepository[WalletAsset]):
         return await self.get_by(WalletAsset.wallet_id == wallet_id, WalletAsset.ticker_id == ticker_id)
 
     async def get_all_by_ticker_and_user_with_wallets(self, ticker_id: int, user_id: int) -> list[WalletAsset]:
-        return await self.get_all(WalletAsset.ticker_id == ticker_id, WalletAsset.user_id == user_id, relations=('wallet',))
+        return await self.get_all(
+            WalletAsset.ticker_id == ticker_id, WalletAsset.user_id == user_id, relations=('wallet',)
+        )
 
     async def get_all_by_wallet_tickers(self, wallet_tickers: dict[int, list[int]]) -> list[WalletAsset]:
         conditions = [

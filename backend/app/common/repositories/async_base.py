@@ -24,7 +24,7 @@ class BaseRepository[Model]:
         self,
         *where: ColumnElement[bool],
         order: Sequence[ColumnElement] | None = None,
-        relations: Sequence[str] | None = None
+        relations: Sequence[str] | None = None,
     ) -> Model | None:
         return await self._get_one(*where, order=order, relations=relations)
 
@@ -39,10 +39,7 @@ class BaseRepository[Model]:
         return await self._get_all(*where, order=order, relations=relations, offset=offset, limit=limit)
 
     async def get_all_by_ids(
-        self,
-        ids: Ids,
-        order: Sequence[ColumnElement] | None = None,
-        relations: Sequence[str] | None = None
+        self, ids: Ids, order: Sequence[ColumnElement] | None = None, relations: Sequence[str] | None = None
     ) -> list[Model]:
         return await self._get_all(self.model.id.in_(ids), order=order, relations=relations) if ids else []
 
@@ -88,18 +85,10 @@ class BaseRepository[Model]:
     async def delete(self, id: Id) -> Id | None:
         return await self._delete_one(self.model.id == id)
 
-    async def delete_by(
-        self,
-        *where: ColumnElement[bool],
-        order: Sequence[ColumnElement] | None = None
-    ) -> Id | None:
+    async def delete_by(self, *where: ColumnElement[bool], order: Sequence[ColumnElement] | None = None) -> Id | None:
         return await self._delete_one(*where, order=order)
 
-    async def delete_all(
-        self,
-        *where: ColumnElement[bool],
-        order: Sequence[ColumnElement] | None = None
-    ) -> Ids:
+    async def delete_all(self, *where: ColumnElement[bool], order: Sequence[ColumnElement] | None = None) -> Ids:
         return await self._delete_all(*where, order=order)
 
     async def delete_all_by_ids(self, ids: Ids) -> Ids:
@@ -158,7 +147,7 @@ class BaseRepository[Model]:
         stmt: Select | Update | Delete,
         where: tuple[ColumnElement[bool], ...] = (),
         order: Sequence[ColumnElement] | None = None,
-        relations: Sequence[str] | None = None
+        relations: Sequence[str] | None = None,
     ) -> Select | Update | Delete:
         if where:
             stmt = stmt.where(*where)

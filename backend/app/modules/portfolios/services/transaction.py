@@ -3,19 +3,21 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError, PermissionDeniedError
-
+from app.common.schemas import Context
 from app.modules.portfolios.models import Transaction
 from app.modules.portfolios.protocols import TickerReader
 from app.modules.portfolios.repositories import TransactionRepository
 from app.modules.portfolios.schemas import (
-    TransactionCreate, TransactionCreateRequest,
-    TransactionResponseWithAssets, TransactionUpdate, TransactionUpdateRequest,
+    TransactionCreate,
+    TransactionCreateRequest,
+    TransactionResponseWithAssets,
+    TransactionUpdate,
+    TransactionUpdateRequest,
 )
 from app.modules.portfolios.services.portfolio import PortfolioService
 from app.modules.portfolios.services.portfolio_asset import PortfolioAssetService
 from app.modules.portfolios.services.wallet import WalletService
 from app.modules.portfolios.services.wallet_asset import WalletAssetService
-from app.common.schemas import Context
 
 
 class TransactionService:
@@ -49,7 +51,9 @@ class TransactionService:
         await self._validate_references(data)
         await self._validate_transfer_market(data)
         await self._ensure_not_archived(data)
-        t = await self.repo.create(TransactionCreate(**data.model_dump(exclude_unset=True), user_id=self.actor.id).model_dump())
+        t = await self.repo.create(
+            TransactionCreate(**data.model_dump(exclude_unset=True), user_id=self.actor.id).model_dump()
+        )
         await self._notify_services(t)
         return t
 
@@ -61,7 +65,9 @@ class TransactionService:
         old = await self.get(id)
         await self._ensure_not_archived(old)
         await self._notify_services(old, cancel=True)
-        updated = await self.repo.update(old.id, TransactionUpdate(**data.model_dump(exclude_unset=True)).model_dump(exclude_unset=True))
+        updated = await self.repo.update(
+            old.id, TransactionUpdate(**data.model_dump(exclude_unset=True)).model_dump(exclude_unset=True)
+        )
         await self._notify_services(updated)
         return updated, old
 
@@ -76,7 +82,7 @@ class TransactionService:
         wa = await self.wallet_asset_service.get_affected(*transactions)
         return TransactionResponseWithAssets(transaction=transactions[0], portfolio_assets=pa, wallet_assets=wa)
 
-    async def _ensure_not_archived(self, obj) -> None:
+    async def _ensure_not_archived(self, obj: Transaction) -> None:
         portfolio_ids = {obj.portfolio_id, obj.portfolio2_id} - {None}
         for pid in portfolio_ids:
             portfolio = await self.portfolio_service.get(pid)
@@ -93,14 +99,23 @@ class TransactionService:
         await self.portfolio_service.handle_transaction(t, cancel=cancel)
         await self.wallet_service.handle_transaction(t, cancel=cancel)
 
-    def _validate_required(self, data) -> None:
+    def _validate_required(self, data: TransactionCreate | TransactionUpdate) -> None:
         if hasattr(data, 'type') and data.type:
             required_map = {
-                ('Buy', 'Sell'): ['portfolio_id', 'wallet_id', 'ticker_id', 'ticker2_id', 'quantity', 'quantity2', 'price'],
+                ('Buy', 'Sell'): [
+                    'portfolio_id',
+                    'wallet_id',
+                    'ticker_id',
+                    'ticker2_id',
+                    'quantity',
+                    'quantity2',
+                    'price',
+                ],
                 ('Earning',): ['portfolio_id', 'wallet_id', 'ticker_id', 'quantity'],
                 ('Input', 'Output'): ['portfolio_id', 'wallet_id', 'ticker_id', 'quantity'],
                 ('TransferIn', 'TransferOut'): ['portfolio_id', 'portfolio2_id', 'ticker_id', 'quantity']
-                    if getattr(data, 'portfolio_id', None) else ['wallet_id', 'wallet2_id', 'ticker_id', 'quantity'],
+                if getattr(data, 'portfolio_id', None)
+                else ['wallet_id', 'wallet2_id', 'ticker_id', 'quantity'],
             }
             for types, fields in required_map.items():
                 if data.type in types:
@@ -110,7 +125,7 @@ class TransactionService:
                     return
             raise BusinessRuleError(f'Неизвестный тип транзакции: {data.type}')
 
-    def _validate_values(self, data) -> None:
+    def _validate_values(self, data: TransactionCreate | TransactionUpdate) -> None:
         for field in ('quantity', 'quantity2', 'price', 'price_usd'):
             value = getattr(data, field, None)
             if value is not None and Decimal(value) <= 0:
@@ -129,7 +144,7 @@ class TransactionService:
                     'Перевод должен быть между двумя портфелями или двумя кошельками',
                 )
 
-    async def _validate_references(self, data) -> None:
+    async def _validate_references(self, data: TransactionCreate | TransactionUpdate) -> None:
         ticker_ids = []
         for field in ('ticker_id', 'ticker2_id'):
             value = getattr(data, field, None)
@@ -142,7 +157,7 @@ class TransactionService:
         if missing:
             raise BusinessRuleError(f'Тикер не найден: {", ".join(map(str, missing))}')
 
-    async def _validate_transfer_market(self, data) -> None:
+    async def _validate_transfer_market(self, data: TransactionCreate | TransactionUpdate) -> None:
         if getattr(data, 'type', None) not in ('TransferIn', 'TransferOut'):
             return
         portfolio2_id = getattr(data, 'portfolio2_id', None)
@@ -155,10 +170,9 @@ class TransactionService:
         if not ticker:
             return
 
-        if ticker.market != target.market and ticker.market != 'currency':
+        if ticker.market not in (target.market, 'currency'):
             raise BusinessRuleError(
-                f'Актив рынка «{ticker.market}» нельзя перевести '
-                f'в портфель рынка «{target.market}»',
+                f'Актив рынка «{ticker.market}» нельзя перевести в портфель рынка «{target.market}»',
             )
 
     def _verify(self, t: Transaction) -> None:

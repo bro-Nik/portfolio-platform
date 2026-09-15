@@ -4,11 +4,10 @@ import pytest
 
 from app.common.exceptions import AuthenticationError
 from app.common.schemas import AuthUser
-
 from app.modules.auth.repositories import TokenRepository
 from app.modules.auth.schemas import RegisterResponse, UserRole
 from app.modules.auth.security import SecurityService
-from app.modules.auth.services.auth import AuthService, AuthResult, RegisterResult, RegisterTaskData
+from app.modules.auth.services.auth import AuthResult, AuthService, RegisterResult, RegisterTaskData
 from app.modules.auth.services.session import SessionService
 from app.modules.auth.services.user import UserService
 

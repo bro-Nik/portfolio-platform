@@ -1,4 +1,4 @@
-from .tag import TagRepository, TaggableRepository
+from .tag import TaggableRepository, TagRepository
 
 __all__ = [
     'TagRepository',

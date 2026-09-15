@@ -13,7 +13,9 @@ class PortfolioAssetRepository(BaseRepository[PortfolioAsset]):
         return await self.get_by(PortfolioAsset.portfolio_id == portfolio_id, PortfolioAsset.ticker_id == ticker_id)
 
     async def get_all_by_ticker_and_user_with_portfolios(self, ticker_id: int, user_id: int) -> list[PortfolioAsset]:
-        return await self.get_all(PortfolioAsset.ticker_id == ticker_id, PortfolioAsset.user_id == user_id, relations=('portfolio',))
+        return await self.get_all(
+            PortfolioAsset.ticker_id == ticker_id, PortfolioAsset.user_id == user_id, relations=('portfolio',)
+        )
 
     async def get_all_by_portfolio_tickers(self, portfolio_tickers: dict[int, list[int]]) -> list[PortfolioAsset]:
         conditions = [

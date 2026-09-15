@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from app.common.exceptions import ConflictError, NotFoundError
-
 from app.modules.portfolios.repositories import PortfolioRepository
 from app.modules.portfolios.services.portfolio import PortfolioService
 from app.modules.portfolios.services.portfolio_asset import PortfolioAssetService
@@ -55,7 +54,8 @@ class TestPortfolioService:
 
     async def test_archive_bulk(self, service, mock):
         portfolio = mock(
-            id=1, user_id=user_id,
+            id=1,
+            user_id=user_id,
             assets=[mock(id=10, is_archived=False), mock(id=11, is_archived=True)],
         )
 

@@ -72,8 +72,7 @@ class UserService:
         user_to_db = UserCreate(
             **data.model_dump(exclude={'password'}), password_hash=self.security.get_password_hash(data.password)
         )
-        user = await self.repo.create(user_to_db.model_dump())
-        return user
+        return await self.repo.create(user_to_db.model_dump())
 
     async def update(self, id: int, data: UserUpdateRequest) -> User:
         user = await self.get(id)

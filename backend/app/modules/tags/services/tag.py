@@ -2,10 +2,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import NotFoundError
 from app.common.schemas import Context
-
 from app.modules.tags.models import Tag
 from app.modules.tags.protocols import EntityOwnershipChecker
-from app.modules.tags.repositories import TagRepository, TaggableRepository
+from app.modules.tags.repositories import TaggableRepository, TagRepository
 
 
 class TagService:

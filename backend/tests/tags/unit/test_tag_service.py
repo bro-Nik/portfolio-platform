@@ -66,16 +66,14 @@ class TestTagService:
     async def test_update_foreign_tag_raises(self, service, mock):
         tag = mock(id=1, name='X', color=None, scope='portfolio', user_id=999)
 
-        with patch.object(service.repo, 'get', return_value=tag):
-            with pytest.raises(NotFoundError):
-                await service.update(1, name='Y')
+        with patch.object(service.repo, 'get', return_value=tag), pytest.raises(NotFoundError):
+            await service.update(1, name='Y')
 
     async def test_delete_foreign_tag_raises(self, service, mock):
         tag = mock(id=1, name='X', color=None, scope='portfolio', user_id=999)
 
-        with patch.object(service.repo, 'get', return_value=tag):
-            with pytest.raises(NotFoundError):
-                await service.delete(1)
+        with patch.object(service.repo, 'get', return_value=tag), pytest.raises(NotFoundError):
+            await service.delete(1)
 
     async def test_add_to_entity_skips_when_already_attached(self, service, mock):
         tag = mock(id=1, name='X', scope='portfolio', user_id=user_id)

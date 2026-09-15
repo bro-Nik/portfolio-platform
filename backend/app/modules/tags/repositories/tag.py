@@ -2,7 +2,6 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
-
 from app.modules.tags.models import Tag, Taggable
 
 
@@ -21,8 +20,11 @@ class TaggableRepository(BaseRepository[Taggable]):
 
     async def get_tags(self, entity_type: str, entity_id: int) -> list[Tag]:
         result = await self._session.execute(
-            select(Tag).join(Taggable, Tag.id == Taggable.tag_id).where(
-                Taggable.entity_type == entity_type, Taggable.entity_id == entity_id,
+            select(Tag)
+            .join(Taggable, Tag.id == Taggable.tag_id)
+            .where(
+                Taggable.entity_type == entity_type,
+                Taggable.entity_id == entity_id,
             ),
         )
         return list(result.scalars().all())

@@ -73,9 +73,8 @@ def test_every_wire_model_inherits_api_model():
         for model in sorted(_route_models(), key=lambda m: m.__name__)
         if not issubclass(model, ApiModel)
     }
-    assert not offenders, (
-        'Wire-facing models must inherit ApiModel (camelCase contract): '
-        + ', '.join(offenders.values())
+    assert not offenders, 'Wire-facing models must inherit ApiModel (camelCase contract): ' + ', '.join(
+        offenders.values()
     )
 
 
@@ -99,9 +98,7 @@ def test_openapi_schema_has_no_snake_case_keys():
     snake = re.compile(r'^[a-z]+(_[a-z]+)+$')
     schemas = app.openapi()['components']['schemas']
     offenders = {
-        name: sorted(prop for prop in spec.get('properties', {}) if snake.match(prop))
-        for name, spec in schemas.items()
+        name: sorted(prop for prop in spec.get('properties', {}) if snake.match(prop)) for name, spec in schemas.items()
     }
     offenders = {name: props for name, props in offenders.items() if props}
     assert not offenders, f'snake_case leaked into the documented contract: {offenders}'
-

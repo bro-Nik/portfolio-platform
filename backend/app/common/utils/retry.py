@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def exponential_backoff(attempt: int, base: float, cap: float) -> float:
     """Задержка перед повтором: base * 2^attempt, ограниченная сверху cap."""
-    return min(base * (2 ** attempt), cap)
+    return min(base * (2**attempt), cap)
 
 
 def parse_retry_after(response: 'httpx.Response', default: float = 5.0) -> float:
@@ -24,7 +24,7 @@ def parse_retry_after(response: 'httpx.Response', default: float = 5.0) -> float
     return default
 
 
-async def retry_pause(  # noqa: PLR0913
+async def retry_pause(
     attempt: int,
     max_retries: int,
     *,

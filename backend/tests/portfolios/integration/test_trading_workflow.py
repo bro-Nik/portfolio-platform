@@ -45,7 +45,9 @@ class TestTradingWorkflow:
 
         for ticker_id in tickers.values():
             asset_data = {'tickerId': ticker_id, 'portfolioId': portfolio_id}
-            response = await client.post(f'/api/portfolios/{portfolio_id}/assets', json=asset_data, headers=auth_headers)
+            response = await client.post(
+                f'/api/portfolios/{portfolio_id}/assets', json=asset_data, headers=auth_headers
+            )
             assert response.status_code == status.HTTP_201_CREATED
 
         trades = [
@@ -66,7 +68,7 @@ class TestTradingWorkflow:
                 'type': 'Buy',
                 'portfolioId': portfolio_id,
                 'walletId': wallet_id,
-                'comment': f"Покупка {trade['ticker']}",
+                'comment': f'Покупка {trade["ticker"]}',
             }
 
             response = await client.post('/api/transactions/', json=transaction_data, headers=auth_headers)
@@ -79,10 +81,14 @@ class TestTradingWorkflow:
     async def test_full_sell_leaves_clean_zero_quantity(self, client, auth_headers):
         auth_headers = {**auth_headers, 'X-Forwarded-For': '192.168.1.11'}
 
-        portfolio_response = await client.post('/api/portfolios/', json={
-            'name': 'Портфель BTC',
-            'market': 'crypto',
-        }, headers=auth_headers)
+        portfolio_response = await client.post(
+            '/api/portfolios/',
+            json={
+                'name': 'Портфель BTC',
+                'market': 'crypto',
+            },
+            headers=auth_headers,
+        )
         portfolio_id = portfolio_response.json()['id']
 
         wallet_response = await client.post('/api/wallets/', json={'name': 'Кошелек USD'}, headers=auth_headers)
@@ -96,7 +102,9 @@ class TestTradingWorkflow:
             'portfolioId': portfolio_id,
             'walletId': wallet_id,
         }
-        assert (await client.post('/api/transactions/', json=funding, headers=auth_headers)).status_code == status.HTTP_201_CREATED
+        assert (
+            await client.post('/api/transactions/', json=funding, headers=auth_headers)
+        ).status_code == status.HTTP_201_CREATED
 
         buy = {
             'date': datetime.now(UTC).isoformat(),
@@ -110,7 +118,9 @@ class TestTradingWorkflow:
             'portfolioId': portfolio_id,
             'walletId': wallet_id,
         }
-        assert (await client.post('/api/transactions/', json=buy, headers=auth_headers)).status_code == status.HTTP_201_CREATED
+        assert (
+            await client.post('/api/transactions/', json=buy, headers=auth_headers)
+        ).status_code == status.HTTP_201_CREATED
 
         sell = {
             'date': datetime.now(UTC).isoformat(),
@@ -124,7 +134,9 @@ class TestTradingWorkflow:
             'portfolioId': portfolio_id,
             'walletId': wallet_id,
         }
-        assert (await client.post('/api/transactions/', json=sell, headers=auth_headers)).status_code == status.HTTP_201_CREATED
+        assert (
+            await client.post('/api/transactions/', json=sell, headers=auth_headers)
+        ).status_code == status.HTTP_201_CREATED
 
         portfolio_response = await client.get(f'/api/portfolios/{portfolio_id}', headers=auth_headers)
         assert portfolio_response.status_code == status.HTTP_200_OK

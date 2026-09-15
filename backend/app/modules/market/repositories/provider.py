@@ -1,7 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
-
 from app.modules.market.models import Provider
 
 

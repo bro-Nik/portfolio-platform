@@ -1,7 +1,4 @@
-from pydantic import BaseModel
-
 from app.common.schemas import ApiModel
-
 from app.common.utils.decimal import CleanDecimal
 from app.modules.tags.schemas import TagResponse
 

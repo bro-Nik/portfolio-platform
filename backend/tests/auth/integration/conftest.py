@@ -1,19 +1,16 @@
+from unittest.mock import AsyncMock, patch
+
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
-from unittest.mock import AsyncMock, patch
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import settings
 from app.core.database import Base
 from app.core.rate_limit import limiter
 from app.di import build_test_container
-
-import app.modules.auth.models  # noqa: F401
-
 from app.main import app
-
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.schemas import UserCreate
 from app.modules.auth.tasks import send_verification_email
@@ -71,11 +68,14 @@ async def client(db_session):
     limiter.enabled = False
 
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app),
-            base_url='http://testserver',
-            follow_redirects=True,
-        ) as client:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(
+                transport=ASGITransport(app=manager.app),
+                base_url='http://testserver',
+                follow_redirects=True,
+            ) as client,
+        ):
             yield client
     finally:
         app.state.dishka_container = original_container

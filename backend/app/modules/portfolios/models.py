@@ -1,10 +1,14 @@
 from datetime import UTC, datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.modules.auth.models import User
 
 
 class Portfolio(Base):
@@ -40,9 +44,7 @@ class PortfolioAsset(Base):
 
     portfolio: Mapped['Portfolio'] = relationship(back_populates='assets')
 
-    __table_args__ = (
-        Index('ix_portfolio_asset_portfolio_ticker', 'portfolio_id', 'ticker_id'),
-    )
+    __table_args__ = (Index('ix_portfolio_asset_portfolio_ticker', 'portfolio_id', 'ticker_id'),)
 
 
 class Transaction(Base):
@@ -98,6 +100,4 @@ class WalletAsset(Base):
 
     wallet: Mapped['Wallet'] = relationship(back_populates='assets')
 
-    __table_args__ = (
-        Index('ix_wallet_asset_wallet_ticker', 'wallet_id', 'ticker_id'),
-    )
+    __table_args__ = (Index('ix_wallet_asset_wallet_ticker', 'wallet_id', 'ticker_id'),)

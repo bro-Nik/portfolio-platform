@@ -61,19 +61,22 @@ class RateLimiter:
             attempt += 1
 
             if ttl is not None:
-                wait = min(ttl, self.MAX_BACKOFF) + random.uniform(0, 0.5)
+                wait = min(ttl, self.MAX_BACKOFF) + random.uniform(0, 0.5)  # noqa: S311  # джиттер, не крипто
             else:
-                wait = min(self.RETRY_INTERVAL * (2 ** attempt), self.MAX_BACKOFF) + random.uniform(0, 1)
+                wait = min(self.RETRY_INTERVAL * (2**attempt), self.MAX_BACKOFF) + random.uniform(0, 1)  # noqa: S311  # джиттер
 
             if attempt & (attempt + 1) == 0:
                 logger.warning(
                     'Лимит запросов превышен для %s, ожидание %.1fс (попытка %d)',
-                    self.config.key, wait, attempt,
+                    self.config.key,
+                    wait,
+                    attempt,
                 )
             else:
                 logger.debug(
                     'Лимит запросов превышен для %s, ожидание %.1fс',
-                    self.config.key, wait,
+                    self.config.key,
+                    wait,
                 )
 
             await asyncio.sleep(wait)
@@ -138,9 +141,10 @@ class RateCounter:
                 args=[self.config.limits[p] for p in periods] + [self.PERIODS[p] for p in periods],
             )
         except RedisError as e:
-            logger.error(
-                'Redis недоступен. Rate limiter для %s отключён, запросы заблокированы: %s',
-                self.config.key, e,
+            logger.exception(
+                'Redis недоступен. Запросы %s заблокированы до восстановления: %s',
+                self.config.key,
+                e,  # noqa: TRY401  # текст ошибки в сообщение, exc_info уже есть
             )
             raise RateLimiterUnavailableError(self.config.key, str(e)) from e
         if result == 1:

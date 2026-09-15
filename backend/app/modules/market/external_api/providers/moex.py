@@ -1,8 +1,8 @@
 from collections.abc import AsyncIterator
 import logging
 
-from ..core import BaseProvider, registry
-from ..methods import full_price_updater, ticker_loader
+from app.modules.market.external_api.core import BaseProvider, registry
+from app.modules.market.external_api.methods import full_price_updater, ticker_loader
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,10 @@ class MoexProvider(BaseProvider):
     async def update_prices(self, **kwargs) -> dict:
         market = self._resolve_market(kwargs)
         return await full_price_updater.run(
-            market, self._fetch_all_prices, quote_currency=self.QUOTE_CURRENCY, **kwargs,
+            market,
+            self._fetch_all_prices,
+            quote_currency=self.QUOTE_CURRENCY,
+            **kwargs,
         )
 
     async def _fetch_all_tickers(self) -> AsyncIterator[list[dict]]:

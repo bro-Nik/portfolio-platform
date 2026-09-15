@@ -18,16 +18,16 @@ from .http import (
 
 __all__ = [
     'AuthenticationError',
+    'BadRequestException',
     'BusinessError',
     'BusinessRuleError',
     'ConflictError',
-    'NotFoundError',
-    'PermissionDeniedError',
-    'BadRequestException',
     'ConflictException',
     'ForbiddenException',
     'InternalServerException',
+    'NotFoundError',
     'NotFoundException',
+    'PermissionDeniedError',
     'UnauthorizedException',
     'handle_errors',
 ]

@@ -2,8 +2,8 @@ from collections.abc import Callable
 from typing import Any, ParamSpec, TypeVar
 
 from .base_provider import BaseProvider
-from ..exceptions import ExternalAPIError
-from ..methods.base import MethodBase
+from app.modules.market.external_api.exceptions import ExternalAPIError
+from app.modules.market.external_api.methods.base import MethodBase
 
 P = ParamSpec('P')
 F = TypeVar('F', bound=Callable[..., Any])
@@ -17,6 +17,7 @@ class ProviderRegistry:
         def decorator(provider_class: type[BaseProvider]) -> Callable:
             cls.PROVIDERS[provider_class.NAME] = provider_class
             return provider_class
+
         return decorator
 
     @classmethod
@@ -29,6 +30,7 @@ class ProviderRegistry:
                 **kwargs,
             }
             return func
+
         return decorator
 
     @classmethod
@@ -50,13 +52,16 @@ class ProviderRegistry:
                 markets = getattr(provider, 'SUPPORTED_MARKETS', [])
                 if len(markets) > 1:
                     schema = list(info.get('parameters_schema', []))
-                    schema.insert(0, {
-                        'name': 'market',
-                        'label': 'Рынок',
-                        'type': 'select',
-                        'options': {m: m for m in markets},
-                        'required': True,
-                    })
+                    schema.insert(
+                        0,
+                        {
+                            'name': 'market',
+                            'label': 'Рынок',
+                            'type': 'select',
+                            'options': {m: m for m in markets},
+                            'required': True,
+                        },
+                    )
                     info['parameters_schema'] = schema
                     example = dict(info.get('example_params', {}))
                     example.setdefault('market', markets[0])

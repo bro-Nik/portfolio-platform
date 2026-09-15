@@ -4,17 +4,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.common.schemas import Context
 from app.modules.market.repositories import TickerRepository
 from app.modules.market.services.ticker import TickerService
-from app.modules.portfolios.services.portfolio import PortfolioService
-from app.modules.portfolios.services.portfolio_asset import PortfolioAssetService
-from app.modules.portfolios.services.transaction import TransactionService
-from app.modules.portfolios.services.wallet import WalletService
-from app.modules.portfolios.services.wallet_asset import WalletAssetService
 from app.modules.portfolios.queries import (
     OverviewReadQuery,
     PortfolioReadQuery,
     TransactionReadQuery,
     WalletReadQuery,
 )
+from app.modules.portfolios.services.portfolio import PortfolioService
+from app.modules.portfolios.services.portfolio_asset import PortfolioAssetService
+from app.modules.portfolios.services.transaction import TransactionService
+from app.modules.portfolios.services.wallet import WalletService
+from app.modules.portfolios.services.wallet_asset import WalletAssetService
 from app.modules.tags.repositories import TaggableRepository
 
 

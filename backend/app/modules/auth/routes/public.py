@@ -1,18 +1,28 @@
+from typing import Annotated
+
 from fastapi import Request, Response
 
-from app.common.routing import DishkaRouter
-
-from app.common.exceptions import AuthenticationError, handle_errors
-from app.core.rate_limit import limiter
-
-from app.core import settings
-from app.modules.auth.dependencies import AuthServiceDep, SessionServiceDep, UserServiceDep, require_user
-from app.common.schemas import AuthUser
 from app.common.dependencies import CurrentUser, CurrentUserOrNone
+from app.common.exceptions import AuthenticationError, handle_errors
+from app.common.routing import DishkaRouter
+from app.common.schemas import AuthUser
+from app.core import settings
+from app.core.rate_limit import limiter
+from app.modules.auth.dependencies import AuthServiceDep, SessionServiceDep, UserServiceDep, require_user
 from app.modules.auth.schemas import (
-    AccessTokenResponse, DeleteAccountRequest, EmailChangeRequest, ForgotPasswordRequest, LoginSessionResponse,
-    PasswordChangeRequest, RefreshTokenRequest, RegisterResponse, ResetPasswordRequest,
-    ResendVerificationRequest, TokensResponse, UserLogin, UserRegister, UserResponse,
+    AccessTokenResponse,
+    DeleteAccountRequest,
+    EmailChangeRequest,
+    ForgotPasswordRequest,
+    LoginSessionResponse,
+    PasswordChangeRequest,
+    RefreshTokenRequest,
+    RegisterResponse,
+    ResendVerificationRequest,
+    ResetPasswordRequest,
+    UserLogin,
+    UserRegister,
+    UserResponse,
 )
 from app.modules.auth.services.auth import RegisterTaskData
 from app.modules.auth.tasks import (
@@ -20,8 +30,6 @@ from app.modules.auth.tasks import (
     send_password_reset_email,
     send_verification_email,
 )
-from typing import Annotated
-
 
 router = DishkaRouter()
 

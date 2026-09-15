@@ -19,7 +19,9 @@ class TestTickerIdentifierRepository:
     async def test_upsert_all_all_existing(self, db_session, mock):
         repo = TickerIdentifierRepository(db_session)
         with (
-            patch.object(repo, 'find_by_identifiers', return_value={'gecko': mock(), 'cmc': mock()}) as find_by_identifiers,
+            patch.object(
+                repo, 'find_by_identifiers', return_value={'gecko': mock(), 'cmc': mock()}
+            ) as find_by_identifiers,
             patch.object(repo, 'create_all', return_value=[]) as create_all,
         ):
             await repo.upsert_all(1, {'gecko': 'btc', 'cmc': 'btc-1'})

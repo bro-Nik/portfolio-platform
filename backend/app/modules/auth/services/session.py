@@ -5,7 +5,6 @@ from user_agents import parse
 
 from app.common.exceptions.business import NotFoundError
 from app.common.schemas import Context
-
 from app.modules.auth.repositories import SessionRepository, TokenRepository
 from app.modules.auth.schemas import LoginSessionCreate, LoginSessionUpdate
 
@@ -20,8 +19,10 @@ class SessionService:
     async def create(self, refresh_token_id: int, user_id: int) -> None:
         session_info = self._parse_user_agent(self.ctx.user_agent)
         session_to_db = LoginSessionCreate(
-            user_id=user_id, refresh_token_id=refresh_token_id,
-            ip_address=self.ctx.client_ip, user_agent=self.ctx.user_agent,
+            user_id=user_id,
+            refresh_token_id=refresh_token_id,
+            ip_address=self.ctx.client_ip,
+            user_agent=self.ctx.user_agent,
             **session_info,
         )
         await self.repo.create(session_to_db.model_dump())

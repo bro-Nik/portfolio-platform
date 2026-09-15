@@ -1,4 +1,3 @@
-
 from .portfolio import PortfolioResponse
 from .wallet import WalletResponse
 from app.common.schemas import ApiModel

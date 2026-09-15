@@ -8,8 +8,8 @@ __all__ = [
     'BaseProvider',
     'HTTPClient',
     'LimiterConfig',
-    'RateLimiter',
     'ProviderRegistry',
-    'registry',
+    'RateLimiter',
     'RequestLogger',
+    'registry',
 ]

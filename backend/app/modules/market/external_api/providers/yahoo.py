@@ -2,8 +2,8 @@ from collections.abc import AsyncIterator
 from decimal import Decimal
 import logging
 
-from ..core import BaseProvider, registry
-from ..methods import selective_price_updater, ticker_loader
+from app.modules.market.external_api.core import BaseProvider, registry
+from app.modules.market.external_api.methods import selective_price_updater, ticker_loader
 
 logger = logging.getLogger(__name__)
 
@@ -12,26 +12,55 @@ SCREENER_PAGE_SIZE = 250
 
 # Yahoo-символ: суффикс биржи -> валюта котировки
 SUFFIX_CURRENCY = {
-    '': 'USD', '.US': 'USD',
-    '.A': 'USD', '.B': 'USD',
-    '.DE': 'EUR', '.PA': 'EUR', '.MI': 'EUR', '.AS': 'EUR', '.BR': 'EUR',
-    '.MC': 'EUR', '.VI': 'EUR', '.F': 'EUR', '.MU': 'EUR', '.SG': 'EUR',
-    '.BE': 'EUR', '.DU': 'EUR', '.HM': 'EUR', '.HA': 'EUR', '.LS': 'EUR',
-    '.IR': 'EUR', '.HE': 'EUR',
-    '.L': 'GBP', '.IL': 'GBP',
+    '': 'USD',
+    '.US': 'USD',
+    '.A': 'USD',
+    '.B': 'USD',
+    '.DE': 'EUR',
+    '.PA': 'EUR',
+    '.MI': 'EUR',
+    '.AS': 'EUR',
+    '.BR': 'EUR',
+    '.MC': 'EUR',
+    '.VI': 'EUR',
+    '.F': 'EUR',
+    '.MU': 'EUR',
+    '.SG': 'EUR',
+    '.BE': 'EUR',
+    '.DU': 'EUR',
+    '.HM': 'EUR',
+    '.HA': 'EUR',
+    '.LS': 'EUR',
+    '.IR': 'EUR',
+    '.HE': 'EUR',
+    '.L': 'GBP',
+    '.IL': 'GBP',
     '.HK': 'HKD',
-    '.T': 'JPY', '.JP': 'JPY',
-    '.SS': 'CNY', '.SZ': 'CNY', '.CN': 'CNY',
-    '.AX': 'AUD', '.AU': 'AUD',
-    '.TO': 'CAD', '.V': 'CAD', '.CA': 'CAD',
-    '.SW': 'CHF', '.CH': 'CHF',
-    '.ST': 'SEK', '.SE': 'SEK',
-    '.OL': 'NOK', '.NO': 'NOK',
-    '.CO': 'DKK', '.DK': 'DKK',
+    '.T': 'JPY',
+    '.JP': 'JPY',
+    '.SS': 'CNY',
+    '.SZ': 'CNY',
+    '.CN': 'CNY',
+    '.AX': 'AUD',
+    '.AU': 'AUD',
+    '.TO': 'CAD',
+    '.V': 'CAD',
+    '.CA': 'CAD',
+    '.SW': 'CHF',
+    '.CH': 'CHF',
+    '.ST': 'SEK',
+    '.SE': 'SEK',
+    '.OL': 'NOK',
+    '.NO': 'NOK',
+    '.CO': 'DKK',
+    '.DK': 'DKK',
     '.TW': 'TWD',
     '.SI': 'SGD',
-    '.NS': 'INR', '.BO': 'INR', '.IN': 'INR',
-    '.KS': 'KRW', '.KQ': 'KRW',
+    '.NS': 'INR',
+    '.BO': 'INR',
+    '.IN': 'INR',
+    '.KS': 'KRW',
+    '.KQ': 'KRW',
 }
 
 # Валюта -> (пара на spark, направление конвертации в USD)
@@ -127,12 +156,16 @@ class YahooProvider(BaseProvider):
                 params['marketRegion'] = region
             try:
                 data = await self.http.request(
-                    'GET', 'v1/finance/screener/predefined/saved', params=params,
+                    'GET',
+                    'v1/finance/screener/predefined/saved',
+                    params=params,
                 )
             except Exception:
                 logger.exception(
                     'Ошибка загрузки тикеров региона %s, скринер %s (start=%s)',
-                    region, screener_id, start,
+                    region,
+                    screener_id,
+                    start,
                 )
                 break
 
@@ -151,7 +184,10 @@ class YahooProvider(BaseProvider):
             if batch:
                 logger.info(
                     'Регион %s (%s): загружено %s тикеров, всего %s',
-                    region, screener_id, len(batch), len(seen),
+                    region,
+                    screener_id,
+                    len(batch),
+                    len(seen),
                 )
                 yield batch
 
@@ -168,10 +204,7 @@ class YahooProvider(BaseProvider):
         if not ext_ids:
             return {}
 
-        chunks = [
-            ext_ids[i : i + SPARK_SYMBOLS_PER_REQUEST]
-            for i in range(0, len(ext_ids), SPARK_SYMBOLS_PER_REQUEST)
-        ]
+        chunks = [ext_ids[i : i + SPARK_SYMBOLS_PER_REQUEST] for i in range(0, len(ext_ids), SPARK_SYMBOLS_PER_REQUEST)]
 
         all_data: dict[str, float] = {}
         for chunk in chunks:
@@ -194,7 +227,9 @@ class YahooProvider(BaseProvider):
             usd_price = self._to_usd(raw, currency, rates)
             if usd_price is None:
                 logger.warning(
-                    'Пропуск %s: неизвестная валюта %s или нет курса', ext_id, currency,
+                    'Пропуск %s: неизвестная валюта %s или нет курса',
+                    ext_id,
+                    currency,
                 )
                 continue
             prices[ext_id] = usd_price

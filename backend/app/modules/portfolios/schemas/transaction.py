@@ -1,12 +1,9 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel
-
-from app.common.schemas import ApiModel
-
 from .portfolio import PortfolioAssetResponse
 from .wallet import WalletAssetResponse
+from app.common.schemas import ApiModel
 
 
 class TransactionBase(ApiModel):

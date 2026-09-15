@@ -4,7 +4,6 @@ from sqlalchemy import case, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
-
 from app.modules.market.models import Ticker
 
 
@@ -32,10 +31,7 @@ class TickerRepository(BaseRepository[Ticker]):
         if price_updated_by:
             vals['price_updated_by'] = price_updated_by
         stmt = (
-            update(self.model)
-            .where(self.model.id.in_(ids))
-            .values(**vals)
-            .execution_options(synchronize_session=False)
+            update(self.model).where(self.model.id.in_(ids)).values(**vals).execution_options(synchronize_session=False)
         )
         result = await self._session.execute(stmt)
         return result.rowcount

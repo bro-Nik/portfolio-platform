@@ -2,6 +2,8 @@ from collections.abc import Awaitable, Callable
 import logging
 from typing import TYPE_CHECKING
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from .base import MethodBase
 from app.modules.market.models import Ticker
 from app.modules.market.repositories import TickerExternalIdRepository, TickerRepository
@@ -74,8 +76,8 @@ class SelectivePriceUpdater(BasePriceUpdater):
         *,
         provider_name: str,
         ticker_service: 'TickerService',
-        session=None,
-        **_,
+        session: AsyncSession | None = None,
+        **_: object,
     ) -> dict:
         logger.info('Старт обновления цен со стратегией: %s', strategy)
         ticker_ids = await self._fetch_ticker_ids(market, strategy, limit, session, ticker_service)
@@ -93,7 +95,10 @@ class SelectivePriceUpdater(BasePriceUpdater):
         prices = await ext_id_service.resolve_to_internal(provider_name, prices)
 
         updated_count = await self._save_prices(
-            market, prices, provider_name=provider_name, ticker_service=ticker_service,
+            market,
+            prices,
+            provider_name=provider_name,
+            ticker_service=ticker_service,
         )
         return {'status': 'success', 'message': f'Обновлено {updated_count} цен'}
 
@@ -102,7 +107,7 @@ class SelectivePriceUpdater(BasePriceUpdater):
         market: str,
         strategy: str,
         limit: int | None,
-        session,
+        session: AsyncSession | None = None,
         ticker_service: 'TickerService | None' = None,
     ) -> list[int]:
         if strategy not in self.STRATEGIES:
@@ -111,7 +116,13 @@ class SelectivePriceUpdater(BasePriceUpdater):
         method_name = self.STRATEGIES[strategy]
         return await getattr(self, method_name)(market, limit, session, ticker_service)
 
-    async def _fetch_top_coins(self, market: str, limit: int | None = None, session=None, ticker_service=None) -> list[int]:
+    async def _fetch_top_coins(
+        self,
+        market: str,
+        limit: int | None = None,
+        session: AsyncSession | None = None,
+        ticker_service: 'TickerService | None' = None,
+    ) -> list[int]:
         repo = TickerRepository(session)
         tickers = await repo.get_all(
             Ticker.market == market,
@@ -121,19 +132,37 @@ class SelectivePriceUpdater(BasePriceUpdater):
         tickers = tickers[:limit] if limit else tickers
         return [t.id for t in tickers]
 
-    async def _fetch_active_coins(self, market: str, limit: int | None = None, session=None, ticker_service=None) -> list[int]:
+    async def _fetch_active_coins(
+        self,
+        market: str,
+        limit: int | None = None,
+        session: AsyncSession | None = None,
+        ticker_service: 'TickerService | None' = None,
+    ) -> list[int]:
         repo = TickerRepository(session)
         tickers = await repo.get_all(Ticker.market == market, Ticker.is_active.is_(True))
         tickers = tickers[:limit] if limit else tickers
         return [t.id for t in tickers]
 
-    async def _fetch_all_coins(self, market: str, limit: int | None = None, session=None, ticker_service=None) -> list[int]:
+    async def _fetch_all_coins(
+        self,
+        market: str,
+        limit: int | None = None,
+        session: AsyncSession | None = None,
+        ticker_service: 'TickerService | None' = None,
+    ) -> list[int]:
         repo = TickerRepository(session)
         tickers = await repo.get_all_by_market(market)
         tickers = tickers[:limit] if limit else tickers
         return [t.id for t in tickers]
 
-    async def _fetch_used_coins(self, market: str, limit: int | None = None, session=None, ticker_service=None) -> list[int]:
+    async def _fetch_used_coins(
+        self,
+        market: str,
+        limit: int | None = None,
+        session: AsyncSession | None = None,
+        ticker_service: 'TickerService | None' = None,
+    ) -> list[int]:
         if ticker_service is None:
             return []
         unique_ids = await ticker_service.get_used_ticker_ids()
@@ -158,8 +187,8 @@ class FullPriceUpdater(BasePriceUpdater):
         provider_name: str,
         ticker_service: 'TickerService',
         quote_currency: str = 'USD',
-        session=None,
-        **_,
+        session: AsyncSession | None = None,
+        **_: object,
     ) -> dict:
         prices = await fetch_prices()
         if not prices:
@@ -191,8 +220,8 @@ class CurrencyPriceUpdater(FullPriceUpdater):
         *,
         provider_name: str,
         ticker_service: 'TickerService',
-        session=None,
-        **_,
+        session: AsyncSession | None = None,
+        **_: object,
     ) -> dict:
         prices = await fetch_prices()
         if not prices:

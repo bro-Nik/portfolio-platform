@@ -8,7 +8,7 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.common.dependencies.auth import get_actor_from_headers
-from app.common.redis import get_redis as get_common_redis
+from app.common.redis import create_redis
 from app.common.schemas import Context
 from app.common.utils import get_client_ip
 from app.core.database import AsyncSessionLocal
@@ -18,8 +18,12 @@ SessionFactory = async_sessionmaker[AsyncSession]
 
 class InfraProvider(Provider):
     @provide(scope=Scope.APP)
-    def get_redis(self) -> Redis:
-        return get_common_redis()
+    async def get_redis(self) -> AsyncIterator[Redis]:
+        client = create_redis()
+        try:
+            yield client
+        finally:
+            await client.aclose()
 
     @provide(scope=Scope.APP)
     async def get_session_factory(self) -> SessionFactory:

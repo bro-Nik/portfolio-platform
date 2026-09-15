@@ -1,15 +1,14 @@
 from collections.abc import Callable
 from typing import Annotated
 
-import jwt
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+import jwt
 from pydantic import ValidationError
 
-from app.core import settings
 from app.common.exceptions import AuthenticationError, ForbiddenException, UnauthorizedException
 from app.common.schemas import AuthUser, UserRole
-
+from app.core import settings
 
 security = HTTPBearer(auto_error=False)
 

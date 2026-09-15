@@ -5,6 +5,6 @@ from .context import Context
 __all__ = [
     'ApiModel',
     'AuthUser',
-    'UserRole',
     'Context',
+    'UserRole',
 ]

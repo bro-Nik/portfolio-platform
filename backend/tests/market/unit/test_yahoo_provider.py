@@ -12,11 +12,14 @@ def make_provider(async_mock, payload):
 def screener_payload(*quotes: dict) -> dict:
     return {'finance': {'result': [{'quotes': list(quotes)}]}}
 
+
 def equity(symbol, name):
     return {'symbol': symbol, 'quoteType': 'EQUITY', 'shortName': name}
 
+
 def bond(symbol):
     return {'symbol': symbol, 'quoteType': 'EQUITY', 'shortName': None}
+
 
 def spark_item(close):
     return {'timestamp': [1786541400], 'close': [close]}
@@ -34,10 +37,12 @@ class TestYahooProviderLoadTickers:
 
         batches = [batch async for batch in provider._fetch_all_tickers()]
 
-        assert batches == [[
-            {'id': 'AAPL', 'symbol': 'AAPL', 'name': 'Apple Inc.'},
-            {'id': 'VOW3.DE', 'symbol': 'VOW3.DE', 'name': 'Volkswagen AG'},
-        ]]
+        assert batches == [
+            [
+                {'id': 'AAPL', 'symbol': 'AAPL', 'name': 'Apple Inc.'},
+                {'id': 'VOW3.DE', 'symbol': 'VOW3.DE', 'name': 'Volkswagen AG'},
+            ]
+        ]
 
     async def test_paginates_until_short_page(self, async_mock):
         page1 = screener_payload(*[equity(f'S{i}', f'Name {i}') for i in range(250)])
@@ -68,10 +73,7 @@ class TestYahooProviderLoadTickers:
         assert all_symbols.count('AAPL') == 1
 
     async def test_us_uses_multiple_screeners(self, async_mock):
-        payloads = [
-            screener_payload(equity(f'S{i}', f'Name {i}'))
-            for i in range(len(US_SCREENER_IDS))
-        ]
+        payloads = [screener_payload(equity(f'S{i}', f'Name {i}')) for i in range(len(US_SCREENER_IDS))]
         http = async_mock()
         http.request = async_mock(side_effect=payloads + [screener_payload()] * 100)
         provider = YahooProvider(http)
@@ -94,10 +96,7 @@ class TestYahooProviderLoadTickers:
         batches = [batch async for batch in provider._fetch_all_tickers()]
 
         assert batches
-        region_calls = [
-            c for c in http.request.await_args_list
-            if c.kwargs['params'].get('marketRegion') == 'DE'
-        ]
+        region_calls = [c for c in http.request.await_args_list if c.kwargs['params'].get('marketRegion') == 'DE']
         assert region_calls
 
     async def test_skips_on_http_error(self, async_mock):

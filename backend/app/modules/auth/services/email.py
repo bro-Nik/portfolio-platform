@@ -12,7 +12,9 @@ from app.core import settings
 logger = logging.getLogger(__name__)
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / 'templates' / 'email'
-jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))
+# autoescape обязателен: в шаблоны подставляется email пользователя, и без него
+# содержимое письма интерпретировалось бы как HTML.
+jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)), autoescape=True)
 FAVICON_PATH = TEMPLATE_DIR / 'favicon.png'
 
 
@@ -48,7 +50,7 @@ class EmailService:
             related = MIMEMultipart('related')
             related.attach(msg_alt)
 
-            with open(FAVICON_PATH, 'rb') as f:
+            with FAVICON_PATH.open('rb') as f:
                 img = MIMEImage(f.read(), _subtype='png')
             img.add_header('Content-ID', '<favicon@portfolios.app>')
             img.add_header('Content-Disposition', 'inline', filename='favicon.png')
@@ -67,10 +69,13 @@ class EmailService:
     async def send_password_reset_confirmation_email(email: str) -> None:
         if EmailService._smtp_disabled('письмо подтверждения смены пароля', email):
             return
-        html, text = EmailService._render('reset_password_confirmation', {
-            'email': email,
-            'frontend_url': settings.frontend_url,
-        })
+        html, text = EmailService._render(
+            'reset_password_confirmation',
+            {
+                'email': email,
+                'frontend_url': settings.frontend_url,
+            },
+        )
         msg = EmailService._build_message('Пароль был изменён', email, html, text)
         await EmailService._send(msg)
 
@@ -78,11 +83,14 @@ class EmailService:
     async def send_verification_email(email: str, token: str) -> None:
         if EmailService._smtp_disabled('письмо подтверждения email', email):
             return
-        html, text = EmailService._render('verify_email', {
-            'email': email,
-            'link': EmailService.build_verification_link(token),
-            'frontend_url': settings.frontend_url,
-        })
+        html, text = EmailService._render(
+            'verify_email',
+            {
+                'email': email,
+                'link': EmailService.build_verification_link(token),
+                'frontend_url': settings.frontend_url,
+            },
+        )
         msg = EmailService._build_message('Подтверждение регистрации', email, html, text)
         await EmailService._send(msg)
 
@@ -90,11 +98,14 @@ class EmailService:
     async def send_password_reset_email(email: str, token: str) -> None:
         if EmailService._smtp_disabled('письмо сброса пароля', email):
             return
-        html, text = EmailService._render('reset_password', {
-            'email': email,
-            'link': EmailService.build_password_reset_link(token),
-            'frontend_url': settings.frontend_url,
-        })
+        html, text = EmailService._render(
+            'reset_password',
+            {
+                'email': email,
+                'link': EmailService.build_password_reset_link(token),
+                'frontend_url': settings.frontend_url,
+            },
+        )
         msg = EmailService._build_message('Сброс пароля', email, html, text)
         await EmailService._send(msg)
 

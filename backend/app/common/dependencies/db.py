@@ -3,10 +3,9 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:

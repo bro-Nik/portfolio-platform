@@ -3,11 +3,10 @@ from datetime import UTC, datetime, timedelta
 import jwt
 import pytest
 
-from app.common.exceptions import UnauthorizedException
 from app.common.dependencies.auth import get_actor_from_headers, get_current_user
+from app.common.exceptions import UnauthorizedException
 from app.common.schemas import UserRole
 from app.core import settings
-
 
 ALGORITHM = settings.jwt_algorithm
 

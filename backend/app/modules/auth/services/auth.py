@@ -4,18 +4,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import AuthenticationError
 from app.common.schemas import AuthUser, Context
-
 from app.modules.auth.models import RefreshToken, User
 from app.modules.auth.repositories import TokenRepository
 from app.modules.auth.schemas import (
     DeleteAccountRequest,
-    RefreshTokenCreate, RefreshTokenUpdate, RefreshTokenRequest,
-    RegisterResponse, TokensResponse, UserCreateRequest, UserLogin,
-    UserRegister, UserRole,
+    RefreshTokenCreate,
+    RefreshTokenRequest,
+    RefreshTokenUpdate,
+    RegisterResponse,
+    TokensResponse,
+    UserCreateRequest,
+    UserLogin,
+    UserRegister,
+    UserRole,
 )
 from app.modules.auth.security import SecurityService
-from app.modules.auth.services.user import UserService
 from app.modules.auth.services.session import SessionService
+from app.modules.auth.services.user import UserService
 
 
 @dataclass
@@ -94,8 +99,7 @@ class AuthService:
         if not self.security.verify_password(data.password, user.password_hash):
             raise AuthenticationError('Неверный email или пароль')
         self.user_service.check_can_authenticate(user)
-        result = await self._create_tokens(user)
-        return result
+        return await self._create_tokens(user)
 
     async def refresh_tokens(self, data: RefreshTokenRequest) -> AuthResult:
         payload = self.security.verify_token(data.token)
@@ -105,8 +109,7 @@ class AuthService:
         user = await self.user_service.get_for_auth(id=user_id)
         self.user_service.check_can_authenticate(user)
         token = await self._get_db_refresh_token(data.token)
-        result = await self._create_tokens(user, token)
-        return result
+        return await self._create_tokens(user, token)
 
     async def logout(self, refresh_token: str) -> bool:
         token_hash = self.security.hash_token(refresh_token)
@@ -116,8 +119,7 @@ class AuthService:
 
     async def logout_all(self, user_id: int | None = None) -> bool:
         user_id = user_id or self.ctx.actor.id
-        deleted = bool(await self.token_repo.delete_all_by_user(user_id))
-        return deleted
+        return bool(await self.token_repo.delete_all_by_user(user_id))
 
     async def reset_password(self, token: str, new_password: str) -> User:
         user_id = await self.user_service.reset_password(token, new_password)
@@ -145,7 +147,9 @@ class AuthService:
             token = await self.token_repo.update(db_token.id, update.model_dump())
             await self.session_service.update(token.id)
         else:
-            create = RefreshTokenCreate(user_id=user.id, token_hash=token_hash, expires_at=token_data.refresh_expires_at)
+            create = RefreshTokenCreate(
+                user_id=user.id, token_hash=token_hash, expires_at=token_data.refresh_expires_at
+            )
             token = await self.token_repo.create(create.model_dump())
             await self.session_service.create(token.id, user.id)
         await self.user_service.update_activity(user.id)

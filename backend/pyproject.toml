@@ -1,8 +1,12 @@
 [tool.ruff]
-select = ["ALL"]
 line-length = 120
 target-version = "py313"
 
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+select = ["ALL"]
 ignore = [
     # Игнорировать проверку кириллических символов
     "RUF001", "RUF002", "RUF003",
@@ -16,6 +20,9 @@ ignore = [
     "D100",  # Отсутствие docstring в public module
     "D104",  # Отсутствие docstring в public package
     "D102",  # Отсутствие docstring в public method
+    "D103",  # Отсутствие docstring в public function
+    "D105",  # Отсутствие docstring в magic method
+    "D203", "D213",  # конфликтуют с D211/D212
 
     # Игнорировать строгие проверки для обработки ошибок
     "EM101", "EM102",  # Слишком широкие/узкие исключения
@@ -29,12 +36,41 @@ ignore = [
 
     # Игнорировать предупреждения о типизации
     "ANN003",
+
+    # Копирайт-заголовок не используется в проекте
+    "CPY001",
+
+    # Явные __init__.py в пакетах не добавляются
+    "INP001",
+
+    # Строки в сообщениях об ошибках читаются как текст, не как формат
+    "COM812",
+
+    # Технический долг, который разбирается постепенно. Список можно сокращать
+    # по мере рефакторинга; CI уже гейтит всё остальное.
+    "E501",       # длинные строки в основном в миграциях и запросах
+    "PLR0913",    # сервисы-оркестраторы принимают много аргументов
+    "PLR0917",
+    "PLR0912",    # sync_tickers разбит на функции в отдельной задаче
+    "PLR0915",
+    "C901",
+    "PLR2004",    # магические числа в проверках провайдеров
+    "FBT001",     # булевы флаги в сервисах рынка
+    "FBT002",
+    "FBT003",
+    "ANN401",     # Any в протоколах и декораторах
+    "ANN002",     # *args в декораторах
+    "ARG002",     # аргументы, необходимые по сигнатуре провайдера
+    "ARG003",
+    "B008",       # Depends() в аргументах — стандартный паттерн FastAPI
+    "ASYNC109",   # имя параметра timeout совпадает с httpx
+    "S105",       # строки вроде ACCESS_TOKEN_TYPE не являются паролями
+    "BLE001",     # фоновые задачи ловят всё и пишут в task.last_run_result
+    "S110",       # там же: best-effort логирование
+    "PLC0415",    # локальные импорты для разрешения циклов
+    "SLF001",     # доступ к приватным полям внутри пакета
+    "TRY300",     # ветвление внутри except
 ]
-
-[tool.ruff.format]
-quote-style = "single"
-
-[tool.ruff.lint]
 
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = "single"      # Одинарные кавычки для inline строк
@@ -44,7 +80,6 @@ docstring-quotes = "double"   # Двойные кавычки для docstring
 [tool.ruff.lint.isort]
 known-local-folder = ["app"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
-lines-between-types = 1               # Пустые строки между типами импортов
 combine-as-imports = true             # Объединять as-импорты
 force-sort-within-sections = true     # Сортировка внутри секций
 
@@ -68,14 +103,23 @@ force-sort-within-sections = true     # Сортировка внутри сек
     "S106",     # жестко заданный пароль в коде
     "PLR2004",  # магические числа
     "SLF001",   # обращение к приватным членам
-    "D101",     # отсутствует docstring в публичном классе
-    "D102",     # отсутствует docstring в публичном методе
-    "D103",     # отсутствует docstring в публичной функции
+    "ARG001",   # неиспользуемые аргументы фикстур
+    "ARG002",   # неиспользуемые аргументы фикстур
+    "D101",     # отсутствие docstring в публичном классе
+    "D102",     # отсутствие docstring в публичном методе
+    "D103",     # отсутствие docstring в публичной функции
     "E501",     # слишком длинная строка
+    "PLR0913",  # количество аргументов у параметризованных тестов
+    "PLR0917",  # количество позиционных аргументов у параметризованных тестов
+    "PT012",    # pytest.raises с несколькими выражениями
+    "PT022",    # фикстуры без teardown
+    "PLC0415",  # локальные импорты в фикстурах
 ]
 
-# Правила для Alembic миграций
-"app/alembic/versions/*.py" = ["ALL"]
+# Правила для Alembic миграций: шаблоны alembic заданы генератором
+"app/alembic/versions/*.py" = [
+    "D", "ANN", "COM812", "F401", "INP001", "UP006", "UP035", "UP045",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -86,6 +130,7 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
 pythonpath = ["."]
+addopts = "--strict-markers"
 
 [tool.pyright]
 include = ["app"]

@@ -38,9 +38,11 @@ def handle_errors(
             except BusinessRuleError as e:
                 raise BadRequestException(str(e)) from e
             except Exception as e:
-                logger.exception('%s: %s', default_message, e)
+                logger.exception('%s: %s', default_message, e)  # noqa: TRY401  # текст ошибки в сообщение
                 raise InternalServerException(default_message) from e
+
         return cast('F', wrapper)
+
     return decorator
 
 

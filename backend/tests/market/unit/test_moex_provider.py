@@ -26,10 +26,12 @@ class TestMoexProvider:
 
         batches = [batch async for batch in provider._fetch_all_tickers()]
 
-        assert batches == [[
-            {'id': 'SBER', 'symbol': 'SBER', 'name': 'Сбербанк'},
-            {'id': 'SNGSP', 'symbol': 'SNGSP', 'name': 'Сургнфгз-п'},
-        ]]
+        assert batches == [
+            [
+                {'id': 'SBER', 'symbol': 'SBER', 'name': 'Сбербанк'},
+                {'id': 'SNGSP', 'symbol': 'SNGSP', 'name': 'Сургнфгз-п'},
+            ]
+        ]
 
     async def test_load_tickers_skips_on_http_error(self, async_mock):
         http = async_mock()

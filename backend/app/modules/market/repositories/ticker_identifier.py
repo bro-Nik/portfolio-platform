@@ -19,8 +19,7 @@ class TickerIdentifierRepository(BaseRepository[TickerIdentifier]):
         if not identifiers:
             return {}
         conditions = [
-            and_(self.model.system == system, self.model.value == value)
-            for system, value in identifiers.items()
+            and_(self.model.system == system, self.model.value == value) for system, value in identifiers.items()
         ]
         rows = await self.get_all(or_(*conditions))
         return {row.system: row for row in rows}

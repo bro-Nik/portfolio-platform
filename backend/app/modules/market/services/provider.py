@@ -5,17 +5,21 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import BusinessRuleError, ConflictError, NotFoundError
-
 from app.modules.market.external_api.core import registry
 from app.modules.market.models import Provider, RequestLog
 from app.modules.market.repositories import ProviderRepository, RequestLogRepository
 from app.modules.market.schemas import (
-    ProviderCreate, ProviderCreateRequest, ProviderDetailsItem,
-    ProviderMethodsItem, ProviderMethodInfo, ProviderRateLimits,
-    ProviderResponse, ProviderSettingsItem,
-    ProviderStats, ProviderUpdate, ProviderUpdateRequest,
+    ProviderCreate,
+    ProviderCreateRequest,
+    ProviderDetailsItem,
+    ProviderMethodInfo,
+    ProviderMethodsItem,
+    ProviderRateLimits,
+    ProviderSettingsItem,
+    ProviderStats,
+    ProviderUpdate,
+    ProviderUpdateRequest,
 )
-
 
 COUNTER_PERIODS = ['minute', 'hour', 'day', 'month']
 
@@ -33,7 +37,9 @@ class ProviderConfig:
 
 
 class ProviderService:
-    def __init__(self, session: AsyncSession, redis: Redis, provider_repo: ProviderRepository, log_repo: RequestLogRepository) -> None:
+    def __init__(
+        self, session: AsyncSession, redis: Redis, provider_repo: ProviderRepository, log_repo: RequestLogRepository
+    ) -> None:
         self.session = session
         self.redis = redis
         self.repo = provider_repo
@@ -42,36 +48,44 @@ class ProviderService:
     async def get_all_with_details(self) -> list[ProviderDetailsItem]:
         db_providers = await self.repo.get_all()
         db_map = {p.name: p for p in db_providers}
-        counters_map = await self._get_counters_for_providers(
-            list(registry.PROVIDERS.keys())
-        )
+        counters_map = await self._get_counters_for_providers(list(registry.PROVIDERS.keys()))
 
         result = []
         for name, cls in registry.PROVIDERS.items():
             db = db_map.get(name)
             counters = counters_map.get(name, {})
 
-            result.append(ProviderDetailsItem(
-                id=db.id if db else None,
-                name=name,
-                description=cls.DESCRIPTION,
-                has_config=db is not None,
-                supported_markets=db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
-                api_key_required=cls.API_KEY_REQUIRED,
-                api_key=db.api_key if db else None,
-                requests_per_minute=db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
-                requests_per_hour=db.requests_per_hour if db and db.requests_per_hour is not None else cls.REQUESTS_PER_HOUR,
-                requests_per_day=db.requests_per_day if db and db.requests_per_day is not None else cls.REQUESTS_PER_DAY,
-                requests_per_month=db.requests_per_month if db and db.requests_per_month is not None else cls.REQUESTS_PER_MONTH,
-                retry_delay=db.retry_delay if db else cls.RETRY_DELAY if hasattr(cls, 'RETRY_DELAY') else 60,
-                timeout=db.timeout if db else cls.TIMEOUT,
-                is_active=db.is_active if db else False,
-                minute_counter=counters.get('minute', 0),
-                hour_counter=counters.get('hour', 0),
-                day_counter=counters.get('day', 0),
-                month_counter=counters.get('month', 0),
-                methods=[ProviderMethodInfo.model_validate(m) for m in registry.get_provider_methods(name)],
-            ))
+            result.append(
+                ProviderDetailsItem(
+                    id=db.id if db else None,
+                    name=name,
+                    description=cls.DESCRIPTION,
+                    has_config=db is not None,
+                    supported_markets=db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
+                    api_key_required=cls.API_KEY_REQUIRED,
+                    api_key=db.api_key if db else None,
+                    requests_per_minute=db.requests_per_minute
+                    if db and db.requests_per_minute is not None
+                    else cls.REQUESTS_PER_MINUTE,
+                    requests_per_hour=db.requests_per_hour
+                    if db and db.requests_per_hour is not None
+                    else cls.REQUESTS_PER_HOUR,
+                    requests_per_day=db.requests_per_day
+                    if db and db.requests_per_day is not None
+                    else cls.REQUESTS_PER_DAY,
+                    requests_per_month=db.requests_per_month
+                    if db and db.requests_per_month is not None
+                    else cls.REQUESTS_PER_MONTH,
+                    retry_delay=db.retry_delay if db else cls.RETRY_DELAY if hasattr(cls, 'RETRY_DELAY') else 60,
+                    timeout=db.timeout if db else cls.TIMEOUT,
+                    is_active=db.is_active if db else False,
+                    minute_counter=counters.get('minute', 0),
+                    hour_counter=counters.get('hour', 0),
+                    day_counter=counters.get('day', 0),
+                    month_counter=counters.get('month', 0),
+                    methods=[ProviderMethodInfo.model_validate(m) for m in registry.get_provider_methods(name)],
+                )
+            )
         return result
 
     async def get_config_by_name(self, name: str) -> ProviderConfig:
@@ -82,10 +96,16 @@ class ProviderService:
         db = await self.repo.get_by_name(name)
         return ProviderConfig(
             name=name,
-            requests_per_minute=db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
-            requests_per_hour=db.requests_per_hour if db and db.requests_per_hour is not None else cls.REQUESTS_PER_HOUR,
+            requests_per_minute=db.requests_per_minute
+            if db and db.requests_per_minute is not None
+            else cls.REQUESTS_PER_MINUTE,
+            requests_per_hour=db.requests_per_hour
+            if db and db.requests_per_hour is not None
+            else cls.REQUESTS_PER_HOUR,
             requests_per_day=db.requests_per_day if db and db.requests_per_day is not None else cls.REQUESTS_PER_DAY,
-            requests_per_month=db.requests_per_month if db and db.requests_per_month is not None else cls.REQUESTS_PER_MONTH,
+            requests_per_month=db.requests_per_month
+            if db and db.requests_per_month is not None
+            else cls.REQUESTS_PER_MONTH,
             timeout=db.timeout if db else cls.TIMEOUT,
             retry_delay=db.retry_delay if db else 60,
             api_key=db.api_key if db else None,
@@ -110,8 +130,7 @@ class ProviderService:
             raise ConflictError(f'Провайдер с именем "{data.name}" уже существует')
         if data.is_active:
             await self._validate_can_be_active(data.name, data.api_key)
-        provider = await self.repo.create(ProviderCreate(**data.model_dump()).model_dump())
-        return provider
+        return await self.repo.create(ProviderCreate(**data.model_dump()).model_dump())
 
     async def update(self, name: str, data: ProviderUpdateRequest) -> Provider:
         provider = await self.get_db_record(name)
@@ -119,8 +138,7 @@ class ProviderService:
             data.api_key = provider.api_key
         if data.is_active:
             await self._validate_can_be_active(name, data.api_key)
-        updated = await self.repo.update(provider.id, ProviderUpdate(**data.model_dump()).model_dump())
-        return updated
+        return await self.repo.update(provider.id, ProviderUpdate(**data.model_dump()).model_dump())
 
     async def delete(self, name: str) -> None:
         provider = await self.get_db_record(name)
@@ -142,7 +160,7 @@ class ProviderService:
 
         counters = await self.get_current_counters(name)
 
-        def _limit(val):
+        def _limit(val: int | None) -> int:
             return val or 0
 
         utilization = {}
@@ -157,13 +175,18 @@ class ProviderService:
 
         return ProviderStats(
             provider_name=name,
-            requests_today=logs.total or 0, successful_today=logs.successful or 0,
+            requests_today=logs.total or 0,
+            successful_today=logs.successful or 0,
             failed_today=(logs.total or 0) - (logs.successful or 0),
             avg_response_time=logs.avg_response_time,
-            minute_counter=counters.get('minute', 0), minute_limit=_limit(config.requests_per_minute),
-            hour_counter=counters.get('hour', 0), hour_limit=_limit(config.requests_per_hour),
-            day_counter=counters.get('day', 0), day_limit=_limit(config.requests_per_day),
-            month_counter=counters.get('month', 0), month_limit=_limit(config.requests_per_month),
+            minute_counter=counters.get('minute', 0),
+            minute_limit=_limit(config.requests_per_minute),
+            hour_counter=counters.get('hour', 0),
+            hour_limit=_limit(config.requests_per_hour),
+            day_counter=counters.get('day', 0),
+            day_limit=_limit(config.requests_per_day),
+            month_counter=counters.get('month', 0),
+            month_limit=_limit(config.requests_per_month),
             utilization_percent=utilization,
         )
 
@@ -172,14 +195,19 @@ class ProviderService:
         return await self.log_repo.get_all_by_provider(name, last_time)
 
     async def get_all_with_settings(self) -> list[ProviderSettingsItem]:
-        return [ProviderSettingsItem(
-            name=name,
-            description=cls.DESCRIPTION,
-            limits=ProviderRateLimits(
-                per_minute=cls.REQUESTS_PER_MINUTE, per_hour=cls.REQUESTS_PER_HOUR,
-                per_day=cls.REQUESTS_PER_DAY, per_month=cls.REQUESTS_PER_MONTH,
-            ),
-        ) for name, cls in registry.PROVIDERS.items()]
+        return [
+            ProviderSettingsItem(
+                name=name,
+                description=cls.DESCRIPTION,
+                limits=ProviderRateLimits(
+                    per_minute=cls.REQUESTS_PER_MINUTE,
+                    per_hour=cls.REQUESTS_PER_HOUR,
+                    per_day=cls.REQUESTS_PER_DAY,
+                    per_month=cls.REQUESTS_PER_MONTH,
+                ),
+            )
+            for name, cls in registry.PROVIDERS.items()
+        ]
 
     async def get_all_with_methods(self) -> list[ProviderMethodsItem]:
         db_providers = await self.repo.get_all()
@@ -187,19 +215,29 @@ class ProviderService:
         result = []
         for name, cls in registry.PROVIDERS.items():
             db = db_map.get(name)
-            result.append(ProviderMethodsItem(
-                name=name,
-                supported_markets=db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
-                api_key=db.api_key if db else None,
-                api_key_required=cls.API_KEY_REQUIRED,
-                requests_per_minute=db.requests_per_minute if db and db.requests_per_minute is not None else cls.REQUESTS_PER_MINUTE,
-                requests_per_hour=db.requests_per_hour if db and db.requests_per_hour is not None else cls.REQUESTS_PER_HOUR,
-                requests_per_day=db.requests_per_day if db and db.requests_per_day is not None else cls.REQUESTS_PER_DAY,
-                requests_per_month=db.requests_per_month if db and db.requests_per_month is not None else cls.REQUESTS_PER_MONTH,
-                timeout=db.timeout if db else cls.TIMEOUT,
-                is_active=db.is_active if db else False,
-                methods=[ProviderMethodInfo.model_validate(m) for m in registry.get_provider_methods(name)],
-            ))
+            result.append(
+                ProviderMethodsItem(
+                    name=name,
+                    supported_markets=db.supported_markets if db and db.supported_markets else cls.SUPPORTED_MARKETS,
+                    api_key=db.api_key if db else None,
+                    api_key_required=cls.API_KEY_REQUIRED,
+                    requests_per_minute=db.requests_per_minute
+                    if db and db.requests_per_minute is not None
+                    else cls.REQUESTS_PER_MINUTE,
+                    requests_per_hour=db.requests_per_hour
+                    if db and db.requests_per_hour is not None
+                    else cls.REQUESTS_PER_HOUR,
+                    requests_per_day=db.requests_per_day
+                    if db and db.requests_per_day is not None
+                    else cls.REQUESTS_PER_DAY,
+                    requests_per_month=db.requests_per_month
+                    if db and db.requests_per_month is not None
+                    else cls.REQUESTS_PER_MONTH,
+                    timeout=db.timeout if db else cls.TIMEOUT,
+                    is_active=db.is_active if db else False,
+                    methods=[ProviderMethodInfo.model_validate(m) for m in registry.get_provider_methods(name)],
+                )
+            )
         return result
 
     async def get_current_counter(self, name: str, period: str) -> int:

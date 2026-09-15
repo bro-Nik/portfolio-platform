@@ -15,7 +15,7 @@ class TickerIdentifierService:
         existing = await self.repo.find_by_identifiers(identifiers)
         if not existing:
             return None
-        ticker_ids = set(ti.ticker_id for ti in existing.values())
+        ticker_ids = {ti.ticker_id for ti in existing.values()}
         if len(ticker_ids) > 1:
             logger.warning('Identifiers %s resolve to multiple tickers: %s', identifiers, ticker_ids)
         return ticker_ids.pop()

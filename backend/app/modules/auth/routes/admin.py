@@ -1,18 +1,18 @@
-from fastapi import Request
-
-from app.common.routing import DishkaRouter
 from typing import Annotated
-from fastapi import Path, Query
+
+from fastapi import Path, Query, Request
 
 from app.common.exceptions import handle_errors
-from app.core.rate_limit import limiter
-
+from app.common.routing import DishkaRouter
 from app.core import settings
-from app.modules.auth.dependencies import UserServiceDep, AuthServiceDep, require_admin
+from app.core.rate_limit import limiter
+from app.modules.auth.dependencies import AuthServiceDep, UserServiceDep, require_admin
 from app.modules.auth.schemas import (
-    UserCreateRequest, UserResponse, UserUpdateRequest, UserRole,
+    UserCreateRequest,
+    UserResponse,
+    UserRole,
+    UserUpdateRequest,
 )
-
 
 router = DishkaRouter(dependencies=[require_admin])
 

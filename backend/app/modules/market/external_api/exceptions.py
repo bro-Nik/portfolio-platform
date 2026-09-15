@@ -20,7 +20,9 @@ def handle_task_errors(
             except Exception as e:
                 logger.exception('Ошибка в задаче %s', task_id)
                 return {'status': 'error', 'error': default_message, 'details': str(e)}
+
         return cast('Callable[P, Awaitable[dict[str, Any]]]', wrapper)
+
     return decorator
 
 
@@ -41,6 +43,5 @@ class RateLimiterUnavailableError(Exception):
         self.key = key
         self.original_error = original_error
         super().__init__(
-            f'Rate limiter недоступен (Redis): {original_error}. '
-            f'Все запросы {key} заблокированы до восстановления.'
+            f'Rate limiter недоступен (Redis): {original_error}. Все запросы {key} заблокированы до восстановления.'
         )

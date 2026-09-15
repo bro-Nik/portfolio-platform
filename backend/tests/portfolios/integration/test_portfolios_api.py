@@ -144,7 +144,9 @@ class TestPortfoliosAPI:
         db_portfolio = await db_session.get(Portfolio, portfolio.id)
         assert db_portfolio.is_archived is False
 
-    async def test_archive_portfolio_archives_assets(self, client, auth_headers, portfolio, portfolio_asset, db_session):
+    async def test_archive_portfolio_archives_assets(
+        self, client, auth_headers, portfolio, portfolio_asset, db_session
+    ):
         response = await client.patch(
             f'/api/portfolios/{portfolio.id}',
             json={'isArchived': True},

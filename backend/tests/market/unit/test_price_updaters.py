@@ -12,7 +12,9 @@ class TestCurrencyPriceUpdater:
         ticker_service.resolve_prices_by_symbol = async_mock(return_value={1: 1.0, 2: 1.1})
         ticker_service.save_prices = async_mock(return_value=2)
 
-        result = await CurrencyPriceUpdater().run('currency', fetch_prices, provider_name='CurrencyLayer', ticker_service=ticker_service)
+        result = await CurrencyPriceUpdater().run(
+            'currency', fetch_prices, provider_name='CurrencyLayer', ticker_service=ticker_service
+        )
 
         assert result == {'status': 'success', 'message': 'Обновлено 2 цен'}
         ticker_service.resolve_prices_by_symbol.assert_awaited_once_with('currency', prices)
@@ -22,7 +24,9 @@ class TestCurrencyPriceUpdater:
         fetch_prices = async_mock(return_value={})
         ticker_service = mock()
 
-        result = await CurrencyPriceUpdater().run('currency', fetch_prices, provider_name='CurrencyLayer', ticker_service=ticker_service)
+        result = await CurrencyPriceUpdater().run(
+            'currency', fetch_prices, provider_name='CurrencyLayer', ticker_service=ticker_service
+        )
 
         assert result == {'status': 'error', 'message': 'Нет данных от провайдера'}
         ticker_service.save_prices.assert_not_called()
@@ -36,7 +40,9 @@ class TestFullPriceUpdater:
 
         with patch.object(price_updaters, 'TickerExternalIdService') as ext_id_service:
             ext_id_service.return_value.resolve_to_internal = async_mock(return_value={700: 150.0})
-            result = await FullPriceUpdater().run('stocks', fetch_prices, provider_name='Polygon', ticker_service=ticker_service)
+            result = await FullPriceUpdater().run(
+                'stocks', fetch_prices, provider_name='Polygon', ticker_service=ticker_service
+            )
 
         assert result['status'] == 'success'
         ext_id_service.return_value.resolve_to_internal.assert_awaited_once_with('Polygon', {'AAPL': 150.0})
@@ -46,7 +52,9 @@ class TestFullPriceUpdater:
         fetch_prices = async_mock(return_value={})
         ticker_service = mock()
 
-        result = await FullPriceUpdater().run('stocks', fetch_prices, provider_name='Polygon', ticker_service=ticker_service)
+        result = await FullPriceUpdater().run(
+            'stocks', fetch_prices, provider_name='Polygon', ticker_service=ticker_service
+        )
 
         assert result == {'status': 'error', 'message': 'Нет данных от провайдера'}
         ticker_service.save_prices.assert_not_called()
@@ -60,7 +68,10 @@ class TestFullPriceUpdater:
         with patch.object(price_updaters, 'TickerExternalIdService') as ext_id_service:
             ext_id_service.return_value.resolve_to_internal = async_mock(return_value={700: 150.0})
             result = await FullPriceUpdater().run(
-                'stocks', fetch_prices, provider_name='Polygon', ticker_service=ticker_service,
+                'stocks',
+                fetch_prices,
+                provider_name='Polygon',
+                ticker_service=ticker_service,
                 quote_currency='USD',
             )
 
@@ -77,14 +88,18 @@ class TestFullPriceUpdater:
         with patch.object(price_updaters, 'TickerExternalIdService') as ext_id_service:
             ext_id_service.return_value.resolve_to_internal = async_mock(return_value={700: 286.19 * 0.0121055})
             result = await FullPriceUpdater().run(
-                'stocks', fetch_prices, provider_name='Moex', ticker_service=ticker_service,
+                'stocks',
+                fetch_prices,
+                provider_name='Moex',
+                ticker_service=ticker_service,
                 quote_currency='RUB',
             )
 
         assert result['status'] == 'success'
         ticker_service.get_price_by_symbol.assert_awaited_once_with('currency', 'RUB')
         ext_id_service.return_value.resolve_to_internal.assert_awaited_once_with(
-            'Moex', {'SBER': 286.19 * 0.0121055},
+            'Moex',
+            {'SBER': 286.19 * 0.0121055},
         )
         ticker_service.save_prices.assert_awaited_once_with('stocks', {700: 286.19 * 0.0121055}, provider_name='Moex')
 
@@ -94,7 +109,10 @@ class TestFullPriceUpdater:
         ticker_service.get_price_by_symbol = async_mock(return_value=None)
 
         result = await FullPriceUpdater().run(
-            'stocks', fetch_prices, provider_name='Moex', ticker_service=ticker_service,
+            'stocks',
+            fetch_prices,
+            provider_name='Moex',
+            ticker_service=ticker_service,
             quote_currency='RUB',
         )
 

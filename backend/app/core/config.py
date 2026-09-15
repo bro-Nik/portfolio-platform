@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -48,7 +49,7 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode='after')
-    def validate_production_settings(self):
+    def validate_production_settings(self) -> Self:
         if self.rate_limit_enabled is None:
             self.rate_limit_enabled = self.env == 'production'
 
@@ -78,7 +79,9 @@ class Settings(BaseSettings):
 
     @property
     def sync_db_url(self) -> str:
-        return self.db_url.replace('+asyncpg', '')
+        # Драйвер указан явно: без этого SQLAlchemy 2.1 выбирает psycopg3,
+        # которого в requirements нет, и alembic падает на create_engine.
+        return self.db_url.replace('+asyncpg', '+psycopg2')
 
     @property
     def is_prod(self) -> bool:

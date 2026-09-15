@@ -5,7 +5,6 @@ from unittest.mock import patch
 import pytest
 
 from app.common.exceptions import BusinessRuleError, NotFoundError
-
 from app.modules.market.repositories import TickerRepository
 from app.modules.portfolios.repositories import TransactionRepository
 from app.modules.portfolios.services.portfolio import PortfolioService
@@ -36,14 +35,24 @@ async def service(db_session, async_mock, data):
 class TestTransactionService:
     async def test_create_success(self, service, mock, data):
         transaction_data = data(
-            date=datetime.now(UTC), type='Buy', portfolio_id=1, wallet_id=1,
-            portfolio2_id=None, wallet2_id=None,
-            ticker_id=1, ticker2_id=2, quantity=Decimal(10),
-            quantity2=Decimal(100), price=Decimal(10),
+            date=datetime.now(UTC),
+            type='Buy',
+            portfolio_id=1,
+            wallet_id=1,
+            portfolio2_id=None,
+            wallet2_id=None,
+            ticker_id=1,
+            ticker2_id=2,
+            quantity=Decimal(10),
+            quantity2=Decimal(100),
+            price=Decimal(10),
         )
         transaction = mock(
-            id=1, type='Buy', user_id=user_id,
-            portfolio_id=1, wallet_id=1,
+            id=1,
+            type='Buy',
+            user_id=user_id,
+            portfolio_id=1,
+            wallet_id=1,
         )
 
         with (
@@ -70,8 +79,13 @@ class TestTransactionService:
 
     async def test_create_missing_trade_price(self, service, data):
         transaction_data = data(
-            type='Buy', portfolio_id=1, wallet_id=1,
-            ticker_id=1, ticker2_id=2, quantity=Decimal(10), quantity2=Decimal(100),
+            type='Buy',
+            portfolio_id=1,
+            wallet_id=1,
+            ticker_id=1,
+            ticker2_id=2,
+            quantity=Decimal(10),
+            quantity2=Decimal(100),
         )
 
         with pytest.raises(BusinessRuleError, match='price'):
@@ -79,8 +93,10 @@ class TestTransactionService:
 
     async def test_create_missing_wallet_for_earning(self, service, data):
         transaction_data = data(
-            type='Earning', portfolio_id=1,
-            ticker_id=1, quantity=Decimal(10),
+            type='Earning',
+            portfolio_id=1,
+            ticker_id=1,
+            quantity=Decimal(10),
         )
 
         with pytest.raises(BusinessRuleError, match='wallet_id'):
@@ -88,8 +104,10 @@ class TestTransactionService:
 
     async def test_create_missing_portfolio_for_input(self, service, data):
         transaction_data = data(
-            type='Input', wallet_id=1,
-            ticker_id=1, quantity=Decimal(10),
+            type='Input',
+            wallet_id=1,
+            ticker_id=1,
+            quantity=Decimal(10),
         )
 
         with pytest.raises(BusinessRuleError, match='portfolio_id'):
@@ -97,8 +115,11 @@ class TestTransactionService:
 
     async def test_create_negative_quantity(self, service, data):
         transaction_data = data(
-            type='Input', portfolio_id=1, wallet_id=1,
-            ticker_id=1, quantity=Decimal(-5),
+            type='Input',
+            portfolio_id=1,
+            wallet_id=1,
+            ticker_id=1,
+            quantity=Decimal(-5),
         )
 
         with pytest.raises(BusinessRuleError, match='quantity'):
@@ -106,9 +127,14 @@ class TestTransactionService:
 
     async def test_create_zero_price(self, service, data):
         transaction_data = data(
-            type='Buy', portfolio_id=1, wallet_id=1,
-            ticker_id=1, ticker2_id=2, quantity=Decimal(10),
-            quantity2=Decimal(100), price=Decimal(0),
+            type='Buy',
+            portfolio_id=1,
+            wallet_id=1,
+            ticker_id=1,
+            ticker2_id=2,
+            quantity=Decimal(10),
+            quantity2=Decimal(100),
+            price=Decimal(0),
         )
 
         with pytest.raises(BusinessRuleError, match='price'):
@@ -116,9 +142,14 @@ class TestTransactionService:
 
     async def test_create_same_tickers(self, service, data):
         transaction_data = data(
-            type='Buy', portfolio_id=1, wallet_id=1,
-            ticker_id=1, ticker2_id=1, quantity=Decimal(10),
-            quantity2=Decimal(100), price=Decimal(10),
+            type='Buy',
+            portfolio_id=1,
+            wallet_id=1,
+            ticker_id=1,
+            ticker2_id=1,
+            quantity=Decimal(10),
+            quantity2=Decimal(100),
+            price=Decimal(10),
         )
 
         with pytest.raises(BusinessRuleError, match='должны различаться'):
@@ -126,9 +157,13 @@ class TestTransactionService:
 
     async def test_create_mixed_transfer(self, service, data):
         transaction_data = data(
-            type='TransferOut', portfolio_id=1, portfolio2_id=2,
-            wallet_id=3, wallet2_id=4,
-            ticker_id=1, quantity=Decimal(10),
+            type='TransferOut',
+            portfolio_id=1,
+            portfolio2_id=2,
+            wallet_id=3,
+            wallet2_id=4,
+            ticker_id=1,
+            quantity=Decimal(10),
         )
 
         with pytest.raises(BusinessRuleError, match='двумя портфелями или двумя кошельками'):
@@ -136,9 +171,14 @@ class TestTransactionService:
 
     async def test_create_unknown_ticker(self, service, mock, data):
         transaction_data = data(
-            type='Buy', portfolio_id=1, wallet_id=1,
-            ticker_id=1, ticker2_id=2, quantity=Decimal(10),
-            quantity2=Decimal(100), price=Decimal(10),
+            type='Buy',
+            portfolio_id=1,
+            wallet_id=1,
+            ticker_id=1,
+            ticker2_id=2,
+            quantity=Decimal(10),
+            quantity2=Decimal(100),
+            price=Decimal(10),
         )
 
         with (
@@ -165,7 +205,11 @@ class TestTransactionService:
 
     async def test_delete_success(self, service, mock):
         transaction = mock(
-            id=1, portfolio_id=1, wallet_id=1, user_id=user_id, type='Buy',
+            id=1,
+            portfolio_id=1,
+            wallet_id=1,
+            user_id=user_id,
+            type='Buy',
         )
 
         with (

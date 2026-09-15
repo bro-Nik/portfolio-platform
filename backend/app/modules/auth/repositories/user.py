@@ -3,7 +3,6 @@ from datetime import UTC, datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
-
 from app.core import settings
 from app.modules.auth.models import User
 
@@ -25,8 +24,11 @@ class UserRepository(BaseRepository[User]):
         return await self.get_by(User.id == user_id, relations=('login_sessions',))
 
     async def get_all_with_sessions(
-        self, skip: int = 0, limit: int = 20,
-        search: str | None = None, role: str | None = None,
+        self,
+        skip: int = 0,
+        limit: int = 20,
+        search: str | None = None,
+        role: str | None = None,
     ) -> list[User]:
         where = []
         if search:

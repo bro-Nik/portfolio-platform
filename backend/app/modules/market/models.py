@@ -21,13 +21,13 @@ class TickerIdentifier(Base):
     __tablename__ = 'ticker_identifier'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    ticker_id: Mapped[int] = mapped_column(Integer, ForeignKey('ticker.id', ondelete='CASCADE'), nullable=False, index=True)
+    ticker_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey('ticker.id', ondelete='CASCADE'), nullable=False, index=True
+    )
     system: Mapped[str] = mapped_column(String(64), nullable=False)
     value: Mapped[str] = mapped_column(String(512), nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint('system', 'value', name='uq_ticker_identifier_system_value'),
-    )
+    __table_args__ = (UniqueConstraint('system', 'value', name='uq_ticker_identifier_system_value'),)
 
     ticker: Mapped['Ticker'] = relationship(back_populates='identifiers')
 

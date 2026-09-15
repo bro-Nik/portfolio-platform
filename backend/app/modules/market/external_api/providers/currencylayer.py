@@ -1,7 +1,7 @@
 import logging
 
-from ..core import BaseProvider, registry
-from ..methods import currency_price_updater
+from app.modules.market.external_api.core import BaseProvider, registry
+from app.modules.market.external_api.methods import currency_price_updater
 
 logger = logging.getLogger(__name__)
 

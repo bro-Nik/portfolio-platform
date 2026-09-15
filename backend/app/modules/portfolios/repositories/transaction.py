@@ -77,7 +77,9 @@ class TransactionRepository(BaseRepository[Transaction]):
                 ids.add(row[1])
         return ids
 
-    async def portfolios_tickers_with_transactions(self, portfolio_tickers: dict[int, list[int]]) -> set[tuple[int, int]]:
+    async def portfolios_tickers_with_transactions(
+        self, portfolio_tickers: dict[int, list[int]]
+    ) -> set[tuple[int, int]]:
         tickers_by_portfolio = {pid: set(tids) for pid, tids in portfolio_tickers.items() if tids}
         if not tickers_by_portfolio:
             return set()
@@ -124,32 +126,26 @@ class TransactionRepository(BaseRepository[Transaction]):
         return self._collect_wallet_ticker_pairs(result, tickers_by_wallet)
 
     @staticmethod
-    def _collect_portfolio_ticker_pairs(result: Iterable[tuple[int | None, int | None, int | None, int | None]],
+    def _collect_portfolio_ticker_pairs(
+        result: Iterable[tuple[int | None, int | None, int | None, int | None]],
         tickers_by_portfolio: dict[int, set[int]],
     ) -> set[tuple[int, int]]:
         pairs: set[tuple[int, int]] = set()
         for p1, p2, t1, t2 in result:
             for pid, ticker in ((p1, t1), (p2, t2), (p1, t2), (p2, t1)):
-                if (
-                    pid is not None
-                    and ticker is not None
-                    and ticker in tickers_by_portfolio.get(pid, ())
-                ):
+                if pid is not None and ticker is not None and ticker in tickers_by_portfolio.get(pid, ()):
                     pairs.add((pid, ticker))
         return pairs
 
     @staticmethod
-    def _collect_wallet_ticker_pairs(result: Iterable[tuple[int | None, int | None, int | None, int | None]],
+    def _collect_wallet_ticker_pairs(
+        result: Iterable[tuple[int | None, int | None, int | None, int | None]],
         tickers_by_wallet: dict[int, set[int]],
     ) -> set[tuple[int, int]]:
         pairs: set[tuple[int, int]] = set()
         for w1, w2, t1, t2 in result:
             for wid, ticker in ((w1, t1), (w2, t2), (w1, t2), (w2, t1)):
-                if (
-                    wid is not None
-                    and ticker is not None
-                    and ticker in tickers_by_wallet.get(wid, ())
-                ):
+                if wid is not None and ticker is not None and ticker in tickers_by_wallet.get(wid, ()):
                     pairs.add((wid, ticker))
         return pairs
 

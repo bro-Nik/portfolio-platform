@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from pydantic import ValidationError
 import pytest
 
 from app.common.exceptions import (
@@ -17,7 +18,6 @@ from app.modules.auth.schemas import (
     UserRegister,
     UserRole,
 )
-from pydantic import ValidationError
 from app.modules.auth.security import SecurityService
 from app.modules.auth.services.user import UserService
 

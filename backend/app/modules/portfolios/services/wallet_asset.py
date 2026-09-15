@@ -68,11 +68,15 @@ class WalletAssetService:
         asset = await self.get(id)
         assets = await self.repo.get_all_by_ticker_and_user_with_wallets(asset.ticker_id, self.actor.id)
         total_qty = sum(a.quantity for a in assets)
-        distribution = [WalletAssetDistributionItem(
-            wallet_id=a.wallet.id, wallet_name=a.wallet.name,
-            quantity=a.quantity,
-            percentage_of_total=round(float(a.quantity / total_qty * 100) if total_qty > 0 else 0, 2),
-        ) for a in assets]
+        distribution = [
+            WalletAssetDistributionItem(
+                wallet_id=a.wallet.id,
+                wallet_name=a.wallet.name,
+                quantity=a.quantity,
+                percentage_of_total=round(float(a.quantity / total_qty * 100) if total_qty > 0 else 0, 2),
+            )
+            for a in assets
+        ]
         return WalletAssetDistributionResponse(
             total_quantity_all_wallets=total_qty,
             wallets=distribution,
@@ -80,7 +84,8 @@ class WalletAssetService:
 
     async def get_affected(self, *transactions: Transaction) -> list[WalletAsset]:
         pairs = {
-            pair for t in transactions
+            pair
+            for t in transactions
             for pair in combine_ids_and_tickers(
                 [t.wallet_id, t.wallet2_id],
                 [t.ticker_id, t.ticker2_id],
@@ -103,10 +108,9 @@ class WalletAssetService:
         existing = await self.repo.get_all_by_wallet_tickers(assets_map)
         existing_by_pair = {(a.wallet_id, a.ticker_id): a for a in existing}
         missing = [pair for pair in valid if pair not in existing_by_pair]
-        created = await self.repo.create_all([
-            {'wallet_id': w_id, 'ticker_id': t_id, 'user_id': self.actor.id}
-            for w_id, t_id in missing
-        ])
+        created = await self.repo.create_all(
+            [{'wallet_id': w_id, 'ticker_id': t_id, 'user_id': self.actor.id} for w_id, t_id in missing]
+        )
         created_by_pair = {(a.wallet_id, a.ticker_id): a for a in created}
         return tuple(existing_by_pair.get(pair) or created_by_pair[pair] for pair in valid)
 
@@ -118,7 +122,9 @@ class WalletAssetService:
         self._clean_asset(a1)
         self._clean_asset(a2)
 
-    def _handle_trade_execution(self, asset: WalletAsset, t: Transaction, direction: int, *, is_base_asset: bool) -> None:
+    def _handle_trade_execution(
+        self, asset: WalletAsset, t: Transaction, direction: int, *, is_base_asset: bool
+    ) -> None:
         if is_base_asset:
             asset.quantity += t.quantity * direction
         elif not is_base_asset:
@@ -155,7 +161,7 @@ class WalletAssetService:
         for field in ('quantity', 'buy_orders', 'sell_orders'):
             setattr(asset, field, clean_decimal(getattr(asset, field)))
 
-    def _verify(self, asset) -> None:
+    def _verify(self, asset: WalletAsset) -> None:
         if not asset:
             raise NotFoundError('Актив не найден')
         if asset.user_id != self.actor.id:

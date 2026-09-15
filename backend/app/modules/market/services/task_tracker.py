@@ -1,4 +1,6 @@
+from contextlib import AbstractAsyncContextManager
 from datetime import UTC, datetime
+from types import TracebackType
 
 from croniter import croniter
 from redis.asyncio import Redis
@@ -16,7 +18,7 @@ class TaskTrackerService:
         self.session_factory = session_factory
         self.redis = redis
 
-    def task_context(self, task_id: int):
+    def task_context(self, task_id: int) -> AbstractAsyncContextManager[None]:
         return _TaskContextManager(self, task_id)
 
     async def _acquire_lock(self, task_id: int) -> RedisTaskLock | None:
@@ -28,17 +30,22 @@ class TaskTrackerService:
 
 
 class _TaskContextManager:
-    def __init__(self, outer: TaskTrackerService, task_id: int):
+    def __init__(self, outer: TaskTrackerService, task_id: int) -> None:
         self.outer = outer
         self.task_id = task_id
         self._lock: RedisTaskLock | None = None
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> None:
         self._lock = await self.outer._acquire_lock(self.task_id)
         await self._mark_started(self.task_id)
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         try:
             if exc_type:
                 await self._mark_failed(self.task_id, str(exc_val))

@@ -6,11 +6,10 @@ from typing import Any
 import jwt
 from passlib.context import CryptContext
 from pydantic import ValidationError
+
 from app.common.exceptions import AuthenticationError
 from app.common.schemas import AuthUser
-
 from app.core import settings
-
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -74,20 +73,24 @@ class SecurityService:
 
     @classmethod
     def _create_access_token(cls, user: AuthUser) -> str:
-        return cls._jwt_encode({
-            'id': str(user.id),
-            'role': user.role.value if hasattr(user.role, 'value') else user.role,
-            'type': 'access',
-            'exp': cls._get_access_token_expiry(),
-        })
+        return cls._jwt_encode(
+            {
+                'id': str(user.id),
+                'role': user.role.value if hasattr(user.role, 'value') else user.role,
+                'type': 'access',
+                'exp': cls._get_access_token_expiry(),
+            }
+        )
 
     @classmethod
     def _create_refresh_token(cls, user: AuthUser) -> str:
-        return cls._jwt_encode({
-            'id': str(user.id),
-            'type': 'refresh',
-            'exp': cls._get_refresh_token_expiry(),
-        })
+        return cls._jwt_encode(
+            {
+                'id': str(user.id),
+                'type': 'refresh',
+                'exp': cls._get_refresh_token_expiry(),
+            }
+        )
 
     @classmethod
     def _jwt_encode(cls, payload: dict[str, Any]) -> str:
@@ -110,11 +113,13 @@ class SecurityService:
 
     @classmethod
     def create_password_reset_token(cls, user_id: int) -> str:
-        return cls._jwt_encode({
-            'id': str(user_id),
-            'type': 'password_reset',
-            'exp': cls._get_password_reset_token_expiry(),
-        })
+        return cls._jwt_encode(
+            {
+                'id': str(user_id),
+                'type': 'password_reset',
+                'exp': cls._get_password_reset_token_expiry(),
+            }
+        )
 
     @classmethod
     def verify_password_reset_token(cls, token: str) -> int:

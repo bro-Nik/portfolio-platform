@@ -1,11 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.tags.protocols import EntityOwnershipChecker
-
 from .portfolio import PortfolioRepository
 from .portfolio_asset import PortfolioAssetRepository
 from .wallet import WalletRepository
 from .wallet_asset import WalletAssetRepository
+from app.modules.tags.protocols import EntityOwnershipChecker
 
 
 class TaggableEntityOwnershipRepository(EntityOwnershipChecker):

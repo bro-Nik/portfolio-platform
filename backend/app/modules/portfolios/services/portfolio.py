@@ -1,19 +1,21 @@
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import ConflictError, NotFoundError, PermissionDeniedError
-
+from app.common.schemas import Context
 from app.modules.portfolios.models import Portfolio, PortfolioAsset, Transaction
 from app.modules.portfolios.protocols import TagReader
 from app.modules.portfolios.repositories import (
-    PortfolioRepository, TransactionRepository,
+    PortfolioRepository,
+    TransactionRepository,
 )
 from app.modules.portfolios.schemas import (
     PortfolioAssetCreateRequest,
-    PortfolioCreate, PortfolioCreateRequest, PortfolioUpdate, PortfolioUpdateRequest,
+    PortfolioCreate,
+    PortfolioCreateRequest,
+    PortfolioUpdate,
+    PortfolioUpdateRequest,
 )
 from app.modules.portfolios.services.portfolio_asset import PortfolioAssetService
-from app.common.schemas import Context
 
 
 class PortfolioService:
@@ -30,11 +32,8 @@ class PortfolioService:
         self.transaction_repo = TransactionRepository(session)
 
     async def _bulk_load_tags(self, portfolios: list[Portfolio]) -> None:
-        items = []
-        for p in portfolios:
-            items.append((self.ENTITY_TYPE, p.id))
-            for a in p.assets:
-                items.append((self.ASSET_ENTITY_TYPE, a.id))
+        items = [(self.ENTITY_TYPE, p.id) for p in portfolios]
+        items.extend((self.ASSET_ENTITY_TYPE, a.id) for p in portfolios for a in p.assets)
         tags_map = await self.taggable_repo.bulk_get_tags(items)
         for portfolio in portfolios:
             portfolio.tags = tags_map.get((self.ENTITY_TYPE, portfolio.id), [])
@@ -59,8 +58,7 @@ class PortfolioService:
 
     async def create(self, data: PortfolioCreateRequest) -> Portfolio:
         await self._validate_unique_name(data.name)
-        portfolio = await self.repo.create(PortfolioCreate(**data.model_dump(), user_id=self.actor.id).model_dump())
-        return portfolio
+        return await self.repo.create(PortfolioCreate(**data.model_dump(), user_id=self.actor.id).model_dump())
 
     async def update(self, id: int, data: PortfolioUpdateRequest) -> Portfolio:
         portfolio = await self.get(id)
@@ -75,11 +73,10 @@ class PortfolioService:
                 raise ConflictError('Нельзя изменить рынок портфеля с активами')
 
         update_data = data.model_dump(exclude_unset=True)
-        updated = await self.repo.update(id, PortfolioUpdate(**update_data).model_dump(exclude_unset=True))
-        return updated
+        return await self.repo.update(id, PortfolioUpdate(**update_data).model_dump(exclude_unset=True))
 
     async def delete(self, id: int) -> None:
-        portfolio = await self.get(id)
+        await self.get(id)
         has_txns = await self.transaction_repo.exists_for_portfolio(id)
         if has_txns:
             raise ConflictError('Нельзя удалить портфель с транзакциями')
@@ -115,8 +112,7 @@ class PortfolioService:
             raise ConflictError('Нельзя добавлять активы в архивный портфель')
         # portfolio_id из тела не должен уводить запись в чужой портфель
         data.portfolio_id = id
-        asset = await self.asset_service.create(data)
-        return asset
+        return await self.asset_service.create(data)
 
     async def delete_asset(self, id: int, asset_id: int) -> None:
         await self.get(id)
@@ -139,7 +135,7 @@ class PortfolioService:
         if await self.repo.exists_by_name_and_user(name, self.actor.id):
             raise ConflictError('Портфель с таким именем уже существует')
 
-    def _verify(self, obj) -> None:
+    def _verify(self, obj: Portfolio) -> None:
         if not obj:
             raise NotFoundError('Портфель не найден')
         if obj.user_id != self.actor.id:

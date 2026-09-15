@@ -2,14 +2,14 @@ import logging
 
 from dishka.integrations.taskiq import inject
 
-from app.modules.market.taskiq_setup import broker
-from app.modules.market.external_api import handle_task_errors
 from app.modules.market.dependencies.di import (
     ProviderFactoryDep,
     SessionDep,
     TaskTrackerServiceDep,
     TickerServiceDep,
 )
+from app.modules.market.external_api import handle_task_errors
+from app.modules.market.taskiq_setup import broker
 
 logger = logging.getLogger(__name__)
 

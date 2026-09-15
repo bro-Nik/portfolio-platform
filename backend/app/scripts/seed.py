@@ -1,24 +1,22 @@
 import argparse
 import asyncio
+from datetime import UTC, datetime, timedelta
 import logging
 import os
 import secrets
-from datetime import UTC, datetime, timedelta
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.schemas.auth import UserRole
 from app.core.database import AsyncSessionLocal
-import app.modules.auth.models
-
+from app.modules import models as _models  # noqa: F401  # регистрация ORM-моделей
 from app.modules.auth.repositories import UserRepository
 from app.modules.auth.security import SecurityService
-import app.modules.market.models
 from app.modules.market.constants import CURRENCY_CODES
 from app.modules.market.models import Ticker
 from app.modules.market.repositories import ProviderRepository, TaskRepository, TickerRepository
 from app.modules.market.schemas.provider import ProviderCreate
 from app.modules.market.schemas.task import TaskCreate
-import app.modules.portfolios.models
-import app.modules.tags.models
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +67,7 @@ _CURRENCY_NAMES = {
 }
 
 
-async def seed_currencies(session) -> None:
+async def seed_currencies(session: AsyncSession) -> None:
     ticker_repo = TickerRepository(session)
     existing = await ticker_repo.get_all(Ticker.market == 'currency')
     existing_symbols = {t.symbol for t in existing}
@@ -78,15 +76,17 @@ async def seed_currencies(session) -> None:
         logger.info('Валюты уже есть (%d шт.) — пропускаем', len(existing))
         return
     logger.info('Создание валют: %s', ', '.join(missing))
-    await ticker_repo.create_all([
-        {
-            'market': 'currency',
-            'symbol': code,
-            'name': _CURRENCY_NAMES.get(code, code),
-            'price': 1.0 if code == 'USD' else 0.0,
-        }
-        for code in missing
-    ])
+    await ticker_repo.create_all(
+        [
+            {
+                'market': 'currency',
+                'symbol': code,
+                'name': _CURRENCY_NAMES.get(code, code),
+                'price': 1.0 if code == 'USD' else 0.0,
+            }
+            for code in missing
+        ]
+    )
 
 
 def _random_password(length: int = 16) -> str:
@@ -107,88 +107,88 @@ async def run(admin_email: str, admin_password: str) -> None:
         if user_count > 0:
             return
 
-        logger.info("Создание admin-пользователя: %s", admin_email)
+        logger.info('Создание admin-пользователя: %s', admin_email)
         security = SecurityService()
-        await user_repo.create({
-            'email': admin_email,
-            'password_hash': security.get_password_hash(admin_password),
-            'role': UserRole.ADMIN,
-            'status': 'active',
-        })
-        logger.info("Пароль администратора: %s (сохраните его)", admin_password)
+        await user_repo.create(
+            {
+                'email': admin_email,
+                'password_hash': security.get_password_hash(admin_password),
+                'role': UserRole.ADMIN,
+                'status': 'active',
+            }
+        )
+        logger.info('Пароль администратора: %s (сохраните его)', admin_password)
 
-        provider_exists = await provider_repo.exists_by_name("CoinGecko")
+        provider_exists = await provider_repo.exists_by_name('CoinGecko')
         if not provider_exists:
-            logger.info("Создание провайдера CoinGecko")
+            logger.info('Создание провайдера CoinGecko')
             provider_data = ProviderCreate(
-                name="CoinGecko",
+                name='CoinGecko',
                 is_active=True,
             )
             await provider_repo.create(provider_data.model_dump())
         else:
-            logger.info("Провайдер CoinGecko уже существует — пропускаем")
+            logger.info('Провайдер CoinGecko уже существует — пропускаем')
 
-        if not await task_repo.exists_by_name("Update prices (Coingecko)"):
-            logger.info("Создание задачи обновления цен (ежедневно)")
+        if not await task_repo.exists_by_name('Update prices (Coingecko)'):
+            logger.info('Создание задачи обновления цен (ежедневно)')
             price_task = TaskCreate(
-                name="Update prices (Coingecko)",
-                provider_name="CoinGecko",
-                task_type="selective_price_update",
-                schedule="0 0 * * *",
-                parameters={"strategy": "all"},
+                name='Update prices (Coingecko)',
+                provider_name='CoinGecko',
+                task_type='selective_price_update',
+                schedule='0 0 * * *',
+                parameters={'strategy': 'all'},
                 next_run=datetime.now(UTC) + timedelta(minutes=2),
             )
             await task_repo.create(price_task.model_dump())
         else:
-            logger.info("Задача обновления цен уже существует — пропускаем")
+            logger.info('Задача обновления цен уже существует — пропускаем')
 
-        if not await task_repo.exists_by_name("Load tickers (Coingecko)"):
-            logger.info("Создание задачи загрузки тикеров (ежемесячно)")
+        if not await task_repo.exists_by_name('Load tickers (Coingecko)'):
+            logger.info('Создание задачи загрузки тикеров (ежемесячно)')
             load_task = TaskCreate(
-                name="Load tickers (Coingecko)",
-                provider_name="CoinGecko",
-                task_type="load_tickers",
-                schedule="0 0 1 * *",
-                parameters={"strategy": "all"},
+                name='Load tickers (Coingecko)',
+                provider_name='CoinGecko',
+                task_type='load_tickers',
+                schedule='0 0 1 * *',
+                parameters={'strategy': 'all'},
                 next_run=datetime.now(UTC),
             )
             await task_repo.create(load_task.model_dump())
         else:
-            logger.info("Задача загрузки тикеров уже существует — пропускаем")
+            logger.info('Задача загрузки тикеров уже существует — пропускаем')
 
-        if not await provider_repo.exists_by_name("CurrencyApi"):
-            logger.info("Создание провайдера CurrencyApi")
-            await provider_repo.create(
-                ProviderCreate(name="CurrencyApi", is_active=True).model_dump()
-            )
+        if not await provider_repo.exists_by_name('CurrencyApi'):
+            logger.info('Создание провайдера CurrencyApi')
+            await provider_repo.create(ProviderCreate(name='CurrencyApi', is_active=True).model_dump())
         else:
-            logger.info("Провайдер CurrencyApi уже существует — пропускаем")
+            logger.info('Провайдер CurrencyApi уже существует — пропускаем')
 
-        if not await task_repo.exists_by_name("Update currency prices (CurrencyApi)"):
-            logger.info("Создание задачи обновления курсов валют (ежедневно)")
+        if not await task_repo.exists_by_name('Update currency prices (CurrencyApi)'):
+            logger.info('Создание задачи обновления курсов валют (ежедневно)')
             currency_task = TaskCreate(
-                name="Update currency prices (CurrencyApi)",
-                provider_name="CurrencyApi",
-                task_type="update_prices",
-                schedule="0 0 * * *",
+                name='Update currency prices (CurrencyApi)',
+                provider_name='CurrencyApi',
+                task_type='update_prices',
+                schedule='0 0 * * *',
                 next_run=datetime.now(UTC),
             )
             await task_repo.create(currency_task.model_dump())
         else:
-            logger.info("Задача обновления курсов валют уже существует — пропускаем")
+            logger.info('Задача обновления курсов валют уже существует — пропускаем')
 
         await session.commit()
-        logger.info("Seed завершён")
+        logger.info('Seed завершён')
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    parser = argparse.ArgumentParser(description="Seed initial data")
-    parser.add_argument("--admin-email", default=os.getenv("ADMIN_EMAIL", "admin@example.com"))
-    parser.add_argument("--admin-password", default=os.getenv("ADMIN_PASSWORD") or _random_password())
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+    parser = argparse.ArgumentParser(description='Seed initial data')
+    parser.add_argument('--admin-email', default=os.getenv('ADMIN_EMAIL', 'admin@example.com'))
+    parser.add_argument('--admin-password', default=os.getenv('ADMIN_PASSWORD') or _random_password())
     args = parser.parse_args()
     asyncio.run(run(args.admin_email, args.admin_password))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -15,7 +15,6 @@ def main() -> None:
 
     schema = app.openapi()
     output.write_text(json.dumps(schema, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
-    print(f'OpenAPI schema exported to {output} ({len(schema.get("paths", {}))} paths)')
 
 
 if __name__ == '__main__':

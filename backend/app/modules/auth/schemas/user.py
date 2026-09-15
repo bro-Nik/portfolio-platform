@@ -3,11 +3,9 @@ from typing import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, computed_field
 
+from .session import LoginSessionResponse
 from app.common.schemas import ApiModel, UserRole
 from app.core import settings
-
-from .session import LoginSessionResponse
-
 
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 72  # bcrypt silently truncates beyond 72 bytes

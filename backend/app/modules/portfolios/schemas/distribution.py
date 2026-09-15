@@ -1,7 +1,5 @@
 from decimal import Decimal
 
-from pydantic import BaseModel
-
 from app.common.schemas import ApiModel
 
 

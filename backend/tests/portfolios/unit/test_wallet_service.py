@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from app.common.exceptions import ConflictError, NotFoundError
-
 from app.modules.portfolios.repositories import WalletRepository
 from app.modules.portfolios.services.wallet import WalletService
 from app.modules.portfolios.services.wallet_asset import WalletAssetService
@@ -54,7 +53,8 @@ class TestWalletService:
 
     async def test_archive_bulk(self, service, mock):
         wallet = mock(
-            id=1, user_id=user_id,
+            id=1,
+            user_id=user_id,
             assets=[mock(id=10, is_archived=False), mock(id=11, is_archived=True)],
         )
 

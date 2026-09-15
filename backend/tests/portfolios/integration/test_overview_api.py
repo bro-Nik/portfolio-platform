@@ -15,22 +15,32 @@ from app.modules.portfolios.models import (
 class TestOverviewAPI:
     @pytest.mark.usefixtures('tickers')
     async def test_overview_has_transactions(
-        self, client, auth_headers, db_session, user, save,
+        self,
+        client,
+        auth_headers,
+        db_session,
+        user,
+        save,
     ):
         portfolio = await save(
-            db_session, Portfolio(name='Основной портфель', market='crypto', user_id=user.id),
+            db_session,
+            Portfolio(name='Основной портфель', market='crypto', user_id=user.id),
         )
         wallet = await save(
-            db_session, Wallet(name='Основной кошелек', user_id=user.id),
+            db_session,
+            Wallet(name='Основной кошелек', user_id=user.id),
         )
         transfer_target = await save(
-            db_session, Portfolio(name='Получатель', market='crypto', user_id=user.id),
+            db_session,
+            Portfolio(name='Получатель', market='crypto', user_id=user.id),
         )
         empty_portfolio = await save(
-            db_session, Portfolio(name='Пустой портфель', market='crypto', user_id=user.id),
+            db_session,
+            Portfolio(name='Пустой портфель', market='crypto', user_id=user.id),
         )
         empty_wallet = await save(
-            db_session, Wallet(name='Пустой кошелек', user_id=user.id),
+            db_session,
+            Wallet(name='Пустой кошелек', user_id=user.id),
         )
 
         def make_portfolio_asset(portfolio_id: int, ticker_id: int) -> PortfolioAsset:

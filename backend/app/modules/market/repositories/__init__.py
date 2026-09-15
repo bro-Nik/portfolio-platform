@@ -9,7 +9,7 @@ __all__ = [
     'ProviderRepository',
     'RequestLogRepository',
     'TaskRepository',
-    'TickerRepository',
     'TickerExternalIdRepository',
     'TickerIdentifierRepository',
+    'TickerRepository',
 ]

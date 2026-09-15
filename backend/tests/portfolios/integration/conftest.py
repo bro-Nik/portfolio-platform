@@ -16,10 +16,9 @@ from app.core.database import Base
 from app.core.rate_limit import limiter
 from app.di import build_test_container
 from app.main import app as fastapi_app
-import app.modules.auth.models
+from app.modules import models as _models  # noqa: F401  # регистрация ORM-моделей
 from app.modules.auth.models import User
 from app.modules.market.models import Ticker
-import app.modules.portfolios.models
 from app.modules.portfolios.models import (
     Portfolio,
     PortfolioAsset,
@@ -27,7 +26,6 @@ from app.modules.portfolios.models import (
     Wallet,
     WalletAsset,
 )
-import app.modules.tags.models  # noqa: F401
 
 
 @pytest.fixture(scope='session')

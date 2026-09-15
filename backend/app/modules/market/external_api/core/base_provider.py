@@ -1,7 +1,7 @@
 import logging
 from typing import TYPE_CHECKING
 
-from ..exceptions import ExternalAPIError
+from app.modules.market.external_api.exceptions import ExternalAPIError
 
 if TYPE_CHECKING:
     from redis.asyncio import Redis

@@ -12,7 +12,9 @@ class TickerUsageRepository:
 
     async def get_used_ticker_ids(self) -> list[int]:
         result = await self._session.execute(
-            select(PortfolioAsset.ticker_id).distinct().union(
+            select(PortfolioAsset.ticker_id)
+            .distinct()
+            .union(
                 select(WalletAsset.ticker_id).distinct(),
             ),
         )

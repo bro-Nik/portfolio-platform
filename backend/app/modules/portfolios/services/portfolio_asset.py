@@ -35,8 +35,7 @@ class PortfolioAssetService:
     async def create(self, data: PortfolioAssetCreateRequest) -> PortfolioAsset:
         if await self.repo.get_by_ticker_and_portfolio(data.ticker_id, data.portfolio_id):
             raise ConflictError('Этот актив уже добавлен в портфель')
-        asset = await self.repo.create(PortfolioAssetCreate(**data.model_dump(), user_id=self.actor.id).model_dump())
-        return asset
+        return await self.repo.create(PortfolioAssetCreate(**data.model_dump(), user_id=self.actor.id).model_dump())
 
     async def delete(self, id: int) -> bool:
         asset = await self.get(id)
@@ -77,11 +76,16 @@ class PortfolioAssetService:
         assets = await self.repo.get_all_by_ticker_and_user_with_portfolios(asset.ticker_id, self.actor.id)
         total_qty = sum(a.quantity for a in assets)
         total_amt = sum(a.amount for a in assets)
-        distribution = [PortfolioAssetDistributionItem(
-            portfolio_id=a.portfolio.id, portfolio_name=a.portfolio.name,
-            quantity=a.quantity, amount=a.amount,
-            percentage_of_total=round(float(a.quantity / total_qty * 100) if total_qty > 0 else 0, 2),
-        ) for a in assets]
+        distribution = [
+            PortfolioAssetDistributionItem(
+                portfolio_id=a.portfolio.id,
+                portfolio_name=a.portfolio.name,
+                quantity=a.quantity,
+                amount=a.amount,
+                percentage_of_total=round(float(a.quantity / total_qty * 100) if total_qty > 0 else 0, 2),
+            )
+            for a in assets
+        ]
         return PortfolioAssetDistributionResponse(
             total_quantity_all_portfolios=total_qty,
             total_amount_all_portfolios=total_amt,
@@ -90,7 +94,8 @@ class PortfolioAssetService:
 
     async def get_affected(self, *transactions: Transaction) -> list[PortfolioAsset]:
         pairs = {
-            pair for t in transactions
+            pair
+            for t in transactions
             for pair in combine_ids_and_tickers(
                 [t.portfolio_id, t.portfolio2_id],
                 [t.ticker_id, t.ticker2_id],
@@ -113,10 +118,9 @@ class PortfolioAssetService:
         existing = await self.repo.get_all_by_portfolio_tickers(assets_map)
         existing_by_pair = {(a.portfolio_id, a.ticker_id): a for a in existing}
         missing = [pair for pair in valid if pair not in existing_by_pair]
-        created = await self.repo.create_all([
-            {'portfolio_id': p_id, 'ticker_id': t_id, 'user_id': self.actor.id}
-            for p_id, t_id in missing
-        ])
+        created = await self.repo.create_all(
+            [{'portfolio_id': p_id, 'ticker_id': t_id, 'user_id': self.actor.id} for p_id, t_id in missing]
+        )
         created_by_pair = {(a.portfolio_id, a.ticker_id): a for a in created}
         return tuple(existing_by_pair.get(pair) or created_by_pair[pair] for pair in valid)
 
@@ -128,7 +132,9 @@ class PortfolioAssetService:
         self._clean_asset(a1)
         self._clean_asset(a2)
 
-    def _handle_trade_execution(self, asset: PortfolioAsset, t: Transaction, direction: int, *, is_base_asset: bool) -> None:
+    def _handle_trade_execution(
+        self, asset: PortfolioAsset, t: Transaction, direction: int, *, is_base_asset: bool
+    ) -> None:
         if is_base_asset:
             if direction > 0:
                 asset.quantity += t.quantity
@@ -143,7 +149,9 @@ class PortfolioAssetService:
         elif not is_base_asset:
             asset.quantity -= t.quantity2 * direction
 
-    def _handle_trade_order(self, asset: PortfolioAsset, t: Transaction, direction: int, *, is_base_asset: bool) -> None:
+    def _handle_trade_order(
+        self, asset: PortfolioAsset, t: Transaction, direction: int, *, is_base_asset: bool
+    ) -> None:
         if is_base_asset:
             if t.type == 'Buy':
                 asset.buy_orders += t.quantity * t.price_usd * direction
@@ -182,7 +190,7 @@ class PortfolioAssetService:
         for field in fields:
             setattr(asset, field, clean_decimal(getattr(asset, field)))
 
-    def _verify(self, asset) -> None:
+    def _verify(self, asset: PortfolioAsset) -> None:
         if not asset:
             raise NotFoundError('Актив не найден')
         if asset.user_id != self.actor.id:

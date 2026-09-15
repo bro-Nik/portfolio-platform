@@ -1,23 +1,26 @@
 from fastapi import Request
 
-from app.common.routing import DishkaRouter
-
 from app.common.exceptions import handle_errors
-from app.core.rate_limit import limiter
-
+from app.common.routing import DishkaRouter
 from app.core import settings
+from app.core.rate_limit import limiter
 from app.modules.portfolios.dependencies import (
-    TransactionReadQueryDep, WalletAssetServiceDep, WalletReadQueryDep,
+    TransactionReadQueryDep,
+    WalletAssetServiceDep,
+    WalletReadQueryDep,
     WalletServiceDep,
     require_user,
 )
 from app.modules.portfolios.schemas import (
-    TransactionResponse, WalletArchiveRequest, WalletAssetArchiveRequest,
+    TransactionResponse,
+    WalletArchiveRequest,
+    WalletAssetArchiveRequest,
     WalletAssetDistributionResponse,
-    WalletCreateRequest, WalletListResponse, WalletResponse,
+    WalletCreateRequest,
+    WalletListResponse,
+    WalletResponse,
     WalletUpdateRequest,
 )
-
 
 router = DishkaRouter(dependencies=[require_user])
 

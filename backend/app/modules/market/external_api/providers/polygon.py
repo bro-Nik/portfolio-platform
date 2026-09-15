@@ -4,8 +4,8 @@ import logging
 
 import httpx
 
-from ..core import BaseProvider, registry
-from ..methods import full_price_updater, image_loader, ticker_loader
+from app.modules.market.external_api.core import BaseProvider, registry
+from app.modules.market.external_api.methods import full_price_updater, image_loader, ticker_loader
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,10 @@ class PolygonProvider(BaseProvider):
     async def update_prices(self, **kwargs) -> dict:
         market = self._resolve_market(kwargs)
         return await full_price_updater.run(
-            market, self._fetch_all_prices, quote_currency=self.QUOTE_CURRENCY, **kwargs,
+            market,
+            self._fetch_all_prices,
+            quote_currency=self.QUOTE_CURRENCY,
+            **kwargs,
         )
 
     @registry.register_method(image_loader)
@@ -74,8 +77,7 @@ class PolygonProvider(BaseProvider):
 
             results = data.get('results', [])
             batch = [
-                {'id': item.get('ticker'), 'symbol': item.get('ticker'), 'name': item.get('name')}
-                for item in results
+                {'id': item.get('ticker'), 'symbol': item.get('ticker'), 'name': item.get('name')} for item in results
             ]
             logger.info('Загружено %s тикеров', len(batch))
             yield batch
@@ -85,8 +87,11 @@ class PolygonProvider(BaseProvider):
                 break
 
     async def _fetch_all_prices(self) -> dict[str, float]:
-        date = datetime.now().date()
-        if datetime.now(UTC).hour < 12:
+        # Дата считается в UTC: naive now() зависел от TZ контейнера и молча
+        # сдвигала запрашиваемый торговый день.
+        now = datetime.now(UTC)
+        date = now.date()
+        if now.hour < 12:
             date -= timedelta(days=1)
 
         for attempt in range(self.MAX_ATTEMPTS):
@@ -95,7 +100,8 @@ class PolygonProvider(BaseProvider):
             try:
                 params = self._augment_params({'adjusted': 'true'})
                 data = await self.http.request(
-                    'GET', f'v2/aggs/grouped/locale/us/market/stocks/{date}',
+                    'GET',
+                    f'v2/aggs/grouped/locale/us/market/stocks/{date}',
                     params=params,
                 )
             except Exception:
@@ -116,7 +122,8 @@ class PolygonProvider(BaseProvider):
             try:
                 params = self._augment_params()
                 data = await self.http.request(
-                    'GET', f'v3/reference/tickers/{ext_id}',
+                    'GET',
+                    f'v3/reference/tickers/{ext_id}',
                     params=params,
                 )
             except Exception:

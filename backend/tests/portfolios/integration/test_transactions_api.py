@@ -161,8 +161,8 @@ class TestTransactionsAPI:
 
         data_portfolio = (await client.get(f'/api/portfolios/{portfolio.id}', headers=auth_headers)).json()
         btc = next(a for a in data_portfolio['assets'] if a['tickerId'] == 1)
-        assert Decimal(btc['quantity']) == Decimal('0')
-        assert Decimal(btc['amount']) == Decimal('0')
+        assert Decimal(btc['quantity']) == Decimal(0)
+        assert Decimal(btc['amount']) == Decimal(0)
         assert Decimal(btc['realizedProfit']) == Decimal('5000.0')
 
     @pytest.mark.usefixtures('tickers')
@@ -185,7 +185,9 @@ class TestTransactionsAPI:
         data_portfolio = (await client.get(f'/api/portfolios/{portfolio.id}', headers=auth_headers)).json()
         usdt = next(a for a in data_portfolio['assets'] if a['tickerId'] == 2)
 
-        data_asset = (await client.get(f'/api/portfolios/{portfolio.id}/assets/{usdt["id"]}/transactions', headers=auth_headers)).json()
+        data_asset = (
+            await client.get(f'/api/portfolios/{portfolio.id}/assets/{usdt["id"]}/transactions', headers=auth_headers)
+        ).json()
         assert len(data_asset) == 1
         assert data_asset[0]['type'] == 'Buy'
         assert data_asset[0]['tickerId'] == 1
@@ -210,18 +212,22 @@ class TestTransactionsAPI:
         data_wallet = (await client.get(f'/api/wallets/{wallet.id}', headers=auth_headers)).json()
         usdt = next(a for a in data_wallet['assets'] if a['tickerId'] == 2)
 
-        data_asset = (await client.get(f'/api/wallets/{wallet.id}/assets/{usdt["id"]}/transactions', headers=auth_headers)).json()
+        data_asset = (
+            await client.get(f'/api/wallets/{wallet.id}/assets/{usdt["id"]}/transactions', headers=auth_headers)
+        ).json()
         assert len(data_asset) == 1
         assert data_asset[0]['type'] == 'Buy'
         assert data_asset[0]['tickerId'] == 1
 
     @pytest.mark.usefixtures('tickers')
     async def test_transfer_visible_on_destination_portfolio_asset(self, client, auth_headers, portfolio):
-        portfolio2 = (await client.post(
-            '/api/portfolios/',
-            json={'name': 'Портфель 2', 'market': 'crypto'},
-            headers=auth_headers,
-        )).json()
+        portfolio2 = (
+            await client.post(
+                '/api/portfolios/',
+                json={'name': 'Портфель 2', 'market': 'crypto'},
+                headers=auth_headers,
+            )
+        ).json()
         transfer_data = {
             'date': datetime.now(UTC).isoformat(),
             'tickerId': 1,
@@ -236,18 +242,24 @@ class TestTransactionsAPI:
         data_portfolio2 = (await client.get(f'/api/portfolios/{portfolio2["id"]}', headers=auth_headers)).json()
         btc = next(a for a in data_portfolio2['assets'] if a['tickerId'] == 1)
 
-        data_asset = (await client.get(f'/api/portfolios/{portfolio2["id"]}/assets/{btc["id"]}/transactions', headers=auth_headers)).json()
+        data_asset = (
+            await client.get(
+                f'/api/portfolios/{portfolio2["id"]}/assets/{btc["id"]}/transactions', headers=auth_headers
+            )
+        ).json()
         assert len(data_asset) == 1
         assert data_asset[0]['type'] == 'TransferOut'
         assert data_asset[0]['portfolio2Id'] == portfolio2['id']
 
     @pytest.mark.usefixtures('tickers')
     async def test_transfer_rejects_mismatched_market(self, client, auth_headers, portfolio):
-        portfolio2 = (await client.post(
-            '/api/portfolios/',
-            json={'name': 'Портфель акций', 'market': 'stocks'},
-            headers=auth_headers,
-        )).json()
+        portfolio2 = (
+            await client.post(
+                '/api/portfolios/',
+                json={'name': 'Портфель акций', 'market': 'stocks'},
+                headers=auth_headers,
+            )
+        ).json()
         transfer_data = {
             'date': datetime.now(UTC).isoformat(),
             'tickerId': 1,
@@ -268,11 +280,13 @@ class TestTransactionsAPI:
             db_session,
             Ticker(id=100, name='US Dollar', symbol='USD', market='currency'),
         )
-        portfolio2 = (await client.post(
-            '/api/portfolios/',
-            json={'name': 'Портфель акций', 'market': 'stocks'},
-            headers=auth_headers,
-        )).json()
+        portfolio2 = (
+            await client.post(
+                '/api/portfolios/',
+                json={'name': 'Портфель акций', 'market': 'stocks'},
+                headers=auth_headers,
+            )
+        ).json()
         transfer_data = {
             'date': datetime.now(UTC).isoformat(),
             'tickerId': 100,

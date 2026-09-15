@@ -3,9 +3,9 @@ from decimal import Decimal
 import json
 import logging
 
-from ..core import BaseProvider, registry
-from ..methods import selective_price_updater, ticker_loader
-from ..url_chunker import chunk_ids_for_url
+from app.modules.market.external_api.core import BaseProvider, registry
+from app.modules.market.external_api.methods import selective_price_updater, ticker_loader
+from app.modules.market.external_api.url_chunker import chunk_ids_for_url
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,8 @@ class CoingeckoProvider(BaseProvider):
         logger.info('Загрузка карты платформ с контрактными адресами из API...')
         try:
             data = await self.http.request(
-                'GET', 'coins/list',
+                'GET',
+                'coins/list',
                 params={'include_platform': 'true'},
             )
             platforms_map = {}
@@ -89,7 +90,8 @@ class CoingeckoProvider(BaseProvider):
             logger.info('Загрузка страницы тикеров %s...', page)
             try:
                 data = await self.http.request(
-                    'GET', 'coins/markets',
+                    'GET',
+                    'coins/markets',
                     params={'vs_currency': 'usd', 'per_page': 250, 'page': page},
                 )
             except Exception:
@@ -119,7 +121,8 @@ class CoingeckoProvider(BaseProvider):
         for i, chunk in enumerate(chunks, 1):
             try:
                 data = await self.http.request(
-                    'GET', 'simple/price',
+                    'GET',
+                    'simple/price',
                     params={'vs_currencies': 'usd', 'ids': ','.join(chunk)},
                 )
                 all_prices.update(data)

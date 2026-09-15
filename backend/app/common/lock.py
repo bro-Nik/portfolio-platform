@@ -1,5 +1,7 @@
 import asyncio
+import contextlib
 import logging
+from typing import Self
 
 from redis.asyncio import Redis
 
@@ -22,7 +24,7 @@ class RedisTaskLock:
         self.ttl = ttl
         self._renew_task: asyncio.Task | None = None
 
-    async def __aenter__(self) -> 'RedisTaskLock':
+    async def __aenter__(self) -> Self:
         acquired = await self.redis.set(self.key, '1', nx=True, ex=self.ttl)
         if not acquired:
             raise TaskAlreadyRunningError(self.task_id_from_key())
@@ -32,10 +34,8 @@ class RedisTaskLock:
     async def __aexit__(self, *args) -> None:
         if self._renew_task:
             self._renew_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._renew_task
-            except asyncio.CancelledError:
-                pass
         await self.redis.delete(self.key)
 
     async def _heartbeat(self) -> None:

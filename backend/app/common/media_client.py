@@ -8,6 +8,10 @@ from app.common.utils.retry import parse_retry_after, retry_pause
 logger = logging.getLogger(__name__)
 
 
+class MediaDownloadError(Exception):
+    """Загрузка не удалась после исчерпания всех попыток."""
+
+
 class MediaClient:
     TIMEOUT = 30.0
     MAX_CONNECTIONS = 50
@@ -49,7 +53,8 @@ class MediaClient:
                         logger.exception('HTTP ошибка %s для %s', e.response.status_code, url)
                         raise
                     await retry_pause(
-                        attempt, cls.MAX_RETRIES,
+                        attempt,
+                        cls.MAX_RETRIES,
                         subject=f'429 для {url}',
                         retry_after=parse_retry_after(e.response),
                     )
@@ -58,11 +63,18 @@ class MediaClient:
                         logger.exception('Ошибка загрузки %s', url)
                         raise
                     await retry_pause(
-                        attempt, cls.MAX_RETRIES,
+                        attempt,
+                        cls.MAX_RETRIES,
                         subject=f'Повтор {url}',
                         error=e,
-                        base=cls.RETRY_BACKOFF, cap=cls.MAX_BACKOFF,
+                        base=cls.RETRY_BACKOFF,
+                        cap=cls.MAX_BACKOFF,
                     )
+
+        # Исчерпание попыток на 429: без явного raise цикл завершался с None,
+        # и вызывающий код получал bytes | None вперемешку с bytes | Exception.
+        logger.error('Исчерпаны попытки загрузки %s (последний статус 429)', url)
+        raise MediaDownloadError(url)
 
     @classmethod
     async def download_batch(cls, urls: list[str]) -> dict[str, bytes | Exception]:
@@ -72,7 +84,7 @@ class MediaClient:
             *[cls.download(url) for url in urls],
             return_exceptions=True,
         )
-        return dict(zip(urls, results))
+        return dict(zip(urls, results, strict=True))
 
     @classmethod
     async def close(cls) -> None:

@@ -1,18 +1,19 @@
 from fastapi import Request
 
-from app.common.routing import DishkaRouter
-
 from app.common.exceptions import handle_errors
-from app.core.rate_limit import limiter
-
+from app.common.routing import DishkaRouter
 from app.core import settings
+from app.core.rate_limit import limiter
 from app.modules.tags.dependencies import (
-    TagServiceDep, require_user,
+    TagServiceDep,
+    require_user,
 )
 from app.modules.tags.schemas import (
-    TagCreate, TagEntityType, TagResponse, TagUpdate,
+    TagCreate,
+    TagEntityType,
+    TagResponse,
+    TagUpdate,
 )
-
 
 router = DishkaRouter(dependencies=[require_user])
 

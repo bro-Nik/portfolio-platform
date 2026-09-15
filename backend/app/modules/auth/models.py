@@ -1,11 +1,19 @@
 from datetime import UTC, datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import BigInteger, Boolean, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.modules.auth.schemas import UserRole
+
+if TYPE_CHECKING:
+    from app.modules.portfolios.models import Portfolio, Wallet
+    from app.modules.tags.models import Tag
+
+
+def _enum_values(enum_cls: type[UserRole]) -> list[str]:
+    return [member.value for member in enum_cls]
 
 
 class RefreshToken(Base):
@@ -40,7 +48,9 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, create_constraint=True, validate_strings=True),
+        # values_callable заставляет писать в БД значение ('user'), а не имя
+        # члена перечисления ('USER') — иначе ORM расходится с userrole в БД.
+        Enum(UserRole, values_callable=_enum_values, create_constraint=True, validate_strings=True),
         nullable=False,
         default=UserRole.USER,
     )
@@ -48,7 +58,7 @@ class User(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
     )
-    last_active_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    last_active_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     total_active_time: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     status: Mapped[str] = mapped_column(String(50), default='active', nullable=False)
     refresh_tokens: Mapped[list['RefreshToken']] = relationship(
@@ -95,12 +105,12 @@ class LoginSession(Base):
         unique=True,
     )
 
-    ip_address: Mapped[Optional[str]] = mapped_column(String(45))
-    user_agent: Mapped[Optional[str]] = mapped_column(String(255))
-    device_type: Mapped[Optional[str]] = mapped_column(String(50))
-    browser: Mapped[Optional[str]] = mapped_column(String(100))
-    os: Mapped[Optional[str]] = mapped_column(String(100))
-    platform: Mapped[Optional[str]] = mapped_column(String(100))
+    ip_address: Mapped[str | None] = mapped_column(String(45))
+    user_agent: Mapped[str | None] = mapped_column(String(255))
+    device_type: Mapped[str | None] = mapped_column(String(50))
+    browser: Mapped[str | None] = mapped_column(String(100))
+    os: Mapped[str | None] = mapped_column(String(100))
+    platform: Mapped[str | None] = mapped_column(String(100))
 
     login_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
