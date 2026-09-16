@@ -5,17 +5,17 @@ Revises: d4e5f6a7b8c9
 Create Date: 2026-07-21 00:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
 revision: str = 'e5f6a7b8c9d0'
-down_revision: Union[str, None] = 'd4e5f6a7b8c9'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = 'd4e5f6a7b8c9'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 PROVIDER_BY_PREFIX = {
@@ -41,9 +41,7 @@ def upgrade() -> None:
         sa.Column('id', sa.String(256)),
     )
 
-    result = conn.execute(
-        sa.select(ticker_table.c.id)
-    ).fetchall()
+    result = conn.execute(sa.select(ticker_table.c.id)).fetchall()
 
     ticker_external_id_table = sa.table(
         'ticker_external_id',

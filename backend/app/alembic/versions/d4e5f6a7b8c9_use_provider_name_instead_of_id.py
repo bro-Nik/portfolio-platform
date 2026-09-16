@@ -5,16 +5,16 @@ Revises: a2b3c4d5e6f7
 Create Date: 2026-07-20 12:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 
-
 revision: str = 'd4e5f6a7b8c9'
-down_revision: Union[str, None] = 'a2b3c4d5e6f7'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = 'a2b3c4d5e6f7'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -55,7 +55,9 @@ def downgrade() -> None:
     # Restore provider_id FK columns
     op.add_column('request_log', sa.Column('provider_id', sa.Integer(), nullable=True))
     op.create_index('ix_request_log_provider_id', 'request_log', ['provider_id'])
-    op.create_foreign_key('request_log_provider_id_fkey', 'request_log', 'provider', ['provider_id'], ['id'], ondelete='CASCADE')
+    op.create_foreign_key(
+        'request_log_provider_id_fkey', 'request_log', 'provider', ['provider_id'], ['id'], ondelete='CASCADE'
+    )
 
     op.add_column('task', sa.Column('provider_id', sa.Integer(), nullable=False, server_default='0'))
     op.create_index('ix_task_provider_id', 'task', ['provider_id'])

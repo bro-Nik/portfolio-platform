@@ -5,16 +5,16 @@ Revises: 41e8f2b6c3d0
 Create Date: 2026-07-18 12:30:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 
-
 revision: str = '5f8e3d2c1b4a'
-down_revision: Union[str, None] = '41e8f2b6c3d0'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = '41e8f2b6c3d0'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -24,54 +24,102 @@ def upgrade() -> None:
 
     # Recreate with ON DELETE CASCADE
     op.create_foreign_key(
-        'portfolio_asset_portfolio_id_fkey', 'portfolio_asset', 'portfolio',
-        ['portfolio_id'], ['id'], ondelete='CASCADE',
+        'portfolio_asset_portfolio_id_fkey',
+        'portfolio_asset',
+        'portfolio',
+        ['portfolio_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'wallet_asset_wallet_id_fkey', 'wallet_asset', 'wallet',
-        ['wallet_id'], ['id'], ondelete='CASCADE',
+        'wallet_asset_wallet_id_fkey',
+        'wallet_asset',
+        'wallet',
+        ['wallet_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
 
     # Add new FK constraints with CASCADE for user_id columns
     op.create_foreign_key(
-        'fk_portfolio_user_id', 'portfolio', 'users',
-        ['user_id'], ['id'], ondelete='CASCADE',
+        'fk_portfolio_user_id',
+        'portfolio',
+        'users',
+        ['user_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'fk_portfolio_asset_user_id', 'portfolio_asset', 'users',
-        ['user_id'], ['id'], ondelete='CASCADE',
+        'fk_portfolio_asset_user_id',
+        'portfolio_asset',
+        'users',
+        ['user_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'fk_wallet_user_id', 'wallet', 'users',
-        ['user_id'], ['id'], ondelete='CASCADE',
+        'fk_wallet_user_id',
+        'wallet',
+        'users',
+        ['user_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'fk_wallet_asset_user_id', 'wallet_asset', 'users',
-        ['user_id'], ['id'], ondelete='CASCADE',
+        'fk_wallet_asset_user_id',
+        'wallet_asset',
+        'users',
+        ['user_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'fk_tag_user_id', 'tag', 'users',
-        ['user_id'], ['id'], ondelete='CASCADE',
+        'fk_tag_user_id',
+        'tag',
+        'users',
+        ['user_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'fk_transaction_user_id', 'transaction', 'users',
-        ['user_id'], ['id'], ondelete='CASCADE',
+        'fk_transaction_user_id',
+        'transaction',
+        'users',
+        ['user_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'fk_transaction_wallet_id', 'transaction', 'wallet',
-        ['wallet_id'], ['id'], ondelete='CASCADE',
+        'fk_transaction_wallet_id',
+        'transaction',
+        'wallet',
+        ['wallet_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'fk_transaction_wallet2_id', 'transaction', 'wallet',
-        ['wallet2_id'], ['id'], ondelete='CASCADE',
+        'fk_transaction_wallet2_id',
+        'transaction',
+        'wallet',
+        ['wallet2_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'fk_transaction_portfolio_id', 'transaction', 'portfolio',
-        ['portfolio_id'], ['id'], ondelete='CASCADE',
+        'fk_transaction_portfolio_id',
+        'transaction',
+        'portfolio',
+        ['portfolio_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     op.create_foreign_key(
-        'fk_transaction_portfolio2_id', 'transaction', 'portfolio',
-        ['portfolio2_id'], ['id'], ondelete='CASCADE',
+        'fk_transaction_portfolio2_id',
+        'transaction',
+        'portfolio',
+        ['portfolio2_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
 
 
@@ -93,10 +141,16 @@ def downgrade() -> None:
     op.drop_constraint('portfolio_asset_portfolio_id_fkey', 'portfolio_asset', type_='foreignkey')
 
     op.create_foreign_key(
-        'wallet_asset_wallet_id_fkey', 'wallet_asset', 'wallet',
-        ['wallet_id'], ['id'],
+        'wallet_asset_wallet_id_fkey',
+        'wallet_asset',
+        'wallet',
+        ['wallet_id'],
+        ['id'],
     )
     op.create_foreign_key(
-        'portfolio_asset_portfolio_id_fkey', 'portfolio_asset', 'portfolio',
-        ['portfolio_id'], ['id'],
+        'portfolio_asset_portfolio_id_fkey',
+        'portfolio_asset',
+        'portfolio',
+        ['portfolio_id'],
+        ['id'],
     )

@@ -5,16 +5,16 @@ Revises: 0e9efe973beb
 Create Date: 2026-07-17 17:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 
-
 revision: str = 'f3b1e2d4a5c6'
-down_revision: Union[str, None] = '0e9efe973beb'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = '0e9efe973beb'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

@@ -10,16 +10,13 @@ from app.core import settings
 from app.core.database import Base
 
 # Import all models so they register on Base.metadata
-import app.modules.auth.models  # noqa: F401
-import app.modules.portfolios.models  # noqa: F401
-import app.modules.market.models  # noqa: F401
-import app.modules.tags.models  # noqa: F401
+import app.modules.models  # noqa: F401
 
 config = context.config
 target_metadata = Base.metadata
 
 
-def run_migrations():
+def run_migrations() -> None:
     engine = create_engine(
         settings.sync_db_url,
         pool_pre_ping=True,
