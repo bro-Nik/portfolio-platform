@@ -31,6 +31,10 @@ default:
     @echo '  just tests [args]          - Run tests'
     @echo '  just build-local-env       - Create a local env for LSP support'
     @echo '  just codegen               - Export OpenAPI + regenerate frontend API clients'
+    @echo '  just lint                  - Run ruff check + format check on backend'
+    @echo '  just lint-fix              - Apply ruff autofixes and format'
+    @echo '  just typecheck             - Run tsc --noEmit in frontend'
+    @echo '  just check                 - Lint + typecheck + tests (what CI runs)'
     @echo ''
     @echo 'Databases:'
     @echo '  just backup                - Back up the database'
@@ -44,6 +48,8 @@ default:
     @echo '  just migrate-new msg       - Create a migration'
     @echo '  just migrate-down          - Roll back the last migration'
     @echo '  just migrate-current       - Show the current migration'
+    @echo '  just migrate-check         - Detect model/migration drift'
+    @echo '  just migrate-cycle         - Verify upgrade -> downgrade -> upgrade on a throwaway DB'
     @echo ''
     @echo 'Cleanup:'
     @echo '  just clean                 - Stop and remove all data'
@@ -84,9 +90,11 @@ exec service cmd:
 
 # Run the tests
 tests *args:
-    @docker compose -f compose.test.yml run --rm backend-tests {{ args }}; status=$$?; \
+    # Команда указывается здесь, а не через args: `docker compose run ARGS`
+    # заменяет command сервиса, и pytest вместе с --cov просто не запускался.
+    @docker compose -f compose.test.yml run --rm backend-tests pytest tests/ {{ args }} --cov=app; status=$?; \
     docker compose -f compose.test.yml down --remove-orphans > /dev/null 2>&1; \
-    exit $$status
+    exit $status
 
 # Create a local environment for LSP autocompletion
 build-local-env:
@@ -94,6 +102,24 @@ build-local-env:
     @python3 -m venv {{ backend_path }}/.venv
     @{{ backend_path }}/.venv/bin/pip install --upgrade pip
     @{{ backend_path }}/.venv/bin/pip install -r {{ backend_path }}/requirements.txt -r {{ backend_path }}/requirements-test.txt
+
+# Run ruff check + format check on the backend
+lint:
+    @cd {{ backend_path }} && .venv/bin/ruff check .
+    @cd {{ backend_path }} && .venv/bin/ruff format --check .
+
+# Apply ruff autofixes and reformat
+lint-fix:
+    @cd {{ backend_path }} && .venv/bin/ruff check . --fix
+    @cd {{ backend_path }} && .venv/bin/ruff format .
+
+# Run tsc --noEmit across the frontend workspace
+typecheck:
+    @cd frontend && pnpm typecheck
+
+# Everything CI gates on, runnable locally
+check: lint typecheck tests
+    @echo "✅ All checks passed"
 
 # Export the OpenAPI schema and regenerate frontend API clients
 codegen:
@@ -185,6 +211,24 @@ migrate-current:
     @started=$(just _ensure_db); \
     docker compose {{ compose }} run --rm backend alembic current; status=$?; \
     [ "$started" = "true" ] && just _stop_db; \
+    exit $status
+
+# Detect drift between models and migrations on a throwaway database.
+# Проверяется именно свежая БД из миграций: dev-БД может нести остатки
+# ручных правок, которых нет в репозитории.
+migrate-check:
+    @docker compose -f compose.test.yml up -d test-db; \
+    docker compose -f compose.test.yml run --rm backend-tests sh -c \
+      "cd app && alembic upgrade head && PYTHONPATH=/app alembic check"; status=$?; \
+    docker compose -f compose.test.yml down --remove-orphans > /dev/null 2>&1; \
+    exit $status
+
+# Verify upgrade -> downgrade -> upgrade on a throwaway database
+migrate-cycle:
+    @docker compose -f compose.test.yml up -d test-db; \
+    docker compose -f compose.test.yml run --rm backend-tests sh -c \
+      "cd app && alembic upgrade head && alembic downgrade base && alembic upgrade head && alembic current"; status=$?; \
+    docker compose -f compose.test.yml down --remove-orphans > /dev/null 2>&1; \
     exit $status
 
 # -------------------- Cleanup --------------------

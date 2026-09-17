@@ -49,6 +49,11 @@ class Ticker(Base):
     external_ids: Mapped[list[TickerExternalId]] = relationship(back_populates='ticker', cascade='all, delete-orphan')
     identifiers: Mapped[list[TickerIdentifier]] = relationship(back_populates='ticker', cascade='all, delete-orphan')
 
+    # PK уже обеспечивает уникальность, но внешние ключи на ticker.id ссылаются
+    # на отдельный уникальный индекс (uq_ticker_id_new из f6a7b8c9d0e1) —
+    # объявляем его, иначе `alembic check` предлагает его удалить.
+    __table_args__ = (UniqueConstraint('id', name='uq_ticker_id_new'),)
+
 
 class Provider(Base):
     __tablename__ = 'provider'
