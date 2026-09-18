@@ -1,13 +1,20 @@
-from collections.abc import Iterable
-
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import Select
 
 from app.common.repositories import BaseRepository
 from app.modules.portfolios.models import Transaction
 
 
 class TransactionRepository(BaseRepository[Transaction]):
+    """Доступ к транзакциям.
+
+    Проверки «есть ли транзакции» возвращают логические множества идентификаторов,
+    поэтому редукция выполняется в SQL (UNION + DISTINCT), а не в Python: иначе
+    каждый запрос тащил в память по строке на каждую транзакцию пользователя,
+    чтобы получить несколько булевых флагов.
+    """
+
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(Transaction, session)
 
@@ -44,110 +51,99 @@ class TransactionRepository(BaseRepository[Transaction]):
         return await self.exists_by(condition)
 
     async def portfolios_with_transactions(self, portfolio_ids: list[int]) -> set[int]:
-        if not portfolio_ids:
-            return set()
-        condition = or_(
-            Transaction.portfolio_id.in_(portfolio_ids),
-            Transaction.portfolio2_id.in_(portfolio_ids),
+        stmt = self._unioned_ids(
+            [
+                (Transaction.portfolio_id, Transaction.portfolio_id, portfolio_ids),
+                (Transaction.portfolio2_id, Transaction.portfolio2_id, portfolio_ids),
+            ],
         )
-        stmt = select(Transaction.portfolio_id, Transaction.portfolio2_id).where(condition)
+        if stmt is None:
+            return set()
         result = await self._session.execute(stmt)
-        ids = set()
-        for row in result:
-            if row[0] is not None:
-                ids.add(row[0])
-            if row[1] is not None:
-                ids.add(row[1])
-        return ids
+        return set(result.scalars())
 
     async def wallets_with_transactions(self, wallet_ids: list[int]) -> set[int]:
-        if not wallet_ids:
-            return set()
-        condition = or_(
-            Transaction.wallet_id.in_(wallet_ids),
-            Transaction.wallet2_id.in_(wallet_ids),
+        stmt = self._unioned_ids(
+            [
+                (Transaction.wallet_id, Transaction.wallet_id, wallet_ids),
+                (Transaction.wallet2_id, Transaction.wallet2_id, wallet_ids),
+            ],
         )
-        stmt = select(Transaction.wallet_id, Transaction.wallet2_id).where(condition)
+        if stmt is None:
+            return set()
         result = await self._session.execute(stmt)
-        ids = set()
-        for row in result:
-            if row[0] is not None:
-                ids.add(row[0])
-            if row[1] is not None:
-                ids.add(row[1])
-        return ids
+        return set(result.scalars())
 
     async def portfolios_tickers_with_transactions(
-        self, portfolio_tickers: dict[int, list[int]]
+        self,
+        portfolio_tickers: dict[int, list[int]],
     ) -> set[tuple[int, int]]:
-        tickers_by_portfolio = {pid: set(tids) for pid, tids in portfolio_tickers.items() if tids}
-        if not tickers_by_portfolio:
-            return set()
-        conditions = []
-        for pid, ticker_ids in tickers_by_portfolio.items():
-            conditions.extend(
-                [
-                    and_(Transaction.portfolio_id == pid, Transaction.ticker_id.in_(ticker_ids)),
-                    and_(Transaction.portfolio2_id == pid, Transaction.ticker2_id.in_(ticker_ids)),
-                    and_(Transaction.portfolio_id == pid, Transaction.ticker2_id.in_(ticker_ids)),
-                    and_(Transaction.portfolio2_id == pid, Transaction.ticker_id.in_(ticker_ids)),
-                ],
-            )
-        stmt = select(
-            Transaction.portfolio_id,
-            Transaction.portfolio2_id,
-            Transaction.ticker_id,
-            Transaction.ticker2_id,
-        ).where(or_(*conditions))
-        result = await self._session.execute(stmt)
-        return self._collect_portfolio_ticker_pairs(result, tickers_by_portfolio)
+        return await self._parent_ticker_pairs(
+            portfolio_tickers,
+            [
+                (Transaction.portfolio_id, Transaction.ticker_id),
+                (Transaction.portfolio_id, Transaction.ticker2_id),
+                (Transaction.portfolio2_id, Transaction.ticker_id),
+                (Transaction.portfolio2_id, Transaction.ticker2_id),
+            ],
+        )
 
     async def wallets_tickers_with_transactions(self, wallet_tickers: dict[int, list[int]]) -> set[tuple[int, int]]:
-        tickers_by_wallet = {wid: set(tids) for wid, tids in wallet_tickers.items() if tids}
-        if not tickers_by_wallet:
+        return await self._parent_ticker_pairs(
+            wallet_tickers,
+            [
+                (Transaction.wallet_id, Transaction.ticker_id),
+                (Transaction.wallet_id, Transaction.ticker2_id),
+                (Transaction.wallet2_id, Transaction.ticker_id),
+                (Transaction.wallet2_id, Transaction.ticker2_id),
+            ],
+        )
+
+    async def _parent_ticker_pairs(
+        self,
+        parent_tickers: dict[int, list[int]],
+        branches: list[tuple[object, object]],
+    ) -> set[tuple[int, int]]:
+        """Пары (родитель, тикер), для которых есть транзакция.
+
+        SQL отдаёт объединение четырёх ветвей по всем запрошенным тикерам, а
+        принадлежность тикера конкретному родителю проверяется здесь: в SQL такая
+        проверка стоила бы 4*P дизъюнктов. Строк на выходе — не больше, чем
+        уникальных пар, то есть перестаёт зависеть от числа транзакций.
+        """
+        tickers_by_parent = {pid: set(tids) for pid, tids in parent_tickers.items() if tids}
+        if not tickers_by_parent:
             return set()
-        conditions = []
-        for wid, ticker_ids in tickers_by_wallet.items():
-            conditions.extend(
-                [
-                    and_(Transaction.wallet_id == wid, Transaction.ticker_id.in_(ticker_ids)),
-                    and_(Transaction.wallet2_id == wid, Transaction.ticker2_id.in_(ticker_ids)),
-                    and_(Transaction.wallet_id == wid, Transaction.ticker2_id.in_(ticker_ids)),
-                    and_(Transaction.wallet2_id == wid, Transaction.ticker_id.in_(ticker_ids)),
-                ],
-            )
-        stmt = select(
-            Transaction.wallet_id,
-            Transaction.wallet2_id,
-            Transaction.ticker_id,
-            Transaction.ticker2_id,
-        ).where(or_(*conditions))
+        ticker_ids = sorted({tid for tids in tickers_by_parent.values() for tid in tids})
+        stmt = self._unioned_pairs(branches, list(tickers_by_parent), ticker_ids)
         result = await self._session.execute(stmt)
-        return self._collect_wallet_ticker_pairs(result, tickers_by_wallet)
+        return {(parent, ticker) for parent, ticker in result.all() if ticker in tickers_by_parent.get(parent, ())}
 
     @staticmethod
-    def _collect_portfolio_ticker_pairs(
-        result: Iterable[tuple[int | None, int | None, int | None, int | None]],
-        tickers_by_portfolio: dict[int, set[int]],
-    ) -> set[tuple[int, int]]:
-        pairs: set[tuple[int, int]] = set()
-        for p1, p2, t1, t2 in result:
-            for pid, ticker in ((p1, t1), (p2, t2), (p1, t2), (p2, t1)):
-                if pid is not None and ticker is not None and ticker in tickers_by_portfolio.get(pid, ()):
-                    pairs.add((pid, ticker))
-        return pairs
+    def _unioned_ids(branches: list[tuple[object, object, list[int]]]) -> Select | None:
+        """UNION DISTINCT одиночных идентификаторов: возвращает не больше, чем их число."""
+        if not branches or not branches[0][2]:
+            return None
+        selects = [select(column).where(column.in_(ids)).distinct() for column, _other, ids in branches]
+        return selects[0].union(*selects[1:]) if len(selects) > 1 else selects[0]
 
     @staticmethod
-    def _collect_wallet_ticker_pairs(
-        result: Iterable[tuple[int | None, int | None, int | None, int | None]],
-        tickers_by_wallet: dict[int, set[int]],
-    ) -> set[tuple[int, int]]:
-        pairs: set[tuple[int, int]] = set()
-        for w1, w2, t1, t2 in result:
-            for wid, ticker in ((w1, t1), (w2, t2), (w1, t2), (w2, t1)):
-                if wid is not None and ticker is not None and ticker in tickers_by_wallet.get(wid, ()):
-                    pairs.add((wid, ticker))
-        return pairs
+    def _unioned_pairs(
+        branches: list[tuple[object, object]],
+        parent_ids: list[int],
+        ticker_ids: list[int],
+    ) -> Select:
+        """UNION DISTINCT пар (родитель, тикер) по четырём сочетаниям колонок.
+
+        Каждая ветвь использует два индекса (по родителю и по тикеру), тогда как
+        прежний вариант строил 4*P дизъюнктов и выбирал четыре колонки из всех
+        совпавших строк, разворачивая декартово произведение уже в Python.
+        """
+        selects = [
+            select(parent, ticker).where(parent.in_(parent_ids), ticker.in_(ticker_ids)).distinct()
+            for parent, ticker in branches
+        ]
+        return selects[0].union(*selects[1:])
 
     async def exists_for_portfolio_ticker(self, portfolio_id: int, ticker_id: int) -> bool:
         condition = or_(
