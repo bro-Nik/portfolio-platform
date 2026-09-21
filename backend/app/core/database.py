@@ -14,6 +14,12 @@ async_engine = create_async_engine(
     pool_recycle=3600,
     pool_size=settings.db_pool_size,
     max_overflow=settings.db_max_overflow,
+    # Без явного таймаута задача ждёт свободное соединение 30 с (дефолт
+    # SQLAlchemy) и падает TimeoutError, который никто не видит.
+    pool_timeout=settings.db_pool_timeout,
+    # Сторожевой таймаут на стороне PostgreSQL: патологический запрос не должен
+    # держать соединение пула бесконечно.
+    connect_args={'server_settings': {'statement_timeout': str(settings.db_statement_timeout_ms)}},
     echo=settings.db_echo,
     future=True,
 )

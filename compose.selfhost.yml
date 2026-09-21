@@ -81,6 +81,21 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: worker
+    command:
+      - taskiq
+      - worker
+      - app.modules.market.taskiq_setup:broker
+      - app.modules.market.tasks
+      - app.modules.auth.tasks
+      - --log-level
+      - INFO
+      # Без явных значений taskiq запускает 2 процесса по 100 задач, а пул БД
+      # на процесс — 15 соединений: 170 задач упрутся в пул и упадут по
+      # таймауту. Значения должны помещаться в DB_POOL_SIZE + DB_MAX_OVERFLOW.
+      - --workers
+      - "${TASKIQ_WORKERS:-1}"
+      - --max-async-tasks
+      - "${TASKIQ_MAX_ASYNC_TASKS:-4}"
     environment:
       ENV: production
     env_file:

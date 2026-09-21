@@ -1,5 +1,21 @@
 name: portfolios
 
+# Бюджет соединений PostgreSQL: max_connections по умолчанию 100, каждый процесс
+# занимает DB_POOL_SIZE + DB_MAX_OVERFLOW. С web (1 процесс) + воркером (1 процесс)
+# + планировщиком (1 процесс) при значениях ниже используется 45 из 100.
+# TASKIQ_WORKERS * TASKIQ_MAX_ASYNC_TASKS не должен превышать DB_POOL_SIZE +
+# DB_MAX_OVERFLOW, иначе задачи будут упираться в пул и падать по таймауту.
+x-taskiq-worker-command: &taskiq-worker-command
+  [
+    "taskiq", "worker",
+    "app.modules.market.taskiq_setup:broker",
+    "app.modules.market.tasks",
+    "app.modules.auth.tasks",
+    "--log-level", "INFO",
+    "--workers", "${TASKIQ_WORKERS:-1}",
+    "--max-async-tasks", "${TASKIQ_MAX_ASYNC_TASKS:-4}",
+  ]
+
 services:
   db:
     image: postgres:16-alpine
@@ -43,7 +59,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: base
-    command: taskiq worker app.modules.market.taskiq_setup:broker app.modules.market.tasks app.modules.auth.tasks --log-level INFO
+    command: *taskiq-worker-command
     env_file:
       - path: ./.env
         required: false

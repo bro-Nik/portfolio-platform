@@ -17,8 +17,13 @@ class Settings(BaseSettings):
     jwt_refresh_token_expire_days: int = 30
 
     db_echo: bool = False
+    # Бюджет соединений на процесс: (pool_size + max_overflow).
+    # Суммируется по всем процессам (web + воркер + планировщик) и должен
+    # помещаться в max_connections PostgreSQL вместе с резервом.
     db_pool_size: int = 5
     db_max_overflow: int = 10
+    db_pool_timeout: int = 10
+    db_statement_timeout_ms: int = 30_000
     db_url: str = 'postgresql+asyncpg://postgres:@db/postgres'
 
     env: str = 'development'
