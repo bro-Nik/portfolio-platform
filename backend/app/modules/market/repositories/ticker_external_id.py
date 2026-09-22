@@ -1,4 +1,5 @@
 from sqlalchemy import exists, select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
@@ -38,6 +39,21 @@ class TickerExternalIdRepository(BaseRepository[TickerExternalId]):
             external_id=ext_id,
         )
         return await self._session.merge(obj)
+
+    async def upsert_many(self, rows: list[dict]) -> int:
+        """Массовый upsert по составному PK (ticker_id, provider_name).
+
+        Семантика совпадает с merge: при конфликте обновляется external_id.
+        """
+        if not rows:
+            return 0
+        insert_stmt = insert(self.model).values(rows)
+        stmt = insert_stmt.on_conflict_do_update(
+            index_elements=[self.model.ticker_id, self.model.provider_name],
+            set_={'external_id': insert_stmt.excluded.external_id},
+        )
+        await self._session.execute(stmt)
+        return len(rows)
 
     async def find_tickers_without_ext_id(self, provider_name: str) -> list[Ticker]:
         subq = select(self.model.ticker_id).where(

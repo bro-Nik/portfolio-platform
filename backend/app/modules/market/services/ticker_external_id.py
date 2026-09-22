@@ -29,3 +29,6 @@ class TickerExternalIdService:
 
     async def upsert(self, ticker_id: int, provider_name: str, ext_id: str) -> None:
         await self.repo.upsert(ticker_id, provider_name, ext_id)
+
+    async def upsert_many(self, rows: list[dict]) -> int:
+        return await self.repo.upsert_many(rows)

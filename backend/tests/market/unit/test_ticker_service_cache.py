@@ -152,10 +152,21 @@ class TestTickerServiceCache:
         async def raw_data():
             yield [{'id': 'btc', 'name': 'Bitcoin', 'symbol': 'BTC'}]
 
-        with patch.object(service.repo, 'create', return_value=mock(id=1)):
+        created = mock(id=1, symbol='BTC', image=None)
+        with patch.object(service.repo, 'create_all', return_value=[created]) as create_all:
             result = await service.sync_tickers('crypto', raw_data(), provider_name='CoinGecko')
 
         assert result['created'] == 1
+        create_all.assert_awaited_once_with(
+            [
+                {'market': 'crypto', 'name': 'Bitcoin', 'symbol': 'BTC', 'market_cap_rank': None},
+            ]
+        )
+        service._ext_id_service.upsert_many.assert_awaited_once_with(
+            [
+                {'ticker_id': 1, 'provider_name': 'CoinGecko', 'external_id': 'btc'},
+            ]
+        )
         redis.delete.assert_awaited_once_with('ticker:info:1')
 
     async def test_load_images_commits_and_invalidates_info_keys(self, service, redis, mock):

@@ -151,61 +151,73 @@ class TickerService:
         touched_ids: list[int] = []
 
         async for batch in raw_data:
+            coins = [coin for coin in batch if coin.get('id')]
+            identifiers_by_coin: list[dict[str, str]] = [
+                (extract_identifiers(coin) or {}) if extract_identifiers else {} for coin in coins
+            ]
+            # Один запрос на страницу вместо одного на монету: поиск по
+            # идентификаторам давал по SELECT на монету, и столько же на запись.
+            known_identifiers = await identifier_service.load_ticker_ids(
+                {pair for ids in identifiers_by_coin for pair in ids.items()},
+            )
+
+            pending_ext_ids: list[dict] = []
+            pending_identifiers: list[dict] = []
+            create_fields: list[dict] = []
+            create_indexes: list[int] = []
             queued_images: list[tuple[str, Ticker]] = []
 
-            for coin in batch:
-                ext_id = coin.get('id')
-                if not ext_id:
-                    continue
+            for index, coin in enumerate(coins):
+                ext_id = coin['id']
+                identifiers = identifiers_by_coin[index]
 
                 ticker = existing_by_ext.get(ext_id)
-
-                if not ticker and extract_identifiers:
-                    identifiers = extract_identifiers(coin)
-                    if identifiers:
-                        matched_id = await identifier_service.find_matching_ticker(identifiers, market)
-                        if matched_id:
-                            ticker = ticker_map.get(matched_id)
-                            if not ticker:
-                                fetched = await self.repo.get_all_by_ids([matched_id])
-                                if fetched:
-                                    ticker = fetched[0]
-                                    ticker_map[ticker.id] = ticker
-                            if ticker:
-                                existing_by_ext[ext_id] = ticker
-                                matched += 1
-
-                if ticker:
-                    if strategy == 'all':
-                        self._update_ticker_fields(ticker, coin)
-                        image_url = coin.get('image') if not ticker.image else None
-                        updated += 1
-                        touched_ids.append(ticker.id)
-                    else:
-                        skipped += 1
-                        continue
-                else:
-                    ticker = await self.repo.create(
-                        {
-                            'market': market,
-                            'name': coin.get('name', ''),
-                            'symbol': coin.get('symbol', ''),
-                            'market_cap_rank': coin.get('market_cap_rank'),
-                        }
+                if ticker is None and identifiers:
+                    ticker = await self._match_by_identifiers(
+                        ext_id,
+                        identifiers,
+                        known_identifiers,
+                        ticker_map,
+                        existing_by_ext,
                     )
+                    if ticker is not None:
+                        matched += 1
+
+                if ticker is None:
+                    create_fields.append(self._ticker_fields(market, coin))
+                    create_indexes.append(index)
+                    continue
+
+                if strategy != 'all':
+                    skipped += 1
+                    continue
+
+                self._update_ticker_fields(ticker, coin)
+                pending_ext_ids.append(self._ext_id_row(ticker, provider_name, ext_id))
+                pending_identifiers.extend(self._identifier_rows(ticker, identifiers))
+                if not ticker.image and coin.get('image'):
+                    queued_images.append((coin['image'], ticker))
+                updated += 1
+                touched_ids.append(ticker.id)
+
+            if create_fields:
+                new_tickers = await self.repo.create_all(create_fields)
+                for index, ticker in zip(create_indexes, new_tickers, strict=True):
+                    coin = coins[index]
+                    ext_id = coin['id']
                     existing_by_ext[ext_id] = ticker
-                    image_url = coin.get('image')
+                    ticker_map[ticker.id] = ticker
+                    pending_ext_ids.append(self._ext_id_row(ticker, provider_name, ext_id))
+                    pending_identifiers.extend(self._identifier_rows(ticker, identifiers_by_coin[index]))
+                    if coin.get('image'):
+                        queued_images.append((coin['image'], ticker))
                     created += 1
                     touched_ids.append(ticker.id)
 
-                await ext_id_service.upsert(ticker.id, provider_name, ext_id)
-                if extract_identifiers:
-                    identifiers = extract_identifiers(coin)
-                    if identifiers:
-                        await identifier_service.save_identifiers(ticker.id, identifiers)
-
-                if image_url:
-                    queued_images.append((image_url, ticker))
+            if pending_ext_ids:
+                await ext_id_service.upsert_many(pending_ext_ids)
+            if pending_identifiers:
+                await identifier_service.save_identifiers_many(pending_identifiers)
 
             if queued_images:
                 urls = [url for url, _ in queued_images]
@@ -232,6 +244,55 @@ class TickerService:
             matched,
         )
         return {'created': created, 'updated': updated, 'skipped': skipped, 'matched': matched}
+
+    async def _match_by_identifiers(
+        self,
+        ext_id: str,
+        identifiers: dict[str, str],
+        known: dict[tuple[str, str], int],
+        ticker_map: dict[int, Ticker],
+        existing_by_ext: dict[str, Ticker],
+    ) -> Ticker | None:
+        """Ищет уже известный тикер по идентификаторам (адресам контрактов)."""
+        matched_ids = {known[(s, v)] for s, v in identifiers.items() if (s, v) in known}
+        if not matched_ids:
+            return None
+        if len(matched_ids) > 1:
+            # min(), а не pop(): результат set.pop() зависел от порядка хранения
+            # и мог связать одну монету с разными тикерами в разных процессах.
+            logger.warning(
+                'Идентификаторы %s ссылаются на несколько тикеров %s, берём %s',
+                sorted(identifiers.items()),
+                sorted(matched_ids),
+                min(matched_ids),
+            )
+        matched_id = min(matched_ids)
+        ticker = ticker_map.get(matched_id)
+        if ticker is None:
+            fetched = await self.repo.get_all_by_ids([matched_id])
+            if not fetched:
+                return None
+            ticker = fetched[0]
+            ticker_map[ticker.id] = ticker
+        existing_by_ext[ext_id] = ticker
+        return ticker
+
+    @staticmethod
+    def _ticker_fields(market: str, coin: dict) -> dict:
+        return {
+            'market': market,
+            'name': coin.get('name') or '',
+            'symbol': coin.get('symbol') or '',
+            'market_cap_rank': coin.get('market_cap_rank'),
+        }
+
+    @staticmethod
+    def _ext_id_row(ticker: Ticker, provider_name: str, ext_id: str) -> dict:
+        return {'ticker_id': ticker.id, 'provider_name': provider_name, 'external_id': ext_id}
+
+    @staticmethod
+    def _identifier_rows(ticker: Ticker, identifiers: dict[str, str]) -> list[dict]:
+        return [{'ticker_id': ticker.id, 'system': system, 'value': value} for system, value in identifiers.items()]
 
     async def get_price_by_symbol(self, market: str, symbol: str) -> float | None:
         tickers = await self.repo.get_all_by_symbols(market, [symbol])
@@ -369,9 +430,11 @@ class TickerService:
         )
 
     def _update_ticker_fields(self, ticker: Ticker, coin: dict) -> None:
-        ticker.name = coin.get('name', ticker.name)
-        ticker.symbol = coin.get('symbol', ticker.symbol)
-        ticker.market_cap_rank = coin.get('market_cap_rank', ticker.market_cap_rank)
+        # Значение None от провайдера не должно затирать поле: .get(key, default)
+        # срабатывает только при отсутствии ключа, а не при явном None.
+        ticker.name = coin.get('name') or ticker.name
+        ticker.symbol = coin.get('symbol') or ticker.symbol
+        ticker.market_cap_rank = coin.get('market_cap_rank') or ticker.market_cap_rank
 
     def _process_image(self, content: bytes, market: str, ticker_id: int) -> str | None:
         img = Image.open(BytesIO(content))
