@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
+  AccessTokenResponse,
   DeleteAccountRequest,
   EmailChangeRequest,
   ForgotPasswordRequest,
@@ -16,7 +17,6 @@ import type {
   RegisterResponse,
   ResendVerificationRequest,
   ResetPasswordRequest,
-  TokensResponse,
   UserCreateRequest,
   UserLogin,
   UserRegister,
@@ -35,7 +35,7 @@ import { mutator } from '../../mutator';
 const registerAuthRegisterPost = (
     userRegister: UserRegister,
  ) => {
-      return mutator<TokensResponse>(
+      return mutator<AccessTokenResponse>(
       {url: `/auth/register`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: userRegister
@@ -48,7 +48,7 @@ const registerAuthRegisterPost = (
 const loginAuthLoginPost = (
     userLogin: UserLogin,
  ) => {
-      return mutator<TokensResponse>(
+      return mutator<AccessTokenResponse>(
       {url: `/auth/login`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: userLogin
@@ -85,12 +85,10 @@ const resendVerificationAuthResendVerificationPost = (
  * @summary Refresh Tokens
  */
 const refreshTokensAuthRefreshPost = (
-    refreshTokenRequest: RefreshTokenRequest,
+    
  ) => {
-      return mutator<TokensResponse>(
-      {url: `/auth/refresh`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: refreshTokenRequest
+      return mutator<AccessTokenResponse>(
+      {url: `/auth/refresh`, method: 'POST'
     },
       );
     }
@@ -161,12 +159,10 @@ const changeEmailAuthEmailPut = (
  * @summary Logout
  */
 const logoutAuthLogoutPost = (
-    refreshTokenRequest: RefreshTokenRequest,
+    
  ) => {
       return mutator<void>(
-      {url: `/auth/logout`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: refreshTokenRequest
+      {url: `/auth/logout`, method: 'POST'
     },
       );
     }

@@ -1,6 +1,7 @@
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.modules.market.models import Ticker
 from app.modules.portfolios.models import PortfolioAsset, Transaction, WalletAsset
 
 
@@ -10,14 +11,19 @@ class TickerUsageRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_used_ticker_ids(self) -> list[int]:
-        result = await self._session.execute(
-            select(PortfolioAsset.ticker_id)
-            .distinct()
-            .union(
-                select(WalletAsset.ticker_id).distinct(),
-            ),
-        )
+    async def get_used_ticker_ids(self, market: str | None = None) -> list[int]:
+        portfolio_ids = select(PortfolioAsset.ticker_id).distinct()
+        wallet_ids = select(WalletAsset.ticker_id).distinct()
+        if market:
+            portfolio_ids = portfolio_ids.join(
+                Ticker,
+                Ticker.id == PortfolioAsset.ticker_id,
+            ).where(Ticker.market == market)
+            wallet_ids = wallet_ids.join(
+                Ticker,
+                Ticker.id == WalletAsset.ticker_id,
+            ).where(Ticker.market == market)
+        result = await self._session.execute(portfolio_ids.union(wallet_ids))
         return [row[0] for row in result.all() if row[0]]
 
     async def count_references(self, ticker_id: int) -> int:

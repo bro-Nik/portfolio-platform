@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export * from './accessTokenResponse';
 export * from './deleteAccountRequest';
 export * from './emailChangeRequest';
 export * from './forgotPasswordRequest';
@@ -156,7 +157,6 @@ export * from './tickerUpdateRequest';
 export * from './tickerUpdateRequestIsActive';
 export * from './tickerUpdateRequestName';
 export * from './tickerUpdateRequestSymbol';
-export * from './tokensResponse';
 export * from './transactionCreateRequest';
 export * from './transactionCreateRequestComment';
 export * from './transactionCreateRequestOrder';

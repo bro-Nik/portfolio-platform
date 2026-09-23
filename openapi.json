@@ -75,7 +75,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TokensResponse"
+                  "$ref": "#/components/schemas/AccessTokenResponse"
                 }
               }
             }
@@ -116,7 +116,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TokensResponse"
+                  "$ref": "#/components/schemas/AccessTokenResponse"
                 }
               }
             }
@@ -228,33 +228,13 @@
         ],
         "summary": "Refresh Tokens",
         "operationId": "refresh_tokens_auth_refresh_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshTokenRequest"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TokensResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/AccessTokenResponse"
                 }
               }
             }
@@ -462,29 +442,9 @@
         ],
         "summary": "Logout",
         "operationId": "logout_auth_logout_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshTokenRequest"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "204": {
             "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
           }
         }
       }
@@ -647,9 +607,9 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "maximum": 1000,
+              "maximum": 500,
               "minimum": 1,
-              "default": 100,
+              "default": 20,
               "title": "Limit"
             }
           },
@@ -2722,6 +2682,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "minimum": 1,
               "default": 1,
               "title": "Page"
             }
@@ -2732,6 +2693,8 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
               "default": 20,
               "title": "Pagesize"
             }
@@ -3609,6 +3572,24 @@
   },
   "components": {
     "schemas": {
+      "AccessTokenResponse": {
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "title": "Accesstoken"
+          },
+          "tokenType": {
+            "type": "string",
+            "title": "Tokentype",
+            "default": "bearer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accessToken"
+        ],
+        "title": "AccessTokenResponse"
+      },
       "DeleteAccountRequest": {
         "properties": {
           "currentPassword": {
@@ -3802,6 +3783,8 @@
           },
           "newPassword": {
             "type": "string",
+            "maxLength": 72,
+            "minLength": 8,
             "title": "Newpassword"
           }
         },
@@ -5177,6 +5160,8 @@
           },
           "password": {
             "type": "string",
+            "maxLength": 72,
+            "minLength": 8,
             "title": "Password"
           }
         },
@@ -5785,29 +5770,6 @@
         "type": "object",
         "title": "TickerUpdateRequest"
       },
-      "TokensResponse": {
-        "properties": {
-          "accessToken": {
-            "type": "string",
-            "title": "Accesstoken"
-          },
-          "refreshToken": {
-            "type": "string",
-            "title": "Refreshtoken"
-          },
-          "tokenType": {
-            "type": "string",
-            "title": "Tokentype",
-            "default": "bearer"
-          }
-        },
-        "type": "object",
-        "required": [
-          "accessToken",
-          "refreshToken"
-        ],
-        "title": "TokensResponse"
-      },
       "TransactionCreateRequest": {
         "properties": {
           "date": {
@@ -6383,6 +6345,8 @@
           },
           "password": {
             "type": "string",
+            "maxLength": 72,
+            "minLength": 8,
             "title": "Password"
           },
           "role": {
@@ -6430,6 +6394,8 @@
           },
           "password": {
             "type": "string",
+            "maxLength": 72,
+            "minLength": 8,
             "title": "Password"
           }
         },
@@ -6549,7 +6515,9 @@
           "password": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "maxLength": 72,
+                "minLength": 8
               },
               {
                 "type": "null"

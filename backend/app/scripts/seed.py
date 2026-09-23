@@ -137,7 +137,10 @@ async def run(admin_email: str, admin_password: str) -> None:
                 provider_name='CoinGecko',
                 task_type='selective_price_update',
                 schedule='0 0 * * *',
-                parameters={'strategy': 'all'},
+                # 'used' обновляет только тикеры, реально используемые в портфелях
+                # и кошельках. 'all' на свежей установке означал ночную загрузку цен
+                # по всем ~15k монетам ради десятков нужных.
+                parameters={'strategy': 'used'},
                 next_run=datetime.now(UTC) + timedelta(minutes=2),
             )
             await task_repo.create(price_task.model_dump())

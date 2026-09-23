@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Query, Request
 
 from app.common.exceptions import handle_errors
+from app.common.pagination import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 from app.core import settings
 from app.core.rate_limit import limiter
 from app.modules.market.dependencies import TickerServiceDep, require_user
@@ -26,7 +27,7 @@ async def search_tickers(
     search: str | None = Query(None),
     markets: Annotated[list[str] | None, Query()] = None,
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100, alias='pageSize'),
+    page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, alias='pageSize'),
 ) -> TickerSearchResponse:
     result = await ticker_service.search(search, markets, page, page_size)
     return TickerSearchResponse(**result)

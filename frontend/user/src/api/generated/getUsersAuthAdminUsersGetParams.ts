@@ -14,7 +14,7 @@ export type GetUsersAuthAdminUsersGetParams = {
 skip?: number;
 /**
  * @minimum 1
- * @maximum 1000
+ * @maximum 500
  */
 limit?: number;
 search?: string | null;

@@ -530,8 +530,8 @@ class TickerService:
     def _info_key(self, ticker_id: int) -> str:
         return f'ticker:info:{ticker_id}'
 
-    async def get_used_ticker_ids(self) -> list[int]:
-        return await self._usage.get_used_ticker_ids()
+    async def get_used_ticker_ids(self, market: str | None = None) -> list[int]:
+        return await self._usage.get_used_ticker_ids(market)
 
     async def _count_references(self, ticker_id: int) -> int:
         return await self._usage.count_references(ticker_id)

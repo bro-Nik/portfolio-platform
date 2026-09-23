@@ -9,6 +9,13 @@
 export type ListTickersMarketAdminTickersGetParams = {
 search?: string | null;
 markets?: string[] | null;
+/**
+ * @minimum 1
+ */
 page?: number;
+/**
+ * @minimum 1
+ * @maximum 500
+ */
 pageSize?: number;
 };

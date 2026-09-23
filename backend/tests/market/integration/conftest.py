@@ -1,12 +1,13 @@
 from contextlib import suppress
-from datetime import UTC, datetime
-from decimal import Decimal
+from datetime import UTC, datetime, timedelta
 
+import jwt
 import pytest
 from redis.exceptions import ConnectionError as RedisConnectionError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.common.schemas import UserRole
 from app.core import settings
 from app.core.database import Base
 from app.modules import models as _models  # noqa: F401  # регистрация ORM-моделей
@@ -65,7 +66,7 @@ async def clean_redis():
 
 
 class _NoUsage(TickerUsageReader):
-    async def get_used_ticker_ids(self) -> list[int]:
+    async def get_used_ticker_ids(self, market: str | None = None) -> list[int]:
         return []
 
     async def count_references(self, ticker_id: int) -> int:
@@ -122,6 +123,51 @@ async def save(db_session):
     return _save
 
 
+def _bearer(role: str) -> dict:
+    payload = {
+        'id': '1',
+        'role': role,
+        'exp': datetime.now(UTC) + timedelta(hours=1),
+        'type': 'access',
+    }
+    token = jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    return {'Authorization': f'Bearer {token}'}
+
+
 @pytest.fixture
-def decimal_zero():
-    return Decimal(0)
+def auth_headers():
+    """Токен обычного пользователя."""
+    return _bearer(UserRole.USER.value)
+
+
+@pytest.fixture
+def admin_headers():
+    """Токен администратора для /market/admin и /auth/admin роутов."""
+    return _bearer(UserRole.ADMIN.value)
+
+
+@pytest.fixture
+async def market_client(db_session):
+    """HTTP-клиент для market-роутов (они живут вне общего /api префикса)."""
+    from asgi_lifespan import LifespanManager
+    from httpx import ASGITransport, AsyncClient
+
+    from app.core.rate_limit import limiter
+    from app.di import build_test_container
+    from app.main import app as fastapi_app
+
+    original = fastapi_app.state.dishka_container
+    fastapi_app.state.dishka_container = build_test_container(db_session)
+    limiter.enabled = False
+    try:
+        async with (
+            LifespanManager(fastapi_app) as manager,
+            AsyncClient(
+                transport=ASGITransport(app=manager.app),
+                base_url='http://testserver',
+                follow_redirects=True,
+            ) as client,
+        ):
+            yield client
+    finally:
+        fastapi_app.state.dishka_container = original

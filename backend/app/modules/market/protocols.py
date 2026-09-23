@@ -7,8 +7,12 @@ class TickerUsageReader(Protocol):
     Реализуется модуля portfolios: market не знает о его таблицах.
     """
 
-    async def get_used_ticker_ids(self) -> list[int]:
-        """Идентификаторы тикеров, используемых хотя бы в одном активе."""
+    async def get_used_ticker_ids(self, market: str | None = None) -> list[int]:
+        """Идентификаторы тикеров, используемых хотя бы в одном активе.
+
+        `market` ограничивает выборку одним рынком: без него задача для stocks
+        провайдера запрашивала бы внешние id крипты.
+        """
         ...
 
     async def count_references(self, ticker_id: int) -> int:

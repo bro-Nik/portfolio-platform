@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Path, Query, Request
 
 from app.common.exceptions import handle_errors
+from app.common.pagination import DEFAULT_PAGE_SIZE, MAX_ADMIN_PAGE_SIZE
 from app.common.routing import DishkaRouter
 from app.core import settings
 from app.core.rate_limit import limiter
@@ -24,7 +25,7 @@ async def get_users(
     request: Request,
     user_service: UserServiceDep,
     skip: Annotated[int, Query(ge=0)] = 0,
-    limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+    limit: Annotated[int, Query(ge=1, le=MAX_ADMIN_PAGE_SIZE)] = DEFAULT_PAGE_SIZE,
     search: Annotated[str | None, Query()] = None,
     role: Annotated[UserRole | None, Query()] = None,
 ) -> list[UserResponse]:

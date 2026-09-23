@@ -9,6 +9,10 @@ import type { UserRole } from './userRole';
 
 export interface UserCreateRequest {
   email: string;
+  /**
+   * @minLength 8
+   * @maxLength 72
+   */
   password: string;
   role?: UserRole;
   status?: string;

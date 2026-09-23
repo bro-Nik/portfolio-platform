@@ -1,7 +1,9 @@
+from collections.abc import Sequence
 from datetime import UTC, datetime
 
-from sqlalchemy import case, update
+from sqlalchemy import case, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import ColumnElement
 
 from app.common.repositories import BaseRepository
 from app.modules.market.models import Ticker
@@ -13,6 +15,25 @@ class TickerRepository(BaseRepository[Ticker]):
 
     async def get_all_by_market(self, market: str) -> list[Ticker]:
         return await self.get_all(self.model.market == market)
+
+    async def get_ids(
+        self,
+        *where: ColumnElement[bool],
+        order: Sequence[ColumnElement] | None = None,
+        limit: int | None = None,
+    ) -> list[int]:
+        """Возвращает только идентификаторы.
+
+        Выбор стратегии обновления цен не нуждается в полных ORM-объектах,
+        а limit уходит в SQL, а не в срез уже после выборки.
+        """
+        stmt = select(self.model.id).where(*where) if where else select(self.model.id)
+        if order:
+            stmt = stmt.order_by(*order)
+        if limit:
+            stmt = stmt.limit(limit)
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
 
     async def get_all_by_market_without_images(self, market: str) -> list[Ticker]:
         return await self.get_all(self.model.market == market, self.model.image.is_(None))

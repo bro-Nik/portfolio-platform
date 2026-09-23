@@ -6,8 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface TokensResponse {
+export interface AccessTokenResponse {
   accessToken: string;
-  refreshToken: string;
   tokenType?: string;
 }

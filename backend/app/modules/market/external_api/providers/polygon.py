@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 import logging
@@ -31,6 +32,9 @@ class PolygonProvider(BaseProvider):
     TIMEOUT = 30
 
     MAX_ATTEMPTS = 5
+    # Размер пачки для эндпоинтов без батчинга: держим в пределах дневной квоты,
+    # чтобы уложиться в таймаут задачи.
+    MAX_BATCH = 100
 
     SUPPORTED_MARKETS = ['stocks']
 
@@ -117,23 +121,29 @@ class PolygonProvider(BaseProvider):
         return {}
 
     async def _fetch_ticker_images(self, ext_ids: list[str]) -> dict[str, str]:
-        image_urls = {}
-        for ext_id in ext_ids:
-            try:
-                params = self._augment_params()
-                data = await self.http.request(
-                    'GET',
-                    f'v3/reference/tickers/{ext_id}',
-                    params=params,
-                )
-            except Exception:
-                logger.exception('Ошибка запроса брендинга для %s', ext_id)
-                continue
-
-            branding = data.get('results', {}).get('branding')
-            icon_url = branding.get('icon_url') if branding else None
-            if icon_url:
-                image_urls[ext_id] = icon_url
-                logger.info('Получена иконка для %s', ext_id)
-
+        # Запросы идут пачками по MAX_BATCH: у провайдера 5 запросов в минуту,
+        # и последовательный цикл на 300 тикерах физически не успевал — лимит
+        # запросов истекал, задача падала по таймауту. Пачки идут последовательно,
+        # параллелизм всё равно упёрся бы в квоту.
+        image_urls: dict[str, str] = {}
+        for start in range(0, len(ext_ids), self.MAX_BATCH):
+            batch = ext_ids[start : start + self.MAX_BATCH]
+            results = await asyncio.gather(
+                *(self._fetch_one_image(ext_id) for ext_id in batch),
+                return_exceptions=True,
+            )
+            for ext_id, result in zip(batch, results, strict=True):
+                if isinstance(result, Exception):
+                    logger.warning('Не удалось получить брендинг для %s: %s', ext_id, result)
+                elif result:
+                    image_urls[ext_id] = result
         return image_urls
+
+    async def _fetch_one_image(self, ext_id: str) -> str | None:
+        data = await self.http.request(
+            'GET',
+            f'v3/reference/tickers/{ext_id}',
+            params=self._augment_params(),
+        )
+        branding = data.get('results', {}).get('branding')
+        return branding.get('icon_url') if branding else None

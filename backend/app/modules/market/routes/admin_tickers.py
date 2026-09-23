@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Query, Request
 
 from app.common.exceptions import handle_errors
+from app.common.pagination import DEFAULT_PAGE_SIZE, MAX_ADMIN_PAGE_SIZE
 from app.core import settings
 from app.core.rate_limit import limiter
 from app.modules.market.dependencies import TickerServiceDep
@@ -20,8 +21,8 @@ async def list_tickers(
     service: TickerServiceDep,
     search: str | None = None,
     markets: Annotated[list[str] | None, Query()] = None,
-    page: int = 1,
-    page_size: int = Query(20, alias='pageSize'),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_ADMIN_PAGE_SIZE, alias='pageSize'),
 ) -> TickerListResponse:
     return await service.get_all_admin(search=search, markets=markets, page=page, page_size=page_size)
 

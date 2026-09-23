@@ -123,14 +123,15 @@ class SelectivePriceUpdater(BasePriceUpdater):
         session: AsyncSession | None = None,
         ticker_service: 'TickerService | None' = None,
     ) -> list[int]:
+        # limit уходит в SQL: срез в Python сначала гидрировал все 15k ORM-объектов
+        # и только потом отбрасывал лишние.
         repo = TickerRepository(session)
-        tickers = await repo.get_all(
+        return await repo.get_ids(
             Ticker.market == market,
             Ticker.market_cap_rank.isnot(None),
             order=[Ticker.market_cap_rank.asc()],
+            limit=limit,
         )
-        tickers = tickers[:limit] if limit else tickers
-        return [t.id for t in tickers]
 
     async def _fetch_active_coins(
         self,
@@ -140,9 +141,11 @@ class SelectivePriceUpdater(BasePriceUpdater):
         ticker_service: 'TickerService | None' = None,
     ) -> list[int]:
         repo = TickerRepository(session)
-        tickers = await repo.get_all(Ticker.market == market, Ticker.is_active.is_(True))
-        tickers = tickers[:limit] if limit else tickers
-        return [t.id for t in tickers]
+        return await repo.get_ids(
+            Ticker.market == market,
+            Ticker.is_active.is_(True),
+            limit=limit,
+        )
 
     async def _fetch_all_coins(
         self,
@@ -152,9 +155,7 @@ class SelectivePriceUpdater(BasePriceUpdater):
         ticker_service: 'TickerService | None' = None,
     ) -> list[int]:
         repo = TickerRepository(session)
-        tickers = await repo.get_all_by_market(market)
-        tickers = tickers[:limit] if limit else tickers
-        return [t.id for t in tickers]
+        return await repo.get_ids(Ticker.market == market, limit=limit)
 
     async def _fetch_used_coins(
         self,
@@ -165,8 +166,8 @@ class SelectivePriceUpdater(BasePriceUpdater):
     ) -> list[int]:
         if ticker_service is None:
             return []
-        unique_ids = await ticker_service.get_used_ticker_ids()
-        logger.info('Получено %s уникальных используемых тикеров', len(unique_ids))
+        unique_ids = await ticker_service.get_used_ticker_ids(market)
+        logger.info('Получено %s используемых тикеров рынка %s', len(unique_ids), market)
         return unique_ids[:limit] if limit else unique_ids
 
 
