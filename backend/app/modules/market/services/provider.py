@@ -22,6 +22,8 @@ from app.modules.market.schemas import (
 )
 
 COUNTER_PERIODS = ['minute', 'hour', 'day', 'month']
+MAX_LOG_ENTRIES = 200
+REQUEST_LOG_RETENTION_DAYS = 30
 
 
 @dataclass
@@ -190,9 +192,9 @@ class ProviderService:
             utilization_percent=utilization,
         )
 
-    async def get_logs(self, name: str, hours: int = 24) -> list[RequestLog]:
+    async def get_logs(self, name: str, hours: int = 24, limit: int = MAX_LOG_ENTRIES) -> list[RequestLog]:
         last_time = datetime.now(UTC) - timedelta(hours=hours)
-        return await self.log_repo.get_all_by_provider(name, last_time)
+        return await self.log_repo.get_all_by_provider(name, last_time, limit=limit)
 
     async def get_all_with_settings(self) -> list[ProviderSettingsItem]:
         return [

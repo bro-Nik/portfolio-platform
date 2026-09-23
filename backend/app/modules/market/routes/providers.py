@@ -1,4 +1,6 @@
-from fastapi import Request
+from typing import Annotated
+
+from fastapi import Query, Request
 
 from app.common.exceptions import handle_errors
 from app.core import settings
@@ -15,6 +17,7 @@ from app.modules.market.schemas import (
     ProviderStats,
     ProviderUpdateRequest,
 )
+from app.modules.market.services.provider import MAX_LOG_ENTRIES
 
 providers_router = AppRouter(prefix='/providers', tags=['Admin | ApiProviders'])
 
@@ -123,6 +126,7 @@ async def get_provider_logs(
     request: Request,
     provider_service: ProviderServiceDep,
     provider_name: str,
-    hours: int = 24,
+    hours: Annotated[int, Query(ge=1, le=24 * 30)] = 24,
+    limit: Annotated[int, Query(ge=1, le=MAX_LOG_ENTRIES)] = MAX_LOG_ENTRIES,
 ) -> list[ProviderLog]:
-    return await provider_service.get_logs(provider_name, hours=hours)
+    return await provider_service.get_logs(provider_name, hours=hours, limit=limit)

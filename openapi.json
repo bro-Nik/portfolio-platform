@@ -3313,8 +3313,22 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 720,
+              "minimum": 1,
               "default": 24,
               "title": "Hours"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
             }
           }
         ],

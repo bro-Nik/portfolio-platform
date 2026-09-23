@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Integer, desc, func, select
+from sqlalchemy import Integer, delete, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.repositories import BaseRepository
@@ -23,9 +23,27 @@ class RequestLogRepository(BaseRepository[RequestLog]):
         result = await self._session.execute(query)
         return result.first()
 
-    async def get_all_by_provider(self, provider_name: str, last_time: datetime) -> list[RequestLog]:
+    async def get_all_by_provider(
+        self,
+        provider_name: str,
+        last_time: datetime,
+        limit: int = 200,
+    ) -> list[RequestLog]:
+        """Последние записи провайдера.
+
+        Таблица растёт бессрочно, поэтому выборка ограничена: без предела один
+        запрос отдавал бы весь request_log за окно, вместе с текстом ответов.
+        """
         return await self.get_all(
             RequestLog.provider_name == provider_name,
             RequestLog.created_at >= last_time,
             order=[desc(RequestLog.created_at)],
+            limit=limit,
         )
+
+    async def delete_older_than(self, last_time: datetime) -> int:
+        """Удаляет записи старше порога (retention для журнала внешних запросов)."""
+        result = await self._session.execute(
+            delete(RequestLog).where(RequestLog.created_at < last_time),
+        )
+        return result.rowcount or 0
