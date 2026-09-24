@@ -19,7 +19,15 @@ export { useThemeStore, useResolvedTheme } from './stores/themeStore.js';
 export type { Theme, ResolvedTheme } from './stores/themeStore.js';
 
 export { createApi } from './factories/api.js';
-export { createQueryClient, defaultQueryOptions } from './factories/queryClient.js';
+export { createQueryClient, defaultQueryOptions, shouldRetryQuery } from './factories/queryClient.js';
+
+export {
+  queryKeys,
+  portfolioDataKeys,
+  invalidateKeys,
+  reconcilePortfolioData,
+  reconcileTags,
+} from './queryKeys.js';
 
 export { createThemes, darkBackgroundTokens } from './theme.js';
 export type {

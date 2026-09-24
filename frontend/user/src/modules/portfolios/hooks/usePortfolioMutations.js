@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { reconcilePortfolioData } from '@portfolio/shared';
 import { portfolioApi } from '../api/portfolioApi';
 
 export const usePortfolioMutations = () => {
@@ -48,6 +49,7 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const deletePortfolio = useMutation({
@@ -73,6 +75,7 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const addAsset = useMutation({
@@ -134,6 +137,7 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const deleteAsset = useMutation({
@@ -164,6 +168,7 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const archivePortfolio = useMutation({
@@ -198,6 +203,7 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const unarchivePortfolio = useMutation({
@@ -226,6 +232,7 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const archiveAsset = useMutation({
@@ -260,6 +267,7 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const unarchiveAsset = useMutation({
@@ -294,6 +302,7 @@ export const usePortfolioMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   return { editPortfolio, deletePortfolio, addAsset, deleteAsset, archivePortfolio, unarchivePortfolio, archiveAsset, unarchiveAsset };

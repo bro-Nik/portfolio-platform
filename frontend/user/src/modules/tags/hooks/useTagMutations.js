@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { reconcileTags } from '@portfolio/shared';
 import { tagApi } from '../api/tagApi';
 
 const replaceOptimisticId = (tags, optimisticId, newTag) => {
@@ -143,6 +144,7 @@ export const useTagMutations = () => {
         queryClient.setQueryData(['tags'], context.previous);
       }
     },
+    onSettled: () => reconcileTags(queryClient),
   });
 
   const updateTag = useMutation({
@@ -185,6 +187,7 @@ export const useTagMutations = () => {
         queryClient.setQueryData(['overview'], context.previousOverview);
       }
     },
+    onSettled: () => reconcileTags(queryClient),
   });
 
   const deleteTag = useMutation({
@@ -217,6 +220,7 @@ export const useTagMutations = () => {
         queryClient.setQueryData(['overview'], context.previousOverview);
       }
     },
+    onSettled: () => reconcileTags(queryClient),
   });
 
   const attachTag = useMutation({
@@ -229,6 +233,7 @@ export const useTagMutations = () => {
     onError: (_err, _vars, context) => {
       rollbackTagChange(queryClient, context?.previous);
     },
+    onSettled: () => reconcileTags(queryClient),
   });
 
   const detachTag = useMutation({
@@ -241,6 +246,7 @@ export const useTagMutations = () => {
     onError: (_err, _vars, context) => {
       rollbackTagChange(queryClient, context?.previous);
     },
+    onSettled: () => reconcileTags(queryClient),
   });
 
   return { createTag, updateTag, deleteTag, attachTag, detachTag };

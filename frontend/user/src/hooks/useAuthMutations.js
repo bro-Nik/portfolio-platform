@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { authService } from '@portfolio/shared';
+import { authService, queryKeys } from '@portfolio/shared';
 
 export const useAuthMutations = () => {
   const queryClient = useQueryClient();
@@ -66,7 +66,7 @@ export const useAuthMutations = () => {
 
   const deleteSession = useMutation({
     mutationFn: (sessionId) => deleteSessionApi(sessionId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.sessions }),
   });
 
   const logoutAll = useMutation({

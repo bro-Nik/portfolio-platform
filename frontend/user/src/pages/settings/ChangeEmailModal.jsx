@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Form, Input, Button } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
-import { useNotifications } from '@portfolio/shared';
+import { queryKeys, useNotifications } from '@portfolio/shared';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 
 const ChangeEmailModal = ({ open, onClose }) => {
@@ -14,7 +14,7 @@ const ChangeEmailModal = ({ open, onClose }) => {
     const result = await changeEmail.mutateAsync(values);
     if (result.success) {
       success(result.message || 'Email успешно изменён');
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile });
       form.resetFields();
       onClose();
     } else {

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { reconcilePortfolioData } from '@portfolio/shared';
 import { walletApi } from '../api/walletApi';
 
 export const useWalletMutations = () => {
@@ -48,6 +49,7 @@ export const useWalletMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const deleteWallet = useMutation({
@@ -73,6 +75,7 @@ export const useWalletMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const archiveWallet = useMutation({
@@ -107,6 +110,7 @@ export const useWalletMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const unarchiveWallet = useMutation({
@@ -135,6 +139,7 @@ export const useWalletMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const archiveWalletAsset = useMutation({
@@ -169,6 +174,7 @@ export const useWalletMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const unarchiveWalletAsset = useMutation({
@@ -203,6 +209,7 @@ export const useWalletMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   const deleteWalletAsset = useMutation({
@@ -235,6 +242,7 @@ export const useWalletMutations = () => {
         queryClient.setQueryData(['overview'], context.previous);
       }
     },
+    onSettled: () => reconcilePortfolioData(queryClient),
   });
 
   return { editWallet, deleteWallet, archiveWallet, unarchiveWallet, archiveWalletAsset, unarchiveWalletAsset, deleteWalletAsset };
