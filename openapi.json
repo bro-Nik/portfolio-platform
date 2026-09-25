@@ -538,6 +538,35 @@
         }
       }
     },
+    "/auth/account/export": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Export Account",
+        "description": "Выгрузка всех персональных данных пользователя (152-ФЗ, ст. 14).",
+        "operationId": "export_account_auth_account_export_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Export Account Auth Account Export Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/auth/account": {
       "delete": {
         "tags": [

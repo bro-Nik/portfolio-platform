@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Button, Card, Tag, Typography, Avatar, Spin, App } from 'antd';
-import { AlertTriangle, Monitor, Smartphone, Tablet, Trash2, LogOut, KeyRound, Mail, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, Monitor, Smartphone, Tablet, Trash2, LogOut, KeyRound, Mail, ShieldCheck, Download } from 'lucide-react';
 import { useAuthStore } from '@portfolio/shared';
 import { useNavigate } from 'react-router-dom';
 import { useNavigation } from 'src/hooks/useNavigation';
+import { downloadDataExport } from './settingsApi';
 import { useProfileQuery } from './useProfileQuery';
 import { useSessionsQuery } from './useSessionsQuery';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
@@ -37,6 +38,7 @@ const SettingsPage = () => {
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
   const { user, logout: storeLogout } = useAuthStore();
   const { activeSection } = useNavigation();
@@ -50,6 +52,18 @@ const SettingsPage = () => {
   });
 
   const { modal } = App.useApp();
+
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      await downloadDataExport();
+      success('Файл с вашими данными сохранён');
+    } catch {
+      error('Не удалось выгрузить данные');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleResend = async () => {
     const result = await resendVerification.mutateAsync();
@@ -247,6 +261,26 @@ const SettingsPage = () => {
             </Button>
           </div>
         )}
+      </Card>
+
+      <Card style={{ marginTop: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
+              Выгрузка данных
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+              Копия ваших персональных данных в формате JSON
+            </div>
+          </div>
+          <Button
+            icon={<Download size={14} />}
+            onClick={handleExportData}
+            loading={exporting}
+          >
+            Скачать данные
+          </Button>
+        </div>
       </Card>
 
       <Card style={{ marginTop: 20 }}>

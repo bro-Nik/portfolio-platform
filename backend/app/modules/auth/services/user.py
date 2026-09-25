@@ -21,6 +21,7 @@ from app.modules.auth.schemas import (
     UserUpdateRequest,
 )
 from app.modules.auth.security import SecurityService
+from app.modules.auth.services.export import export_user_data
 
 
 class UserStatus:
@@ -124,6 +125,11 @@ class UserService:
         if not self.security.verify_password(data.current_password, user.password_hash):
             raise AuthenticationError('Неверный пароль')
         await self.repo.delete(user_id)
+
+    async def export_data(self, user_id: int) -> dict:
+        """Выгрузка всех персональных данных пользователя (152-ФЗ, ст. 14)."""
+        await self.get(user_id)
+        return await export_user_data(self.session, user_id)
 
     async def forgot_password(self, email: str) -> str | None:
         user = await self.repo.get_by_email(email)

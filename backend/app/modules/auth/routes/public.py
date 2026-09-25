@@ -249,6 +249,18 @@ async def delete_session(
     await session_service.delete_session(session_id, current_user.id)
 
 
+@router.get('/account/export')
+@limiter.limit(settings.rate_limit_auth)
+@handle_errors('Ошибка выгрузки данных аккаунта')
+async def export_account(
+    request: Request,
+    user_service: UserServiceDep,
+    current_user: Annotated[AuthUser, require_user],
+) -> dict:
+    """Выгрузка всех персональных данных пользователя (152-ФЗ, ст. 14)."""
+    return await user_service.export_data(current_user.id)
+
+
 @router.delete('/account', status_code=204)
 @limiter.limit(settings.rate_limit_auth)
 @handle_errors('Ошибка удаления аккаунта')

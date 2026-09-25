@@ -9,6 +9,7 @@ import type {
   AccessTokenResponse,
   DeleteAccountRequest,
   EmailChangeRequest,
+  ExportAccountAuthAccountExportGet200,
   ForgotPasswordRequest,
   GetUsersAuthAdminUsersGetParams,
   LoginSessionResponse,
@@ -200,6 +201,18 @@ const deleteSessionAuthSessionsSessionIdDelete = (
       );
     }
   /**
+ * Выгрузка всех персональных данных пользователя (152-ФЗ, ст. 14).
+ * @summary Export Account
+ */
+const exportAccountAuthAccountExportGet = (
+    
+ ) => {
+      return mutator<ExportAccountAuthAccountExportGet200>(
+      {url: `/auth/account/export`, method: 'GET'
+    },
+      );
+    }
+  /**
  * @summary Delete Account
  */
 const deleteAccountAuthAccountDelete = (
@@ -284,7 +297,7 @@ const logoutAllUserAuthAdminUsersUserIdLogoutAllPost = (
     },
       );
     }
-  return {registerAuthRegisterPost,loginAuthLoginPost,verifyEmailAuthVerifyEmailPost,resendVerificationAuthResendVerificationPost,refreshTokensAuthRefreshPost,forgotPasswordAuthForgotPasswordPost,resetPasswordAuthResetPasswordPost,getMeAuthMeGet,changePasswordAuthPasswordPut,changeEmailAuthEmailPut,logoutAuthLogoutPost,logoutAllAuthLogoutAllPost,getSessionsAuthSessionsGet,deleteSessionAuthSessionsSessionIdDelete,deleteAccountAuthAccountDelete,getUsersAuthAdminUsersGet,createUserAuthAdminUsersPost,getUserAuthAdminUsersUserIdGet,updateUserAuthAdminUsersUserIdPut,deleteUserAuthAdminUsersUserIdDelete,logoutAllUserAuthAdminUsersUserIdLogoutAllPost}};
+  return {registerAuthRegisterPost,loginAuthLoginPost,verifyEmailAuthVerifyEmailPost,resendVerificationAuthResendVerificationPost,refreshTokensAuthRefreshPost,forgotPasswordAuthForgotPasswordPost,resetPasswordAuthResetPasswordPost,getMeAuthMeGet,changePasswordAuthPasswordPut,changeEmailAuthEmailPut,logoutAuthLogoutPost,logoutAllAuthLogoutAllPost,getSessionsAuthSessionsGet,deleteSessionAuthSessionsSessionIdDelete,exportAccountAuthAccountExportGet,deleteAccountAuthAccountDelete,getUsersAuthAdminUsersGet,createUserAuthAdminUsersPost,getUserAuthAdminUsersUserIdGet,updateUserAuthAdminUsersUserIdPut,deleteUserAuthAdminUsersUserIdDelete,logoutAllUserAuthAdminUsersUserIdLogoutAllPost}};
 export type RegisterAuthRegisterPostResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['registerAuthRegisterPost']>>>
 export type LoginAuthLoginPostResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['loginAuthLoginPost']>>>
 export type VerifyEmailAuthVerifyEmailPostResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['verifyEmailAuthVerifyEmailPost']>>>
@@ -299,6 +312,7 @@ export type LogoutAuthLogoutPostResult = NonNullable<Awaited<ReturnType<ReturnTy
 export type LogoutAllAuthLogoutAllPostResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['logoutAllAuthLogoutAllPost']>>>
 export type GetSessionsAuthSessionsGetResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['getSessionsAuthSessionsGet']>>>
 export type DeleteSessionAuthSessionsSessionIdDeleteResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['deleteSessionAuthSessionsSessionIdDelete']>>>
+export type ExportAccountAuthAccountExportGetResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['exportAccountAuthAccountExportGet']>>>
 export type DeleteAccountAuthAccountDeleteResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['deleteAccountAuthAccountDelete']>>>
 export type GetUsersAuthAdminUsersGetResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['getUsersAuthAdminUsersGet']>>>
 export type CreateUserAuthAdminUsersPostResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getAuth>['createUserAuthAdminUsersPost']>>>

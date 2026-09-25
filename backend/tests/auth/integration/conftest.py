@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, patch
 
 from asgi_lifespan import LifespanManager
@@ -92,3 +93,93 @@ async def test_user(db_session: AsyncSession):
         is_verified=True,
     )
     return await user_repo.create(data.model_dump())
+
+
+def _bearer(user_id: int, role: str = 'user') -> dict:
+    from datetime import UTC, datetime, timedelta
+
+    import jwt
+
+    from app.common.schemas import UserRole
+    from app.core import settings
+
+    payload = {
+        'id': str(user_id),
+        'role': UserRole(role).value,
+        'exp': datetime.now(UTC) + timedelta(hours=1),
+        'type': 'access',
+    }
+    token = jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    return {'Authorization': f'Bearer {token}'}
+
+
+@pytest.fixture
+async def user(db_session: AsyncSession):
+    """Пользователь с заполненным профилем (алиас test_user для новых тестов)."""
+    repo = UserRepository(db_session)
+    return await repo.create(
+        UserCreate(
+            email='test@example.com',
+            password_hash='x',
+            role='user',
+            status='active',
+            is_verified=True,
+        ).model_dump()
+    )
+
+
+@pytest.fixture
+def auth_headers(user):
+    return _bearer(user.id)
+
+
+@pytest.fixture
+def admin_headers(user):
+    return _bearer(user.id, 'admin')
+
+
+@pytest.fixture
+def save(db_session):
+    async def _save(obj):
+        db_session.add(obj)
+        await db_session.flush()
+        await db_session.refresh(obj)
+        return obj
+
+    return _save
+
+
+@pytest.fixture
+async def tickers(db_session, save):
+    from app.modules.market.models import Ticker
+
+    return [await save(Ticker(id=i, name=f'Ticker {i}', symbol=f'T{i}', market='crypto')) for i in range(1, 4)]
+
+
+@pytest.fixture
+async def portfolio(db_session, user, save):
+    from app.modules.portfolios.models import Portfolio
+
+    return await save(Portfolio(name='Портфель', market='crypto', user_id=user.id))
+
+
+@pytest.fixture
+async def wallet(db_session, user, save):
+    from app.modules.portfolios.models import Wallet
+
+    return await save(Wallet(name='Кошелёк', user_id=user.id))
+
+
+@pytest.fixture
+async def refresh_token(db_session, save, user):
+    """Refresh-токен пользователя (нужен как FK для login_sessions)."""
+    from app.modules.auth.models import RefreshToken
+
+    return await save(
+        RefreshToken(
+            user_id=user.id,
+            token='plain-refresh',
+            token_hash='c' * 64,
+            expires_at=int((datetime.now(UTC) + timedelta(days=30)).timestamp()),
+        )
+    )

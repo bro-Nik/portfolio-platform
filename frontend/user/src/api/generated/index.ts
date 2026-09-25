@@ -9,6 +9,7 @@
 export * from './accessTokenResponse';
 export * from './deleteAccountRequest';
 export * from './emailChangeRequest';
+export * from './exportAccountAuthAccountExportGet200';
 export * from './forgotPasswordRequest';
 export * from './getProviderLogsMarketAdminProvidersProviderNameLogsGetParams';
 export * from './getUsersAuthAdminUsersGetParams';
