@@ -12,8 +12,18 @@
 
 name: portfolios-selfhost
 
+# Логи контейнеров без ротации съедали диск до конца: json-file растёт бесконечно,
+# и заполненный диск выглядит как зависшее приложение. Restart-политика нужна
+# всем сервисам, а не только БД — упавший backend иначе лежит до вмешательства.
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   db:
+    logging: *default-logging
     image: postgres:16-alpine
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -27,6 +37,7 @@ services:
       retries: 5
 
   redis:
+    logging: *default-logging
     image: redis:7.4-alpine
     command: redis-server --appendonly yes --appendfsync everysec
     volumes:
@@ -36,6 +47,7 @@ services:
   # Applies schema migrations and seeds initial data (admin, providers, tasks).
   # Runs once: backend/worker/scheduler wait for it to finish successfully.
   init:
+    logging: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -52,6 +64,7 @@ services:
     restart: "no"
 
   backend:
+    logging: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -69,14 +82,18 @@ services:
       redis:
         condition: service_started
     restart: unless-stopped
+    # /ready проверяет БД и Redis: прежний /health всегда отвечал ok, и backend
+    # оставался «здоровым» при упавшем Postgres, а nginx продолжал слать в него
+    # запросы. /health (liveness) намеренно зависимостями не проверяет.
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8000/health"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8000/ready"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 20s
 
   worker:
+    logging: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -111,6 +128,7 @@ services:
     restart: unless-stopped
 
   scheduler:
+    logging: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -128,6 +146,7 @@ services:
     restart: unless-stopped
 
   ui-user:
+    logging: *default-logging
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -137,6 +156,7 @@ services:
     restart: unless-stopped
 
   ui-admin:
+    logging: *default-logging
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -146,6 +166,7 @@ services:
     restart: unless-stopped
 
   nginx:
+    logging: *default-logging
     image: nginx:1.27-alpine
     ports:
       - "${NGINX_PORT:-80}:80"

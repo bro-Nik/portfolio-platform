@@ -37,3 +37,26 @@ def data():
         return obj
 
     return _create
+
+
+@pytest.fixture
+async def app_client():
+    """HTTP-клиент для корневых (не модульных) тестов.
+
+    Интеграционные контесты переопределяют `client` своими фикстурами; здесь
+    нужен независимый клиент без подмены DI-контейнера.
+    """
+    from asgi_lifespan import LifespanManager
+    from httpx import ASGITransport, AsyncClient
+
+    from app.main import app as fastapi_app
+
+    async with (
+        LifespanManager(fastapi_app) as manager,
+        AsyncClient(
+            transport=ASGITransport(app=manager.app),
+            base_url='http://testserver',
+            follow_redirects=True,
+        ) as client,
+    ):
+        yield client

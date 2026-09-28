@@ -16,8 +16,18 @@ x-taskiq-worker-command: &taskiq-worker-command
     "--max-async-tasks", "${TASKIQ_MAX_ASYNC_TASKS:-4}",
   ]
 
+# Логи контейнеров без ротации съедали диск до конца: json-file растёт бесконечно,
+# и заполненный диск выглядит как зависшее приложение. Restart-политика нужна
+# всем сервисам, а не только БД — упавший backend иначе лежит до вмешательства.
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   db:
+    logging: *default-logging
     image: postgres:16-alpine
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -33,6 +43,7 @@ services:
       retries: 5
 
   redis:
+    logging: *default-logging
     image: redis:7.4-alpine
     command: redis-server --appendonly yes --appendfsync everysec
     volumes:
@@ -40,6 +51,8 @@ services:
     restart: unless-stopped
 
   backend:
+    restart: unless-stopped
+    logging: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -55,6 +68,8 @@ services:
         condition: service_started
 
   worker:
+    restart: unless-stopped
+    logging: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -72,6 +87,8 @@ services:
       - worker
 
   scheduler:
+    restart: unless-stopped
+    logging: *default-logging
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -89,6 +106,8 @@ services:
       - worker
 
   ui-user:
+    restart: unless-stopped
+    logging: *default-logging
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -112,6 +131,8 @@ services:
       - ./frontend/shared/dist:/app/shared/dist
 
   ui-admin:
+    restart: unless-stopped
+    logging: *default-logging
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -135,6 +156,8 @@ services:
       - ./frontend/shared/dist:/app/shared/dist
 
   nginx:
+    restart: unless-stopped
+    logging: *default-logging
     image: nginx:1.27-alpine
     depends_on:
       - ui-user

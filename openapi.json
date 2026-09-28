@@ -35,6 +35,7 @@
           "health"
         ],
         "summary": "Health",
+        "description": "Liveness: процесс отвечает.\n\nЗависимости не проверяются намеренно: иначе перезапуск в контейнере\nначнёт циклиться при кратковременной недоступности БД.",
         "operationId": "health_health_get",
         "responses": {
           "200": {
@@ -45,6 +46,30 @@
                   "additionalProperties": true,
                   "type": "object",
                   "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Ready",
+        "description": "Readiness: можно ли принимать трафик.\n\nПроверяет БД и Redis. Прежний единственный /health всегда возвращал ok, и\nbackend числился здоровым при упавшем Postgres — Docker не перезапускал\nего, а nginx продолжал слать запросы в пустоту.",
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Ready Ready Get"
                 }
               }
             }

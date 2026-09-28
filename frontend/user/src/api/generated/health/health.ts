@@ -6,7 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-  HealthHealthGet200
+  HealthHealthGet200,
+  ReadyReadyGet200
 } from '.././';
 
 import { mutator } from '../../mutator';
@@ -15,6 +16,10 @@ import { mutator } from '../../mutator';
 
   export const getHealth = () => {
 /**
+ * Liveness: процесс отвечает.
+
+Зависимости не проверяются намеренно: иначе перезапуск в контейнере
+начнёт циклиться при кратковременной недоступности БД.
  * @summary Health
  */
 const healthHealthGet = (
@@ -25,5 +30,22 @@ const healthHealthGet = (
     },
       );
     }
-  return {healthHealthGet}};
+  /**
+ * Readiness: можно ли принимать трафик.
+
+Проверяет БД и Redis. Прежний единственный /health всегда возвращал ok, и
+backend числился здоровым при упавшем Postgres — Docker не перезапускал
+его, а nginx продолжал слать запросы в пустоту.
+ * @summary Ready
+ */
+const readyReadyGet = (
+    
+ ) => {
+      return mutator<ReadyReadyGet200>(
+      {url: `/ready`, method: 'GET'
+    },
+      );
+    }
+  return {healthHealthGet,readyReadyGet}};
 export type HealthHealthGetResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getHealth>['healthHealthGet']>>>
+export type ReadyReadyGetResult = NonNullable<Awaited<ReturnType<ReturnType<typeof getHealth>['readyReadyGet']>>>

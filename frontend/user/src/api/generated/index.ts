@@ -108,6 +108,7 @@ export * from './providerUpdateRequestRequestsPerHour';
 export * from './providerUpdateRequestRequestsPerMinute';
 export * from './providerUpdateRequestRequestsPerMonth';
 export * from './providerUpdateRequestSupportedMarkets';
+export * from './readyReadyGet200';
 export * from './refreshTokenRequest';
 export * from './registerResponse';
 export * from './resendVerificationRequest';
