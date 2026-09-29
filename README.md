@@ -57,6 +57,9 @@ clean           stop and remove ALL data
 - On the very first launch the market catalog and prices are populated automatically (takes a few minutes, requires internet). The scheduler will immediately execute the first tasks; then they follow the cron schedule. Manual rerun is always possible: Admin → External API → Tasks → "Run Now". If the first run failed partway (e.g. no internet), fix the problem and re-run `./scripts/selfhost.sh reinit` — it reapplies migrations and seeds without destroying data.
 - Make a backup before maintenance or major changes: `./scripts/selfhost.sh backup`. Restore with `./scripts/selfhost.sh restore` (latest backup) or `./scripts/selfhost.sh restore path/to/file.sql`. Restore wipes the current database (you'll be asked to confirm).
 
+- The stack serves plain HTTP on port 80. Put a TLS-terminating proxy in front of it before using it for real accounts: the refresh cookie is marked `Secure` in production, and browsers drop it over plain HTTP, which signs every user out every 15 minutes.
+- Personal data handled by the platform, the legal basis and retention periods are documented in [docs/PERSONAL_DATA.md](docs/PERSONAL_DATA.md). Users can export or delete their own data from Settings.
+
 ## 🚀 Development
 
 ### Run

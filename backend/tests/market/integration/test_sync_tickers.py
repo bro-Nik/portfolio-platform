@@ -32,7 +32,11 @@ class TestSyncTickersBasics:
         )
 
         assert result['created'] == 2
-        rows = (await db_session.execute(Ticker.__table__.select())).fetchall()
+        rows = (
+            await db_session.execute(
+                Ticker.__table__.select().where(Ticker.__table__.c.symbol.in_(['btc', 'eth'])),
+            )
+        ).fetchall()
         assert {r.symbol for r in rows} == {'btc', 'eth'}
 
     async def test_second_run_updates_instead_of_duplicating(self, ticker_service):

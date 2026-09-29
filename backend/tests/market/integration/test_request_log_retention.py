@@ -3,7 +3,10 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.modules.auth.repositories import TokenRepository
+from app.modules.auth.tasks import cleanup_expired_tokens
 from app.modules.market.models import RequestLog
 from app.modules.market.repositories.request_log import RequestLogRepository
 from app.modules.market.scheduler_system import SYSTEM_SCHEDULES, SystemScheduleSource
@@ -140,3 +143,57 @@ class TestSystemSchedule:
 
         for schedule in SYSTEM_SCHEDULES:
             assert croniter.is_valid(schedule.cron), schedule.task_name
+
+
+class TestExpiredTokenCleanup:
+    async def test_removes_expired_tokens_and_their_sessions(self, db_session, test_engine, save, user):
+        from app.modules.auth.models import LoginSession, RefreshToken
+
+        expired = await save(
+            RefreshToken(
+                user_id=user.id,
+                token='expired',
+                token_hash='e' * 64,
+                expires_at=1,
+            )
+        )
+        await save(
+            RefreshToken(
+                user_id=user.id,
+                token='valid',
+                token_hash='f' * 64,
+                expires_at=4 * 10**9,
+            )
+        )
+        session_row = await save(
+            LoginSession(
+                user_id=user.id,
+                refresh_token_id=expired.id,
+                ip_address='203.0.113.9',
+            )
+        )
+        # Задача работает в собственной сессии, поэтому данные нужно закоммитить.
+        await db_session.commit()
+
+        result = await cleanup_expired_tokens()
+
+        assert result['removed'] == 1
+        # Читаем через отдельную сессию: задача отработала в своей.
+        async with async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)() as check:
+            remaining = await TokenRepository(check).get_all()
+            # Сессия хранит IP и отпечаток устройства: она не должна пережить токен.
+            assert await check.get(LoginSession, session_row.id) is None
+
+        assert [t.token_hash for t in remaining] == ['f' * 64]
+
+    async def test_is_idempotent(self, db_session, save, user):
+        from app.modules.auth.models import RefreshToken
+
+        await save(RefreshToken(user_id=user.id, token='e', token_hash='a' * 64, expires_at=1))
+        await db_session.commit()
+
+        first = await cleanup_expired_tokens()
+        second = await cleanup_expired_tokens()
+
+        assert first['removed'] == 1
+        assert second['removed'] == 0

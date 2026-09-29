@@ -90,19 +90,6 @@ def ticker_service(db_session):
 
 
 @pytest.fixture
-def tickers(db_session):
-    def _make(*specs: tuple[str, str]) -> list[Ticker]:
-        rows = [
-            Ticker(name=name, symbol=symbol, market=market, price=0.0, updated_at=datetime.now(UTC))
-            for name, symbol, market in specs
-        ]
-        db_session.add_all(rows)
-        return rows
-
-    return _make
-
-
-@pytest.fixture
 def extract_identifiers():
     """Извлекает адреса контрактов из ответа CoinGecko-подобного провайдера."""
 
@@ -171,3 +158,17 @@ async def market_client(db_session):
             yield client
     finally:
         fastapi_app.state.dishka_container = original
+
+
+@pytest.fixture
+async def user(db_session, save):
+    """Пользователь для тестов, где нужен реальный FK."""
+    from app.modules.auth.models import User
+
+    return await save(User(email='user@example.com', password_hash='x', is_verified=True))
+
+
+@pytest.fixture
+async def tickers(db_session, save):
+    """Тикеры для тестов, которым нужен реальный FK на ticker."""
+    return [await save(Ticker(name=f'Ticker {i}', symbol=f'T{i}', market='crypto', price=0.0)) for i in range(1, 4)]

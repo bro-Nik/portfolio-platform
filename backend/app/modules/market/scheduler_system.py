@@ -23,6 +23,15 @@ SYSTEM_SCHEDULES: tuple[ScheduledTask, ...] = (
         kwargs={'retention_days': REQUEST_LOG_RETENTION_DAYS},
         labels={'source': 'system'},
     ),
+    ScheduledTask(
+        # Истёкший refresh-токен тянет за собой сессию с её IP и отпечатком
+        # устройства, поэтому чистим его ежечасно, а не раз в сутки.
+        task_name='cleanup_expired_tokens',
+        cron='17 * * * *',
+        args=(),
+        kwargs={},
+        labels={'source': 'system'},
+    ),
 )
 
 
