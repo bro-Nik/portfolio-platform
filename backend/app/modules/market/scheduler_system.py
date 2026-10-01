@@ -9,6 +9,7 @@ from collections.abc import AsyncIterator
 import logging
 
 from taskiq import ScheduledTask
+from taskiq.abc.schedule_source import ScheduleSource
 
 from app.modules.market.services.provider import REQUEST_LOG_RETENTION_DAYS
 
@@ -35,7 +36,7 @@ SYSTEM_SCHEDULES: tuple[ScheduledTask, ...] = (
 )
 
 
-class SystemScheduleSource:
+class SystemScheduleSource(ScheduleSource):
     """Источник расписаний, определённых в коде."""
 
     async def get_schedules(self) -> list[ScheduledTask]:

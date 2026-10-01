@@ -18,9 +18,9 @@ user-agents
 pyyaml
 redis
 aiosmtplib
-taskiq
-taskiq-redis
-dishka
+taskiq==0.12.1
+taskiq-redis==1.2.2
+dishka==1.9.1
 httpx
 croniter
 requests
