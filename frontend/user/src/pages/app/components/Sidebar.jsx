@@ -3,9 +3,11 @@ import { useAuthStore, useThemeStore } from '@portfolio/shared';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useAuthMutations } from 'src/hooks/useAuthMutations';
 import { usePreferencesStore } from 'src/stores/preferencesStore';
-import { Dropdown, Space, Avatar, Select, Segmented } from 'antd';
+import { Dropdown, Space, Avatar, Select, Segmented, Badge } from 'antd';
 import { User, Settings, ChevronDown, Briefcase, Wallet, Star, X, Sun, Moon, Monitor } from 'lucide-react';
 import '../styles/Sidebar.scss';
+import TriggeredAlertsWatcher from 'src/modules/watchlist/components/TriggeredAlertsWatcher';
+import { useTriggeredAlerts } from 'src/modules/watchlist/hooks/useTriggeredAlerts';
 
 const Sidebar = () => {
   const { activeSection, setActiveSection, openedItems, openItem, closeItem } = useNavigation();
@@ -15,8 +17,9 @@ const Sidebar = () => {
   const menuItems = [
     { id: 'portfolios', label: 'Портфели', icon: <Briefcase size={16} style={{ marginRight: 8 }} /> },
     { id: 'wallets', label: 'Кошельки', icon: <Wallet size={16} style={{ marginRight: 8 }} /> },
-    { id: 'wishlist', label: 'Избранное', icon: <Star size={16} style={{ marginRight: 8 }} /> },
+    { id: 'wishlist', label: 'Избранное', icon: <Star size={16} style={{ marginRight: 8 }} />, badge: true },
   ];
+  const { data: triggeredAlerts = [] } = useTriggeredAlerts();
 
   const handleLogout = async () => {
     await logout.mutateAsync();
@@ -44,6 +47,7 @@ const Sidebar = () => {
               onClick={() => openItem(asset, asset.type, item.id)}
               onClose={() => closeItem(asset.id, asset.type, item.id)}
               activeSection={activeSection}
+              uppercase
             />
           ))}
         </div>
@@ -51,12 +55,38 @@ const Sidebar = () => {
     ));
   };
 
+  // Избранное: айтемы — это активы без родителя-контейнера, поэтому рендерим их
+  // компактными чипами в одной коробке, как активы под портфелем/кошельком,
+  // а не prominent-строками. Механика табов не меняется.
+  const renderWishlistGroup = (items) => {
+    if (!items?.length) return null;
+
+    return (
+      <div className="section-group">
+        <div className="group-children-list">
+          {items.map(item => (
+            <SidebarItem
+              key={`wishlist-${item.id}`}
+              item={item}
+              onClick={() => openItem(item, item.type)}
+              onClose={() => closeItem(item.id, item.type)}
+              activeSection={activeSection}
+              isParent={false}
+              uppercase
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div id="sidebar">
+      <TriggeredAlertsWatcher />
       <SidebarHeader />
       
       <nav className="menu">
-        {menuItems.map(({ id, label, icon }) => (
+        {menuItems.map(({ id, label, icon, badge }) => (
           <div key={id} className="menu-section">
             <button
               className={`item section-parent ${ activeSection === id ? 'active' : ''}`}
@@ -64,9 +94,12 @@ const Sidebar = () => {
             >
               {icon}
               {label}
+              {badge && triggeredAlerts.length > 0 && (
+                <Badge count={triggeredAlerts.length} size="small" style={{ marginLeft: 8 }} />
+              )}
             </button>
-            
-            {renderItemGroup(openedItems[id], id)}
+
+            {id === 'wishlist' ? renderWishlistGroup(openedItems[id]) : renderItemGroup(openedItems[id], id)}
           </div>
         ))}
 
@@ -89,13 +122,13 @@ const Sidebar = () => {
   );
 };
 
-const SidebarItem = ({ item, onClick, onClose, activeSection, isParent = false }) => {
+const SidebarItem = ({ item, onClick, onClose, activeSection, isParent = false, uppercase = false }) => {
   const isActive = activeSection === `${item.type}-${item.id}`;
   const classPrefix = isParent ? 'parent' : 'children';
-  
+
   return (
     <div className={`item group-${classPrefix} ${isActive ? 'active' : ''}`}>
-      <button className={`group-${classPrefix}-name`} onClick={onClick} >
+      <button className={`group-${classPrefix}-name${uppercase ? ' is-symbol' : ''}`} onClick={onClick} >
         {item.name}
       </button>
       <button className="item-close" onClick={onClose} title="Закрыть" >

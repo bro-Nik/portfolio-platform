@@ -8,6 +8,7 @@ const DataTable = memo(({
   columnsConfig,
   storageKey,
   rowClassName,
+  expandable,
 }) => {
   const sourceData = data ?? fallbackData;
   const [sortState, setSortState] = usePersistedState(storageKey, null);
@@ -42,6 +43,7 @@ const DataTable = memo(({
         rowKey={(record) => record.id ?? record.key ?? Math.random()}
         scroll={{ x: 'max-content' }}
         rowClassName={rowClassName}
+        expandable={expandable}
       />
     </div>
   );

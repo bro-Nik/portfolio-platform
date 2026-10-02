@@ -27,6 +27,7 @@ export {
   invalidateKeys,
   reconcilePortfolioData,
   reconcileTags,
+  reconcileWatchlist,
 } from './queryKeys.js';
 
 export { createThemes, darkBackgroundTokens } from './theme.js';

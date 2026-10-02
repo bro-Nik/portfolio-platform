@@ -2,6 +2,7 @@ import React, { Suspense, useMemo } from 'react';
 import Sidebar from './components/Sidebar';
 import { useNavigation } from 'src/hooks/useNavigation';
 import { useOverviewData } from 'src/modules/portfolios/hooks/useOverviewData';
+import { useWatchlistQuery } from 'src/modules/watchlist/hooks/useWatchlistQuery';
 import { useCurrencies } from 'src/modules/assets/hooks/useCurrencies';
 import { ModalContainer } from '@portfolio/shared';
 import './styles/App.css';
@@ -11,12 +12,14 @@ import PortfolioAssetPage from 'src/modules/portfolios/components/asset/AssetPag
 import WalletsPage from 'src/modules/wallets/components/wallet-list/WalletsPage'
 import WalletPage from 'src/modules/wallets/components/wallet/WalletPage';
 import WalletAssetPage from 'src/modules/wallets/components/asset/AssetPage';
-import WishlistPage from './WishlistPage'
+import WishlistPage from 'src/modules/watchlist/components/WatchlistPage'
+import WatchlistItemPage from 'src/modules/watchlist/components/WatchlistItemPage'
 import SettingsPage from 'src/pages/settings/SettingsPage'
 
 const AppPage = () => {
   const { activeSection, openedItems } = useNavigation();
   const { allPortfolios, allWallets, refresh } = useOverviewData();
+  const { data: allWatchlistItems = [] } = useWatchlistQuery();
   useCurrencies();
 
   const mainSections = {
@@ -106,7 +109,19 @@ const AppPage = () => {
         );
       });
     });
-    
+
+    // Рендер избранного и его активов
+    openedItems.wishlist.forEach(watchItem => {
+      const itemData = allWatchlistItems?.find(i => i.id === watchItem.id);
+      if (!itemData) return;
+
+      renderItems.push(
+        <div key={`wishlist_item-${watchItem.id}`} style={{ display: displayedSection === `wishlist_item-${watchItem.id}` ? '' : 'none' }}>
+          <WatchlistItemPage item={itemData} />
+        </div>
+      );
+    });
+
     return renderItems;
   };
 

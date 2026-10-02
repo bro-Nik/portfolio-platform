@@ -17,6 +17,8 @@ export const queryKeys = {
   currencies: ['currencies'],
   profile: ['profile'],
   sessions: ['sessions'],
+  watchlist: ['watchlist'],
+  triggeredAlerts: ['triggeredAlerts'],
 };
 
 /** Ключи, которые зависят от данных портфелей, кошельков, активов и транзакций. */
@@ -42,3 +44,6 @@ export const reconcilePortfolioData = (queryClient: QueryClient) =>
 
 export const reconcileTags = (queryClient: QueryClient) =>
   invalidateKeys(queryClient, [queryKeys.tags, queryKeys.overview]);
+
+export const reconcileWatchlist = (queryClient: QueryClient) =>
+  invalidateKeys(queryClient, [queryKeys.watchlist, queryKeys.triggeredAlerts]);

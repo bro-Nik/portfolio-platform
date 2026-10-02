@@ -120,6 +120,12 @@ $sidebar-bg: #f8f9fa;
       }
     }
 
+    // Символы тикеров капсом, как в таблицах: регистр в БД смешанный
+    // (CoinGecko отдаёт строчными, MOEX — заглавными), имена сущностей не трогаем.
+    & .is-symbol {
+      text-transform: uppercase;
+    }
+
     & .item-close {
       padding: 0;
       display: flex;
