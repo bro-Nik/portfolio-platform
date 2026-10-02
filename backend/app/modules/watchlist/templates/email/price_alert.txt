@@ -1,0 +1,12 @@
+Portfolios — {{ ticker_symbol }}: цена {{ direction_word }} {{ target_display }}
+
+{{ ticker_name }} ({{ ticker_symbol }}) {{ direction_verb }} {{ target_display }}.
+Текущая цена: {{ triggered_display }}
+{% if comment %}
+Ваш комментарий: {{ comment }}
+{% endif %}
+Уведомление одноразовое и уже отключено. Чтобы следить дальше,
+создайте новое в разделе «Избранное»: {{ frontend_url }}
+
+--
+Portfolios — управляйте своими инвестициями

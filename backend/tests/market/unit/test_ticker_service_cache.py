@@ -24,6 +24,7 @@ def make_service(db_session, async_mock, redis=None):
         ext_id_service=async_mock(spec=TickerExternalIdService),
         identifier_service=async_mock(spec=TickerIdentifierService),
         usage=_usage_mock(async_mock),
+        alerts=async_mock(),
         redis=redis,
     )
 

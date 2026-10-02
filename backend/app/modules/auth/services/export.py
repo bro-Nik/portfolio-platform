@@ -22,9 +22,10 @@ from app.modules.portfolios.models import (
     WalletAsset,
 )
 from app.modules.tags.models import Tag, Taggable
+from app.modules.watchlist.models import PriceAlert, WatchlistItem
 
 #: Версия формата выгрузки: меняется при добавлении новых разделов.
-EXPORT_VERSION = 1
+EXPORT_VERSION = 2
 
 #: Поля, которые не попадают в выгрузку: выгрузка предназначена для предъявления
 #: субъекту, а не для переноса сессий или доступа к чужим ресурсам.
@@ -73,6 +74,8 @@ async def export_user_data(session: AsyncSession, user_id: int) -> dict[str, Any
     wallet_assets = await _all(session, WalletAsset, WalletAsset.user_id == user_id)
     tags = await _all(session, Tag, Tag.user_id == user_id)
     taggables = await _all(session, Taggable, Taggable.tag_id.in_([t.id for t in tags])) if tags else []
+    watchlist_items = await _all(session, WatchlistItem, WatchlistItem.user_id == user_id)
+    price_alerts = await _all(session, PriceAlert, PriceAlert.user_id == user_id)
 
     ticker_ids = {
         *[a.ticker_id for a in portfolio_assets],
@@ -100,6 +103,8 @@ async def export_user_data(session: AsyncSession, user_id: int) -> dict[str, Any
         'transactions': _rows(transactions),
         'tags': _rows(tags),
         'taggable': _rows(taggables),
+        'watchlist_items': _rows(watchlist_items),
+        'price_alerts': _rows(price_alerts),
         'tickers': _rows(referenced),
         'ticker_identifiers': _rows(identifiers),
         'ticker_external_ids': _rows(external_ids),

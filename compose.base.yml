@@ -11,6 +11,7 @@ x-taskiq-worker-command: &taskiq-worker-command
     "app.modules.market.taskiq_setup:broker",
     "app.modules.market.tasks",
     "app.modules.auth.tasks",
+    "app.modules.watchlist.tasks",
     "--log-level", "INFO",
     "--workers", "${TASKIQ_WORKERS:-1}",
     "--max-async-tasks", "${TASKIQ_MAX_ASYNC_TASKS:-4}",

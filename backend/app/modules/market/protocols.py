@@ -22,3 +22,16 @@ class TickerUsageReader(Protocol):
     async def reassign_references(self, source_id: int, target_id: int) -> None:
         """Переназначить все ссылки с source-тикера на target-тикер."""
         ...
+
+
+class PriceUpdateObserver(Protocol):
+    """Порт уведомлений об обновлении цен.
+
+    Реализуется модулем watchlist (проверка ценовых алертов): market не знает
+    о его таблицах. Вызывается после коммита новых цен, ошибки наблюдателя
+    не должны ронять задачу обновления — вызов обёрнут в try/except.
+    """
+
+    async def on_prices_updated(self, prices: dict[int, float]) -> None:
+        """Проверить алерты по только что обновлённым ценам {ticker_id: price}."""
+        ...

@@ -12,7 +12,7 @@ from app.core import settings
 from app.core.database import Base
 from app.modules import models as _models  # noqa: F401  # регистрация ORM-моделей
 from app.modules.market.models import Ticker
-from app.modules.market.protocols import TickerUsageReader
+from app.modules.market.protocols import PriceUpdateObserver, TickerUsageReader
 from app.modules.market.repositories import (
     TickerExternalIdRepository,
     TickerIdentifierRepository,
@@ -76,6 +76,11 @@ class _NoUsage(TickerUsageReader):
         return None
 
 
+class _NoAlerts(PriceUpdateObserver):
+    async def on_prices_updated(self, prices: dict[int, float]) -> None:
+        return None
+
+
 @pytest.fixture
 def ticker_service(db_session):
     repo = TickerRepository(db_session)
@@ -85,6 +90,7 @@ def ticker_service(db_session):
         TickerExternalIdService(TickerExternalIdRepository(db_session)),
         TickerIdentifierService(TickerIdentifierRepository(db_session)),
         _NoUsage(),
+        _NoAlerts(),
         redis=None,
     )
 

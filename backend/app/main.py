@@ -17,6 +17,7 @@ from app.modules.auth.routes import router as auth_router
 from app.modules.market.routes import router as market_router
 from app.modules.portfolios.routes import router as portfolios_router
 from app.modules.tags.routes import router as tags_router
+from app.modules.watchlist.routes import router as watchlist_router
 
 
 @asynccontextmanager
@@ -117,4 +118,5 @@ async def ready(response: Response) -> dict:
 app.include_router(auth_router, prefix='/auth', tags=['Auth'])
 app.include_router(portfolios_router, prefix='/api', tags=['Portfolios'])
 app.include_router(tags_router, prefix='/api', tags=['Tags'])
+app.include_router(watchlist_router, prefix='/api', tags=['Watchlist'])
 app.include_router(market_router, prefix='/market', tags=['Market'])

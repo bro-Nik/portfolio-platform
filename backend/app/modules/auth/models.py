@@ -10,6 +10,7 @@ from app.modules.auth.schemas import UserRole
 if TYPE_CHECKING:
     from app.modules.portfolios.models import Portfolio, Wallet
     from app.modules.tags.models import Tag
+    from app.modules.watchlist.models import WatchlistItem
 
 
 def _enum_values(enum_cls: type[UserRole]) -> list[str]:
@@ -83,6 +84,11 @@ class User(Base):
     )
     tags: Mapped[list['Tag']] = relationship(
         'Tag',
+        back_populates='user',
+        cascade='all, delete-orphan',
+    )
+    watchlist_items: Mapped[list['WatchlistItem']] = relationship(
+        'WatchlistItem',
         back_populates='user',
         cascade='all, delete-orphan',
     )

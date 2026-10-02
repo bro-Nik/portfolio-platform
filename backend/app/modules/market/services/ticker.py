@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.common.exceptions import BusinessRuleError, NotFoundError
 from app.common.media_client import MediaClient
 from app.modules.market.models import Ticker, TickerExternalId, TickerIdentifier
-from app.modules.market.protocols import TickerUsageReader
+from app.modules.market.protocols import PriceUpdateObserver, TickerUsageReader
 from app.modules.market.repositories import TickerRepository
 from app.modules.market.schemas import TickerDetailResponse, TickerInfo, TickerListResponse, TickerUpdateRequest
 from app.modules.market.services.ticker_external_id import TickerExternalIdService
@@ -37,6 +37,7 @@ class TickerService:
         ext_id_service: TickerExternalIdService,
         identifier_service: TickerIdentifierService,
         usage: TickerUsageReader,
+        alerts: PriceUpdateObserver,
         redis: Redis | None = None,
     ) -> None:
         self.session = session
@@ -44,6 +45,7 @@ class TickerService:
         self._ext_id_service = ext_id_service
         self._identifier_service = identifier_service
         self._usage = usage
+        self._alerts = alerts
         self._redis = redis
 
     async def search(
@@ -315,7 +317,23 @@ class TickerService:
             updated_total += await self.repo.update_ticker_prices(batch_data, price_updated_by=provider_name)
         await self.session.commit()
         await self._invalidate_prices(ticker_ids)
+        await self._notify_price_observer(price_data)
         return updated_total
+
+    async def _notify_price_observer(self, price_data: dict) -> None:
+        """Проверить ценовые алерты по обновлённым ценам.
+
+        Ошибки наблюдателя логируются и не роняют задачу обновления цен.
+        """
+        try:
+            prices = {ticker_id: float(value) for ticker_id, value in price_data.items()}
+        except (TypeError, ValueError):
+            logger.exception('Некорректные цены для проверки алертов')
+            return
+        try:
+            await self._alerts.on_prices_updated(prices)
+        except Exception:
+            logger.exception('Проверка ценовых алертов завершилась ошибкой')
 
     async def load_images(
         self,
