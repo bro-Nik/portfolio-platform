@@ -42,6 +42,9 @@ export const apiService = (
   const client: AxiosInstance = axios.create({
     baseURL: baseUrl,
     headers: { 'Content-Type': 'application/json' },
+    // Массивы как повторяющийся ключ (markets=crypto), а не markets[]=crypto:
+    // дефолт axios не понимает FastAPI Query() под list[str], и фильтр молча не работал.
+    paramsSerializer: { indexes: null },
   });
 
   client.interceptors.request.use(async (config) => {
