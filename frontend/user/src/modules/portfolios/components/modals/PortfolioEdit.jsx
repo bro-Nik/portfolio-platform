@@ -44,7 +44,6 @@ const PortfolioEditModal = () => {
       closeModal();
     } else {
       error(result.error || 'Произошла ошибка');
-      console.log(result.error || 'Произошла ошибка')
     }
   };
 
