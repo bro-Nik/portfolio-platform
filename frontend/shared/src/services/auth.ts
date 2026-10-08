@@ -28,10 +28,8 @@ export const authService = () => {
     try {
       token = await refreshTokens();
       if (!token) return;
-      console.log('Токены авторизации обновлены');
       return token;
-    } catch (error) {
-      console.error('Ошибка обновления токенов авторизации:', error);
+    } catch {
       clearTokens();
     }
   };
