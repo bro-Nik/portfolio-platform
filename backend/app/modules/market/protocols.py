@@ -1,4 +1,28 @@
-from typing import Protocol
+from typing import Any, Protocol
+
+
+class TickerCatalogReader(Protocol):
+    """Порт чтения каталога тикеров market.
+
+    Реализуется TickerService: потребители (watchlist) не знают о его
+    устройстве и мокают маленький интерфейс вместо целого сервиса.
+    """
+
+    async def get(self, ticker_id: int) -> Any | None:
+        """Карточка тикера или None, если нет."""
+        ...
+
+    async def get_info(self, ids: list[int]) -> dict[int, Any]:
+        """Имя/символ/картинка/рынок по списку id."""
+        ...
+
+    async def get_prices(self, ids: list[int]) -> dict[int, float]:
+        """Актуальные цены USD по списку id."""
+        ...
+
+    async def get_price_by_symbol(self, market: str, symbol: str) -> float | None:
+        """Цена по символу внутри рынка (для пересчёта валют алертов)."""
+        ...
 
 
 class TickerUsageReader(Protocol):

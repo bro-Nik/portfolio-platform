@@ -6,7 +6,7 @@ from dishka.integrations.taskiq import inject
 from app.common.email import Mailer
 from app.core import settings
 from app.core.taskiq import broker
-from app.modules.market.dependencies.di import TickerServiceDep
+from app.modules.market.dependencies.di import TickerCatalogDep
 from app.modules.watchlist.dependencies.deps import SessionDep
 from app.modules.watchlist.repositories import PriceAlertRepository
 
@@ -34,7 +34,7 @@ def _format_amount(value: float) -> str:
 @inject(patch_module=True)
 async def send_price_alert_email(
     session: SessionDep,
-    tickers: TickerServiceDep,
+    tickers: TickerCatalogDep,
     alert_id: int,
     email: str,
 ) -> None:

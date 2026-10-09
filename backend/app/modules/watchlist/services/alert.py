@@ -4,14 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import BusinessRuleError, NotFoundError
 from app.common.schemas import Context
-from app.modules.market.services.ticker import TickerService
+from app.modules.market.protocols import TickerCatalogReader
 from app.modules.watchlist.models import PriceAlert, WatchlistItem
 from app.modules.watchlist.repositories import PriceAlertRepository, WatchlistItemRepository
 from app.modules.watchlist.schemas import AlertDirection
 
 
 class AlertService:
-    def __init__(self, session: AsyncSession, ctx: Context, ticker_service: TickerService) -> None:
+    def __init__(self, session: AsyncSession, ctx: Context, ticker_service: TickerCatalogReader) -> None:
         self.ctx = ctx
         self.actor = ctx.actor
         self.session = session

@@ -13,7 +13,7 @@ from app.modules.market.external_api.core import (
     RequestLogger,
     registry,
 )
-from app.modules.market.protocols import PriceUpdateObserver, TickerUsageReader
+from app.modules.market.protocols import PriceUpdateObserver, TickerCatalogReader, TickerUsageReader
 from app.modules.market.repositories import (
     ProviderRepository,
     RequestLogRepository,
@@ -139,6 +139,7 @@ class TaskProvider(Provider):
 ProviderServiceDep = Annotated[FromDishka[ProviderService], ...]
 TaskServiceDep = Annotated[FromDishka[TaskService], ...]
 TickerServiceDep = Annotated[FromDishka[TickerService], ...]
+TickerCatalogDep = Annotated[FromDishka[TickerCatalogReader], ...]
 SessionDep = Annotated[FromDishka[AsyncSession], ...]
 
 TaskTrackerServiceDep = Annotated[FromDishka[TaskTrackerService], ...]

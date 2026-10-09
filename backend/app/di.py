@@ -5,7 +5,8 @@ from app.common.di import ContextProvider, FastapiProvider, InfraProvider, Sessi
 from app.modules.auth.dependencies.di import AuthProvider
 from app.modules.auth.repositories import UserEmailRepository
 from app.modules.market.dependencies.di import MarketProvider, TaskProvider
-from app.modules.market.protocols import PriceUpdateObserver, TickerUsageReader
+from app.modules.market.protocols import PriceUpdateObserver, TickerCatalogReader, TickerUsageReader
+from app.modules.market.services.ticker import TickerService
 from app.modules.portfolios.dependencies.di import PortfoliosProvider
 from app.modules.portfolios.repositories import TaggableEntityOwnershipRepository, TickerUsageRepository
 from app.modules.tags.dependencies.di import TagsProvider
@@ -62,6 +63,9 @@ class CrossModuleProvider(Provider):
         provides=PriceUpdateObserver,
         scope=Scope.REQUEST,
     )
+    @provide(scope=Scope.REQUEST)
+    def get_ticker_catalog(self, ticker_service: TickerService) -> TickerCatalogReader:
+        return ticker_service
 
     @provide(scope=Scope.REQUEST)
     def get_ticker_usage(self, session: AsyncSession) -> TickerUsageReader:

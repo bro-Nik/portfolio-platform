@@ -2,13 +2,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import ConflictError, NotFoundError
 from app.common.schemas import Context
-from app.modules.market.services.ticker import TickerService
+from app.modules.market.protocols import TickerCatalogReader
 from app.modules.watchlist.models import WatchlistItem
 from app.modules.watchlist.repositories import WatchlistItemRepository
 
 
 class WatchlistService:
-    def __init__(self, session: AsyncSession, ctx: Context, ticker_service: TickerService) -> None:
+    def __init__(self, session: AsyncSession, ctx: Context, ticker_service: TickerCatalogReader) -> None:
         self.ctx = ctx
         self.actor = ctx.actor
         self.session = session
