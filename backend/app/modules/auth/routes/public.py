@@ -8,7 +8,13 @@ from app.common.routing import DishkaRouter
 from app.common.schemas import AuthUser
 from app.core import settings
 from app.core.rate_limit import limiter
-from app.modules.auth.dependencies import AuthServiceDep, SessionServiceDep, UserServiceDep, require_user
+from app.modules.auth.dependencies import (
+    AuthServiceDep,
+    SessionServiceDep,
+    UserDataCollectorDep,
+    UserServiceDep,
+    require_user,
+)
 from app.modules.auth.schemas import (
     AccessTokenResponse,
     DeleteAccountRequest,
@@ -255,10 +261,11 @@ async def delete_session(
 async def export_account(
     request: Request,
     user_service: UserServiceDep,
+    collectors: UserDataCollectorDep,
     current_user: Annotated[AuthUser, require_user],
 ) -> dict:
     """Выгрузка всех персональных данных пользователя (152-ФЗ, ст. 14)."""
-    return await user_service.export_data(current_user.id)
+    return await user_service.export_data(current_user.id, collectors)
 
 
 @router.delete('/account', status_code=204)

@@ -3,15 +3,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.di import ContextProvider, FastapiProvider, InfraProvider, SessionProvider
 from app.modules.auth.dependencies.di import AuthProvider
+from app.modules.auth.protocols import ExportAccumulator, UserDataCollector
 from app.modules.auth.repositories import UserEmailRepository
 from app.modules.market.dependencies.di import MarketProvider, TaskProvider
+from app.modules.market.export import TickerDataCollector
 from app.modules.market.protocols import PriceUpdateObserver, TickerCatalogReader, TickerUsageReader
 from app.modules.market.services.ticker import TickerService
 from app.modules.portfolios.dependencies.di import PortfoliosProvider
+from app.modules.portfolios.export import PortfolioDataCollector
 from app.modules.portfolios.repositories import TaggableEntityOwnershipRepository, TickerUsageRepository
 from app.modules.tags.dependencies.di import TagsProvider
+from app.modules.tags.export import TagDataCollector
 from app.modules.tags.protocols import EntityOwnershipChecker
 from app.modules.watchlist.dependencies.di import WatchlistProvider
+from app.modules.watchlist.export import WatchlistDataCollector
 from app.modules.watchlist.protocols import UserEmailReader
 from app.modules.watchlist.repositories import WatchlistUsageRepository
 from app.modules.watchlist.services.alert_evaluator import AlertEvaluatorService
@@ -45,6 +50,27 @@ class UnionTickerUsageRepository:
         await self._watchlist.reassign_references(source_id, target_id)
 
 
+class UnionUserDataExport:
+    """Объединяет разделы выгрузки персональных данных по модулям.
+
+    Живёт в корне композиции, потому что auth не может импортировать
+    модели других модулей напрямую. Порядок важен: portfolios собирает
+    ticker_ids, market читает их последним.
+    """
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._collectors = [
+            PortfolioDataCollector(session),
+            TagDataCollector(session),
+            WatchlistDataCollector(session),
+            TickerDataCollector(session),
+        ]
+
+    async def collect(self, user_id: int, acc: ExportAccumulator) -> None:
+        for collector in self._collectors:
+            await collector.collect(user_id, acc)
+
+
 class CrossModuleProvider(Provider):
     """Связывает порты модулей с реализациями из других модулей."""
 
@@ -73,6 +99,10 @@ class CrossModuleProvider(Provider):
             TickerUsageRepository(session),
             WatchlistUsageRepository(session),
         )
+
+    @provide(scope=Scope.REQUEST)
+    def get_user_data_export(self, session: AsyncSession) -> UserDataCollector:
+        return UnionUserDataExport(session)
 
 
 def build_web_container() -> AsyncContainer:

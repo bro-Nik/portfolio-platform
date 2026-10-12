@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions import (
@@ -7,10 +9,12 @@ from app.common.exceptions import (
     NotFoundError,
     PermissionDeniedError,
 )
+from app.common.exporting import model_rows
 from app.common.schemas import Context
 from app.core import settings
 from app.modules.auth.models import User
-from app.modules.auth.repositories import UserRepository
+from app.modules.auth.protocols import ExportAccumulator, UserDataCollector
+from app.modules.auth.repositories import SessionRepository, UserRepository
 from app.modules.auth.schemas import (
     DeleteAccountRequest,
     EmailChangeRequest,
@@ -21,7 +25,9 @@ from app.modules.auth.schemas import (
     UserUpdateRequest,
 )
 from app.modules.auth.security import SecurityService
-from app.modules.auth.services.export import export_user_data
+
+#: Версия формата выгрузки: меняется при добавлении новых разделов.
+EXPORT_VERSION = 2
 
 
 class UserStatus:
@@ -126,10 +132,18 @@ class UserService:
             raise AuthenticationError('Неверный пароль')
         await self.repo.delete(user_id)
 
-    async def export_data(self, user_id: int) -> dict:
+    async def export_data(self, user_id: int, collectors: UserDataCollector) -> dict:
         """Выгрузка всех персональных данных пользователя (152-ФЗ, ст. 14)."""
-        await self.get(user_id)
-        return await export_user_data(self.session, user_id)
+        user = await self.get(user_id)
+        acc = ExportAccumulator()
+        acc.sections['user'] = model_rows([user])
+        acc.sections['sessions'] = model_rows(await SessionRepository(self.session).get_all_by_user_id(user_id))
+        await collectors.collect(user_id, acc)
+        return {
+            'export_version': EXPORT_VERSION,
+            'exported_at': datetime.now(UTC).isoformat(),
+            **acc.sections,
+        }
 
     async def forgot_password(self, email: str) -> str | None:
         user = await self.repo.get_by_email(email)
